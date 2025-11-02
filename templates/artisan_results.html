@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}Artisan Qualification Results{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-primary mb-4">Artisan Qualification Results</h1>
+
+    {% if courses and courses|length > 0 %}
+    <div class="alert alert-success" role="alert">
+        <strong>Success!</strong> You qualify for <strong>{{ courses|length }}</strong> artisan courses across
+        <strong>{{ courses_by_collection|length }}</strong> trade categories.
+        <span class="badge bg-warning text-dark ms-2">Artisan</span>
+    </div>
+
+    <!-- Artisan Information Card -->
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-tools me-2"></i>Artisan & Technical Skills Training
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="mb-2">
+                        <strong>About Artisan Courses:</strong> These are hands-on technical courses that provide
+                        practical skills for various trades and vocations. Perfect for quick entry into the workforce.
+                    </p>
+                    <p class="mb-0 small text-muted">
+                        Artisan courses typically last 6 months to 2 years and focus on practical, employable skills.
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <span class="badge bg-warning text-dark fs-6 p-2">Practical Skills</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Navigation -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Browse by Trade Category</h2>
+        </div>
+        <div class="card-body">
+            <div id="categories" class="d-flex flex-wrap gap-2">
+                <button class="btn btn-primary category-btn active" type="button" data-category="all"
+                    title="Show all artisan courses">
+                    All Trades ({{ courses|length }})
+                </button>
+                {% for category_name, category_courses in courses_by_collection.items() %}
+                <button class="btn btn-outline-primary category-btn" type="button" data-category="{{ category_name }}"
+                    title="Show {{ category_name }} courses">
+                    {{ category_name|replace('_', ' ') }} ({{ category_courses|length }})
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Courses Display Area -->
+    <div id="courses-display" aria-live="polite">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 id="current-category-title" class="h4">All Artisan Courses ({{ courses|length }})</h2>
+        </div>
+
+        <div id="courses-grid" class="row">
+            {% for course in courses %}
+            <div class="col-lg-6 col-xl-4 mb-4 course-item" data-categories="{{ course.collection }}">
+                <div class="card h-100 course-card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h3 class="card-title h6 mb-0 text-primary">
+                                {{ course.programme_name or 'Trade Name Not Available' }}
+                            </h3>
+                            <span class="badge bg-warning text-dark small">Artisan</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-2">
+                            <strong>Institution:</strong> {{ course.institution_name or 'Technical Training Institute'
+                            }}<br>
+                            <strong>Trade Code:</strong> {{ course.programme_code or 'N/A' }}<br>
+                            <strong>Category:</strong> {{ course.collection or 'General Trade' }}
+                        </p>
+
+                        {% if course.minimum_grade and course.minimum_grade.mean_grade %}
+                        <p class="card-text mb-2">
+                            <strong>Minimum Grade:</strong>
+                            <span class="badge bg-info">{{ course.minimum_grade.mean_grade }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.minimum_subject_requirements %}
+                        <div class="card-text mb-2">
+                            <strong>Subject Requirements:</strong>
+                            <div class="mt-1">
+                                {% for subject, grade in course.minimum_subject_requirements.items() %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ subject }}: {{ grade }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if course.programme_duration %}
+                        <p class="card-text mb-2">
+                            <strong>Training Duration:</strong>
+                            <span class="badge bg-success">{{ course.programme_duration }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.trade_type %}
+                        <p class="card-text mb-2">
+                            <strong>Trade Type:</strong>
+                            <span class="badge bg-purple">{{ course.trade_type }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.skills_covered %}
+                        <div class="card-text mb-2">
+                            <strong>Skills Covered:</strong>
+                            <small class="text-muted">{{ course.skills_covered }}</small>
+                        </div>
+                        {% endif %}
+
+                        {% if course.employment_opportunities %}
+                        <div class="card-text">
+                            <strong>Career Opportunities:</strong>
+                            <small class="text-muted">{{ course.employment_opportunities }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <small class="text-muted">
+                            <i class="fas fa-briefcase me-1"></i>Vocational Training Program
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="no-courses-message" class="alert alert-warning text-center" role="alert" style="display: none;">
+            <strong>No courses found in this trade category.</strong>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        <strong>No qualifying artisan courses found.</strong>
+        You do not qualify for any artisan trade courses based on your grades and mean grade.
+    </div>
+    {% endif %}
+
+    <!-- User's Academic Profile -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Your Academic Profile</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3 class="h6">Subject Grades:</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for code, grade in user_grades.items() %}
+                        <span class="badge bg-primary">{{ code }}: {{ grade }}</span>
+                        {% else %}
+                        <span class="text-muted">No grades entered</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <h3 class="h6">Overall Mean Grade:</h3>
+                    <div class="alert alert-success mb-0 py-2">
+                        <strong class="h5">{{ user_mean_grade or 'Not specified' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Benefits of Artisan Courses -->
+    <div class="card mt-4 bg-light">
+        <div class="card-body">
+            <h5 class="card-title text-success">
+                <i class="fas fa-chart-line me-2"></i>Why Choose Artisan Courses?
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="small mb-2">
+                        <li><strong>Quick Employment:</strong> Most courses take 6-18 months</li>
+                        <li><strong>Practical Skills:</strong> Hands-on training approach</li>
+                        <li><strong>Lower Entry Requirements:</strong> Accessible to more students</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="small mb-0">
+                        <li><strong>Self-Employment:</strong> Start your own business</li>
+                        <li><strong>Industry Demand:</strong> High need for skilled tradespeople</li>
+                        <li><strong>Career Progression:</strong> Advance to technician levels</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Trade Categories -->
+    <div class="card mt-4 border-success">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-star me-2"></i>Popular Artisan Trades
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3 col-6 mb-2">
+                    <span class="badge bg-primary p-2 w-100">Electrical</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <span class="badge bg-primary p-2 w-100">Plumbing</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <span class="badge bg-primary p-2 w-100">Carpentry</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <span class="badge bg-primary p-2 w-100">Metalwork</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <span class="badge bg-primary p-2 w-100">Hair & Beauty</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <span class="badge bg-primary p-2 w-100">Motor Vehicle</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <span class="badge bg-primary p-2 w-100">Welding</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <span class="badge bg-primary p-2 w-100">Masonry</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 d-flex gap-2 flex-wrap">
+        <a href="/artisan" class="btn btn-primary">Try Again</a>
+        <a href="/" class="btn btn-secondary">Back to Home</a>
+        {% if courses %}
+        <button onclick="window.print()" class="btn btn-info">Print Results</button>
+        <a href="/certificate" class="btn btn-success">Check Certificate Courses</a>
+        <a href="/diploma" class="btn btn-warning">Check Diploma Courses</a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const courseItems = document.querySelectorAll('.course-item');
+        const noCoursesMessage = document.getElementById('no-courses-message');
+        const categoryTitle = document.getElementById('current-category-title');
+        const coursesGrid = document.getElementById('courses-grid');
+
+        function filterCourses(category) {
+            let visibleCount = 0;
+            courseItems.forEach(item => {
+                const itemCategories = item.getAttribute('data-categories');
+                if (category === 'all' || itemCategories === category) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            categoryTitle.textContent = category === 'all'
+                ? `All Artisan Courses ({{ courses|length }})`
+                : `${category.replace('_', ' ')} Trades (${visibleCount})`;
+
+            noCoursesMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+            coursesGrid.style.display = visibleCount === 0 ? 'none' : 'block';
+        }
+
+        function updateButtonStates(activeCategory) {
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            categoryButtons.forEach(button => {
+                const buttonCategory = button.getAttribute('data-category');
+                button.classList.toggle('btn-primary', buttonCategory === activeCategory);
+                button.classList.toggle('btn-outline-primary', buttonCategory !== activeCategory);
+            });
+        }
+
+        document.querySelectorAll('.category-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const category = this.getAttribute('data-category');
+                filterCourses(category);
+                updateButtonStates(category);
+            });
+        });
+
+        // Initialize with all courses
+        filterCourses('all');
+        updateButtonStates('all');
+
+        // Add hover effects for course cards
+        const courseCards = document.querySelectorAll('.course-card');
+        courseCards.forEach(card => {
+            card.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+            });
+
+            card.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+            });
+        });
+    });
+</script>
+
+<style>
+    .category-btn {
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-weight: 500;
+    }
+
+    .category-btn.active {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .course-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #e9ecef;
+        height: 100%;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+    }
+
+    .bg-purple {
+        background-color: #6f42c1 !important;
+        color: white;
+    }
+
+    .bg-success {
+        background-color: #198754 !important;
+    }
+
+    .bg-info {
+        background-color: #0dcaf0 !important;
+    }
+
+    .border-warning {
+        border-color: #ffc107 !important;
+    }
+
+    .border-success {
+        border-color: #198754 !important;
+    }
+
+    .text-success {
+        color: #198754 !important;
+        font-weight: 600;
+    }
+
+    .card-header.bg-light {
+        background-color: #f8f9fa !important;
+        border-bottom: 2px solid #ffc107;
+    }
+
+    .btn-success {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+    }
+
+    #categories {
+        gap: 8px;
+    }
+
+    .course-item {
+        transition: all 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+        .course-card {
+            margin-bottom: 1rem;
+        }
+
+        .d-flex.flex-wrap {
+            justify-content: center;
+        }
+
+        .btn {
+            margin-bottom: 0.5rem;
+        }
+
+        #categories {
+            justify-content: center;
+        }
+    }
+
+    /* Popular trades grid styling */
+    .col-md-3 {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Activation - KUCCPS Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">KUCCPS Admin</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a class="nav-link" href="{{ url_for('admin_payments') }}">Payments</a>
+                <a class="nav-link" href="{{ url_for('admin_users') }}">Users</a>
+                <a class="nav-link" href="{{ url_for('admin_manual_activation') }}">Manual Activation</a>
+                <a class="nav-link" href="{{ url_for('admin_system_health') }}">System Health</a>
+                <a class="nav-link" href="{{ url_for('admin_logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Manual User Activation</h2>
+        <p class="text-muted">Activate users who paid but didn't receive results</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Activate User</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">User Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="index_number" class="form-label">Index Number</label>
+                                <input type="text" class="form-control" id="index_number" name="index_number"
+                                    placeholder="12345678901/2024" required>
+                                <div class="form-text">Format: 11 digits, slash, 4 digits</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="mpesa_receipt" class="form-label">M-Pesa Receipt</label>
+                                <input type="text" class="form-control" id="mpesa_receipt" name="mpesa_receipt"
+                                    placeholder="ABC123DEF4" required>
+                                <div class="form-text">10 alphanumeric characters</div>
+                            </div>
+                            <input type="hidden" name="activation_type" value="manual">
+                            <button type="submit" class="btn btn-success">Activate User</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Activation Instructions</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>When to use manual activation:</h6>
+                        <ul>
+                            <li>User paid but didn't receive results</li>
+                            <li>Payment confirmation failed</li>
+                            <li>System error during payment processing</li>
+                            <li>User has valid M-Pesa receipt but no access</li>
+                        </ul>
+
+                        <h6>What happens after activation:</h6>
+                        <ul>
+                            <li>User can enter grades again</li>
+                            <li>Payment will be bypassed</li>
+                            <li>User will get results immediately</li>
+                            <li>Activation record is saved for tracking</li>
+                        </ul>
+
+                        <div class="alert alert-info">
+                            <strong>Note:</strong> This activation allows the user to bypass payment and access all
+                            course categories.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

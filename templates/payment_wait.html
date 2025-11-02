@@ -1,0 +1,441 @@
+{% extends "base.html" %}
+
+{% block title %}Processing Your Payment{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Payment Processing Modal -->
+    <div class="modal fade show" id="processingModal" tabindex="-1" aria-labelledby="processingModalLabel"
+        aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false" style="display: block;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <!-- Processing Spinner -->
+                    <div class="mb-4">
+                        <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
+                            <span class="visually-hidden">Processing Payment...</span>
+                        </div>
+                    </div>
+
+                    <!-- Processing Text -->
+                    <h4 class="fw-bold mb-3">Waiting for Payment</h4>
+                    <p class="text-muted mb-4" id="statusMessage">STK Push sent to your phone. Please check and enter
+                        your M-Pesa PIN to complete payment.</p>
+
+                    <div class="alert alert-warning mb-4">
+                        <small>
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>DO NOT REFRESH THIS PAGE</strong> after entering your PIN. The page will update
+                            automatically.
+                        </small>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress mb-4" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                            style="width: 0%" id="paymentProgressBar"></div>
+                    </div>
+
+                    <!-- Status Timeline -->
+                    <div id="statusTimeline" class="small text-muted mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span id="step1">⏳ STK Push Sent</span>
+                            <span id="step2">⏳ Waiting for PIN</span>
+                            <span id="step3">⏳ Processing</span>
+                        </div>
+                    </div>
+
+                   
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 col-8 mx-auto mt-4">
+                        <button type="button" class="btn btn-outline-danger" id="cancelProcessing">
+                            <i class="fas fa-times me-2"></i>Cancel Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Processing Modal -->
+    <div class="modal fade" id="courseProcessingModal" tabindex="-1" aria-labelledby="courseProcessingModalLabel"
+        aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <!-- Processing Spinner -->
+                    <div class="mb-4">
+                        <div class="loading-animation">
+                            <div class="spinner-grow text-primary" role="status">
+                                <span class="visually-hidden">Processing Courses...</span>
+                            </div>
+                            <div class="spinner-grow text-secondary" role="status">
+                                <span class="visually-hidden">Processing Courses...</span>
+                            </div>
+                            <div class="spinner-grow text-success" role="status">
+                                <span class="visually-hidden">Processing Courses...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Text -->
+                    <h4 class="fw-bold mb-3">Processing Your Courses</h4>
+                    <p class="text-muted mb-4">We're preparing your course selections. This will only take a moment...</p>
+
+                    <!-- Progress Bar -->
+                    <div class="progress mb-4" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                            style="width: 0%" id="courseProgressBar"></div>
+                    </div>
+
+                    <!-- Course Processing Steps -->
+                    <div class="course-steps text-start mb-4">
+                        <div class="step-item" id="step-verify">
+                            <i class="fas fa-check-circle text-muted"></i>
+                            <span>Verifying payment details</span>
+                        </div>
+                        <div class="step-item" id="step-process">
+                            <i class="fas fa-circle text-muted"></i>
+                            <span>Processing course selections</span>
+                        </div>
+                        <div class="step-item" id="step-finalize">
+                            <i class="fas fa-circle text-muted"></i>
+                            <span>Finalizing your results</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Payment wait page loaded - starting payment monitoring');
+
+        const flow = "{{ flow }}";
+        const transactionRef = "{{ transaction_ref }}";
+        let paymentProgress = 0;
+        let courseProgress = 0;
+        const paymentProgressBar = document.getElementById('paymentProgressBar');
+        const courseProgressBar = document.getElementById('courseProgressBar');
+        const statusMessage = document.getElementById('statusMessage');
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+
+        // Course processing step elements
+        const stepVerify = document.getElementById('step-verify');
+        const stepProcess = document.getElementById('step-process');
+        const stepFinalize = document.getElementById('step-finalize');
+
+        let checkCount = 0;
+        const maxChecks = 120; // 6 minutes (120 * 3 seconds)
+
+        // Initial progress animation
+        const progressInterval = setInterval(() => {
+            if (paymentProgress < 30) { // Only go to 30% until payment confirmed
+                paymentProgress += 0.5;
+                paymentProgressBar.style.width = paymentProgress + '%';
+            }
+        }, 1000);
+
+        // Start checking payment status
+        checkPaymentStatus();
+
+        function checkPaymentStatus() {
+            checkCount++;
+            console.log(`Payment check ${checkCount}/${maxChecks} for flow: ${flow}`);
+
+            fetch(`/check-payment-status/${flow}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Payment status:', data);
+
+                    // 🔥 ONLY proceed if payment is confirmed AND has M-Pesa receipt
+                    if (data.paid === true && data.mpesa_receipt) {
+                        console.log('✅ Payment confirmed via MPesa callback with receipt:', data.mpesa_receipt);
+                        handlePaymentConfirmed();
+                    } else if (data.status === 'pending') {
+                        // Payment still pending
+                        updatePendingStatus();
+
+                        if (checkCount < maxChecks) {
+                            setTimeout(checkPaymentStatus, 3000);
+                        } else {
+                            handleTimeout('Payment is taking longer than expected. Please check if you completed the payment.');
+                        }
+                    } else {
+                        console.log('Payment not ready yet, status:', data.status);
+                        if (checkCount < maxChecks) {
+                            setTimeout(checkPaymentStatus, 3000);
+                        } else {
+                            handleTimeout('Unable to verify payment status. Please try again.');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking payment:', error);
+                    if (checkCount < maxChecks) {
+                        setTimeout(checkPaymentStatus, 3000);
+                    } else {
+                        handleTimeout('Network error. Please check your connection and try again.');
+                    }
+                });
+        }
+
+        function updatePendingStatus() {
+            // Update status message based on check count
+            if (checkCount < 10) {
+                statusMessage.textContent = 'STK Push sent. Please check your phone and enter M-Pesa PIN...';
+                step1.innerHTML = '✅ STK Push Sent';
+                step2.innerHTML = '⏳ Waiting for PIN';
+            } else if (checkCount < 30) {
+                statusMessage.textContent = 'Still waiting for payment confirmation...';
+            } else {
+                statusMessage.textContent = 'Payment processing is taking longer than usual. Please ensure you entered your PIN.';
+            }
+        }
+
+        function handlePaymentConfirmed() {
+            // Stop initial progress animation
+            clearInterval(progressInterval);
+
+            // Update payment modal UI
+            statusMessage.innerHTML = '<strong>✅ Payment Confirmed!</strong>';
+            step2.innerHTML = '✅ PIN Entered';
+            step3.innerHTML = '✅ Payment Complete';
+
+            // Complete payment progress bar
+            const fastProgress = setInterval(() => {
+                if (paymentProgress < 100) {
+                    paymentProgress += 2;
+                    paymentProgressBar.style.width = paymentProgress + '%';
+                } else {
+                    clearInterval(fastProgress);
+                    
+                    // Switch to course processing modal
+                    setTimeout(() => {
+                        // Hide payment modal and show course processing modal
+                        const paymentModal = document.getElementById('processingModal');
+                        const courseModal = document.getElementById('courseProcessingModal');
+                        
+                        paymentModal.classList.remove('show');
+                        paymentModal.style.display = 'none';
+                        
+                        courseModal.classList.add('show');
+                        courseModal.style.display = 'block';
+                        
+                        // Start course processing
+                        updateCourseProgress();
+                        checkCoursesReady();
+                    }, 1000);
+                }
+            }, 50);
+        }
+
+        function updateCourseProgress() {
+            // Animate the progress bar
+            const courseInterval = setInterval(() => {
+                if (courseProgress < 90) {
+                    courseProgress += 1;
+                    courseProgressBar.style.width = courseProgress + '%';
+                    
+                    // Update step icons based on progress
+                    if (courseProgress > 30) {
+                        stepVerify.querySelector('i').classList.replace('fa-circle', 'fa-check-circle');
+                        stepVerify.querySelector('i').classList.add('text-success');
+                        stepProcess.querySelector('i').classList.replace('fa-circle', 'fa-spinner');
+                        stepProcess.querySelector('i').classList.add('fa-spin');
+                    }
+                    if (courseProgress > 60) {
+                        stepProcess.querySelector('i').classList.replace('fa-spinner', 'fa-check-circle');
+                        stepProcess.classList.remove('fa-spin');
+                        stepProcess.querySelector('i').classList.add('text-success');
+                        stepFinalize.querySelector('i').classList.replace('fa-circle', 'fa-spinner');
+                        stepFinalize.querySelector('i').classList.add('fa-spin');
+                    }
+                } else {
+                    clearInterval(courseInterval);
+                }
+            }, 100);
+        }
+
+        function checkCoursesReady() {
+            console.log('Checking if courses are ready...');
+
+            fetch(`/check-courses-ready/${flow}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Courses ready check:', data);
+
+                    if (data.ready) {
+                        completeProcessing(data.redirect_url);
+                    } else {
+                        // Courses not ready yet, check again in 2 seconds
+                        setTimeout(checkCoursesReady, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking courses:', error);
+                    setTimeout(checkCoursesReady, 2000);
+                });
+        }
+
+        function completeProcessing(redirectUrl) {
+            // Complete progress bar
+            courseProgress = 100;
+            courseProgressBar.style.width = courseProgress + '%';
+            courseProgressBar.classList.remove('progress-bar-animated');
+
+            // Update final status
+            stepFinalize.querySelector('i').classList.replace('fa-spinner', 'fa-check-circle');
+            stepFinalize.classList.remove('fa-spin');
+            stepFinalize.querySelector('i').classList.add('text-success');
+
+            console.log('Processing complete, redirecting...');
+
+            // Redirect after short delay
+            setTimeout(() => {
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                } else {
+                    window.location.href = `/results/${flow}`;
+                }
+            }, 1500);
+        }
+
+        function handleTimeout(message) {
+            clearInterval(progressInterval);
+            statusMessage.innerHTML = `<span class="text-danger">${message}</span>`;
+            progressBar.classList.remove('progress-bar-animated');
+
+            // Show retry option
+            const cancelBtn = document.getElementById('cancelProcessing');
+            cancelBtn.innerHTML = '<i class="fas fa-redo me-2"></i>Try Again';
+            cancelBtn.classList.remove('btn-outline-danger');
+            cancelBtn.classList.add('btn-primary');
+            cancelBtn.onclick = function () {
+                window.location.href = `/payment/${flow}`;
+            };
+        }
+
+        // Handle cancel button
+        document.getElementById('cancelProcessing').addEventListener('click', function () {
+            if (confirm('Are you sure you want to cancel? If you have already entered your PIN, the payment will still process and you can view results later using "Already Made Payment".')) {
+                window.location.href = '/';
+            }
+        });
+
+        // Prevent modal from closing
+        document.getElementById('processingModal').addEventListener('hide.bs.modal', function (e) {
+            e.preventDefault();
+        });
+    });
+</script>
+
+<style>
+    .modal-content {
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        border: none;
+    }
+
+    .modal-body {
+        padding: 3rem !important;
+    }
+
+    .spinner-border {
+        border-width: 4px;
+    }
+
+    .progress {
+        border-radius: 10px;
+        background-color: #f0f0f0;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+        background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        border-color: #ffc107;
+    }
+
+    #statusTimeline {
+        font-size: 0.85em;
+    }
+
+    .modal-backdrop {
+        opacity: 0.5 !important;
+    }
+
+    code {
+        background-color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+
+    /* Course Processing Modal Styles */
+    .loading-animation {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .loading-animation .spinner-grow {
+        width: 1rem;
+        height: 1rem;
+        animation-duration: 1.2s;
+    }
+
+    .loading-animation .spinner-grow:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .loading-animation .spinner-grow:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    .course-steps {
+        margin-left: 1rem;
+    }
+
+    .step-item {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .step-item i {
+        width: 1.5rem;
+        text-align: center;
+    }
+
+    .step-item span {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .text-success {
+        color: #198754 !important;
+    }
+</style>
+{% endblock %}

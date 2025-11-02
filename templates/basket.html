@@ -1,0 +1,677 @@
+{% extends "base.html" %}
+
+{% block title %}My Course Basket{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="text-primary mb-1">
+                <i class="fas fa-shopping-basket me-2"></i>My Course Basket
+            </h1>
+            <p class="text-muted mb-0">Manage and compare your selected courses</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <span class="badge bg-primary fs-6 px-3 py-2" id="basketCount">
+                <i class="fas fa-book me-1"></i>{{ basket_count }} course{% if basket_count != 1 %}s{% endif %}
+            </span>
+            {% if basket_count > 0 %}
+            <button class="btn btn-outline-danger btn-sm ms-2" id="clearBasketBtn"
+                data-basket-count="{{ basket_count }}">
+                <i class="fas fa-trash me-1"></i>Clear All
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Empty Basket State -->
+    {% if basket_count == 0 %}
+    <div class="alert alert-info text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-basket-shopping fa-3x text-info mb-3"></i>
+            <h4 class="text-info">Your Basket is Empty</h4>
+        </div>
+        <p class="mb-3">You haven't added any courses to your basket yet.</p>
+
+        <!-- Smart redirect buttons based on user type and current category -->
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            {% if session.get('verified_payment') %}
+                <!-- For verified users - show back to collection results -->
+                {% set current_level = session.get('current_level', session.get('current_flow', 'degree')) %}
+                <a href="{{ url_for('show_verified_level_results', level=current_level, index=session.get('verified_index'), receipt=session.get('verified_receipt')) }}"
+                    class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to {{ current_level|title }} Courses
+                </a>
+            {% else %}
+                <!-- For regular users - dynamically determine the current category -->
+                {% set current_flow = session.get('current_flow') %}
+                
+                {# Check which category the user was browsing #}
+                {% if session.get('degree_data_submitted') or session.get('degree_grades') %}
+                    {% set current_category = 'degree' %}
+                {% elif session.get('diploma_data_submitted') or session.get('diploma_grades') %}
+                    {% set current_category = 'diploma' %}
+                {% elif session.get('certificate_data_submitted') or session.get('certificate_grades') %}
+                    {% set current_category = 'certificate' %}
+                {% elif session.get('artisan_data_submitted') or session.get('artisan_grades') %}
+                    {% set current_category = 'artisan' %}
+                {% elif session.get('kmtc_data_submitted') or session.get('kmtc_grades') %}
+                    {% set current_category = 'kmtc' %}
+                {% else %}
+                    {% set current_category = current_flow or 'degree' %}
+                {% endif %}
+
+                {# Show appropriate back button based on detected category #}
+                {% if current_category == 'degree' %}
+                    <a href="{{ url_for('show_results', flow='degree') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Degree Courses
+                    </a>
+                {% elif current_category == 'diploma' %}
+                    <a href="{{ url_for('show_results', flow='diploma') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Diploma Courses
+                    </a>
+                {% elif current_category == 'certificate' %}
+                    <a href="{{ url_for('show_results', flow='certificate') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Certificate Courses
+                    </a>
+                {% elif current_category == 'artisan' %}
+                    <a href="{{ url_for('show_results', flow='artisan') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Artisan Courses
+                    </a>
+                {% elif current_category == 'kmtc' %}
+                    <a href="{{ url_for('show_results', flow='kmtc') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to KMTC Courses
+                    </a>
+                {% else %}
+                    {# Fallback to generic button if category can't be determined #}
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-1"></i>Back to Home
+                    </a>
+                {% endif %}
+            {% endif %}
+
+            <!-- Always show browse all categories option -->
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-search me-1"></i>Browse All Categories
+            </a>
+        </div>
+
+        <!-- Additional helpful information -->
+        <div class="mt-4">
+            <small class="text-muted">
+                <i class="fas fa-lightbulb me-1"></i>
+                Tip: Browse your qualified courses and click the "Add to Basket" button to compare them here.
+            </small>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Basket Items Grid -->
+    <div id="basket-container">
+        <div class="row" id="basket-grid">
+            {% for course in basket %}
+            <div class="col-xl-4 col-lg-6 col-md-6 mb-4 basket-item" data-basket-id="{{ course.basket_id }}">
+                <div class="card h-100 course-card shadow-sm">
+                    <div class="card-header bg-light border-bottom-0">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="card-title h6 mb-0 text-primary flex-grow-1 me-2">
+                                {{ course.programme_name or course.course_name or 'Course Name Not Available' }}
+                            </h3>
+                            <button class="btn btn-sm btn-outline-danger remove-from-basket flex-shrink-0"
+                                data-basket-id="{{ course.basket_id }}" title="Remove from basket">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex flex-column">
+                                <small class="text-muted mb-1">Programme Code</small>
+                                <span class="badge bg-dark fs-6">
+                                    <i class="fas fa-hashtag me-1"></i>{{ course.programme_code or course.course_code or 'N/A' }}
+                                </span>
+                            </div>
+                            <div class="d-flex flex-column align-items-end">
+                                <small class="text-muted mb-1">Category</small>
+                                <span class="badge bg-primary">
+                                    {% if course.cluster %}
+                                    {{ course.cluster }}
+                                    {% elif course.collection %}
+                                    {{ course.collection }}
+                                    {% else %}
+                                    Uncategorized
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="course-details">
+                            <!-- Institution -->
+                            {% if course.institution_name %}
+                            <div class="detail-item mb-3">
+                                <strong class="detail-label">
+                                    <i class="fas fa-university me-1 text-muted"></i>Institution:
+                                </strong>
+                                <span class="detail-value">{{ course.institution_name }}</span>
+                            </div>
+                            {% endif %}
+
+                            <!-- Cut-off Points or Minimum Grade -->
+                            {% if course.cut_off_points %}
+                            <div class="detail-item mb-3">
+                                <strong class="detail-label">
+                                    <i class="fas fa-chart-line me-1 text-muted"></i>Cut-off Points:
+                                </strong>
+                                <span class="badge bg-info detail-value">{{ course.cut_off_points }}</span>
+                            </div>
+                            {% elif course.minimum_grade and course.minimum_grade.mean_grade %}
+                            <div class="detail-item mb-3">
+                                <strong class="detail-label">
+                                    <i class="fas fa-graduation-cap me-1 text-muted"></i>Minimum Grade:
+                                </strong>
+                                <span class="badge bg-info detail-value">{{ course.minimum_grade.mean_grade }}</span>
+                            </div>
+                            {% endif %}
+
+                            <!-- Subject Requirements -->
+                            {% if course.minimum_subject_requirements %}
+                            <div class="detail-item mb-3">
+                                <strong class="detail-label">
+                                    <i class="fas fa-book me-1 text-muted"></i>Requirements:
+                                </strong>
+                                <div class="requirements-grid mt-1">
+                                    {% for subject, grade in course.minimum_subject_requirements.items() %}
+                                    <span class="badge bg-secondary requirement-badge">{{ subject }}: {{ grade }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Added Date -->
+                            <div class="detail-item">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Added: {% if course.added_at %}{{ course.added_at[:16]|replace('T', ' ') }}{% else %}Recently{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Basket Summary and Actions -->
+    <div class="mt-4 p-4 bg-light rounded border">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="text-primary mb-2">
+                    <i class="fas fa-clipboard-list me-2"></i>Basket Summary
+                </h5>
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary fs-6 me-2">{{ basket_count }}</span>
+                        <span class="text-muted">Total Courses</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-info fs-6 me-2" id="institutionCount">
+                            {% set unique_institutions = [] %}
+                            {% for course in basket %}
+                            {% if course.institution_name and course.institution_name not in unique_institutions %}
+                            {% set _ = unique_institutions.append(course.institution_name) %}
+                            {% endif %}
+                            {% endfor %}
+                            {{ unique_institutions|length }}
+                        </span>
+                        <span class="text-muted">Institutions</span>
+                    </div>
+                </div>
+                <p class="mt-3 mb-0 text-muted">
+                    <i class="fas fa-lightbulb me-1"></i>
+                    Compare these courses based on your preferences and make your final selection.
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+                    <button class="btn btn-info" id="printBasketBtn">
+                        <i class="fas fa-print me-1"></i>Print Basket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Tips -->
+    <div class="mt-4 alert alert-warning">
+        <h6 class="alert-heading">
+            <i class="fas fa-tips me-1"></i>Comparison Tips
+        </h6>
+        <ul class="mb-0">
+            <li>Compare courses based on cut-off points, location, and your career goals</li>
+            <li>Consider the institution's reputation and facilities</li>
+            <li>Check if you meet all subject requirements</li>
+            <li>Save your selection to review later</li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+   document.addEventListener('DOMContentLoaded', function () {
+    console.log('🛒 Basket page loaded with {{ basket_count }} items');
+    
+    // Remove course from basket
+    document.querySelectorAll('.remove-from-basket').forEach(button => {
+        button.addEventListener('click', function () {
+            const basketId = this.dataset.basketId;
+            const courseCard = this.closest('.basket-item');
+            const courseName = courseCard.querySelector('.card-title').textContent.trim();
+            removeFromBasket(basketId, courseName);
+        });
+    });
+
+    // Clear entire basket
+    const clearBasketBtn = document.getElementById('clearBasketBtn');
+    if (clearBasketBtn) {
+        clearBasketBtn.addEventListener('click', function () {
+            const basketCount = this.dataset.basketCount;
+            if (confirm('Are you sure you want to remove all ' + basketCount + ' courses from your basket?')) {
+                clearBasket();
+            }
+        });
+    }
+
+    // Print basket
+    const printBasketBtn = document.getElementById('printBasketBtn');
+    if (printBasketBtn) {
+        printBasketBtn.addEventListener('click', function () {
+            window.print();
+        });
+    }
+   });
+
+function removeFromBasket(basketId, courseName) {
+    if (!confirm('Remove "' + courseName + '" from your basket?')) {
+        return;
+    }
+
+    const button = document.querySelector('[data-basket-id="' + basketId + '"] .remove-from-basket');
+    const item = document.querySelector('[data-basket-id="' + basketId + '"]');
+    
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
+    // Add removing animation
+    if (item) {
+        item.style.opacity = '0.5';
+        item.style.transform = 'scale(0.95)';
+    }
+
+    fetch('/remove-from-basket', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ basket_id: basketId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the item from UI with animation
+            if (item) {
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(100px)';
+                setTimeout(() => {
+                    item.remove();
+                    updateBasketUI(data.basket_count);
+                    
+                    // If basket is empty after removal, reload the page
+                    if (data.basket_count === 0) {
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                }, 300);
+            }
+            showAlert('✅ "' + courseName + '" removed from basket', 'success');
+        } else {
+            showAlert('❌ ' + data.error, 'error');
+            // Reset button and item appearance
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-times"></i>';
+            }
+            if (item) {
+                item.style.opacity = '1';
+                item.style.transform = 'scale(1)';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('❌ Error removing course from basket', 'error');
+        // Reset button and item appearance
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-times"></i>';
+        }
+        if (item) {
+            item.style.opacity = '1';
+            item.style.transform = 'scale(1)';
+        }
+    });
+}
+
+function clearBasket() {
+    const clearBtn = document.getElementById('clearBasketBtn');
+    if (clearBtn) {
+        clearBtn.disabled = true;
+        clearBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Clearing...';
+    }
+
+    fetch('/clear-basket', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('✅ Basket cleared successfully', 'success');
+            
+            // Clear the basket UI immediately with animation
+            const basketItems = document.querySelectorAll('.basket-item');
+            basketItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(100px)';
+                }, index * 100);
+            });
+            
+            // Update UI and reload after animation
+            setTimeout(() => {
+                updateBasketUI(0);
+                location.reload();
+            }, 500);
+            
+        } else {
+            showAlert('❌ Error clearing basket: ' + data.error, 'error');
+            if (clearBtn) {
+                clearBtn.disabled = false;
+                clearBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Clear All';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('❌ Error clearing basket', 'error');
+        if (clearBtn) {
+            clearBtn.disabled = false;
+            clearBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Clear All';
+        }
+    });
+}
+
+function updateBasketUI(count) {
+    // Update basket count badge
+    const basketCount = document.getElementById('basketCount');
+    if (basketCount) {
+        basketCount.innerHTML = '<i class="fas fa-book me-1"></i>' + count + ' course' + (count !== 1 ? 's' : '');
+    }
+
+    // Update navbar basket count
+    if (typeof showBasketNavigation === 'function') {
+        showBasketNavigation(count);
+    }
+
+    // Update institution count
+    const uniqueInstitutions = new Set();
+    document.querySelectorAll('.basket-item').forEach(item => {
+        const institutionElement = item.querySelector('.detail-value');
+        if (institutionElement) {
+            const institution = institutionElement.textContent.trim();
+            if (institution && institution !== 'Not Specified') {
+                uniqueInstitutions.add(institution);
+            }
+        }
+    });
+
+    const institutionCount = document.getElementById('institutionCount');
+    if (institutionCount) {
+        institutionCount.textContent = uniqueInstitutions.size;
+    }
+
+    // Hide clear button if basket is empty
+    const clearBasketBtn = document.getElementById('clearBasketBtn');
+    if (clearBasketBtn) {
+        if (count === 0) {
+            clearBasketBtn.style.display = 'none';
+        } else {
+            clearBasketBtn.style.display = 'inline-block';
+            clearBasketBtn.setAttribute('data-basket-count', count);
+        }
+    }
+
+    // Hide basket summary and tips if empty
+    const basketSummary = document.querySelector('.bg-light.rounded.border');
+    const comparisonTips = document.querySelector('.alert-warning');
+    
+    if (count === 0) {
+        if (basketSummary) basketSummary.style.display = 'none';
+        if (comparisonTips) comparisonTips.style.display = 'none';
+        
+        // Show empty basket message after a delay
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+}
+
+function showAlert(message, type) {
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.basket-alert');
+    existingAlerts.forEach(alert => alert.remove());
+
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert ' + alertClass + ' alert-dismissible fade show basket-alert';
+    alertDiv.innerHTML = `
+        <i class="fas ${icon} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    const container = document.querySelector('.container');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+    }
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .basket-item {
+        transition: all 0.3s ease;
+        border-left: 4px solid #007bff;
+    }
+
+    .basket-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .remove-from-basket {
+        opacity: 0.6;
+        transition: all 0.2s ease;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .remove-from-basket:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    .course-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #e9ecef;
+        height: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: #0d6efd;
+    }
+
+    .course-card .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem;
+    }
+
+    .course-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .detail-item {
+        border-left: 3px solid #0d6efd;
+        padding-left: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-label {
+        color: #495057;
+        font-size: 0.875rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        color: #212529;
+        font-weight: 500;
+        display: block;
+    }
+
+    .requirements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 0.4rem;
+    }
+
+    .requirement-badge {
+        font-size: 0.7rem;
+        padding: 0.3em 0.6em;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+
+    /* Responsive grid for basket items */
+    #basket-grid {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -15px;
+    }
+
+    .basket-item {
+        padding: 0 15px;
+        margin-bottom: 30px;
+    }
+
+    /* Responsive column layout */
+    /* Desktop: 3 columns */
+    .basket-item {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+
+    /* Tablet: 2 columns */
+    @media (max-width: 1199px) {
+        .basket-item {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+
+    /* Mobile: 1 column */
+    @media (max-width: 767px) {
+        .basket-item {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .course-card .card-header {
+            padding: 0.75rem;
+        }
+
+        .course-card .card-body {
+            padding: 1rem;
+        }
+
+        .requirements-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .d-flex.justify-content-between.align-items-center.mb-4 {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .text-md-end {
+            text-align: left !important;
+        }
+    }
+
+    /* Print styles */
+    @media print {
+
+        .btn,
+        .remove-from-basket,
+        .alert-warning {
+            display: none !important;
+        }
+
+        .basket-item {
+            break-inside: avoid;
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+        }
+
+        .course-card {
+            border: 1px solid #ddd !important;
+        }
+    }
+</style>
+{% endblock %}

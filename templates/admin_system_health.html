@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health - KUCCPS Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">KUCCPS Admin</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a class="nav-link" href="{{ url_for('admin_payments') }}">Payments</a>
+                <a class="nav-link" href="{{ url_for('admin_users') }}">Users</a>
+                <a class="nav-link" href="{{ url_for('admin_manual_activation') }}">Manual Activation</a>
+                <a class="nav-link" href="{{ url_for('admin_system_health') }}">System Health</a>
+                <a class="nav-link" href="{{ url_for('admin_logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>System Health & Monitoring</h2>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>System Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <td><strong>Database Connection</strong></td>
+                                <td>
+                                    {% if health_data.database_connected %}
+                                    <span class="badge bg-success">Connected</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Disconnected</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Session Keys</strong></td>
+                                <td>{{ health_data.session_keys_count }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Current Time</strong></td>
+                                <td>{{ health_data.current_time }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Database Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if health_data.database_stats %}
+                        <table class="table">
+                            <tr>
+                                <td><strong>User Payments</strong></td>
+                                <td>{{ health_data.database_stats.user_payments }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>User Courses</strong></td>
+                                <td>{{ health_data.database_stats.user_courses }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>User Baskets</strong></td>
+                                <td>{{ health_data.database_stats.user_baskets }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Manual Activations</strong></td>
+                                <td>{{ health_data.database_stats.admin_activations }}</td>
+                            </tr>
+                        </table>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            Database statistics not available
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if health_data.recent_activities %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Recent Activities</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Index</th>
+                                <th>Level</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in health_data.recent_activities %}
+                            <tr>
+                                <td>{{ activity.email }}</td>
+                                <td>{{ activity.index_number }}</td>
+                                <td>{{ activity.level }}</td>
+                                <td>Ksh {{ activity.payment_amount }}</td>
+                                <td>{{ activity.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>
