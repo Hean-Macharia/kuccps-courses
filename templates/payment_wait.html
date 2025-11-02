@@ -92,7 +92,7 @@
                     <!-- Course Processing Steps -->
                     <div class="course-steps text-start mb-4">
                         <div class="step-item" id="step-verify">
-                            <i class="fas fa-check-circle text-muted"></i>
+                            <i class="fas fa-circle text-muted"></i>
                             <span>Verifying payment details</span>
                         </div>
                         <div class="step-item" id="step-process">
@@ -104,10 +104,6 @@
                             <span>Finalizing your results</span>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
                 </div>
             </div>
         </div>
@@ -260,7 +256,8 @@
                     }
                     if (courseProgress > 60) {
                         stepProcess.querySelector('i').classList.replace('fa-spinner', 'fa-check-circle');
-                        stepProcess.classList.remove('fa-spin');
+                        // remove the spinning class from the icon, not from the container
+                        stepProcess.querySelector('i').classList.remove('fa-spin');
                         stepProcess.querySelector('i').classList.add('text-success');
                         stepFinalize.querySelector('i').classList.replace('fa-circle', 'fa-spinner');
                         stepFinalize.querySelector('i').classList.add('fa-spin');
@@ -303,7 +300,8 @@
 
             // Update final status
             stepFinalize.querySelector('i').classList.replace('fa-spinner', 'fa-check-circle');
-            stepFinalize.classList.remove('fa-spin');
+            // remove the spinning class from the final icon (not from container)
+            stepFinalize.querySelector('i').classList.remove('fa-spin');
             stepFinalize.querySelector('i').classList.add('text-success');
 
             console.log('Processing complete, redirecting...');
@@ -321,7 +319,8 @@
         function handleTimeout(message) {
             clearInterval(progressInterval);
             statusMessage.innerHTML = `<span class="text-danger">${message}</span>`;
-            progressBar.classList.remove('progress-bar-animated');
+            // Use paymentProgressBar (the payment progress bar element) instead of undefined progressBar
+            if (paymentProgressBar) paymentProgressBar.classList.remove('progress-bar-animated');
 
             // Show retry option
             const cancelBtn = document.getElementById('cancelProcessing');
