@@ -1,0 +1,3 @@
+# User course qualification and payment data
+# This collection will store user email, index number, qualified courses, and transaction reference.
+# Used by Flask app in app.py

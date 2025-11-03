@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUCCPS Course Qualification System - User Guide</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --info-color: #0dcaf0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .guide-header {
+            background: linear-gradient(135deg, var(--primary-color), #0a58ca);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .step-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            background-color: rgba(13, 110, 253, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .step-body {
+            padding: 1.5rem;
+        }
+
+        .payment-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .note-box {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .tip-box {
+            background-color: #d1ecf1;
+            border-left: 4px solid var(--info-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            margin: 0.25rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .flow-chart {
+            background-color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin: 2rem 0;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .flow-arrow {
+            text-align: center;
+            margin: 0.5rem 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin: 2rem 0 1rem 0;
+            color: var(--primary-color);
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .pricing-table th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .pricing-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .pricing-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .pricing-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .back-to-top:hover {
+            background-color: #0a58ca;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            .step-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .step-number {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+
+            .home-btn {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 1rem;
+                display: inline-block;
+            }
+
+            .guide-header {
+                padding: 1.5rem 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Section -->
+    <header class="guide-header text-center">
+        <div class="container">
+            <!-- Home Button -->
+            <a href="/" class="home-btn">
+                <i class="fas fa-home me-2"></i>Back to Home
+            </a>
+
+            <h1 class="display-4 fw-bold">KUCCPS Course Qualification System</h1>
+            <p class="lead">Complete User Guide & Manual</p>
+            <p class="mt-3">Learn how to check courses you qualify for and apply through KUCCPS</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Introduction -->
+        <section class="mb-5">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="section-title">Welcome to the KUCCPS Course Qualification System</h2>
+                    <p>This system helps Kenya Certificate of Secondary Education (KCSE) graduates to identify courses
+                        they qualify for in universities, colleges, and technical training institutions based on their
+                        exam results.</p>
+                    <p>Follow this step-by-step guide to understand how to use the system effectively and make informed
+                        decisions about your future education.</p>
+
+                    <div class="flow-chart">
+                        <h4 class="text-center mb-4">Process Flow</h4>
+                        <div class="flow-step">
+                            <div class="step-number">1</div>
+                            <div>
+                                <h5 class="mb-1">Select Category & Enter Grades</h5>
+                                <p class="mb-0">Choose your qualification level and enter your KCSE grades</p>
+                            </div>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-step">
+                            <div class="step-number">2</div>
+                            <div>
+                                <h5 class="mb-1">Provide Email & Index Number</h5>
+                                <p class="mb-0">Enter your contact details and KCSE index number</p>
+                            </div>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-step">
+                            <div class="step-number">3</div>
+                            <div>
+                                <h5 class="mb-1">Make Payment</h5>
+                                <p class="mb-0">Pay via M-Pesa or Airtel Money</p>
+                            </div>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-step">
+                            <div class="step-number">4</div>
+                            <div>
+                                <h5 class="mb-1">View Results</h5>
+                                <p class="mb-0">See courses you qualify for and save to basket</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step-by-Step Guide -->
+        <section class="mb-5">
+            <h2 class="section-title text-center">Step-by-Step Guide</h2>
+
+            <!-- Step 1 -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h3 class="mb-0">Select Your Category and Enter Grades</h3>
+                </div>
+                <div class="step-body">
+                    <p>Begin by selecting the category that matches your educational goals:</p>
+
+                    <div class="mb-3">
+                        <span class="category-badge">Degree Programs</span>
+                        <span class="category-badge">Diploma Programs</span>
+                        <span class="category-badge">Certificate Programs</span>
+                        <span class="category-badge">KMTC Courses</span>
+                        <span class="category-badge">Artisan Courses</span>
+                    </div>
+
+                    <h5>For Degree Programs:</h5>
+                    <ul>
+                        <li>Enter your KCSE grades for all relevant subjects</li>
+                        <li>Enter your <strong>Cluster Points</strong> for all 20 clusters</li>
+                        <li>Cluster points determine your eligibility for specific degree programs</li>
+                    </ul>
+
+                    <h5>For Other Categories (Diploma, Certificate, KMTC, Artisan):</h5>
+                    <ul>
+                        <li>Enter your KCSE grades for all relevant subjects</li>
+                        <li>No cluster points required for these categories</li>
+                    </ul>
+
+                    <div class="tip-box">
+                        <strong>Tip:</strong> You can check multiple categories, but each additional category beyond the
+                        first will incur an extra charge.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h3 class="mb-0">Provide Email and Index Number</h3>
+                </div>
+                <div class="step-body">
+                    <p>After entering your grades, you'll be prompted to provide:</p>
+                    <ul>
+                        <li><strong>Email Address:</strong> Used to send your results and for account recovery</li>
+                        <li><strong>KCSE Index Number:</strong> Your unique examination identification number</li>
+                    </ul>
+
+                    <div class="note-box">
+                        <strong>Note:</strong> Ensure your email address is active and correctly entered to receive your
+                        results.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h3 class="mb-0">Payment Process</h3>
+                </div>
+                <div class="step-body">
+                    <p>The system uses a tiered payment structure:</p>
+
+                    <table class="pricing-table">
+                        <thead>
+                            <tr>
+                                <th>Payment Scenario</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>First-time User</strong></td>
+                                <td>KSH 200</td>
+                                <td>Initial payment for your first category check</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Additional Categories</strong></td>
+                                <td>KSH 100 per category</td>
+                                <td>If you want to check courses in multiple categories (e.g., Degree + Diploma)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h5>Payment Instructions:</h5>
+                    <ol>
+                        <li>Select your payment method: <strong>M-Pesa</strong> or <strong>Airtel Money</strong></li>
+                        <li>Enter your phone number registered with your mobile money service</li>
+                        <li>You will receive a payment prompt on your phone</li>
+                        <li>Enter your mobile money PIN to complete the transaction</li>
+                        <li>Wait for confirmation before proceeding</li>
+                    </ol>
+
+                    <div class="payment-info">
+                        <strong>Payment Example:</strong> If you check Degree courses (KSH 200) and also want to check
+                        Diploma courses (additional KSH 100), your total payment will be KSH 300.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">4</div>
+                    <h3 class="mb-0">Viewing Your Results</h3>
+                </div>
+                <div class="step-body">
+                    <p>After successful payment, your results will be displayed showing:</p>
+                    <ul>
+                        <li>All courses you qualify for based on your grades</li>
+                        <li>Institutions offering each course</li>
+                        <li>Programme codes for easy KUCCPS application</li>
+                    </ul>
+
+                    <h5>Using the Course Basket:</h5>
+                    <ul>
+                        <li>Add courses you're interested in to your basket for easy retrieval</li>
+                        <li>Your basket saves your selections for future reference</li>
+                        <li>You can review your basket before making final application decisions</li>
+                    </ul>
+
+                    <div class="tip-box">
+                        <strong>Tip:</strong> Use the programme codes from your results when applying through the
+                        official KUCCPS portal to ensure accurate application.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <h3 class="mb-0">Retrieving Previous Results</h3>
+                </div>
+                <div class="step-body">
+                    <p>If you've already made a payment and want to retrieve your results again:</p>
+                    <ol>
+                        <li>Go to the results retrieval section</li>
+                        <li>Enter your <strong>MPesa receipt number</strong> from your payment</li>
+                        <li>Enter your <strong>KCSE index number</strong></li>
+                        <li>Submit to view your previously generated results</li>
+                    </ol>
+
+                    <div class="note-box">
+                        <strong>Note:</strong> Keep your payment receipt safe as it's required for result retrieval.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Additional Information -->
+        <section class="mb-5">
+            <h2 class="section-title text-center">Additional Information</h2>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="step-card h-100">
+                        <div class="step-header">
+                            <h4 class="mb-0">Understanding Cluster Points</h4>
+                        </div>
+                        <div class="step-body">
+                            <p>Cluster points are specific to degree programs and are calculated based on:</p>
+                            <ul>
+                                <li>Your performance in specific subject combinations</li>
+                                <li>Subject weights assigned to each degree program</li>
+                                <li>There are 20 different clusters for various degree programs</li>
+                            </ul>
+                            <p>You can find your cluster points on your KCSE result slip or through the KNEC portal.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="step-card h-100">
+                        <div class="step-header">
+                            <h4 class="mb-0">Troubleshooting</h4>
+                        </div>
+                        <div class="step-body">
+                            <p><strong>Payment issues?</strong></p>
+                            <ul>
+                                <li>Ensure you have sufficient balance in your mobile money account</li>
+                                <li>Check that you've entered the correct phone number</li>
+                                <li>Wait for payment confirmation before proceeding</li>
+                            </ul>
+
+                            <p><strong>Can't view results?</strong></p>
+                            <ul>
+                                <li>Verify your index number is correctly entered</li>
+                                <li>Ensure payment was successfully completed</li>
+                                <li>Use the retrieval option with your receipt number</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="mb-5">
+            <h2 class="section-title text-center">Frequently Asked Questions</h2>
+
+            <div class="step-card">
+                <div class="step-body">
+                    <div class="mb-4">
+                        <h5>Can I check courses for multiple categories at once?</h5>
+                        <p>Yes, you can select multiple categories (e.g., Degree, Diploma, and Certificate). The first
+                            category costs KSH 200, and each additional category costs KSH 100.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>What if I don't have my cluster points?</h5>
+                        <p>Cluster points are only required for degree programs. If you don't have them, you can still
+                            check diploma, certificate, KMTC, and artisan courses using just your KCSE grades.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>How long does it take to get results after payment?</h5>
+                        <p>Results are typically generated immediately after successful payment. If you experience
+                            delays, use the retrieval option with your payment receipt.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Can I change my course selections after viewing results?</h5>
+                        <p>Yes, you can add courses to your basket and review them later. However, to check different
+                            categories, you may need to make additional payments.</p>
+                    </div>
+
+                    <div>
+                        <h5>What if I lose my payment receipt?</h5>
+                        <p>Your payment receipt is important for retrieving results. If lost, contact customer support
+                            with details of your transaction (phone number, approximate time of payment) for assistance.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Information -->
+        <section class="mb-5 text-center">
+            <h2 class="section-title">Need Help?</h2>
+            <p>If you encounter any issues or have questions about using the system:</p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="step-card">
+                        <div class="step-body">
+                            <p><strong>Customer Support:</strong> courseschecker@gmail.com</p>
+                            <p><strong>Helpline:</strong> +254 756113428</p>
+                            <p><strong>Operating Hours:</strong> Monday - Sunday, 8:00 AM - 9:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Back to Top Button -->
+    <a href="#" class="back-to-top">↑</a>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2026 KUCCPS Course Qualification System. All rights reserved.</p>
+            <p class="mb-0">This guide is for assistance purposes only. Always refer to official KUCCPS communications
+                for application procedures.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Back to top button functionality
+        document.querySelector('.back-to-top').addEventListener('click', function (e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Show/hide back to top button based on scroll position
+        window.addEventListener('scroll', function () {
+            const backToTopButton = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTopButton.style.display = 'flex';
+            } else {
+                backToTopButton.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

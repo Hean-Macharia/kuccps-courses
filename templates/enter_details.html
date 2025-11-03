@@ -1,0 +1,43 @@
+{% extends "./base.html" %}
+{% block title %}Enter Details{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Enter Your Email and KCSE Index Number</h2>
+    <form action="{{ url_for('enter_details', flow=flow) }}" method="post">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="mb-3">
+            <label for="index_number" class="form-label">KCSE Index Number (e.g. 12345678901/2024)</label>
+            <input type="text" class="form-control" id="index_number" name="index_number" pattern="\d{11}/\d{4}"
+                required>
+            <div class="form-text">Format: 11 digits, slash, 4 digits (e.g., 12345678901/2024)</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Continue to Payment</button>
+    </form>
+</div>
+
+
+<!-- Validation Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const indexInput = document.getElementById('index_number');
+
+        indexInput.addEventListener('input', function (e) {
+            // Remove any non-digit characters except slash
+            this.value = this.value.replace(/[^\d/]/g, '');
+
+            // Auto-insert slash after 11 digits
+            if (this.value.length === 11 && !this.value.includes('/')) {
+                this.value = this.value + '/';
+            }
+
+            // Limit total length
+            if (this.value.length > 16) {
+                this.value = this.value.substring(0, 16);
+            }
+        });
+    });
+</script>
+{% endblock %}

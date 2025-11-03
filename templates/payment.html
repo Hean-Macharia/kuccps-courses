@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Required{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <!-- Payment Modal Trigger Button (hidden, auto-clicked) -->
+  <button type="button" id="openPaymentModal" class="btn btn-primary" data-bs-toggle="modal"
+    data-bs-target="#paymentModal" style="display:none;">Open Payment Modal</button>
+
+  <!-- Payment Modal -->
+  <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" role="dialog"
+    aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="paymentModalLabel">Payment Required</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="cancelButton"></button>
+        </div>
+        <div class="modal-body pt-0">
+          <!-- Payment Information -->
+          <div class="payment-info mb-4">
+            <p class="text-muted mb-2">Course Category: <span class="fw-bold text-dark">{{ flow.upper() }}</span></p>
+            <p class="text-muted mb-2">Amount to pay: <span class="fw-bold text-dark">Ksh {{ amount }}</span></p>
+            <div class="alert alert-light border mt-3 mb-0">
+              <p class="mb-1 small">
+                {% if is_first_category %}
+                First category price
+                {% else %}
+                Discounted price for additional category
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          <form id="paymentForm">
+            <div class="mb-4">
+              <label for="phoneNumber" class="form-label fw-bold">Phone Number *</label>
+              <input type="tel" class="form-control form-control-lg" id="phoneNumber" name="phone"
+                placeholder="07xxxxxxx" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric">
+              <div class="form-text text-muted">Enter your 10-digit M-Pesa phone number</div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg fw-bold" id="payButton">
+                <span id="payButtonText">Proceed to Payment</span>
+                <span id="payButtonSpinner" class="spinner-border spinner-border-sm d-none ms-2" role="status"></span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Payment Status Section -->
+          <div id="paymentStatus" class="mt-4 text-center" style="display: none;">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Processing payment...</span>
+            </div>
+            <h6 class="fw-bold">Processing Payment</h6>
+            <p class="text-muted mb-2">Please check your phone and enter your M-Pesa PIN to complete the payment.</p>
+            <p class="small text-muted">Transaction ID: <span id="transactionRef" class="fw-bold"></span></p>
+            <p class="small text-muted">Waiting for payment confirmation...</p>
+          </div>
+
+          <!-- Error Message Section -->
+          <div id="paymentError" class="alert alert-danger mt-3 text-center" style="display: none;">
+            <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i> Payment Error</h6>
+            <p id="errorMessage" class="mb-0"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    console.log('Payment page loaded');
+
+    // Auto-open the modal on page load
+    const openModalButton = document.getElementById('openPaymentModal');
+    if (openModalButton) {
+      console.log('Opening payment modal...');
+      openModalButton.click();
+    }
+
+    // Initialize phone number input formatting
+    const phoneInput = document.getElementById('phoneNumber');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 10) {
+          value = value.substring(0, 10);
+        }
+        e.target.value = value;
+      });
+
+      // Focus on phone input when modal opens
+      const paymentModal = document.getElementById('paymentModal');
+      if (paymentModal) {
+        paymentModal.addEventListener('shown.bs.modal', function () {
+          phoneInput.focus();
+        });
+      }
+    }
+
+    // Handle payment form submission
+    const paymentForm = document.getElementById('paymentForm');
+    if (paymentForm) {
+      paymentForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        console.log('Payment form submitted');
+
+        const phone = document.getElementById('phoneNumber').value;
+        const flow = "{{ flow }}";
+        const payButton = document.getElementById('payButton');
+        const payButtonText = document.getElementById('payButtonText');
+        const payButtonSpinner = document.getElementById('payButtonSpinner');
+        const errorDiv = document.getElementById('paymentError');
+
+        // Hide any previous errors
+        if (errorDiv) {
+          errorDiv.style.display = 'none';
+        }
+
+        // Validate phone number
+        if (!phone || phone.length !== 10 || !/^[0-9]+$/.test(phone)) {
+          showError('Please enter a valid 10-digit phone number (e.g., 0791196121)');
+          return;
+        }
+
+        // Format phone to 254 format
+        const formattedPhone = '254' + phone.substring(1);
+        console.log('Formatted phone:', formattedPhone);
+
+        // Show loading state
+        payButton.disabled = true;
+        payButtonText.textContent = 'Processing...';
+        payButtonSpinner.classList.remove('d-none');
+
+        // Initiate payment
+        fetch(`/payment/${flow}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `phone=${formattedPhone}`
+        })
+          .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Payment response:', data);
+
+            if (data.success) {
+              // ✅ PAYMENT INITIATED SUCCESSFULLY - REDIRECT TO WAIT PAGE
+              console.log('✅ Payment initiated successfully, redirecting to wait page...');
+
+              if (data.redirect_url) {
+                // Redirect to payment wait page immediately
+                window.location.href = data.redirect_url;
+              } else {
+                // Fallback redirect
+                window.location.href = `/payment-wait/${flow}?transaction_ref=${data.transaction_ref}`;
+              }
+            } else {
+              // Show error from server
+              showError(data.error || 'Failed to initiate payment. Please try again.');
+              resetPaymentButton();
+            }
+          })
+          .catch(error => {
+            console.error('Payment fetch error:', error);
+            showError('Network error. Please check your connection and try again.');
+            resetPaymentButton();
+          });
+      });
+    }
+
+    function showError(message) {
+      const errorDiv = document.getElementById('paymentError');
+      const errorMessage = document.getElementById('errorMessage');
+      if (errorDiv && errorMessage) {
+        errorMessage.textContent = message;
+        errorDiv.style.display = 'block';
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        alert(message);
+      }
+    }
+
+    function resetPaymentButton() {
+      const payButton = document.getElementById('payButton');
+      const payButtonText = document.getElementById('payButtonText');
+      const payButtonSpinner = document.getElementById('payButtonSpinner');
+
+      if (payButton && payButtonText && payButtonSpinner) {
+        payButton.disabled = false;
+        payButtonText.textContent = 'Proceed to Payment';
+        payButtonSpinner.classList.add('d-none');
+      }
+    }
+
+    // Handle modal close
+    const cancelButton = document.getElementById('cancelButton');
+    if (cancelButton) {
+      cancelButton.addEventListener('click', function () {
+        console.log('Payment cancelled by user');
+        window.location.href = `/enter-details/${"{{ flow }}"}`;
+      });
+    }
+
+    // Prevent modal from closing when payment is processing
+    const paymentModal = document.getElementById('paymentModal');
+    if (paymentModal) {
+      paymentModal.addEventListener('hide.bs.modal', function (e) {
+        const payButton = document.getElementById('payButton');
+        if (payButton && payButton.disabled) {
+          e.preventDefault();
+          alert('Payment is being processed. Please wait...');
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-header {
+    padding: 1.5rem 1.5rem 0.5rem;
+  }
+
+  .modal-body {
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .form-control-lg {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+  }
+
+  .form-control-lg:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+  }
+
+  .alert-light {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+  }
+
+  .modal-backdrop {
+    opacity: 0.5 !important;
+  }
+
+  .modal {
+    z-index: 1060;
+  }
+</style>
+{% endblock %}
