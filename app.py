@@ -1373,11 +1373,11 @@ def initiate_stk_push(phone, amount=1, flow=None):
         index_number = session.get('index_number', 'KUCCPS')
         email = session.get('email', 'unknown@example.com')
         
-        # Use correct callback URL
+        
         if os.environ.get('FLASK_ENV') == 'production' or 'render.com' in os.environ.get('RENDER_EXTERNAL_HOSTNAME', ''):
-            base_url = 'https://kuccps-courses.onrender.com'
+            base_url = 'https://kuccps-courses-px6s.onrender.com'
         else:
-            base_url = 'https://kuccps-courses.onrender.com'
+            base_url = 'https://kuccps-courses-px6s.onrender.com'
         
         callback_url = f"{base_url}/mpesa/callback"
         
