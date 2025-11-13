@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Reports - KUCCPS Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 250px;
+        }
+
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            margin: 2px 0;
+            border-radius: 5px;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: #34495e;
+            color: #3498db;
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+
+        .revenue-badge {
+            font-size: 1.1em;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 sidebar">
+                <div class="d-flex flex-column p-3">
+                    <div class="text-center mb-4">
+                        <h4 class="mb-1">KUCCPS Admin</h4>
+                        <small class="text-muted">Control Panel</small>
+                    </div>
+                    <hr class="text-muted">
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin_payments') }}" class="nav-link">
+                                <i class="fas fa-money-bill-wave"></i> Payments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin_users') }}" class="nav-link">
+                                <i class="fas fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin_manual_activation') }}" class="nav-link">
+                                <i class="fas fa-key"></i> Manual Activation
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin_system_monitoring') }}" class="nav-link">
+                                <i class="fas fa-heartbeat"></i> System Monitoring
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('admin_financial_reports') }}" class="nav-link active">
+                                <i class="fas fa-chart-bar"></i> Financial Reports
+                            </a>
+                        </li>
+                    </ul>
+                    <hr class="text-muted">
+                    <div class="mt-auto">
+                        <a href="{{ url_for('admin_logout') }}" class="nav-link text-danger">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 main-content">
+                <!-- Top Navigation -->
+                <nav class="navbar navbar-expand-lg navbar-custom mb-4 rounded">
+                    <div class="container-fluid">
+                        <span class="navbar-brand mb-0 h1">Financial Reports</span>
+                        <div class="d-flex">
+                            <span class="navbar-text">
+                                <i class="fas fa-user-shield me-2"></i>Welcome, {{ session.get('admin_username',
+                                'Admin') }}
+                            </span>
+                        </div>
+                    </div>
+                </nav>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div
+                    class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                    <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <!-- Date Range Filter -->
+                <div class="card mb-4">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Date Range Filter</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date"
+                                    value="{{ start_date }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date"
+                                    value="{{ end_date }}">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="d-grid gap-2 w-100">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-filter me-2"></i>Apply Filter
+                                    </button>
+                                    <a href="{{ url_for('admin_financial_reports') }}"
+                                        class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Clear Filter
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Financial Overview -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card stat-card border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-money-bill-wave fa-2x text-primary mb-3"></i>
+                                <h3 class="text-primary">Ksh {{ financial_stats.total_revenue if financial_stats else 0
+                                    }}</h3>
+                                <p class="text-muted">Total Revenue</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card stat-card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-receipt fa-2x text-success mb-3"></i>
+                                <h3 class="text-success">{{ financial_stats.total_transactions if financial_stats else 0
+                                    }}</h3>
+                                <p class="text-muted">Total Transactions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card stat-card border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calculator fa-2x text-info mb-3"></i>
+                                <h3 class="text-info">Ksh {{ "%.2f"|format(financial_stats.average_transaction) if
+                                    financial_stats and financial_stats.average_transaction else 0 }}</h3>
+                                <p class="text-muted">Average Transaction</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card stat-card border-warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-2x text-warning mb-3"></i>
+                                <h3 class="text-warning">{{ daily_revenue|length if daily_revenue else 0 }}</h3>
+                                <p class="text-muted">Days Tracked</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Revenue by Category -->
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header card-header-custom">
+                                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Revenue by Category</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if category_revenue %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Revenue</th>
+                                                <th>Transactions</th>
+                                                <th>Average</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for category in category_revenue %}
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-primary text-capitalize">{{ category._id
+                                                        }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold text-success">Ksh {{ category.revenue }}</span>
+                                                </td>
+                                                <td>{{ category.transactions }}</td>
+                                                <td>Ksh {{ "%.2f"|format(category.revenue / category.transactions) if
+                                                    category.transactions > 0 else 0 }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No revenue data available for the selected period.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Revenue -->
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header card-header-custom">
+                                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Daily Revenue (Last 30 Days)</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if daily_revenue %}
+                                <div class="table-responsive" style="max-height: 400px;">
+                                    <table class="table table-sm table-hover">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Revenue</th>
+                                                <th>Transactions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for day in daily_revenue %}
+                                            <tr>
+                                                <td>{{ day._id }}</td>
+                                                <td>
+                                                    <span class="fw-bold text-success">Ksh {{ day.revenue }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ day.transactions }}</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No daily revenue data available.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="card mt-4">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Financial Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Date Range:</h6>
+                                <p>
+                                    {% if start_date and end_date %}
+                                    {{ start_date }} to {{ end_date }}
+                                    {% elif start_date %}
+                                    From {{ start_date }} onwards
+                                    {% elif end_date %}
+                                    Up to {{ end_date }}
+                                    {% else %}
+                                    All time
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Report Generated:</h6>
+                                <p>{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This report includes only confirmed payments. Pending payments are excluded from revenue
+                            calculations.
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}KMTC Qualification Results{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-primary mb-4">KMTC Qualification Results</h1>
+
+    {% if courses and courses|length > 0 %}
+    <div class="alert alert-success" role="alert">
+        <strong>Success!</strong> You qualify for <strong>{{ courses|length }}</strong> KMTC courses.
+        <span class="badge bg-danger ms-2">KMTC</span>
+    </div>
+
+    <!-- KMTC Information Card -->
+    <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-hospital-alt me-2"></i>Kenya Medical Training College
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="mb-2">
+                        <strong>About KMTC:</strong> The Kenya Medical Training College offers various health science
+                        courses
+                        including nursing, clinical medicine, pharmacy, and public health.
+                    </p>
+                    <p class="mb-0 small text-muted">
+                        KMTC courses are highly competitive and focus on practical healthcare training.
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <span class="badge bg-danger fs-6 p-2">Medical & Health Sciences</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Courses Display -->
+    <div id="courses-display">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4">Available KMTC Courses ({{ courses|length }})</h2>
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    Sort Courses
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="name">By Name (A-Z)</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="name-desc">By Name (Z-A)</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="duration">By Duration</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="courses-grid" class="row">
+            {% for course in courses %}
+            <div class="col-lg-6 col-xl-4 mb-4 course-item">
+                <div class="card h-100 course-card border-primary">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h3 class="card-title h6 mb-0 text-primary">
+                                {{ course.programme_name or 'Programme Name Not Available' }}
+                            </h3>
+                            <span class="badge bg-danger small">KMTC</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-2">
+                            <strong>Institution:</strong>
+                            <span class="text-success">
+                                {{ course.institution_name or 'Kenya Medical Training College' }}
+                            </span><br>
+                            <strong>Programme Code:</strong> {{ course.programme_code or 'N/A' }}<br>
+                            <strong>Course Type:</strong>
+                            <span class="badge bg-info">{{ course.course_type or 'Medical' }}</span>
+                        </p>
+
+                        {% if course.minimum_grade and course.minimum_grade.mean_grade %}
+                        <p class="card-text mb-2">
+                            <strong>Minimum Grade:</strong>
+                            <span class="badge bg-warning text-dark">{{ course.minimum_grade.mean_grade }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.minimum_subject_requirements %}
+                        <div class="card-text mb-2">
+                            <strong>Subject Requirements:</strong>
+                            <div class="mt-1">
+                                {% for subject, grade in course.minimum_subject_requirements.items() %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ subject }}: {{ grade }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if course.programme_duration %}
+                        <p class="card-text mb-2">
+                            <strong>Duration:</strong>
+                            <span class="badge bg-success">{{ course.programme_duration }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.campus %}
+                        <p class="card-text mb-2">
+                            <strong>Available Campuses:</strong>
+                            <small class="text-muted">{{ course.campus }}</small>
+                        </p>
+                        {% endif %}
+
+                        {% if course.specialization %}
+                        <p class="card-text mb-2">
+                            <strong>Specialization:</strong>
+                            <span class="badge bg-purple">{{ course.specialization }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.qualification %}
+                        <p class="card-text mb-0">
+                            <strong>Qualification:</strong>
+                            <small>{{ course.qualification }}</small>
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <small class="text-muted">
+                            <i class="fas fa-graduation-cap me-1"></i>Health Sciences Program
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if courses|length == 0 %}
+        <div class="alert alert-warning text-center" role="alert">
+            <strong>No KMTC courses found in your qualification results.</strong>
+        </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        <strong>No qualifying KMTC courses found.</strong>
+        You do not qualify for any Kenya Medical Training College courses based on your grades and mean grade.
+    </div>
+    {% endif %}
+
+    <!-- User's Academic Profile -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Your Academic Profile</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3 class="h6">Subject Grades:</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for code, grade in user_grades.items() %}
+                        <span class="badge bg-primary">{{ code }}: {{ grade }}</span>
+                        {% else %}
+                        <span class="text-muted">No grades entered</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <h3 class="h6">Overall Mean Grade:</h3>
+                    <div class="alert alert-success mb-0 py-2">
+                        <strong class="h5">{{ user_mean_grade or 'Not specified' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Important KMTC Information -->
+    <div class="card mt-4 bg-light border-warning">
+        <div class="card-body">
+            <h5 class="card-title text-warning">
+                <i class="fas fa-exclamation-circle me-2"></i>Important KMTC Information
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="small mb-0">
+                        <li>KMTC courses are highly competitive</li>
+                        <li>Additional entrance exams may be required</li>
+                        <li>Medical courses require specific subject combinations</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="small mb-0">
+                        <li>Practical training is mandatory</li>
+                        <li>Clinical placements are part of the curriculum</li>
+                        <li>Professional registration required after graduation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 d-flex gap-2 flex-wrap">
+        <a href="/kmtc" class="btn btn-primary">Try Again</a>
+        <a href="/" class="btn btn-secondary">Back to Home</a>
+        {% if courses %}
+        <button onclick="window.print()" class="btn btn-info">Print Results</button>
+        <a href="/diploma" class="btn btn-success">Check Diploma Courses</a>
+        <a href="/certificate" class="btn btn-warning">Check Certificate Courses</a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Sort functionality
+        const sortOptions = document.querySelectorAll('.sort-option');
+        const courseItems = Array.from(document.querySelectorAll('.course-item'));
+
+        sortOptions.forEach(option => {
+            option.addEventListener('click', function (e) {
+                e.preventDefault();
+                const sortType = this.getAttribute('data-sort');
+                sortCourses(sortType);
+            });
+        });
+
+        function sortCourses(sortType) {
+            const coursesGrid = document.getElementById('courses-grid');
+
+            courseItems.sort((a, b) => {
+                const nameA = a.querySelector('.card-title').textContent.toLowerCase();
+                const nameB = b.querySelector('.card-title').textContent.toLowerCase();
+                const durationA = a.querySelector('.badge.bg-success')?.textContent || '';
+                const durationB = b.querySelector('.badge.bg-success')?.textContent || '';
+
+                switch (sortType) {
+                    case 'name':
+                        return nameA.localeCompare(nameB);
+                    case 'name-desc':
+                        return nameB.localeCompare(nameA);
+                    case 'duration':
+                        return durationA.localeCompare(durationB);
+                    default:
+                        return 0;
+                }
+            });
+
+            // Clear and re-append sorted items
+            coursesGrid.innerHTML = '';
+            courseItems.forEach(item => {
+                coursesGrid.appendChild(item);
+            });
+        }
+
+        // Add hover effects
+        const courseCards = document.querySelectorAll('.course-card');
+        courseCards.forEach(card => {
+            card.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+            });
+
+            card.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+            });
+        });
+    });
+</script>
+
+<style>
+    .course-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #e9ecef;
+        height: 100%;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .bg-purple {
+        background-color: #6f42c1 !important;
+        color: white;
+    }
+
+    .bg-success {
+        background-color: #198754 !important;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+        color: #000;
+    }
+
+    .bg-info {
+        background-color: #0dcaf0 !important;
+    }
+
+    .border-primary {
+        border-color: #0d6efd !important;
+    }
+
+    .border-warning {
+        border-color: #ffc107 !important;
+    }
+
+    .text-success {
+        color: #198754 !important;
+        font-weight: 600;
+    }
+
+    .card-header.bg-light {
+        background-color: #f8f9fa !important;
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .dropdown-toggle {
+        border-radius: 20px;
+    }
+
+    .dropdown-item:hover {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .btn-success {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+    }
+
+    @media (max-width: 768px) {
+        .course-card {
+            margin-bottom: 1rem;
+        }
+
+        .d-flex.flex-wrap {
+            justify-content: center;
+        }
+
+        .btn {
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

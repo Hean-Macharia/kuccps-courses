@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}User Information{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Enter Your Details</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Please provide your details to proceed with payment and view your qualified courses.
+                        A fee of KES 200 is required to access your personalized course recommendations.
+                    </p>
+
+                    <form action="/process-user-info" method="post">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="index_number" class="form-label">KCSE Index Number *</label>
+                            <input type="text" class="form-control" id="index_number" name="index_number"
+                                placeholder="12345678901/2024" required>
+                            <div class="form-text">Format: 12345678901/2024</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">M-Pesa Phone Number *</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number"
+                                placeholder="254712345678" required>
+                            <div class="form-text">Format: 254712345678</div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Proceed to Payment (KES 200)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

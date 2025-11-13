@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-primary">Qualification Results</h1>
+    {% if courses %}
+    <p>You qualify for {{ courses|length }} courses across {{ courses|map(attribute='cluster')|unique|list|length }} cluster(s). Click a cluster to view courses.</p>
+
+    <div id="clusters" class="mb-4">
+        <button class="btn btn-outline-primary me-2 mb-2" type="button" data-cluster="__all__">All ({{ courses|length }})</button>
+        {% for cl in courses|map(attribute='cluster')|unique|list|sort %}
+        <button class="btn btn-outline-primary me-2 mb-2" type="button" data-cluster="{{ cl }}">{{ cl }}</button>
+        {% endfor %}
+    </div>
+
+    <div id="clusterCourses">
+        <!-- selected cluster courses will be injected here -->
+    </div>
+
+    <style>
+        #clusters .btn.active { background-color: #0d6efd; color: #fff; border-color: #0d6efd; }
+        #paginationControls { margin-top: 1rem; display:flex; gap:.5rem; align-items:center; }
+    </style>
+
+    <script id="courses-data" type="application/json">{{ courses_json|safe }}</script>
+    <script>
+        const courses = JSON.parse(document.getElementById('courses-data').textContent || '[]');
+        const clusters = {};
+        courses.forEach(c => {
+            const name = c.cluster || c.collection || 'Unspecified';
+            if (!clusters[name]) clusters[name] = [];
+            clusters[name].push(c);
+        });
+
+        const clustersEl = document.getElementById('clusters');
+        const clusterCoursesEl = document.getElementById('clusterCourses');
+
+        // pagination state
+        let currentList = [];
+        let currentPage = 1;
+        let pageSize = 20;
+
+        function renderPage() {
+            clusterCoursesEl.innerHTML = '';
+            if (!Array.isArray(currentList) || currentList.length === 0) {
+                clusterCoursesEl.innerHTML = '<div class="alert alert-warning">No courses found.</div>';
+                return;
+            }
+            const start = (currentPage - 1) * pageSize;
+            const end = Math.min(start + pageSize, currentList.length);
+            const pageItems = currentList.slice(start, end);
+            const row = document.createElement('div'); row.className = 'row';
+            pageItems.forEach(course => {
+                const col = document.createElement('div'); col.className = 'col-md-6 mb-3';
+                const card = document.createElement('div'); card.className = 'card';
+                const body = document.createElement('div'); body.className = 'card-body';
+                const title = document.createElement('h5'); title.className = 'card-title'; title.textContent = course.programme_name || 'N/A';
+                const subtitle = document.createElement('h6'); subtitle.className = 'card-subtitle mb-2 text-muted'; subtitle.textContent = course.institution_name || '';
+                const p = document.createElement('p'); p.className = 'card-text';
+                p.innerHTML = `Programme Code: ${course.programme_code || 'N/A'}<br>Cut-off Points: ${course.cut_off_points || 'N/A'}<br>Cluster: ${course.cluster || ''}`;
+                body.appendChild(title); body.appendChild(subtitle); body.appendChild(p); card.appendChild(body); col.appendChild(card); row.appendChild(col);
+            });
+            clusterCoursesEl.appendChild(row);
+            renderPaginationControls();
+            clusterCoursesEl.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showCluster(name) {
+            currentList = clusters[name] || [];
+            currentPage = 1;
+            renderPage();
+        }
+
+        function showAll() {
+            currentList = Array.isArray(courses) ? courses : [];
+            currentPage = 1;
+            renderPage();
+        }
+
+        function renderPaginationControls() {
+            let existing = document.getElementById('paginationControls'); if (existing) existing.remove();
+            const controls = document.createElement('div'); controls.id = 'paginationControls';
+            const totalPages = Math.max(1, Math.ceil(currentList.length / pageSize));
+            const prev = document.createElement('button'); prev.className = 'btn btn-secondary'; prev.textContent = 'Prev'; prev.disabled = currentPage<=1; prev.addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; renderPage(); }});
+            const next = document.createElement('button'); next.className = 'btn btn-secondary'; next.textContent = 'Next'; next.disabled = currentPage>=totalPages; next.addEventListener('click', ()=>{ if(currentPage<totalPages){ currentPage++; renderPage(); }});
+            const info = document.createElement('span'); info.textContent = ` Page ${currentPage} of ${totalPages} `;
+            const sizeSelect = document.createElement('select'); sizeSelect.className='form-select form-select-sm'; [10,20,50,100].forEach(sz=>{ const opt=document.createElement('option'); opt.value=sz; opt.textContent=`${sz}/page`; if(sz===pageSize) opt.selected=true; sizeSelect.appendChild(opt); }); sizeSelect.addEventListener('change', ()=>{ pageSize=parseInt(sizeSelect.value); currentPage=1; renderPage(); });
+            controls.appendChild(prev); controls.appendChild(info); controls.appendChild(next); controls.appendChild(sizeSelect);
+            clusterCoursesEl.parentNode.insertBefore(controls, clusterCoursesEl.nextSibling);
+        }
+
+        // enhance server-side buttons
+        if (!clustersEl.children.length) {
+            Object.keys(clusters).sort().forEach(name => { const btn = document.createElement('button'); btn.className='btn btn-outline-primary me-2 mb-2'; btn.textContent=`${name} (${clusters[name].length})`; btn.addEventListener('click', ()=>{ clearActive(); btn.classList.add('active'); showCluster(name); }); clustersEl.appendChild(btn); });
+        } else {
+            Array.from(clustersEl.querySelectorAll('button')).forEach(btn=>{
+                const name=btn.getAttribute('data-cluster');
+                if(name==='__all__') { btn.addEventListener('click', ()=>{ clearActive(); btn.classList.add('active'); showAll(); }); return; }
+                const label = name||btn.textContent.trim().replace(/\s*\([^)]*\)$/, ''); if (clusters[label]) btn.textContent = `${label} (${clusters[label].length})`; btn.addEventListener('click', ()=>{ clearActive(); btn.classList.add('active'); showCluster(label); });
+            });
+            const firstBtn = clustersEl.querySelector('button'); if(firstBtn) firstBtn.click();
+        }
+
+        function clearActive(){ Array.from(clustersEl.querySelectorAll('button')).forEach(b=>b.classList.remove('active')); }
+    </script>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        You do not qualify for any courses based on your grades and cluster points.
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <h3>Your Entered Grades</h3>
+        <ul class="list-group">
+            {% for code, grade in user_grades.items() %}
+            <li class="list-group-item">{{ subjects[code] }}: {{ grade }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3 class="mt-3">Your Cluster Points</h3>
+        <ul class="list-group">
+            {% for cluster, points in user_cluster_points.items() %}
+            {% if points > 0 %}
+            <li class="list-group-item">{{ cluster }}: {{ points }}</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="mt-4">
+        <a href="/degree" class="btn btn-primary">Try Again</a>
+        <a href="/" class="btn btn-secondary">Back to Home</a>
+    </div>
+</div>
+{% endblock %}

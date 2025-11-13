@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate Qualification Results{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-primary mb-4">Certificate Qualification Results</h1>
+
+    {% if courses and courses|length > 0 %}
+    <div class="alert alert-success" role="alert">
+        <strong>Success!</strong> You qualify for <strong>{{ courses|length }}</strong> certificate courses across
+        <strong>{{ courses_by_collection|length }}</strong> categories.
+    </div>
+
+    <!-- Category Navigation -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Browse by Category</h2>
+        </div>
+        <div class="card-body">
+            <div id="categories" class="d-flex flex-wrap gap-2">
+                <button class="btn btn-primary category-btn active" type="button" data-category="all"
+                    title="Show all certificate courses">
+                    All Categories ({{ courses|length }})
+                </button>
+                {% for category_name, category_courses in courses_by_collection.items() %}
+                <button class="btn btn-outline-primary category-btn" type="button" data-category="{{ category_name }}"
+                    title="Show {{ category_name }} courses">
+                    {{ category_name|replace('_', ' ') }} ({{ category_courses|length }})
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Courses Display Area -->
+    <div id="courses-display" aria-live="polite">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 id="current-category-title" class="h4">All Certificate Courses ({{ courses|length }})</h2>
+        </div>
+
+        <div id="courses-grid" class="row">
+            {% for course in courses %}
+            <div class="col-lg-6 col-xl-4 mb-4 course-item" data-categories="{{ course.collection }}">
+                <div class="card h-100 course-card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title h6 mb-0 text-primary">
+                            {{ course.programme_name or 'Programme Name Not Available' }}
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-2">
+                            <strong>Institution:</strong> {{ course.institution_name or 'Not Specified' }}<br>
+                            <strong>Programme Code:</strong> {{ course.programme_code or 'N/A' }}<br>
+                            <strong>Category:</strong> {{ course.collection or 'Uncategorized' }}
+                        </p>
+
+                        {% if course.minimum_grade and course.minimum_grade.mean_grade %}
+                        <p class="card-text mb-2">
+                            <strong>Minimum Mean Grade:</strong>
+                            <span class="badge bg-info">{{ course.minimum_grade.mean_grade }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.minimum_subject_requirements %}
+                        <div class="card-text">
+                            <strong>Subject Requirements:</strong>
+                            <div class="mt-1">
+                                {% for subject, grade in course.minimum_subject_requirements.items() %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ subject }}: {{ grade }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if course.programme_duration %}
+                        <p class="card-text mb-2">
+                            <strong>Duration:</strong> {{ course.programme_duration }}
+                        </p>
+                        {% endif %}
+
+                        {% if course.course_type %}
+                        <p class="card-text mb-2">
+                            <strong>Course Type:</strong>
+                            <span class="badge bg-warning text-dark">{{ course.course_type }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.entry_requirements %}
+                        <div class="card-text">
+                            <strong>Additional Requirements:</strong>
+                            <p class="small text-muted mb-0">{{ course.entry_requirements }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="no-courses-message" class="alert alert-warning text-center" role="alert" style="display: none;">
+            <strong>No courses found in this category.</strong>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        <strong>No qualifying courses found.</strong>
+        You do not qualify for any certificate courses based on your grades and mean grade.
+    </div>
+    {% endif %}
+
+    <!-- User's Academic Profile -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Your Academic Profile</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3 class="h6">Subject Grades:</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for code, grade in user_grades.items() %}
+                        <span class="badge bg-primary">{{ code }}: {{ grade }}</span>
+                        {% else %}
+                        <span class="text-muted">No grades entered</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <h3 class="h6">Overall Mean Grade:</h3>
+                    <div class="alert alert-success mb-0 py-2">
+                        <strong class="h5">{{ user_mean_grade or 'Not specified' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 d-flex gap-2 flex-wrap">
+        <a href="/certificate" class="btn btn-primary">Try Again</a>
+        <a href="/" class="btn btn-secondary">Back to Home</a>
+        {% if courses %}
+        <button onclick="window.print()" class="btn btn-info">Print Results</button>
+        <a href="/artisan" class="btn btn-warning">Check Artisan Courses</a>
+        {% endif %}
+    </div>
+
+    <!-- Additional Information -->
+    <div class="card mt-4 bg-light">
+        <div class="card-body">
+            <h5 class="card-title">About Certificate Courses</h5>
+            <p class="card-text mb-2">
+                Certificate courses are typically 1-2 year programs that provide practical skills and training
+                for specific careers. They are ideal for students who want to enter the workforce quickly.
+            </p>
+            <p class="card-text mb-0 small text-muted">
+                <strong>Note:</strong> Certificate courses often have flexible entry requirements and
+                focus on hands-on training for immediate employment.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const courseItems = document.querySelectorAll('.course-item');
+        const noCoursesMessage = document.getElementById('no-courses-message');
+        const categoryTitle = document.getElementById('current-category-title');
+        const coursesGrid = document.getElementById('courses-grid');
+
+        function filterCourses(category) {
+            let visibleCount = 0;
+            courseItems.forEach(item => {
+                const itemCategories = item.getAttribute('data-categories');
+                if (category === 'all' || itemCategories === category) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            categoryTitle.textContent = category === 'all'
+                ? `All Certificate Courses ({{ courses|length }})`
+                : `${category.replace('_', ' ')} Courses (${visibleCount})`;
+
+            noCoursesMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+            coursesGrid.style.display = visibleCount === 0 ? 'none' : 'block';
+        }
+
+        function updateButtonStates(activeCategory) {
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            categoryButtons.forEach(button => {
+                const buttonCategory = button.getAttribute('data-category');
+                button.classList.toggle('btn-primary', buttonCategory === activeCategory);
+                button.classList.toggle('btn-outline-primary', buttonCategory !== activeCategory);
+            });
+        }
+
+        document.querySelectorAll('.category-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const category = this.getAttribute('data-category');
+                filterCourses(category);
+                updateButtonStates(category);
+            });
+        });
+
+        // Initialize with all courses
+        filterCourses('all');
+        updateButtonStates('all');
+    });
+</script>
+
+<style>
+    .category-btn {
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-weight: 500;
+    }
+
+    .category-btn.active {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .course-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #e9ecef;
+        height: 100%;
+    }
+
+    .course-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    #categories {
+        gap: 8px;
+    }
+
+    .course-item {
+        transition: all 0.3s ease;
+    }
+
+    .card-header {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+    }
+
+    .text-muted {
+        color: #6c757d !important;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+    }
+
+    .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+        color: #000;
+    }
+</style>
+{% endblock %}

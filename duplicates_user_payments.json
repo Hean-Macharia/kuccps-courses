@@ -1,0 +1,35 @@
+{
+  "total_duplicate_groups": 3,
+  "groups": [
+    {
+      "email": "wanjiku@gmail.com",
+      "index_number": "32123123123/2023",
+      "level": "diploma",
+      "count": 2,
+      "ids": [
+        "68e2caf1cbab6d5e7d0d3f79",
+        "68e2ccacff2b84948426874b"
+      ]
+    },
+    {
+      "email": "kimani@gmail.com",
+      "index_number": "20202202202/2024",
+      "level": "diploma",
+      "count": 2,
+      "ids": [
+        "68e1a84fcbab6d5e7d0d3e9f",
+        "68e1a8575996b3110087304a"
+      ]
+    },
+    {
+      "email": "kamaunancy859@gmail.com",
+      "index_number": "12345124240/2029",
+      "level": "diploma",
+      "count": 2,
+      "ids": [
+        "68e199d6cbab6d5e7d0d3e9c",
+        "68e199e357eea539850c5832"
+      ]
+    }
+  ]
+}

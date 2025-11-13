@@ -1,0 +1,42 @@
+{% extends "./base.html" %}
+{% block title %}Kuccps | Courses{% endblock %}
+
+{% block hero %}
+<!-- Hero Section -->
+<div class="hero d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 60vh;">
+    <h1 class="display-5 fw-bold mb-3">Your Gateway to University and College Success</h1>
+    <img src="/static/images/graduation.jpg" alt="Graduation Celebration" class="img-fluid rounded shadow mb-3"
+        style="max-height: 200px; width: 200px">
+    <p class="lead">Explore your academic journey with confidence.</p>
+</div>
+{% endblock %}
+
+{% block course_buttons %}
+<!-- Course Buttons -->
+<div class="container text-center mb-5">
+    <div class="row row-cols-1 row-cols-md-3 g-3">
+        <div class="col">
+            <a href="/degree" class="btn btn-primary w-100 py-3">Degree</a>
+        </div>
+        <div class="col">
+            <a href="/diploma" class="btn btn-secondary w-100 py-3">Diploma</a>
+        </div>
+        <div class="col">
+            <a href="/certificate" class="btn btn-success w-100 py-3">Certificate</a>
+        </div>
+        <div class="col">
+            <a href="https://www.coursera.org/courses?query=free" target="_blank" class="btn btn-info w-100 py-3">Short Courses (Free)</a>
+        </div>
+        <div class="col">
+            <a href="/artisan" class="btn btn-warning w-100 py-3">Artisan</a>
+        </div>
+        <div class="col">
+            <a href="/kmtc" class="btn btn-danger w-100 py-3">KMTC</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Additional content can go here -->
+{% endblock %}

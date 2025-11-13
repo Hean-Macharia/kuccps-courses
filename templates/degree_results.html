@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Degree Qualification Results{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-primary mb-4">Degree Qualification Results</h1>
+
+    {% if courses and courses|length > 0 %}
+    <div class="alert alert-success" role="alert">
+        <strong>Success!</strong> You qualify for <strong>{{ courses|length }}</strong> degree courses across
+        <strong>{{ courses_by_collection|length }}</strong> clusters.
+    </div>
+
+    <!-- Cluster Navigation -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Browse by Cluster</h2>
+        </div>
+        <div class="card-body">
+            <div id="clusters" class="d-flex flex-wrap gap-2">
+                <button class="btn btn-primary cluster-btn active" type="button" data-cluster="all"
+                    title="Show all degree courses">
+                    All Clusters ({{ courses|length }})
+                </button>
+                {% for cluster_name, cluster_courses in courses_by_collection.items() %}
+                <button class="btn btn-outline-primary cluster-btn" type="button" data-cluster="{{ cluster_name }}"
+                    title="Show {{ cluster_name }} courses">
+                    {{ cluster_name|replace('_', ' ')|title }} ({{ cluster_courses|length }})
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Courses Display Area -->
+    <div id="courses-display" aria-live="polite">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 id="current-cluster-title" class="h4">All Degree Courses ({{ courses|length }})</h2>
+        </div>
+
+        <div id="courses-grid" class="row">
+            {% for course in courses %}
+            <div class="col-lg-6 col-xl-4 mb-4 course-item" data-clusters="{{ course.cluster }}">
+                <div class="card h-100 course-card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title h6 mb-0 text-primary">
+                            {{ course.programme_name or 'Programme Name Not Available' }}
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-2">
+                            <strong>Institution:</strong> {{ course.institution_name or 'Not Specified' }}<br>
+                            <strong>Programme Code:</strong> {{ course.programme_code or 'N/A' }}<br>
+                            <strong>Cluster:</strong> {{ course.cluster or 'Uncategorized' }}
+                        </p>
+
+                        {% if course.cut_off_points %}
+                        <p class="card-text mb-2">
+                            <strong>Cut-off Points:</strong>
+                            <span class="badge bg-info">{{ course.cut_off_points }}</span>
+                        </p>
+                        {% endif %}
+
+                        {% if course.minimum_subject_requirements %}
+                        <div class="card-text">
+                            <strong>Subject Requirements:</strong>
+                            <div class="mt-1">
+                                {% for subject, grade in course.minimum_subject_requirements.items() %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ subject }}: {{ grade }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if course.programme_duration %}
+                        <p class="card-text mb-2">
+                            <strong>Duration:</strong> {{ course.programme_duration }}
+                        </p>
+                        {% endif %}
+
+                        {% if course.course_cluster %}
+                        <p class="card-text mb-2">
+                            <strong>Course Cluster:</strong> {{ course.course_cluster }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="no-courses-message" class="alert alert-warning text-center" role="alert" style="display: none;">
+            <strong>No courses found in this cluster.</strong>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        <strong>No qualifying courses found.</strong>
+        You do not qualify for any degree courses based on your grades and cluster points.
+    </div>
+    {% endif %}
+
+    <!-- User's Academic Profile -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Your Academic Profile</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3 class="h6">Subject Grades:</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for code, grade in user_grades.items() %}
+                        <span class="badge bg-primary">{{ code }}: {{ grade }}</span>
+                        {% else %}
+                        <span class="text-muted">No grades entered</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h3 class="h6">Cluster Points:</h3>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for cluster, points in user_cluster_points.items() %}
+                        {% if points > 0 %}
+                        <span class="badge bg-success">{{ cluster|replace('_', ' ') }}: {{ points }}</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="text-muted">No cluster points entered</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 d-flex gap-2 flex-wrap">
+        <a href="/degree" class="btn btn-primary">Try Again</a>
+        <a href="/" class="btn btn-secondary">Back to Home</a>
+        {% if courses %}
+        <button onclick="window.print()" class="btn btn-info">Print Results</button>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const courseItems = document.querySelectorAll('.course-item');
+        const noCoursesMessage = document.getElementById('no-courses-message');
+        const clusterTitle = document.getElementById('current-cluster-title');
+        const coursesGrid = document.getElementById('courses-grid');
+
+        function filterCourses(cluster) {
+            let visibleCount = 0;
+            courseItems.forEach(item => {
+                const itemClusters = item.getAttribute('data-clusters');
+                if (cluster === 'all' || itemClusters === cluster) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            clusterTitle.textContent = cluster === 'all'
+                ? `All Degree Courses ({{ courses|length }})`
+                : `${cluster.replace('_', ' ').toUpperCase()} Courses (${visibleCount})`;
+
+            noCoursesMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+            coursesGrid.style.display = visibleCount === 0 ? 'none' : 'block';
+        }
+
+        function updateButtonStates(activeCluster) {
+            const clusterButtons = document.querySelectorAll('.cluster-btn');
+            clusterButtons.forEach(button => {
+                const buttonCluster = button.getAttribute('data-cluster');
+                button.classList.toggle('btn-primary', buttonCluster === activeCluster);
+                button.classList.toggle('btn-outline-primary', buttonCluster !== activeCluster);
+            });
+        }
+
+        document.querySelectorAll('.cluster-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const cluster = this.getAttribute('data-cluster');
+                filterCourses(cluster);
+                updateButtonStates(cluster);
+            });
+        });
+
+        // Initialize with all courses
+        filterCourses('all');
+        updateButtonStates('all');
+    });
+</script>
+
+<style>
+    .cluster-btn {
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-weight: 500;
+    }
+
+    .cluster-btn.active {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .course-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #e9ecef;
+        height: 100%;
+    }
+
+    .course-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    #clusters {
+        gap: 8px;
+    }
+
+    .course-item {
+        transition: all 0.3s ease;
+    }
+
+    .card-header {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .bg-success {
+        background-color: #198754 !important;
+    }
+
+    .bg-primary {
+        background-color: #0d6efd !important;
+    }
+
+    .bg-info {
+        background-color: #0dcaf0 !important;
+    }
+
+    .bg-secondary {
+        background-color: #6c757d !important;
+    }
+</style>
+{% endblock %}
