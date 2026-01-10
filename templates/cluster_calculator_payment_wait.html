@@ -1,0 +1,97 @@
+{% extends "./base.html" %}
+{% block title %}Processing Payment - Cluster Calculator{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-clock me-2"></i>Processing Payment</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3">Waiting for Payment Confirmation</h5>
+                    <p class="text-muted mb-4">
+                        Please complete the payment on your phone. This may take a few moments.
+                    </p>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-mobile-alt me-2"></i>
+                        <strong>Check your phone:</strong> You should have received an M-Pesa prompt
+                    </div>
+                    
+                    <div id="paymentStatus" class="mt-4">
+                        <div class="progress mb-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 100%"></div>
+                        </div>
+                        <p id="statusMessage">Processing payment...</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('cluster_calculator_payment') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-2"></i> Retry Payment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let checkCount = 0;
+        const maxChecks = 60; // 5 minutes (5 seconds interval)
+        
+        function checkPaymentStatus() {
+            checkCount++;
+            
+            fetch('{{ url_for("cluster_calculator_check_payment_status") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.paid) {
+                        // Payment successful
+                        document.getElementById('paymentStatus').innerHTML = `
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Payment Confirmed!</strong> Redirecting to your results...
+                            </div>
+                        `;
+                        
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 2000);
+                    } else if (checkCount >= maxChecks) {
+                        // Timeout
+                        document.getElementById('paymentStatus').innerHTML = `
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Timeout:</strong> Payment taking longer than expected. Please check your M-Pesa.
+                            </div>
+                        `;
+                    } else {
+                        // Still waiting
+                        document.getElementById('statusMessage').textContent = 
+                            `Waiting for payment... (${checkCount * 5} seconds)`;
+                        setTimeout(checkPaymentStatus, 5000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking payment status:', error);
+                    if (checkCount < maxChecks) {
+                        setTimeout(checkPaymentStatus, 5000);
+                    }
+                });
+        }
+        
+        // Start checking payment status
+        setTimeout(checkPaymentStatus, 5000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KCSE Cluster Points Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --kuccps-red: #C62828;
+            --kuccps-yellow: #FBC02D;
+            --kuccps-light-grey: #F5F5F5;
+            --kuccps-medium-grey: #9E9E9E;
+            --kuccps-black: #000000;
+            --kuccps-white: #FFFFFF;
+            --kuccps-blue: #1565C0;
+            --kuccps-green: #2E7D32;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--kuccps-light-grey) 0%, #e0e0e0 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--kuccps-black);
+        }
+        
+        .container {
+            max-width: 1400px;
+        }
+        
+        .card {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: none;
+            margin-bottom: 30px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--kuccps-red) 0%, #B71C1C 100%);
+            border-radius: 20px 20px 0 0 !important;
+            padding: 1.5rem 2rem;
+            border: none;
+        }
+        
+        .card-header h1 {
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subject-category {
+            background: var(--kuccps-white);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--kuccps-red);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .subject-category:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(198, 40, 40, 0.1);
+        }
+        
+        .category-title {
+            color: var(--kuccps-black);
+            border-bottom: 3px solid var(--kuccps-red);
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+            font-weight: 700;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-title i {
+            color: var(--kuccps-yellow);
+            margin-right: 10px;
+            background: rgba(198, 40, 40, 0.1);
+            padding: 8px;
+            border-radius: 50%;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--kuccps-black);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .form-select {
+            border-radius: 10px;
+            border: 2px solid var(--kuccps-medium-grey);
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            color: var(--kuccps-black);
+        }
+        
+        .form-select:focus {
+            border-color: var(--kuccps-red);
+            box-shadow: 0 0 0 0.25rem rgba(198, 40, 40, 0.25);
+        }
+        
+        .btn-calculate {
+            background: linear-gradient(135deg, var(--kuccps-red) 0%, #B71C1C 100%);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            color: var(--kuccps-white);
+        }
+        
+        .btn-calculate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(198, 40, 40, 0.4);
+            color: var(--kuccps-white);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, var(--kuccps-medium-grey) 0%, #757575 100%);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            color: var(--kuccps-white);
+        }
+        
+        .btn-reset:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(117, 117, 117, 0.4);
+            color: var(--kuccps-white);
+        }
+        
+        .results-container {
+            background: var(--kuccps-white);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-top: 5px solid var(--kuccps-yellow);
+        }
+        
+        .results-title {
+            color: var(--kuccps-black);
+            border-bottom: 2px solid var(--kuccps-yellow);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-weight: 700;
+            font-size: 1.6rem;
+        }
+        
+        .cluster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .cluster-card {
+            background: var(--kuccps-light-grey);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid var(--kuccps-red);
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            border-top: 1px solid var(--kuccps-medium-grey);
+            cursor: pointer;
+        }
+        
+        .cluster-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(198, 40, 40, 0.15);
+        }
+        
+        .cluster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--kuccps-medium-grey);
+        }
+        
+        .cluster-number {
+            background: var(--kuccps-red);
+            color: var(--kuccps-white);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .cluster-points {
+            background: var(--kuccps-yellow);
+            color: var(--kuccps-black);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .cluster-name {
+            font-weight: 600;
+            color: var(--kuccps-black);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .cluster-description {
+            color: var(--kuccps-medium-grey);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        
+        .cluster-subjects {
+            font-size: 0.85rem;
+            color: var(--kuccps-black);
+            background: rgba(198, 40, 40, 0.05);
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .points-high {
+            color: var(--kuccps-green);
+            font-weight: 700;
+        }
+        
+        .points-medium {
+            color: var(--kuccps-yellow);
+            font-weight: 700;
+        }
+        
+        .points-zero {
+            color: var(--kuccps-medium-grey);
+            font-weight: 600;
+        }
+        
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            border: 5px solid var(--kuccps-light-grey);
+            border-top: 5px solid var(--kuccps-red);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: none;
+            border-radius: 12px;
+            border-left: 5px solid var(--kuccps-blue);
+            color: var(--kuccps-black);
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: none;
+            border-radius: 12px;
+            border-left: 5px solid var(--kuccps-yellow);
+            color: var(--kuccps-black);
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border: none;
+            border-radius: 12px;
+            border-left: 5px solid var(--kuccps-green);
+            color: var(--kuccps-black);
+        }
+        
+        .card-footer {
+            background: var(--kuccps-light-grey);
+            border-top: 1px solid var(--kuccps-medium-grey);
+            color: var(--kuccps-medium-grey);
+        }
+        
+        .formula-display {
+            background: var(--kuccps-white);
+            border: 2px dashed var(--kuccps-blue);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .subject-badge {
+            display: inline-block;
+            background: var(--kuccps-light-grey);
+            border: 1px solid var(--kuccps-medium-grey);
+            border-radius: 15px;
+            padding: 3px 10px;
+            margin: 2px;
+            font-size: 0.85rem;
+            color: var(--kuccps-black);
+        }
+        
+        .subject-badge.grade-A { background: #e8f5e9; border-color: var(--kuccps-green); }
+        .subject-badge.grade-B { background: #fff3e0; border-color: var(--kuccps-yellow); }
+        .subject-badge.grade-C { background: #f3e5f5; border-color: #7b1fa2; }
+        .subject-badge.grade-D { background: #f5f5f5; border-color: var(--kuccps-medium-grey); }
+        .subject-badge.grade-E { background: #ffebee; border-color: var(--kuccps-red); }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--kuccps-red) 0%, #B71C1C 100%);
+            color: white;
+        }
+        
+        .subject-details {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .subject-detail-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--kuccps-light-grey);
+        }
+        
+        .subject-detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .subject-grade {
+            font-weight: 600;
+            color: var(--kuccps-black);
+        }
+        
+        .subject-points {
+            font-weight: 700;
+            color: var(--kuccps-red);
+        }
+        
+        .requirement-badge {
+            background: var(--kuccps-light-grey);
+            color: var(--kuccps-black);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .subject-category {
+                padding: 15px;
+            }
+            
+            .btn-calculate, .btn-reset {
+                padding: 12px 25px;
+                font-size: 1rem;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .cluster-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .formula-display {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+        }
+        
+        .sample-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--kuccps-yellow);
+            color: var(--kuccps-black);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .sample-btn:hover {
+            background: #f9a825;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+        }
+        
+        .sort-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .sort-btn {
+            background: var(--kuccps-light-grey);
+            border: 2px solid var(--kuccps-medium-grey);
+            color: var(--kuccps-black);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .sort-btn.active {
+            background: var(--kuccps-red);
+            color: var(--kuccps-white);
+            border-color: var(--kuccps-red);
+        }
+        
+        .sort-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .cluster-card.highlight {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 5px solid var(--kuccps-green);
+        }
+        
+        .cluster-card.zero {
+            background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
+            border-left: 5px solid var(--kuccps-medium-grey);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <div class="mt-3" style="color: var(--kuccps-red); font-weight: 700;">Calculating cluster points...</div>
+    </div>
+
+    <!-- Cluster Details Modal -->
+    <div class="modal fade" id="clusterDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Cluster Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalContent">
+                        <!-- Content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <div class="card">
+            <div class="card-header text-white">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calculator fa-3x me-3" style="color: var(--kuccps-yellow);"></i>
+                    <div>
+                        <h1 class="mb-1">KCSE Cluster Points Calculator</h1>
+                        <p class="mb-0">Enter your KCSE grades to calculate cluster points for KUCCPS degree programmes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-4">
+                <form id="gradesForm" action="{{ url_for('cluster_calculator_submit_grades') }}" method="POST">
+                    <h3 class="mb-4"><i class="fas fa-book-open" style="color: var(--kuccps-red);"></i> Enter KCSE Grades</h3>
+                    
+                    <!-- Core Subjects (Group I) -->
+                    <div class="subject-category">
+                        <h4 class="category-title"><i class="fas fa-star"></i> Core Subjects</h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="mathematics" class="form-label">Mathematics:</label>
+                                    <select id="mathematics" name="mathematics" class="form-select" required>
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="english" class="form-label">English:</label>
+                                    <select id="english" name="english" class="form-select" required>
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="kiswahili" class="form-label">Kiswahili:</label>
+                                    <select id="kiswahili" name="kiswahili" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sciences (Group II) -->
+                    <div class="subject-category">
+                        <h4 class="category-title"><i class="fas fa-flask"></i> Sciences </h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="physics" class="form-label">Physics:</label>
+                                    <select id="physics" name="physics" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="chemistry" class="form-label">Chemistry:</label>
+                                    <select id="chemistry" name="chemistry" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="biology" class="form-label">Biology:</label>
+                                    <select id="biology" name="biology" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="general_science" class="form-label">General Science:</label>
+                                    <select id="general_science" name="general_science" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Humanities (Group III) -->
+                    <div class="subject-category">
+                        <h4 class="category-title"><i class="fas fa-globe-africa"></i> Humanities</h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="geography" class="form-label">Geography:</label>
+                                    <select id="geography" name="geography" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="history" class="form-label">History & Government:</label>
+                                    <select id="history" name="history" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="cre" class="form-label">CRE:</label>
+                                    <select id="cre" name="cre" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="ire" class="form-label">IRE:</label>
+                                    <select id="ire" name="ire" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="hre" class="form-label">HRE:</label>
+                                    <select id="hre" name="hre" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Technical Subjects (Group IV) -->
+                    <div class="subject-category">
+                        <h4 class="category-title"><i class="fas fa-cogs"></i> Technical Subjects</h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="agriculture" class="form-label">Agriculture:</label>
+                                    <select id="agriculture" name="agriculture" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="computer" class="form-label">Computer Studies:</label>
+                                    <select id="computer" name="computer" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="arts" class="form-label">Art & Design:</label>
+                                    <select id="arts" name="arts" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="homescience" class="form-label">Home Science:</label>
+                                    <select id="homescience" name="homescience" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="business" class="form-label">Business Studies:</label>
+                                    <select id="business" name="business" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="woodwork" class="form-label">Woodwork:</label>
+                                    <select id="woodwork" name="woodwork" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="metalwork" class="form-label">Metalwork:</label>
+                                    <select id="metalwork" name="metalwork" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="building" class="form-label">Building Construction:</label>
+                                    <select id="building" name="building" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="electronics" class="form-label">Electricity & Electronics:</label>
+                                    <select id="electronics" name="electronics" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="aviation" class="form-label">Aviation Technology:</label>
+                                    <select id="aviation" name="aviation" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="drawing_design" class="form-label">Drawing & Design:</label>
+                                    <select id="drawing_design" name="drawing_design" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="power_mechanics" class="form-label">Power Mechanics:</label>
+                                    <select id="power_mechanics" name="power_mechanics" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Foreign Languages & Others (Group V) -->
+                    <div class="subject-category">
+                        <h4 class="category-title"><i class="fas fa-language"></i> Foreign Languages</h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="french" class="form-label">French:</label>
+                                    <select id="french" name="french" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="german" class="form-label">German:</label>
+                                    <select id="german" name="german" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="arabic" class="form-label">Arabic:</label>
+                                    <select id="arabic" name="arabic" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="kenya_sign_language" class="form-label">Kenya Sign Language:</label>
+                                    <select id="kenya_sign_language" name="kenya_sign_language" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="music" class="form-label">Music:</label>
+                                    <select id="music" name="music" class="form-select">
+                                        <option value="">Select Grade</option>
+                                        <option value="A">A (12 points)</option>
+                                        <option value="A-">A- (11 points)</option>
+                                        <option value="B+">B+ (10 points)</option>
+                                        <option value="B">B (9 points)</option>
+                                        <option value="B-">B- (8 points)</option>
+                                        <option value="C+">C+ (7 points)</option>
+                                        <option value="C">C (6 points)</option>
+                                        <option value="C-">C- (5 points)</option>
+                                        <option value="D+">D+ (4 points)</option>
+                                        <option value="D">D (3 points)</option>
+                                        <option value="D-">D- (2 points)</option>
+                                        <option value="E">E (1 point)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-5 mb-4">
+                        <button type="submit" class="btn btn-calculate me-3">
+                            <i class="fas fa-calculator me-2"></i> Calculate Cluster Points
+                        </button>
+                        <button type="button" class="btn btn-reset" onclick="resetForm()">
+                            <i class="fas fa-redo me-2"></i> Reset Form
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Results Section -->
+                <div id="resultsSection" class="results-container" style="display: none;">
+                    <h3 class="results-title"><i class="fas fa-chart-bar me-2" style="color: var(--kuccps-yellow);"></i> Cluster Points Results</h3>
+                    
+                    <!-- Summary Alert -->
+                    <div class="alert alert-success mb-4" id="summaryAlert">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong><i class="fas fa-info-circle me-2"></i>Calculation Summary</strong>
+                                <div id="aggregateDisplay" class="mt-2"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <strong><i class="fas fa-exclamation-triangle me-2"></i>Important Note</strong>
+                                <div class="small mt-2">
+                                    All cluster points have a <strong>-5 or +5 deviation</strong> applied as per KUCCPS policy. 
+                                    Click on any cluster card for detailed subject breakdown.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sort Buttons -->
+                    <div class="sort-buttons mb-4">
+                        <button class="sort-btn active" onclick="sortClusters('number')">
+                            <i class="fas fa-sort-numeric-down me-1"></i> Sort by Cluster Number
+                        </button>
+                        <button class="sort-btn" onclick="sortClusters('points')">
+                            <i class="fas fa-sort-amount-down me-1"></i> Sort by Points
+                        </button>
+                        <button class="sort-btn" onclick="sortClusters('non-zero')">
+                            <i class="fas fa-filter me-1"></i> Show Non-Zero Only
+                        </button>
+                    </div>
+                    
+                    <!-- Cluster Points Grid Display -->
+                    <div class="cluster-grid" id="clusterGrid">
+                        <!-- Cluster cards will be populated here -->
+                    </div>
+                    
+                    <!-- Top Clusters -->
+                    <div id="topClustersSection" style="display: none;">
+                        <h5 class="mt-4 mb-3" style="color: var(--kuccps-red);">
+                            <i class="fas fa-trophy me-2"></i> Your Best Clusters
+                        </h5>
+                        <div class="cluster-grid" id="topClustersGrid">
+                            <!-- Top 3 clusters will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <div class="card-footer text-center py-3">
+                <small style="color: var(--kuccps-medium-grey);">
+                    <i class="fas fa-university me-1"></i> 
+                    KCSE Cluster Points Calculator © 2026 | Based on Official KUCCPS University Admission Requirements
+                </small>
+            </div>
+        </div>
+    </div>
+
+    
+        <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- INLINE JAVASCRIPT (instead of external file) -->
+    <script>
+    // script.js content
+    function showLoading(show = true) {
+        const spinner = document.getElementById('loadingSpinner');
+        spinner.style.display = show ? 'flex' : 'none';
+    }
+
+    function resetForm() {
+        document.getElementById('gradesForm').reset();
+        document.getElementById('resultsSection').style.display = 'none';
+    }
+
+    
+        // Set the values in the form
+        Object.keys(sampleData).forEach(field => {
+            const element = document.getElementById(field);
+            if (element) {
+                element.value = sampleData[field];
+            }
+        });
+
+        // Show success message
+        alert('Sample data loaded! Click "Calculate Cluster Points" to see results.');
+    }
+
+    function formatClusterPoints(points) {
+        const num = parseFloat(points);
+        if (num >= 30) return '<span class="points-high">' + points + '</span>';
+        if (num >= 15) return '<span class="points-medium">' + points + '</span>';
+        if (num > 0) return points;
+        return '<span class="points-zero">0.000</span>';
+    }
+
+    function showClusterDetails(clusterId, clusterName, points, subjectsUsed) {
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        
+        modalTitle.textContent = `${clusterName} Details`;
+        
+       
+        if (subjectsUsed && subjectsUsed.length > 0) {
+            html += `<h6 class="mb-3"><i class="fas fa-book"></i> Subjects Used:</h6>
+            <div class="subject-details">`;
+            
+            let totalPoints = 0;
+            subjectsUsed.forEach((subject, index) => {
+                const gradeClass = `grade-${subject.grade ? subject.grade.charAt(0) : 'E'}`;
+                html += `<div class="subject-detail-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="subject-grade">${subject.subject ? subject.subject.replace('_', ' ').toUpperCase() : 'Unknown'}</span>
+                            <span class="badge ${gradeClass} subject-badge">${subject.grade || 'E'}</span>
+                            ${subject.requirement ? `<span class="requirement-badge">${subject.requirement}</span>` : ''}
+                        </div>
+                        <div class="subject-points">${subject.points || 0} points</div>
+                    </div>
+                </div>`;
+                totalPoints += subject.points || 0;
+            });
+            
+            html += `</div>
+            <div class="mt-3 p-3 bg-light rounded">
+                <strong>Total Cluster Points (x):</strong> ${totalPoints} / 48
+            </div>`;
+        }
+        
+        modalContent.innerHTML = html;
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('clusterDetailsModal'));
+        modal.show();
+    }
+
+    function displayResults(data) {
+        const resultsSection = document.getElementById('resultsSection');
+        const clusterGrid = document.getElementById('clusterGrid');
+        const aggregateDisplay = document.getElementById('aggregateDisplay');
+        const topClustersSection = document.getElementById('topClustersSection');
+        const topClustersGrid = document.getElementById('topClustersGrid');
+        
+        // Show results section
+        resultsSection.style.display = 'block';
+        
+        // Display aggregate points
+        if (data.aggregate_points) {
+            aggregateDisplay.innerHTML = `
+                <div>Aggregate Points (y): <strong>${data.aggregate_points} / 84</strong></div>
+                <div>Top 7 Subjects: ${data.top_7_subjects ? data.top_7_subjects.map(s => `${s.subject ? s.subject.replace('_', ' ') : ''} (${s.points})`).join(', ') : 'None'}</div>
+            `;
+        }
+        
+        // Clear previous results
+        clusterGrid.innerHTML = '';
+        topClustersGrid.innerHTML = '';
+        
+        // Sort clusters by points (descending) for display
+        const clusters = [];
+        for (let i = 1; i <= 20; i++) {
+            const clusterKey = `Cluster ${i}`;
+            if (data.results && data.results[clusterKey]) {
+                const points = parseFloat(data.results[clusterKey]);
+                clusters.push({
+                    id: i,
+                    name: clusterKey,
+                    points: points,
+                    pointsFormatted: data.results[clusterKey],
+                    description: data.details && data.details[clusterKey] ? data.details[clusterKey].description : ''
+                });
+            }
+        }
+        
+        // Sort by points descending
+        clusters.sort((a, b) => b.points - a.points);
+        
+        // Get top 3 clusters
+        const topClusters = clusters.slice(0, 3);
+        
+        // Display all clusters
+        clusters.forEach((cluster, index) => {
+            const cardClass = cluster.points === 0 ? 'zero' : (cluster.points >= 30 ? 'highlight' : '');
+            const pointsDisplay = formatClusterPoints(cluster.pointsFormatted);
+            
+            const clusterCard = document.createElement('div');
+            clusterCard.className = `cluster-card ${cardClass}`;
+            clusterCard.onclick = () => {
+                const details = data.details && data.details[`Cluster ${cluster.id}`];
+                if (details) {
+                    showClusterDetails(
+                        cluster.id,
+                        cluster.name,
+                        cluster.pointsFormatted,
+                        details.subjects_used
+                    );
+                }
+            };
+            
+            clusterCard.innerHTML = `
+                <div class="cluster-header">
+                    <div class="cluster-number">${cluster.id}</div>
+                    <div class="cluster-points">${pointsDisplay}</div>
+                </div>
+                <div class="cluster-name">${cluster.name}</div>
+                <div class="cluster-description">${cluster.description}</div>
+                <div class="cluster-subjects" id="subjects-${cluster.id}"></div>
+            `;
+            
+            clusterGrid.appendChild(clusterCard);
+        });
+        
+        // Display top clusters if any
+        if (topClusters.length > 0) {
+            topClustersSection.style.display = 'block';
+            topClusters.forEach(cluster => {
+                const pointsDisplay = formatClusterPoints(cluster.pointsFormatted);
+                
+                const clusterCard = document.createElement('div');
+                clusterCard.className = 'cluster-card highlight';
+                clusterCard.onclick = () => {
+                    const details = data.details && data.details[`Cluster ${cluster.id}`];
+                    if (details) {
+                        showClusterDetails(
+                            cluster.id,
+                            cluster.name,
+                            cluster.pointsFormatted,
+                            details.subjects_used
+                        );
+                    }
+                };
+                
+                clusterCard.innerHTML = `
+                    <div class="cluster-header">
+                        <div class="cluster-number">${cluster.id}</div>
+                        <div class="cluster-points">${pointsDisplay}</div>
+                    </div>
+                    <div class="cluster-name">${cluster.name}</div>
+                    <div class="cluster-description">${cluster.description}</div>
+                    <div class="text-center mt-2">
+                        <span class="badge bg-success"><i class="fas fa-trophy me-1"></i> Top ${clusters.indexOf(cluster) + 1}</span>
+                    </div>
+                `;
+                
+                topClustersGrid.appendChild(clusterCard);
+            });
+        } else {
+            topClustersSection.style.display = 'none';
+        }
+        
+        // Scroll to results
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function sortClusters(sortType) {
+        const clusterGrid = document.getElementById('clusterGrid');
+        const clusters = Array.from(clusterGrid.getElementsByClassName('cluster-card'));
+        const sortButtons = document.querySelectorAll('.sort-btn');
+        
+        // Update active button
+        sortButtons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        clusters.sort((a, b) => {
+            const aId = parseInt(a.querySelector('.cluster-number').textContent);
+            const bId = parseInt(b.querySelector('.cluster-number').textContent);
+            const aPoints = parseFloat(a.querySelector('.cluster-points').textContent.replace(/[^\d.]/g, '') || 0);
+            const bPoints = parseFloat(b.querySelector('.cluster-points').textContent.replace(/[^\d.]/g, '') || 0);
+            
+            switch (sortType) {
+                case 'number':
+                    return aId - bId;
+                case 'points':
+                    return bPoints - aPoints;
+                case 'non-zero':
+                    if (aPoints === 0 && bPoints > 0) return 1;
+                    if (aPoints > 0 && bPoints === 0) return -1;
+                    return bPoints - aPoints;
+                default:
+                    return aId - bId;
+            }
+        });
+        
+        // Reorder clusters
+        clusters.forEach(cluster => clusterGrid.appendChild(cluster));
+        
+        // For non-zero filter, hide/show
+        if (sortType === 'non-zero') {
+            clusters.forEach(cluster => {
+                const points = parseFloat(cluster.querySelector('.cluster-points').textContent.replace(/[^\d.]/g, '') || 0);
+                cluster.style.display = points === 0 ? 'none' : 'block';
+            });
+        } else {
+            clusters.forEach(cluster => cluster.style.display = 'block');
+        }
+    }
+
+    
+
+    // Initialize sort buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up sort buttons
+        const sortButtons = document.querySelectorAll('.sort-btn');
+        sortButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                sortButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    });
+    </script>
+</body>
+</html>

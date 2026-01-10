@@ -121,9 +121,6 @@ user_courses_collection = None
 user_baskets_collection = None
 admin_activations_collection = None
 database_connected = False
-db_cluster_payments = None
-db_cluster_results = None
-
 
 def initialize_database():
     """Initialize database connections with robust error handling and fixed index creation"""
@@ -415,61 +412,10 @@ def initialize_database():
                 database_connected = False
                 print("❌ Failed to connect to MongoDB after multiple attempts")
                 return False
-database_connected = initialize_database()            
-def initialize_all_databases():
-    """Initialize all database connections"""
-    global db_cluster_payments, db_cluster_results
-    
-    database_connected = initialize_database()
-    
-    if database_connected:
-        # Initialize cluster calculator database
-        try:
-            db_cluster_payments = db_user_data['cluster_payments']
-            db_cluster_results = db_user_data['cluster_results']
-            
-            # Create indexes
-            db_cluster_payments.create_index([("email", 1), ("index_number", 1)], name='user_cluster_payment')
-            db_cluster_payments.create_index([("transaction_ref", 1)], name='transaction_ref_cluster')
-            db_cluster_payments.create_index([("payment_confirmed", 1)], name='payment_confirmed_cluster')
-            db_cluster_payments.create_index([("mpesa_receipt", 1)], name='mpesa_receipt_cluster')
-            
-            db_cluster_results.create_index([("email", 1), ("index_number", 1)], name='user_cluster_results')
-            db_cluster_results.create_index([("created_at", 1)], name='created_at_cluster')
-            
-            print("✅ Cluster calculator database collections initialized")
-        except Exception as e:
-            print(f"❌ Error initializing cluster calculator database: {str(e)}")
-            db_cluster_payments = None
-            db_cluster_results = None
-
-initialize_all_databases()
-
-def initialize_cluster_calculator_db():
-    """Initialize cluster calculator database collections"""
-    global db_cluster_payments, db_cluster_results, database_connected
-    
-    if database_connected:
-        try:
-            db_cluster_payments = db_user_data['cluster_payments']
-            db_cluster_results = db_user_data['cluster_results']
-            
-            # Create indexes for cluster payments
-            db_cluster_payments.create_index([("email", 1), ("index_number", 1)], name='user_cluster_payment')
-            db_cluster_payments.create_index([("transaction_ref", 1)], name='transaction_ref_cluster')
-            db_cluster_payments.create_index([("payment_confirmed", 1)], name='payment_confirmed_cluster')
-            db_cluster_payments.create_index([("mpesa_receipt", 1)], name='mpesa_receipt_cluster')
-            
-            # Create indexes for cluster results
-            db_cluster_results.create_index([("email", 1), ("index_number", 1)], name='user_cluster_results')
-            db_cluster_results.create_index([("created_at", 1)], name='created_at_cluster')
-            
-            print("✅ Cluster calculator database collections initialized")
-            return True
-        except Exception as e:
-            print(f"❌ Error initializing cluster calculator database: {str(e)}")
-            return False
-    return False
+database_connected = initialize_database()   
+cluster_calc_initialized = initialize_cluster_calculator_db()
+if cluster_calc_initialized:
+    print("✅ Cluster calculator database initialized successfully")         
 
 course_processing_lock = threading.Lock()
 course_processing_cache = {}   
@@ -2633,56 +2579,14 @@ def check_payment_status(flow):
         'paid': False, 
         'status': 'pending',
         'message': 'Waiting for payment confirmation...'
-
     }
-
-def is_cluster_calculator_payment(account_reference):
-    """Check if payment is for cluster calculator based on account reference pattern"""
-    if not account_reference:
-        return False
-    
-    # Check for patterns that indicate cluster calculator
-    cluster_patterns = [
-        'CLUSTER', 'CLSTR', 'CALC', 'POINTS', 'KCSE', 'GRADE'
-    ]
-    
-    account_ref_upper = account_reference.upper()
-    
-    for pattern in cluster_patterns:
-        if pattern in account_ref_upper:
-            return True
-    
-    # Check if it matches cluster calculator index number pattern
-    if re.match(r'^C\d+', account_ref_upper):
-        return True
-    
-    return False
-
-def get_payment_type_by_transaction(transaction_ref):
-    """Determine payment type by checking all collections"""
-    if not database_connected:
-        return 'unknown'
-    
-    # Check regular course payments
-    if user_payments_collection:
-        payment = user_payments_collection.find_one({'transaction_ref': transaction_ref})
-        if payment:
-            return 'course_payment'
-    
-    # Check cluster calculator payments
-    if db_cluster_payments:
-        payment = db_cluster_payments.find_one({'transaction_ref': transaction_ref})
-        if payment:
-            return 'cluster_calculator'
-    
-    return 'unknown'
 # --- MPesa Callback Routes ---
 @app.route('/mpesa/callback', methods=['POST'])
 def mpesa_callback():
-    """Enhanced MPesa callback handler for BOTH course payments AND cluster calculator payments"""
+    """Enhanced MPesa callback handler with IMMEDIATE course processing"""
     try:
         data = request.get_json(force=True)
-        print(f"📥 ENHANCED MPesa callback received: {json.dumps(data, indent=2)}")
+        print(f"📥 IMMEDIATE MPesa callback received: {json.dumps(data, indent=2)}")
         
         callback_metadata = data.get('Body', {}).get('stkCallback', {})
         transaction_ref = callback_metadata.get('CheckoutRequestID')
@@ -2695,7 +2599,6 @@ def mpesa_callback():
             mpesa_receipt = None
             amount = None
             phone = None
-            account_reference = None
             
             # Extract callback metadata
             items = callback_metadata.get('CallbackMetadata', {}).get('Item', [])
@@ -2707,283 +2610,78 @@ def mpesa_callback():
                 elif item.get('Name') == 'PhoneNumber':
                     phone = item.get('Value')
             
-            # Try to get AccountReference from callback data
-            if data.get('Body', {}).get('stkCallback', {}).get('CallbackMetadata', {}):
-                for item in data['Body']['stkCallback']['CallbackMetadata'].get('Item', []):
-                    if item.get('Name') == 'AccountReference':
-                        account_reference = item.get('Value')
-                        break
-            
-            print(f"💰 ENHANCED: Payment successful - Transaction: {transaction_ref}")
-            print(f"💰 Receipt: {mpesa_receipt}, Amount: {amount}, Account: {account_reference}")
-            
-            if not transaction_ref or not mpesa_receipt:
-                print(f"❌ ENHANCED: Missing transaction ref or receipt in callback")
-                return {'success': False, 'error': 'Invalid callback data'}, 400
-            
-            # 🔥 ENHANCED: Try to identify payment type and process BOTH
-            
-            payment_processed = False
-            payment_type = 'unknown'
-            
-            # STEP 1: Try REGULAR COURSE PAYMENT first
-            print(f"🔍 ENHANCED: Step 1 - Checking for regular course payment...")
-            
-            if database_connected and user_payments_collection:
-                # Check by transaction_ref
-                payment_data = user_payments_collection.find_one({'transaction_ref': transaction_ref})
+            if transaction_ref and mpesa_receipt:
+                print(f"💰 IMMEDIATE: Payment successful - Transaction: {transaction_ref}, Receipt: {mpesa_receipt}")
                 
-                if not payment_data and account_reference:
-                    # Check by account reference (index number)
-                    payment_data = user_payments_collection.find_one({
-                        'index_number': account_reference,
-                        'payment_confirmed': False  # Only check unconfirmed payments
-                    })
+                # 🔥 IMMEDIATE payment confirmation
+                result = mark_payment_confirmed(transaction_ref, mpesa_receipt)
                 
-                if payment_data:
-                    print(f"✅ ENHANCED: Found regular course payment: {transaction_ref}")
-                    print(f"📋 Payment details: Level={payment_data.get('level')}, Email={payment_data.get('email')}")
+                if result:
+                    print(f"✅ IMMEDIATE: Payment callback processed successfully: {transaction_ref}")
                     
-                    # Process regular course payment
-                    result = mark_payment_confirmed(transaction_ref, mpesa_receipt)
-                    
-                    if result:
-                        payment_processed = True
-                        payment_type = 'course_payment'
-                        
-                        email = payment_data.get('email')
-                        index_number = payment_data.get('index_number')
-                        flow = payment_data.get('level')
-                        
-                        if email and index_number and flow:
-                            print(f"🚀 ENHANCED: Starting background course processing for {flow}")
+                    # 🔥 IMMEDIATE course processing in background thread
+                    if database_connected:
+                        payment_data = user_payments_collection.find_one({'transaction_ref': transaction_ref})
+                        if payment_data:
+                            email = payment_data.get('email')
+                            index_number = payment_data.get('index_number')
+                            flow = payment_data.get('level')
                             
-                            # Process courses in background thread
-                            def background_course_processing():
-                                try:
-                                    print(f"🎯 BACKGROUND COURSE: Processing for {email}, {flow}")
-                                    success = process_courses_after_payment(email, index_number, flow)
-                                    if success:
-                                        print(f"✅ BACKGROUND COURSE: Courses processed successfully for {email}")
-                                    else:
-                                        print(f"⚠️ BACKGROUND COURSE: Course processing failed for {email}")
-                                except Exception as e:
-                                    print(f"❌ BACKGROUND COURSE: Error in course processing: {e}")
-                            
-                            thread = threading.Thread(target=background_course_processing)
-                            thread.daemon = True
-                            thread.start()
-            
-            # STEP 2: Try CLUSTER CALCULATOR PAYMENT (only if course payment wasn't found)
-            if not payment_processed and database_connected and db_cluster_payments:
-                print(f"🔍 ENHANCED: Step 2 - Checking for cluster calculator payment...")
-                
-                # Check by transaction_ref
-                cluster_payment_data = db_cluster_payments.find_one({'transaction_ref': transaction_ref})
-                
-                if not cluster_payment_data and account_reference:
-                    # Check by account reference (index number)
-                    cluster_payment_data = db_cluster_payments.find_one({
-                        'index_number': account_reference,
-                        'payment_confirmed': False
-                    })
-                
-                if cluster_payment_data:
-                    print(f"✅ ENHANCED: Found cluster calculator payment: {transaction_ref}")
-                    print(f"📋 Cluster payment details: Email={cluster_payment_data.get('email')}")
-                    
-                    # Process cluster calculator payment
-                    result = mark_cluster_calculator_payment_confirmed(transaction_ref, mpesa_receipt)
-                    
-                    if result:
-                        payment_processed = True
-                        payment_type = 'cluster_calculator'
-                        
-                        email = cluster_payment_data.get('email')
-                        index_number = cluster_payment_data.get('index_number')
-                        
-                        if email and index_number:
-                            print(f"🚀 ENHANCED: Starting background cluster calculation for {email}")
-                            
-                            # Process cluster calculation in background thread
-                            def background_cluster_calculation():
-                                try:
-                                    print(f"🎯 BACKGROUND CLUSTER: Calculating for {email}")
-                                    
-                                    # Get grades from session
-                                    grades = session.get('cluster_calc_grades', {})
-                                    if not grades:
-                                        # Try to get from database if not in session
-                                        if db_cluster_results:
-                                            existing_result = db_cluster_results.find_one({
-                                                'email': email,
-                                                'index_number': index_number
-                                            })
-                                            if existing_result and 'grades' in existing_result:
-                                                grades = existing_result.get('grades')
-                                    
-                                    if grades:
-                                        print(f"📊 BACKGROUND CLUSTER: Calculating cluster points from {len(grades)} grades")
-                                        
-                                        # Calculate cluster points
-                                        results = calculate_cluster_points_from_grades(grades)
-                                        
-                                        if results and db_cluster_results:
-                                            # Save results to database
-                                            result_record = {
-                                                'email': email,
-                                                'index_number': index_number,
-                                                'grades': grades,
-                                                'results': results,
-                                                'created_at': datetime.now()
-                                            }
-                                            db_cluster_results.insert_one(result_record)
-                                            print(f"✅ BACKGROUND CLUSTER: Results saved for {email}")
+                            if email and index_number and flow:
+                                print(f"🚀 IMMEDIATE: Starting background course processing for {flow}")
+                                
+                                # Process courses in background thread to avoid blocking
+                                def background_course_processing():
+                                    try:
+                                        print(f"🎯 BACKGROUND: Processing courses for {email}, {flow}")
+                                        success = process_courses_after_payment(email, index_number, flow)
+                                        if success:
+                                            print(f"✅ BACKGROUND: Courses processed successfully for {email}")
                                         else:
-                                            print(f"⚠️ BACKGROUND CLUSTER: No results to save for {email}")
-                                    else:
-                                        print(f"⚠️ BACKGROUND CLUSTER: No grades found for cluster calculation")
-                                        
-                                except Exception as e:
-                                    print(f"❌ BACKGROUND CLUSTER: Error in cluster calculation: {e}")
-                                    import traceback
-                                    traceback.print_exc()
-                            
-                            thread = threading.Thread(target=background_cluster_calculation)
-                            thread.daemon = True
-                            thread.start()
-            
-            # STEP 3: If still not processed, try to identify by account reference
-            if not payment_processed and account_reference:
-                print(f"🔍 ENHANCED: Step 3 - Checking by account reference: {account_reference}")
-                
-                # Check if it's a cluster calculator account (contains cluster indicator)
-                is_cluster_account = 'CLUSTER' in account_reference or account_reference.startswith('C')
-                
-                if is_cluster_account and database_connected and db_cluster_payments:
-                    print(f"🔍 ENHANCED: Account looks like cluster calculator, checking...")
+                                            print(f"⚠️ BACKGROUND: Course processing failed for {email}")
+                                    except Exception as e:
+                                        print(f"❌ BACKGROUND: Error in course processing: {e}")
+                                
+                                # Start background processing
+                                thread = threading.Thread(target=background_course_processing)
+                                thread.daemon = True
+                                thread.start()
+                                
+                                print(f"✅ IMMEDIATE: Background course processing started for {flow}")
                     
-                    # Create a new cluster payment record
-                    cluster_payment_record = {
-                        'email': f"callback_{account_reference}@temp.com",
-                        'index_number': account_reference,
-                        'transaction_ref': transaction_ref,
-                        'mpesa_receipt': mpesa_receipt,
-                        'payment_amount': amount or 1,
-                        'payment_confirmed': True,
-                        'created_at': datetime.now(),
-                        'payment_date': datetime.now()
-                    }
-                    
-                    try:
-                        db_cluster_payments.update_one(
-                            {'transaction_ref': transaction_ref},
-                            {'$set': cluster_payment_record},
-                            upsert=True
-                        )
-                        
-                        print(f"✅ ENHANCED: Created cluster calculator payment from callback")
-                        payment_processed = True
-                        payment_type = 'cluster_calculator_callback'
-                    except Exception as e:
-                        print(f"❌ ENHANCED: Error creating cluster payment: {e}")
+                    return {'success': True, 'message': 'Payment processed and course generation started'}, 200
                 else:
-                    # Try regular course payment
-                    print(f"🔍 ENHANCED: Account looks like regular course payment, checking...")
-                    
-                    if database_connected and user_payments_collection:
-                        # Find any unconfirmed payment for this account
-                        unconfirmed_payment = user_payments_collection.find_one({
-                            'index_number': account_reference,
-                            'payment_confirmed': False
-                        })
-                        
-                        if unconfirmed_payment:
-                            result = mark_payment_confirmed(transaction_ref, mpesa_receipt)
-                            if result:
-                                payment_processed = True
-                                payment_type = 'course_payment_callback'
-                                print(f"✅ ENHANCED: Confirmed course payment from callback")
-            
-            # Return response based on what was processed
-            if payment_processed:
-                print(f"✅ ENHANCED: Payment processed successfully. Type: {payment_type}")
-                return {
-                    'success': True, 
-                    'message': 'Payment processed successfully',
-                    'payment_type': payment_type,
-                    'receipt': mpesa_receipt
-                }, 200
+                    print(f"❌ IMMEDIATE: Failed to mark payment confirmed: {transaction_ref}")
+                    return {'success': False, 'error': 'Payment record not found'}, 400
             else:
-                print(f"❌ ENHANCED: Could not identify payment type for transaction: {transaction_ref}")
-                print(f"⚠️ ENHANCED: No payment record found in any collection")
-                
-                # Log the unprocessed payment for debugging
-                if database_connected:
-                    try:
-                        # Create an unprocessed payments collection if it doesn't exist
-                        unprocessed_collection = db_user_data.get_collection('unprocessed_payments')
-                        unprocessed_collection.insert_one({
-                            'transaction_ref': transaction_ref,
-                            'mpesa_receipt': mpesa_receipt,
-                            'callback_data': data,
-                            'received_at': datetime.now(),
-                            'status': 'unidentified'
-                        })
-                        print(f"📝 ENHANCED: Saved unprocessed payment to debug collection")
-                    except Exception as e:
-                        print(f"⚠️ ENHANCED: Could not save to debug collection: {e}")
-                
-                return {
-                    'success': False, 
-                    'error': 'Payment record not found in any system',
-                    'transaction_ref': transaction_ref,
-                    'receipt': mpesa_receipt
-                }, 400
-        
+                print(f"❌ IMMEDIATE: Missing transaction ref or receipt in callback")
+                return {'success': False, 'error': 'Invalid callback data'}, 400
         else:
             # Payment failed or was cancelled
             error_message = callback_metadata.get('ResultDesc', 'Payment failed')
-            print(f"❌ ENHANCED: Payment failed: {error_message}")
+            print(f"❌ IMMEDIATE: Payment failed: {error_message}")
             
-            # Mark as failed in ALL payment collections
-            if transaction_ref:
-                if database_connected and user_payments_collection:
-                    try:
-                        user_payments_collection.update_one(
-                            {'transaction_ref': transaction_ref},
-                            {'$set': {
-                                'payment_confirmed': False,
-                                'error_message': error_message,
-                                'failed_at': datetime.now()
-                            }}
-                        )
-                        print(f"📝 ENHANCED: Marked regular payment as failed")
-                    except Exception as e:
-                        print(f"⚠️ ENHANCED: Error marking regular payment as failed: {e}")
-                
-                
-                    try:
-                        db_cluster_payments.update_one(
-                            {'transaction_ref': transaction_ref},
-                            {'$set': {
-                                'payment_confirmed': False,
-                                'error_message': error_message,
-                                'failed_at': datetime.now()
-                            }}
-                        )
-                        print(f"📝 ENHANCED: Marked cluster payment as failed")
-                    except Exception as e:
-                        print(f"⚠️ ENHANCED: Error marking cluster payment as failed: {e}")
+            # Mark as failed in database if possible
+            if transaction_ref and database_connected:
+                try:
+                    user_payments_collection.update_one(
+                        {'transaction_ref': transaction_ref},
+                        {'$set': {
+                            'payment_confirmed': False,
+                            'error_message': error_message,
+                            'failed_at': datetime.now()
+                        }}
+                    )
+                except Exception as e:
+                    print(f"❌ Error marking payment as failed: {e}")
             
             return {'success': False, 'error': error_message}, 400
             
     except Exception as e:
-        print(f"❌ ENHANCED: CRITICAL ERROR processing MPesa callback: {str(e)}")
+        print(f"❌ IMMEDIATE: Error processing MPesa callback: {str(e)}")
         import traceback
         traceback.print_exc()
-        return {'success': False, 'error': 'Internal server error'}, 500
-
+        return {'success': False, 'error': 'Internal server error'}, 400
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -4515,552 +4213,7 @@ def debug_basket_status():
 @app.route('/contact')
 def contact():
     return render_template("contact.html")
-
-
-@app.route('/cluster-calculator')
-def cluster_calculator():
-    """Main cluster calculator page"""
-    return render_template('cluster_calculator.html')
-
-@app.route('/cluster-calculator/submit-grades', methods=['POST'])
-def cluster_calculator_submit_grades():
-    """Handle grade submission for cluster calculator"""
-    try:
-        form_data = request.form.to_dict()
-        
-        # Store grades in session
-        session['cluster_calc_grades'] = {}
-        for key, value in form_data.items():
-            if value and value != 'Select Grade':
-                session['cluster_calc_grades'][key] = value.upper()
-        
-        # Check if mandatory subjects are filled
-        mandatory_subjects = ['mathematics', 'english']
-        missing_mandatory = [subj for subj in mandatory_subjects 
-                           if subj not in session['cluster_calc_grades'] or 
-                           not session['cluster_calc_grades'][subj]]
-        
-        if missing_mandatory:
-            flash(f"Please enter grades for: {', '.join(missing_mandatory)}", "error")
-            return redirect(url_for('cluster_calculator'))
-        
-        session['cluster_calc_data_submitted'] = True
-        return redirect(url_for('cluster_calculator_enter_details'))
-        
-    except Exception as e:
-        print(f"❌ Error in cluster calculator submit grades: {str(e)}")
-        flash("An error occurred while processing your grades", "error")
-        return redirect(url_for('cluster_calculator'))
-
-@app.route('/cluster-calculator/enter-details', methods=['GET', 'POST'])
-def cluster_calculator_enter_details():
-    """Enter details for cluster calculator"""
-    if request.method == 'GET':
-        if not session.get('cluster_calc_data_submitted'):
-            flash("Please submit your grades first", "error")
-            return redirect(url_for('cluster_calculator'))
-        return render_template('cluster_calculator_enter_details.html')
     
-    # POST request handling
-    try:
-        email = request.form.get('email', '').strip().lower()
-        index_number = request.form.get('index_number', '').strip()
-        
-        if not email or not index_number:
-            flash("Email and KCSE Index Number are required.", "error")
-            return redirect(url_for('cluster_calculator_enter_details'))
-        
-        # Validate index number format
-        if not re.match(r'^\d{11}/\d{4}$', index_number):
-            flash("Invalid index number format. Must be 11 digits, slash, 4 digits (e.g., 12345678901/2024)", "error")
-            return redirect(url_for('cluster_calculator_enter_details'))
-        
-        # Validate email format
-        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
-            flash("Please enter a valid email address.", "error")
-            return redirect(url_for('cluster_calculator_enter_details'))
-        
-        # Check if user already has cluster results
-        # FIX: Check if database_connected is True first, then check if db_cluster_results is not None
-        if database_connected and db_cluster_results is not None:
-            existing_results = db_cluster_results.find_one({
-                '$or': [
-                    {'email': email},
-                    {'index_number': index_number}
-                ]
-            })
-            
-            if existing_results:
-                session['cluster_calc_email'] = email
-                session['cluster_calc_index_number'] = index_number
-                flash("You already have cluster results. You can view them below.", "info")
-                return redirect(url_for('cluster_calculator_results', show_existing=True))
-        
-        # Store in session
-        session['cluster_calc_email'] = email
-        session['cluster_calc_index_number'] = index_number
-        
-        # Check if user has already paid for cluster calculator
-        # FIX: Check if database_connected is True first, then check if db_cluster_payments is not None
-        if database_connected and db_cluster_payments is not None:
-            existing_payment = db_cluster_payments.find_one({
-                '$or': [
-                    {'email': email},
-                    {'index_number': index_number}
-                ],
-                'payment_confirmed': True
-            })
-            
-            if existing_payment:
-                # User has already paid, calculate and show results immediately
-                return redirect(url_for('cluster_calculator_payment_success'))
-        
-        # Redirect to payment
-        return redirect(url_for('cluster_calculator_payment'))
-        
-    except Exception as e:
-        print(f"❌ Error in cluster calculator enter details: {str(e)}")
-        flash("An error occurred while processing your request", "error")
-        return redirect(url_for('cluster_calculator_enter_details'))
-
-@app.route('/cluster-calculator/payment', methods=['GET', 'POST'])
-def cluster_calculator_payment():
-    """Payment page for cluster calculator"""
-    if request.method == 'GET':
-        if not session.get('cluster_calc_email') or not session.get('cluster_calc_index_number'):
-            flash("Please complete the previous steps first", "error")
-            return redirect(url_for('cluster_calculator_enter_details'))
-        
-        return render_template('cluster_calculator_payment.html')
-    
-    # POST request handling
-    elif request.method == 'POST':
-        if not session.get('cluster_calc_email') or not session.get('cluster_calc_index_number'):
-            return {'success': False, 'error': 'Session data missing'}, 400
-
-        phone = request.form.get('phone', '').strip()
-        if not phone:
-            return {'success': False, 'error': 'Phone number is required for payment.'}, 400
-
-        amount = 1  # Fixed amount for cluster calculator
-        
-        print(f"💳 Processing cluster calculator payment, amount: {amount}, phone: {phone}")
-        
-        # Initiate STK push for cluster calculator
-        result = initiate_stk_push_cluster_calculator(phone, amount=amount)
-        
-        if result.get('ResponseCode') == '0':
-            transaction_ref = result.get('CheckoutRequestID')
-            email = session.get('cluster_calc_email')
-            index_number = session.get('cluster_calc_index_number')
-            
-            # Save payment record
-            save_cluster_calculator_payment(email, index_number, transaction_ref, amount)
-            
-            return {
-                'success': True,
-                'ResponseCode': '0', 
-                'transaction_ref': transaction_ref,
-                'amount': amount,
-                'redirect_url': url_for('cluster_calculator_payment_wait', transaction_ref=transaction_ref)
-            }
-
-        error_message = result.get('errorDescription') or result.get('errorMessage') or 'Failed to initiate payment. Try again.'
-        return {'success': False, 'error': error_message}, 400
-
-@app.route('/cluster-calculator/payment-wait/<transaction_ref>')
-def cluster_calculator_payment_wait(transaction_ref):
-    """Payment waiting page for cluster calculator"""
-    return render_template('cluster_calculator_payment_wait.html', 
-                         transaction_ref=transaction_ref,
-                         check_status_url=url_for('cluster_calculator_check_payment_status'))
-
-@app.route('/cluster-calculator/check-payment-status')
-def cluster_calculator_check_payment_status():
-    """Check payment status for cluster calculator"""
-    email = session.get('cluster_calc_email')
-    index_number = session.get('cluster_calc_index_number')
-    
-    if not email or not index_number:
-        return {'paid': False, 'error': 'Session data missing'}
-    
-    # Check session first
-    if session.get('cluster_calc_paid'):
-        return {
-            'paid': True,
-            'redirect_url': url_for('cluster_calculator_results'),
-            'status': 'confirmed'
-        }
-    
-    # Check database
-    if database_connected and db_cluster_payments is not None:
-        payment_data = db_cluster_payments.find_one({
-            'email': email, 
-            'index_number': index_number,
-            'payment_confirmed': True
-        })
-        
-        if payment_data:
-            session['cluster_calc_paid'] = True
-            return {
-                'paid': True,
-                'redirect_url': url_for('cluster_calculator_results'),
-                'status': 'confirmed'
-            }
-    
-    return {
-        'paid': False, 
-        'status': 'pending',
-        'message': 'Waiting for payment confirmation...'
-    }
-
-@app.route('/cluster-calculator/results')
-def cluster_calculator_results():
-    """Display cluster calculator results"""
-    email = session.get('cluster_calc_email')
-    index_number = session.get('cluster_calc_index_number')
-    
-    if not email or not index_number:
-        flash("Please complete the cluster calculator process first", "error")
-        return redirect(url_for('cluster_calculator'))
-    
-    # Check if payment is confirmed
-    payment_confirmed = False
-    if session.get('cluster_calc_paid'):
-        payment_confirmed = True
-    
-    if not payment_confirmed and database_connected and db_cluster_payments is not None:
-        payment_data = db_cluster_payments.find_one({
-            'email': email, 
-            'index_number': index_number,
-            'payment_confirmed': True
-        })
-        if payment_data:
-            payment_confirmed = True
-            session['cluster_calc_paid'] = True
-    
-    if not payment_confirmed:
-        flash('Please complete payment to view your cluster points.', 'error')
-        return redirect(url_for('cluster_calculator_payment'))
-    
-    # Get or calculate cluster points
-    cluster_results = None
-    if database_connected and db_cluster_results is not None:
-        cluster_results = db_cluster_results.find_one({
-            'email': email,
-            'index_number': index_number
-        })
-    
-    if not cluster_results:
-        # Calculate cluster points
-        grades = session.get('cluster_calc_grades', {})
-        if not grades:
-            flash("No grade data found. Please submit your grades again.", "error")
-            return redirect(url_for('cluster_calculator'))
-        
-        # Call the calculate_cluster_points function
-        results = calculate_cluster_points_from_grades(grades)
-        
-        # Save results to database
-        if results and database_connected and db_cluster_results is not None:
-            result_record = {
-                'email': email,
-                'index_number': index_number,
-                'grades': grades,
-                'results': results,
-                'created_at': datetime.now()
-            }
-            db_cluster_results.insert_one(result_record)
-            cluster_results = result_record
-        else:
-            # Use session if database save fails
-            cluster_results = {
-                'grades': grades,
-                'results': results
-            }
-    else:
-        # Convert ObjectId to string for template
-        if '_id' in cluster_results:
-            cluster_results['_id'] = str(cluster_results['_id'])
-    
-    return render_template('cluster_calculator_results.html',
-                         results=cluster_results.get('results', {}),
-                         grades=cluster_results.get('grades', {}),
-                         email=email,
-                         index_number=index_number)
-
-@app.route('/cluster-calculator/payment-success')
-def cluster_calculator_payment_success():
-    """Handle successful payment for cluster calculator"""
-    email = session.get('cluster_calc_email')
-    index_number = session.get('cluster_calc_index_number')
-    
-    if email and index_number and database_connected and db_cluster_payments:
-        # Update session payment status
-        session['cluster_calc_paid'] = True
-        
-        # Process immediately
-        flash("Payment successful! Calculating your cluster points...", "success")
-        return redirect(url_for('cluster_calculator_results'))
-    
-    flash("Payment verification in progress...", "info")
-    return redirect(url_for('cluster_calculator_payment_wait'))
-
-
-
-# Cluster Calculator Payment Functions
-def save_cluster_calculator_payment(email, index_number, transaction_ref, amount):
-    """Save cluster calculator payment record"""
-    payment_record = {
-        'email': email,
-        'index_number': index_number,
-        'transaction_ref': transaction_ref,
-        'payment_amount': amount,
-        'payment_confirmed': False,
-        'created_at': datetime.now()
-    }
-    
-    # FIX: Check if db_cluster_payments is not None instead of using boolean test
-    if database_connected and db_cluster_payments is not None:
-        try:
-            db_cluster_payments.update_one(
-                {'email': email, 'index_number': index_number},
-                {'$set': payment_record},
-                upsert=True
-            )
-            print(f"✅ Cluster calculator payment record saved")
-        except Exception as e:
-            print(f"❌ Error saving cluster calculator payment: {str(e)}")
-    
-    # Also store in session
-    session['cluster_calc_payment_record'] = payment_record
-
-def mark_cluster_calculator_payment_confirmed(transaction_ref, mpesa_receipt):
-    """Mark cluster calculator payment as confirmed - FIXED VERSION"""
-    print(f"🔍 Confirming cluster calculator payment: {transaction_ref}, Receipt: {mpesa_receipt}")
-    
-    if not database_connected or not db_cluster_payments:
-        print("❌ Database not connected or cluster payments collection not initialized")
-        return False
-    
-    try:
-        # Update payment record
-        result = db_cluster_payments.update_one(
-            {'transaction_ref': transaction_ref},
-            {'$set': {
-                'payment_confirmed': True,
-                'mpesa_receipt': mpesa_receipt,
-                'payment_date': datetime.now()
-            }}
-        )
-        
-        print(f"📊 Update result: {result.modified_count} modified, {result.matched_count} matched")
-        
-        if result.modified_count > 0 or result.matched_count > 0:
-            print(f"✅ Cluster calculator payment confirmed: {transaction_ref}")
-            
-            # Get payment data to update session
-            payment_data = db_cluster_payments.find_one({'transaction_ref': transaction_ref})
-            if payment_data:
-                session['cluster_calc_paid'] = True
-                session['cluster_calc_email'] = payment_data.get('email')
-                session['cluster_calc_index_number'] = payment_data.get('index_number')
-                print(f"✅ Session updated for user: {payment_data.get('email')}")
-            
-            return True
-        else:
-            print(f"❌ No payment found with transaction ref: {transaction_ref}")
-            
-            # Try to find by account reference
-            if mpesa_receipt:
-                payment_by_receipt = db_cluster_payments.find_one({'mpesa_receipt': mpesa_receipt})
-                if payment_by_receipt:
-                    print(f"✅ Found payment by receipt, updating...")
-                    result = db_cluster_payments.update_one(
-                        {'mpesa_receipt': mpesa_receipt},
-                        {'$set': {
-                            'payment_confirmed': True,
-                            'payment_date': datetime.now()
-                        }}
-                    )
-                    if result.modified_count > 0:
-                        session['cluster_calc_paid'] = True
-                        session['cluster_calc_email'] = payment_by_receipt.get('email')
-                        session['cluster_calc_index_number'] = payment_by_receipt.get('index_number')
-                        return True
-            
-            return False
-            
-    except Exception as e:
-        print(f"❌ Error marking cluster calculator payment confirmed: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return False
-
-def initiate_stk_push_cluster_calculator(phone, amount=1):
-    """Initiate STK push for cluster calculator"""
-    print(f"📱 CLUSTER CALC: Initiating STK push for phone: {phone}")
-    
-    # Get flow from session
-    flow = 'cluster_calculator'
-    
-    # Format phone number
-    if phone.startswith('0') and len(phone) == 10:
-        phone = '254' + phone[1:]
-    elif phone.startswith('+254') and len(phone) == 13:
-        phone = phone[1:]
-    elif len(phone) == 9:
-        phone = '254' + phone
-    
-    print(f"📞 CLUSTER CALC: Formatted phone: {phone}")
-    
-    # Get access token
-    access_token = get_mpesa_access_token()
-    if not access_token:
-        return {'error': 'Failed to get MPesa access token'}
-    
-    # Prepare STK push request
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    business_short_code = MPESA_SHORTCODE
-    passkey = MPESA_PASSKEY
-    
-    data_to_encode = business_short_code + passkey + timestamp
-    password = base64.b64encode(data_to_encode.encode()).decode('utf-8')
-    
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-    
-    # Use cluster calculator specific details
-    index_number = session.get('cluster_calc_index_number', 'CLUSTER_CALC')
-    email = session.get('cluster_calc_email', 'cluster@example.com')
-    
-    # Ensure callback URL is correct
-    if os.environ.get('FLASK_ENV') == 'production' or 'render.com' in os.environ.get('RENDER_EXTERNAL_HOSTNAME', ''):
-        base_url = 'https://kuccps-courses-px6s.onrender.com'
-    else:
-        base_url = 'https://kuccps-courses-px6s.onrender.com'
-    
-    callback_url = f"{base_url}/mpesa/callback"
-    
-    payload = {
-        "BusinessShortCode": business_short_code,
-        "Password": password,
-        "Timestamp": timestamp,
-        "TransactionType": "CustomerPayBillOnline",
-        "Amount": amount,
-        "PartyA": phone,
-        "PartyB": business_short_code,
-        "PhoneNumber": phone,
-        "CallBackURL": callback_url,
-        "AccountReference": index_number,
-        "TransactionDesc": f"Cluster Calculator - Ksh {amount}"
-    }
-    
-    print(f"📤 CLUSTER CALC: Sending STK push request...")
-    print(f"💰 Amount: {amount}")
-    print(f"📝 Account Reference: {index_number}")
-    print(f"🔗 Callback URL: {callback_url}")
-    
-    try:
-        response = requests.post(
-            "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-            json=payload,
-            headers=headers,
-            timeout=30
-        )
-        
-        print(f"📥 CLUSTER CALC: Response status: {response.status_code}")
-        
-        if response.status_code == 200:
-            result = response.json()
-            print(f"✅ CLUSTER CALC: STK Push initiated")
-            print(f"📋 Response: {json.dumps(result, indent=2)}")
-            
-            if result.get('ResponseCode') == '0':
-                transaction_ref = result.get('CheckoutRequestID')
-                
-                if transaction_ref and email and index_number:
-                    # Save cluster calculator payment - FIXED: Use is not None check
-                    if database_connected and db_cluster_payments is not None:
-                        save_cluster_calculator_payment(email, index_number, transaction_ref, amount)
-                        print(f"✅ CLUSTER CALC: Payment record saved")
-                    else:
-                        print(f"⚠️ CLUSTER CALC: Database not available, saving to session only")
-                        # Save to session as fallback
-                        session['cluster_calc_payment_record'] = {
-                            'email': email,
-                            'index_number': index_number,
-                            'transaction_ref': transaction_ref,
-                            'payment_amount': amount,
-                            'payment_confirmed': False,
-                            'created_at': datetime.now().isoformat()
-                        }
-                
-                return result
-            else:
-                error_code = result.get('ResponseCode')
-                error_message = result.get('ResponseDescription') or result.get('errorMessage') or 'Unknown error'
-                print(f"❌ CLUSTER CALC: Failed with code {error_code}: {error_message}")
-                return {'error': f'MPesa Error {error_code}: {error_message}'}
-        else:
-            error_message = f'MPesa API returned status {response.status_code}'
-            print(f"❌ CLUSTER CALC: {error_message}")
-            return {'error': error_message}
-        
-    except requests.exceptions.Timeout:
-        error_msg = "MPesa API request timed out"
-        print(f"❌ CLUSTER CALC: {error_msg}")
-        return {'error': error_msg}
-    except Exception as e:
-        error_msg = f"Unexpected error: {str(e)}"
-        print(f"❌ CLUSTER CALC: {error_msg}")
-        import traceback
-        traceback.print_exc()
-        return {'error': error_msg}
-
-def calculate_cluster_points_from_grades(grades):
-    """Calculate cluster points from grades - ACTUAL IMPLEMENTATION"""
-    try:
-        print(f"🧮 Calculating cluster points from grades: {grades}")
-        
-        # Convert letter grades to points
-        grade_points = {}
-        for subject, grade in grades.items():
-            if grade and grade in GRADE_VALUES:
-                grade_points[subject] = GRADE_VALUES[grade]
-        
-        # Calculate aggregate points (sum of best 7 subjects)
-        all_points = list(grade_points.values())
-        all_points.sort(reverse=True)
-        aggregate_points = sum(all_points[:7]) if len(all_points) >= 7 else sum(all_points)
-        
-        # Generate cluster points (simplified example - replace with your actual algorithm)
-        results = {}
-        for i in range(1, 21):
-            # This is a simplified example - you need to implement your actual algorithm
-            # For now, we'll generate random points for demonstration
-            import random
-            base_points = aggregate_points * 0.5  # Some calculation based on aggregate
-            
-            # Add some variation
-            variation = random.uniform(-5, 5)
-            cluster_points = max(0, base_points + variation)
-            
-            results[f'Cluster {i}'] = f"{cluster_points:.3f}"
-        
-        # Also store aggregate for display
-        results['aggregate_points'] = aggregate_points
-        
-        print(f"✅ Cluster calculation complete: {len(results)} clusters generated")
-        return results
-        
-    except Exception as e:
-        print(f"❌ Error calculating cluster points: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return {}
 @app.route('/temp-bypass/<flow>')
 def temp_bypass(flow):
     session[f'paid_{flow}'] = True
@@ -5203,8 +4356,6 @@ class UltimateKeepAliveService:
             'Cache-Control': 'max-age=0'
         }
     
-
-
     def smart_request(self, url):
         """Make intelligent requests with multiple fallback strategies"""
         methods = ['GET', 'HEAD']  # Try both GET and HEAD requests

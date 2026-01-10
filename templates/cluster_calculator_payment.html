@@ -1,0 +1,110 @@
+{% extends "./base.html" %}
+{% block title %}Payment - Cluster Calculator{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment for Cluster Calculator</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success mb-4">
+                        <h5><i class="fas fa-calculator me-2"></i>Cluster Points Calculation</h5>
+                        <p class="mb-2">Amount: <strong>Ksh 100</strong></p>
+                        <p class="mb-0">You'll receive your cluster points immediately after payment.</p>
+                    </div>
+                    
+                    <form id="paymentForm">
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">M-Pesa Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   placeholder="e.g., 0712345678" required>
+                            <div class="form-text">Enter the phone number registered with M-Pesa</div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Ensure you have sufficient funds in your M-Pesa account. You'll receive a prompt on your phone.
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success" id="payButton">
+                                <i class="fas fa-mobile-alt me-2"></i> Pay Ksh 100 via M-Pesa
+                            </button>
+                            <a href="{{ url_for('cluster_calculator_enter_details') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Back
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <div id="paymentResponse" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const phone = document.getElementById('phone').value;
+        const payButton = document.getElementById('payButton');
+        const responseDiv = document.getElementById('paymentResponse');
+        
+        if (!phone || phone.length < 10) {
+            responseDiv.innerHTML = '<div class="alert alert-danger">Please enter a valid phone number</div>';
+            return;
+        }
+        
+        // Disable button and show loading
+        payButton.disabled = true;
+        payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('phone', phone);
+        
+        // Send payment request
+        fetch('{{ url_for("cluster_calculator_payment") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                responseDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Payment initiated!</strong> Check your phone for M-Pesa prompt.
+                    </div>
+                `;
+                // Redirect to payment wait page
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 2000);
+            } else {
+                responseDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>Payment failed:</strong> ${data.error}
+                    </div>
+                `;
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="fas fa-mobile-alt me-2"></i> Pay Ksh 100 via M-Pesa';
+            }
+        })
+        .catch(error => {
+            responseDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle me-2"></i>
+                    <strong>Network error:</strong> Please check your connection and try again.
+                </div>
+            `;
+            payButton.disabled = false;
+            payButton.innerHTML = '<i class="fas fa-mobile-alt me-2"></i> Pay Ksh 100 via M-Pesa';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "./base.html" %}
+{% block title %}Enter Details - Cluster Calculator{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-circle me-2"></i>Enter Your Details</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('cluster_calculator_enter_details') }}" method="post">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="form-text">We'll send your cluster points to this email</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="index_number" class="form-label">KCSE Index Number</label>
+                            <input type="text" class="form-control" id="index_number" name="index_number" 
+                                   pattern="\d{11}/\d{4}" required placeholder="e.g., 12345678901/2024">
+                            <div class="form-text">Format: 11 digits, slash, 4 digits (e.g., 12345678901/2024)</div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> A payment of Ksh 100 is required to calculate and view your cluster points.
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-arrow-right me-2"></i> Proceed to Payment (Ksh 100)
+                            </button>
+                            <a href="{{ url_for('cluster_calculator') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Calculator
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const indexInput = document.getElementById('index_number');
+
+        indexInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^\d/]/g, '');
+            
+            if (this.value.length === 11 && !this.value.includes('/')) {
+                this.value = this.value + '/';
+            }
+            
+            if (this.value.length > 16) {
+                this.value = this.value.substring(0, 16);
+            }
+        });
+    });
+</script>
+{% endblock %}
