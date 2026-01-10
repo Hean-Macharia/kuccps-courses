@@ -70,7 +70,7 @@
             position: relative;
         }
 
-        /* Modern Navigation */
+        /* Modern Navigation - UPDATED */
         .navbar-custom {
             background: var(--white);
             padding: 12px 0;
@@ -89,6 +89,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-left: 50px; /* Space for sidebar toggle */
         }
 
         .navbar-brand i {
@@ -212,7 +213,7 @@
             color: var(--white);
         }
 
-        /* Enhanced Menu Toggle */
+        /* Enhanced Menu Toggle - UPDATED */
         .menu-toggle {
             position: fixed;
             top: 15px;
@@ -237,6 +238,16 @@
             transform: scale(1.1) rotate(90deg);
             background: var(--primary-red);
             box-shadow: var(--shadow-heavy);
+        }
+
+        /* Hide Bootstrap navbar-toggler on mobile */
+        .navbar-toggler {
+            display: none !important;
+        }
+
+        /* Mobile Navigation Container - NEW */
+        .mobile-nav-container {
+            display: none;
         }
 
         .overlay {
@@ -271,12 +282,6 @@
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 20px 15px;
-            }
         }
 
         /* Enhanced Alerts */
@@ -642,22 +647,24 @@
             background: var(--red-dark);
         }
 
-        /* Responsive Design */
+        /* RESPONSIVE DESIGN - UPDATED FOR MOBILE */
         @media (max-width: 992px) {
-            .navbar-nav {
-                text-align: center;
-                padding: 15px 0;
+            .navbar-brand {
+                margin-left: 60px; /* More space for sidebar toggle */
+                font-size: 1.4rem;
             }
             
-            .nav-link {
-                margin: 4px 0;
-                display: inline-block;
+            .navbar-nav {
+                display: none !important; /* Hide desktop nav on mobile */
             }
+            
+            /* Show mobile nav items in sidebar instead */
         }
 
         @media (max-width: 768px) {
             .sidebar {
                 width: 280px;
+                left: -280px;
             }
             
             .modal-dialog.modal-lg {
@@ -666,6 +673,11 @@
             
             .footer-logo {
                 font-size: 1.6rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.3rem;
+                margin-left: 55px;
             }
         }
 
@@ -693,20 +705,32 @@
             .kuccps-logo {
                 max-width: 100%;
             }
+            
+            .navbar-brand {
+                font-size: 1.2rem;
+                margin-left: 50px;
+            }
+            
+            .menu-toggle {
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
+                top: 12px;
+                left: 12px;
+            }
         }
 
-        /* Mobile Menu Toggle */
-        .navbar-toggler {
-            border: 2px solid var(--primary-red);
-            padding: 4px 8px;
-        }
-
-        .navbar-toggler:focus {
-            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.25);
-        }
-
-        .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28198, 40, 40, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        @media (max-width: 400px) {
+            .navbar-brand {
+                font-size: 1.1rem;
+                margin-left: 45px;
+            }
+            
+            .menu-toggle {
+                width: 38px;
+                height: 38px;
+                font-size: 1.1rem;
+            }
         }
 
         /* Ensure images are responsive */
@@ -735,7 +759,7 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Modern Navigation -->
+    <!-- Modern Navigation - UPDATED -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="/">
@@ -743,10 +767,12 @@
                 KUCCPS Course Checker
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <!-- REMOVED Bootstrap navbar-toggler since we're using custom sidebar -->
+            <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
-            </button>
+            </button> -->
             
+            <!-- Desktop Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -780,44 +806,45 @@
         </div>
     </nav>
 
-    <!-- Modern Sidebar -->
+    <!-- Modern Sidebar (For Mobile Navigation) -->
     <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
         <i class="fas fa-bars"></i>
     </button>
 
     <div class="sidebar" id="sidebarMenu">
         <div class="sidebar-header">
-            <h3><i class="fas fa-graduation-cap me-2"></i>Quick Links</h3>
+            <h3><i class="fas fa-graduation-cap me-2"></i>KUCCPS Course Checker</h3>
         </div>
         
+        <!-- Mobile Navigation Links -->
         <a href="/" class="sidebar-link active">
             <i class="fas fa-home"></i> Home
         </a>
-        <a href="https://web-development-6fdl.onrender.com" target="_blank" class="sidebar-link">
-            <i class="fas fa-crown"></i> Premium Programs
+        <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
+            <i class="fas fa-check-circle"></i> Verify Payment
         </a>
-        <a href="https://students.kuccps.net/login" target="_blank" class="sidebar-link">
+        <a href="https://students.kuccps.net/login" target="_blank" class="sidebar-link" onclick="toggleSidebar();">
             <i class="fas fa-external-link-alt"></i> KUCCPS Portal
         </a>
-        <a href="/contact" class="sidebar-link">
+        <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#helpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </a>
+        <a href="/contact" class="sidebar-link" onclick="toggleSidebar();">
             <i class="fas fa-envelope"></i> Contact Us
         </a>
-        <a href="mailto:courseschecker@gmail.com" class="sidebar-link">
+        <a href="mailto:courseschecker@gmail.com" class="sidebar-link" onclick="toggleSidebar();">
             <i class="fas fa-at"></i> Email Us
         </a>
-        <a href="/about" class="sidebar-link">
+        <a href="/about" class="sidebar-link" onclick="toggleSidebar();">
             <i class="fas fa-info-circle"></i> About Us
         </a>
-        <a href="/user-guide" target="_blank" class="sidebar-link">
+        <a href="/user-guide" target="_blank" class="sidebar-link" onclick="toggleSidebar();">
             <i class="fas fa-book"></i> User Guide
         </a>
-        <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
-            <i class="fas fa-credit-card"></i> Verify Payment
+        <a href="https://web-development-6fdl.onrender.com" target="_blank" class="sidebar-link" onclick="toggleSidebar();">
+            <i class="fas fa-crown"></i> Premium Programs
         </a>
-        <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#helpModal">
-            <i class="fas fa-question-circle"></i> Help Center
-        </a>
-        <a href="/basket" class="sidebar-link" id="sidebarBasketLink" style="display: none;">
+        <a href="/basket" class="sidebar-link" id="sidebarBasketLink" style="display: none;" onclick="toggleSidebar();">
             <i class="fas fa-shopping-basket"></i> My Basket
             <span class="badge-notification" id="sidebarBasketCount">0</span>
         </a>
@@ -901,7 +928,7 @@
                     <div class="copyright">
                         <p>&copy; 2025 KUCCPS Course Checker. All rights reserved.</p>
                         <p class="mb-1">Empowering students' academic journeys across Kenya</p>
-                        <p class="mt-1">Designed by Hean Njuki</p>
+                        <p class="mt-1">Designed with <i class="fas fa-heart" style="color: var(--primary-red);"></i> by Hean Njuki</p>
                     </div>
                 </div>
             </div>
@@ -1172,6 +1199,18 @@
             document.body.style.overflow = isShowing ? 'hidden' : '';
         }
 
+        // Close sidebar when clicking on overlay or links
+        document.getElementById('overlay').addEventListener('click', toggleSidebar);
+        
+        // Auto-close sidebar when clicking on sidebar links on mobile
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 992) {
+                    toggleSidebar();
+                }
+            });
+        });
+
         // Basket Navigation Functions
         function showBasketNavigation(basketCount) {
             const basketNavLink = document.getElementById('basketNavLink');
@@ -1230,15 +1269,6 @@
                         console.log('No saved basket found');
                     });
             }
-
-            // Close sidebar when clicking on a link
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    if (window.innerWidth < 992) {
-                        toggleSidebar();
-                    }
-                });
-            });
 
             // Initialize tooltips
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

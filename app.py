@@ -2303,7 +2303,7 @@ def enter_details(flow):
         print(f"🔍 Checking existing paid categories for {email}")
         existing_categories = get_user_paid_categories(email, index_number)
         is_first_category = len(existing_categories) == 0
-        amount = 2 if is_first_category else 1
+        amount = 200 if is_first_category else 100
         
         print(f"💰 Pricing - First category: {is_first_category}, Amount: {amount}, Existing categories: {existing_categories}")
         
