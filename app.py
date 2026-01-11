@@ -80,6 +80,7 @@ DIPLOMA_COLLECTIONS = [
 ]
 
 KMTC_COLLECTIONS = ["kmtc_courses"]
+TTC_COLLECTIONS = ["ttc"]
 
 CERTIFICATE_COLLECTIONS = [
     "Agricultural_Sciences", "Applied_Sciences", "Building_Construction_Related",
@@ -114,6 +115,7 @@ db = None
 db_user_data = None
 db_diploma = None
 db_kmtc = None
+db_Teachers = None 
 db_certificate = None
 db_artisan = None
 user_payments_collection = None
@@ -124,7 +126,7 @@ database_connected = False
 
 def initialize_database():
     """Initialize database connections with robust error handling and fixed index creation"""
-    global db, db_user_data, db_diploma, db_kmtc, db_certificate, db_artisan
+    global db, db_user_data, db_diploma, db_kmtc, db_certificate, db_artisan, db_Teachers
     global user_payments_collection, user_courses_collection, user_baskets_collection, admin_activations_collection, database_connected
     
     max_retries = 3
@@ -153,6 +155,7 @@ def initialize_database():
             db_kmtc = client['kmtc']
             db_certificate = client['certificate']
             db_artisan = client['artisan']
+            db_Teachers = client['Teachers']
             
             # Initialize collections
             collections_initialized = True
@@ -457,6 +460,34 @@ def get_user_courses_data(email, index_number, level):
     
     return courses_data
 
+def get_qualifying_ttc(user_grades, user_mean_grade):
+    """Get all TTC courses that the user qualifies for based on mean grade and subject requirements"""
+    if not database_connected:
+        print("❌ Database not available for TTC courses")
+        return []
+        
+    qualifying_courses = []
+    
+    for collection_name in TTC_COLLECTIONS:
+        try:
+            if collection_name not in db_Teachers.list_collection_names():  # Use db_Teachers
+                continue
+                
+            collection = db_Teachers[collection_name]  # Use db_Teachers
+            courses = collection.find()
+            
+            for course in courses:
+                if check_diploma_course_qualification(course, user_grades, user_mean_grade):
+                    course_with_collection = dict(course)
+                    course_with_collection['collection'] = collection_name
+                    qualifying_courses.append(course_with_collection)
+        
+        except Exception as e:
+            print(f"Error processing TTC collection {collection_name}: {str(e)}")
+            continue
+    
+    return qualifying_courses
+
 # --- Session Management Functions ---
 def init_session():
     """Initialize or reset session with default values"""
@@ -480,6 +511,7 @@ def clear_session_data(partial=False):
         'certificate_grades', 'certificate_mean_grade', 'certificate_data_submitted',
         'artisan_grades', 'artisan_mean_grade', 'artisan_data_submitted',
         'kmtc_grades', 'kmtc_mean_grade', 'kmtc_data_submitted'
+        'ttc_grades', 'ttc_mean_grade', 'ttc_data_submitted'
     }
     
     if partial:
@@ -1134,6 +1166,10 @@ def process_courses_after_payment(email, index_number, flow):
                 user_grades = session.get('kmtc_grades', {})
                 user_mean_grade = session.get('kmtc_mean_grade', '')
                 qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+            elif flow == 'ttc':
+                user_grades = session.get('ttc_grades', {})
+                user_mean_grade = session.get('ttc_mean_grade', '')
+                qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
             
             # Save courses to database
             if qualifying_courses:
@@ -1710,7 +1746,7 @@ def get_user_paid_categories(email, index_number):
     
     if not database_connected:
         # Check session for paid categories
-        for level in ['degree', 'diploma', 'certificate', 'artisan', 'kmtc']:
+        for level in ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']:
             if session.get(f'paid_{level}'):
                 paid_categories.append(level)
         return paid_categories
@@ -2002,6 +2038,46 @@ def submit_grades():
         print(f"❌ Error in submit_grades: {str(e)}")
         flash("An error occurred while processing your grades", "error")
         return redirect(url_for('degree'))
+    
+@app.route('/submit-ttc-grades', methods=['POST'])
+def submit_ttc_grades():
+    try:
+        form_data = request.form.to_dict()
+        
+        user_mean_grade = form_data.get('overall', '').upper()
+        if user_mean_grade not in GRADE_VALUES:
+            flash("Please select a valid overall grade", "error")
+            return redirect(url_for('ttc'))
+        
+        user_grades = {}
+        for subject_name, subject_code in SUBJECTS.items():
+            if subject_name in form_data and form_data[subject_name]:
+                grade = form_data[subject_name].upper()
+                if grade in GRADE_VALUES:
+                    user_grades[subject_code] = grade
+        
+        # Enhanced session management
+        session.permanent = True
+        
+        session['ttc_grades'] = user_grades
+        session['ttc_mean_grade'] = user_mean_grade
+        session['ttc_data_submitted'] = True
+        
+        session.modified = True
+        
+        print(f"✅ TTC grades submitted successfully: {user_mean_grade}")
+        
+        return redirect(url_for('enter_details', flow='ttc'))
+        
+    except Exception as e:
+        print(f"❌ Error in submit_ttc_grades: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash("An error occurred while processing your request", "error")
+        return redirect(url_for('ttc'))
+@app.route('/ttc')
+def ttc():
+    return render_template('ttc.html')
 
 @app.route('/submit-diploma-grades', methods=['POST'])
 def submit_diploma_grades():
@@ -2249,7 +2325,13 @@ def enter_details(flow):
                     user_mean_grade = session.get('artisan_mean_grade', '')
                     print(f"📊 Artisan grades: {user_grades}, Mean grade: {user_mean_grade}")
                     qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
-                    
+
+                elif flow == 'ttc':
+                    user_grades = session.get('ttc_grades', {})
+                    user_mean_grade = session.get('ttc_mean_grade', '')
+                    print(f"📊 TTC grades: {user_grades}, Mean grade: {user_mean_grade}")
+                    qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+
                 elif flow == 'kmtc':
                     user_grades = session.get('kmtc_grades', {})
                     user_mean_grade = session.get('kmtc_mean_grade', '')
@@ -2303,7 +2385,7 @@ def enter_details(flow):
         print(f"🔍 Checking existing paid categories for {email}")
         existing_categories = get_user_paid_categories(email, index_number)
         is_first_category = len(existing_categories) == 0
-        amount = 200 if is_first_category else 100
+        amount = 2 if is_first_category else 1
         
         print(f"💰 Pricing - First category: {is_first_category}, Amount: {amount}, Existing categories: {existing_categories}")
         
@@ -2795,6 +2877,11 @@ def show_results(flow):
                 user_mean_grade = session.get('kmtc_mean_grade', '')
                 qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
             
+            elif flow == 'ttc':
+                user_grades = session.get('ttc_grades', {})
+                user_mean_grade = session.get('ttc_mean_grade', '')
+                qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+            
             # Save courses to database
             if qualifying_courses:
                 save_user_courses(email, index_number, flow, qualifying_courses)
@@ -2890,6 +2977,11 @@ def show_collection_courses(flow, collection_name):
             user_grades = session.get('kmtc_grades', {})
             user_mean_grade = session.get('kmtc_mean_grade', '')
             qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+        elif flow == 'ttc':
+            user_grades = session.get('ttc_grades', {})
+            user_mean_grade = session.get('ttc_mean_grade', '')
+            qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+
         else:
             qualifying_courses = []
     
@@ -3014,7 +3106,7 @@ def verified_results_dashboard():
     total_courses = 0
     
     if database_connected:
-        levels = ['degree', 'diploma', 'certificate', 'artisan', 'kmtc']
+        levels = ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']
         for level in levels:
             courses_data = user_courses_collection.find_one({
                 'index_number': index_number,
@@ -3059,7 +3151,7 @@ def show_verified_level_results(level):
     index_number = request.args.get('index')
     receipt = request.args.get('receipt')
     
-    if level not in ['degree', 'diploma', 'certificate', 'artisan', 'kmtc']:
+    if level not in ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']:
         flash("Invalid course level", "error")
         return redirect(url_for('index'))
     
@@ -3361,7 +3453,7 @@ def clear_basket():
         
         # 🔥 EXTRA VERIFICATION: Ensure paid categories are preserved
         paid_categories = []
-        for level in ['degree', 'diploma', 'certificate', 'artisan', 'kmtc']:
+        for level in ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']:
             if session_backup.get(f'paid_{level}'):
                 session[f'paid_{level}'] = True
                 paid_categories.append(level)
@@ -3699,6 +3791,16 @@ def search_courses_route(flow):
                     else:
                         qualifying_courses = []
                         print("⚠️ No certificate grades or mean grade in session")
+
+                elif flow == 'ttc':
+                    user_grades = session.get('ttc_grades', {})
+                    user_mean_grade = session.get('ttc_mean_grade', '')
+                    if user_grades and user_mean_grade:
+                        qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+                    else:
+                         qualifying_courses = []
+                         print("⚠️ No TTC grades or mean grade in session")
+
                 elif flow == 'artisan':
                     user_grades = session.get('artisan_grades', {})
                     user_mean_grade = session.get('artisan_mean_grade', '')
@@ -3708,6 +3810,9 @@ def search_courses_route(flow):
                     else:
                         qualifying_courses = []
                         print("⚠️ No artisan grades or mean grade in session")
+
+                
+                
                 elif flow == 'kmtc':
                     user_grades = session.get('kmtc_grades', {})
                     user_mean_grade = session.get('kmtc_mean_grade', '')
@@ -3720,6 +3825,8 @@ def search_courses_route(flow):
                 else:
                     qualifying_courses = []
                     print(f"⚠️ Unknown flow type: {flow}")
+               
+
         else:
             # Regular users with session data - get courses based on flow
             print(f"🔍 Regular user with session - getting {flow} courses")
