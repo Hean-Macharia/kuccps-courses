@@ -647,6 +647,57 @@
             background: var(--red-dark);
         }
 
+        /* Verify Payment Preview Styling */
+        #verifyPreview .card {
+            border: none;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+        }
+
+        #verifyPreview .card-header {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        #showResultsBtn {
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: var(--border-radius-md);
+            transition: all 0.3s ease;
+        }
+
+        #showResultsBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        /* Badge styling for course levels */
+        .badge {
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 20px;
+        }
+
+        /* Loading animation */
+        .progress-bar-animated {
+            animation: progress-bar-stripes 1s linear infinite;
+        }
+
+        @keyframes progress-bar-stripes {
+            from { background-position: 1rem 0; }
+            to { background-position: 0 0; }
+        }
+
+        /* Card Hover Effects */
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-heavy);
+        }
+
         /* RESPONSIVE DESIGN - UPDATED FOR MOBILE */
         @media (max-width: 992px) {
             .navbar-brand {
@@ -739,14 +790,9 @@
             height: auto;
         }
 
-        /* Card Hover Effects */
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-heavy);
+        /* Pulse animation for notifications */
+        .pulse {
+            animation: pulse 2s infinite;
         }
     </style>
     
@@ -766,11 +812,6 @@
                 <i class="fas fa-graduation-cap"></i>
                 KUCCPS Course Checker
             </a>
-            
-            <!-- REMOVED Bootstrap navbar-toggler since we're using custom sidebar -->
-            <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button> -->
             
             <!-- Desktop Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -928,7 +969,7 @@
                     <div class="copyright">
                         <p>&copy; 2025 KUCCPS Course Checker. All rights reserved.</p>
                         <p class="mb-1">Empowering students' academic journeys across Kenya</p>
-                        <p class="mt-1">Designed  by Hean Njuki</p>
+                        <p class="mt-1">Designed by Hean Njuki</p>
                     </div>
                 </div>
             </div>
@@ -1086,8 +1127,8 @@
                                         <button type="button" id="showResultsBtn" class="btn btn-yellow-custom">
                                             <i class="fas fa-graduation-cap me-2"></i>View All Courses
                                         </button>
-                                        <button type="button" id="cancelPreviewBtn" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                            Close
+                                        <button type="button" id="cancelPreviewBtn" class="btn btn-outline-secondary">
+                                            Close Preview
                                         </button>
                                     </div>
                                 </div>
@@ -1251,12 +1292,182 @@
             });
         });
 
-        // Enhanced Verify Payment Form Submission
+        // Enhanced Verify Payment Form Submission - FIXED VERSION
         document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('verifyPaymentForm');
-            if (!form) return;
+            const verifyPaymentForm = document.getElementById('verifyPaymentForm');
+            const verifyPaymentModal = document.getElementById('verifyPaymentModal');
+            
+            if (!verifyPaymentForm) return;
 
-            // Check for existing verification
+            verifyPaymentForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                
+                const mpesaReceipt = document.getElementById('mpesa_receipt').value.trim().toUpperCase();
+                const indexNumber = document.getElementById('index_number_verify').value.trim();
+                const errorDiv = document.getElementById('verifyError');
+                const loadingDiv = document.getElementById('verifyLoading');
+                const submitBtn = document.getElementById('verifySubmitBtn');
+                const previewDiv = document.getElementById('verifyPreview');
+                
+                // Reset UI
+                errorDiv.style.display = 'none';
+                loadingDiv.style.display = 'block';
+                submitBtn.disabled = true;
+                previewDiv.style.display = 'none';
+                
+                // Validate inputs
+                if (!mpesaReceipt || !indexNumber) {
+                    showError('Please fill in all required fields');
+                    return;
+                }
+                
+                // Validate M-Pesa receipt format
+                if (!/^[A-Z0-9]{10}$/.test(mpesaReceipt)) {
+                    showError('Invalid M-Pesa receipt format. Must be exactly 10 alphanumeric characters (e.g., RJ89A5LBQ2).');
+                    return;
+                }
+                
+                // Validate index number format
+                if (!/^\d{11}\/\d{4}$/.test(indexNumber)) {
+                    showError('Invalid index number format. Must be: 12345678901/2024 (11 digits/year)');
+                    return;
+                }
+                
+                // Make AJAX request
+                fetch('/verify-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'mpesa_receipt': mpesaReceipt,
+                        'index_number': indexNumber
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingDiv.style.display = 'none';
+                    submitBtn.disabled = false;
+                    
+                    if (data.success) {
+                        // Payment verified successfully
+                        console.log('Verification success:', data);
+                        
+                        // Store verification in sessionStorage
+                        sessionStorage.setItem('userVerified', 'true');
+                        sessionStorage.setItem('userIndex', indexNumber);
+                        sessionStorage.setItem('userReceipt', mpesaReceipt);
+                        
+                        // Show preview with course information
+                        showPreview(data);
+                    } else {
+                        // Show error
+                        showError(data.error || 'Verification failed. Please check your details and try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Verification error:', error);
+                    loadingDiv.style.display = 'none';
+                    submitBtn.disabled = false;
+                    showError('Network error. Please check your connection and try again.');
+                });
+            });
+            
+            function showError(message) {
+                const errorDiv = document.getElementById('verifyError');
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
+                errorDiv.style.display = 'block';
+                const loadingDiv = document.getElementById('verifyLoading');
+                loadingDiv.style.display = 'none';
+                const submitBtn = document.getElementById('verifySubmitBtn');
+                submitBtn.disabled = false;
+            }
+            
+            function showPreview(data) {
+                const previewDiv = document.getElementById('verifyPreview');
+                const previewInfo = document.getElementById('previewInfo');
+                const courseLevels = document.getElementById('courseLevels');
+                const showResultsBtn = document.getElementById('showResultsBtn');
+                const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
+                
+                // Update preview information
+                previewInfo.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-id-card me-2"></i>Index Number:</strong><br>${data.index_number || document.getElementById('index_number_verify').value}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-receipt me-2"></i>Receipt:</strong><br>${data.mpesa_receipt || document.getElementById('mpesa_receipt').value.toUpperCase()}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <p><strong><i class="fas fa-graduation-cap me-2"></i>Total Courses Found:</strong> ${data.courses_count || 0}</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Update course levels
+                if (data.levels && data.levels.length > 0) {
+                    courseLevels.innerHTML = '';
+                    data.levels.forEach(level => {
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-primary px-3 py-2 me-2 mb-2';
+                        badge.style.cssText = 'background: var(--gradient-red)!important; font-size: 0.9rem;';
+                        badge.innerHTML = `<i class="fas fa-university me-1"></i>${level.toUpperCase()}`;
+                        courseLevels.appendChild(badge);
+                    });
+                } else {
+                    courseLevels.innerHTML = '<p class="text-muted">No course levels found</p>';
+                }
+                
+                // Update show results button
+                showResultsBtn.onclick = function() {
+                    // Redirect to verified dashboard
+                    if (data.redirect_url) {
+                        console.log('Redirecting to:', data.redirect_url);
+                        window.location.href = data.redirect_url;
+                    } else {
+                        // Fallback redirect with parameters
+                        const params = new URLSearchParams({
+                            index: data.index_number || document.getElementById('index_number_verify').value,
+                            receipt: data.mpesa_receipt || document.getElementById('mpesa_receipt').value.toUpperCase()
+                        });
+                        window.location.href = `/verified-dashboard?${params.toString()}`;
+                    }
+                };
+                
+                // Cancel preview button
+                cancelPreviewBtn.onclick = function() {
+                    previewDiv.style.display = 'none';
+                    verifyPaymentForm.reset();
+                };
+                
+                // Show preview
+                previewDiv.style.display = 'block';
+                
+                // Scroll to preview
+                previewDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Reset form when modal is hidden
+            verifyPaymentModal.addEventListener('hidden.bs.modal', function () {
+                const form = document.getElementById('verifyPaymentForm');
+                if (form) {
+                    form.reset();
+                }
+                document.getElementById('verifyError').style.display = 'none';
+                document.getElementById('verifyLoading').style.display = 'none';
+                document.getElementById('verifyPreview').style.display = 'none';
+                document.getElementById('verifySubmitBtn').disabled = false;
+            });
+
+            // Check for existing verification on page load
             if (sessionStorage.getItem('userVerified')) {
                 fetch('/load-basket')
                     .then(response => response.json())
@@ -1270,12 +1481,6 @@
                     });
             }
 
-            // Initialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-
             // Add scroll event for navbar
             window.addEventListener('scroll', function() {
                 const navbar = document.querySelector('.navbar-custom');
@@ -1285,7 +1490,25 @@
                     navbar.style.boxShadow = 'var(--shadow-light)';
                 }
             });
+
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         });
+
+        // Debug function for testing
+        function debugVerifyPayment() {
+            console.log('Debug: Testing verify payment functionality');
+            fetch('/debug/verify-test')
+                .then(response => response.json())
+                .then(data => console.log('Debug data:', data))
+                .catch(error => console.error('Debug error:', error));
+        }
+
+        // Uncomment to enable debug testing
+        // debugVerifyPayment();
     </script>
 </body>
 </html>
