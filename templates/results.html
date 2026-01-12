@@ -132,4 +132,33 @@
         <a href="/" class="btn btn-secondary">Back to Home</a>
     </div>
 </div>
+<div id="offlineNotification" class="alert alert-warning" style="display:none;">
+    ⚠️ You're offline. Some features may be limited.
+</div>
+
+<script>
+// Check online status
+function updateOnlineStatus() {
+    if (!navigator.onLine) {
+        document.getElementById('offlineNotification').style.display = 'block';
+        
+        // Try to use offline storage
+        if (typeof OfflineStorage !== 'undefined') {
+            OfflineStorage.getBasket().then(basket => {
+                console.log('Offline basket:', basket);
+                // Update UI with offline data
+            });
+        }
+    } else {
+        document.getElementById('offlineNotification').style.display = 'none';
+    }
+}
+
+// Listen for online/offline events
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// Initial check
+updateOnlineStatus();
+</script>
 {% endblock %}

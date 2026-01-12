@@ -4730,15 +4730,60 @@ def api_status():
         'environment': os.environ.get('FLASK_ENV', 'production')
     })
 
-# Add to your Flask routes
+# --- Offline Support Routes ---
+@app.route('/api/offline/courses/<flow>')
+def get_offline_courses(flow):
+    """Get courses for offline caching"""
+    try:
+        # For offline mode, return limited course data
+        if flow == 'degree':
+            return jsonify({
+                'flow': flow,
+                'message': 'Load courses when online first',
+                'cached': False
+            })
+        
+        # You could implement a more comprehensive offline cache here
+        return jsonify({
+            'flow': flow,
+            'courses': [],
+            'cached_at': datetime.now().isoformat(),
+            'message': 'Go online to load courses for this level'
+        })
+    except Exception as e:
+        print(f"❌ Error getting offline courses: {e}")
+        return jsonify({'error': str(e)})
+
+@app.route('/api/offline/basket')
+def get_offline_basket():
+    """Get basket data for offline access"""
+    basket = session.get('course_basket', [])
+    return jsonify({
+        'basket': basket,
+        'count': len(basket),
+        'offline': True
+    })
+
+@app.route('/static/js/offline-storage.js')
+def serve_offline_storage():
+    """Serve offline storage JS file"""
+    return send_from_directory('static/js', 'offline-storage.js')
+
+@app.route('/static/js/pwa.js')
+def serve_pwa_js():
+    """Serve PWA JS file"""
+    return send_from_directory('static/js', 'pwa.js')
 
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory('static', 'manifest.json')
 
 @app.route('/service-worker.js')
-def service_worker():
-    return send_from_directory('static', 'service-worker.js'), 200, {'Content-Type': 'application/javascript'}
+def serve_service_worker():
+    response = make_response(send_from_directory('static', 'service-worker.js'))
+    response.headers['Content-Type'] = 'application/javascript'
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
 
 @app.route('/offline')
 def offline():

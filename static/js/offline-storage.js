@@ -6,7 +6,30 @@ class OfflineStorage {
     this.db = null;
     this.initializeDB();
   }
-
+async cacheCoursesForOffline(flow, courses) {
+    if (!this.db) await this.initializeDB();
+    
+    return new Promise((resolve, reject) => {
+        const transaction = this.db.transaction(['offline_courses'], 'readwrite');
+        const store = transaction.objectStore('offline_courses');
+        
+        // Store courses for offline access
+        const cacheData = {
+            flow: flow,
+            courses: courses.slice(0, 50), // Limit for offline
+            cachedAt: new Date().toISOString()
+        };
+        
+        store.put(cacheData);
+        
+        transaction.oncomplete = () => {
+            console.log(`✅ Cached ${courses.length} ${flow} courses for offline`);
+            resolve();
+        };
+        
+        transaction.onerror = (event) => reject(event.target.error);
+    });
+}
   async initializeDB() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.version);

@@ -197,3 +197,15 @@ async function syncBasket() {
   console.log('Syncing basket...');
   // Implement basket sync logic
 }
+// Add these to urlsToCache array:
+urlsToCache.push(
+  '/degree',
+  '/diploma', 
+  '/kmtc',
+  '/certificate',
+  '/artisan',
+  '/ttc',
+  '/about',
+  '/contact',
+  '/user-guide'
+);

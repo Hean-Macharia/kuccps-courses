@@ -34,7 +34,9 @@
     
     <!-- Favicon -->
     <link rel="icon" href="https://img.icons8.com/color/96/000000/graduation-cap.png" type="image/x-icon" />
-    
+    <script src="{{ url_for('static', filename='js/offline-storage.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pwa.js') }}"></script>
+
     <style>
         :root {
             /* KUCCPS Official Colors */
@@ -1976,18 +1978,27 @@ updateOnlineStatus();
             setTimeout(showInstallPromptAfterDelay, 1000);
             
             // Register service worker
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/static/service-worker.js')
-                        .then(registration => {
-                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                        })
-                        .catch(err => {
-                            console.log('ServiceWorker registration failed: ', err);
-                        });
-                });
-            }
-            
+           if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('ServiceWorker registered with scope:', registration.scope);
+                
+                // Check for updates
+                registration.onupdatefound = () => {
+                    const newWorker = registration.installing;
+                    newWorker.onstatechange = () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('New content available; please refresh.');
+                        }
+                    };
+                };
+            })
+            .catch(error => {
+                console.log('ServiceWorker registration failed:', error);
+            });
+    });
+}
             // Add install button to navigation
             if (!isAppInstalled()) {
                 if (navInstallItem) navInstallItem.style.display = 'block';
