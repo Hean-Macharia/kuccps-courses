@@ -4707,35 +4707,29 @@ def api_status():
         'environment': os.environ.get('FLASK_ENV', 'production')
     })
 
-# Route to serve manifest.json
+# Add to your Flask routes
+
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory('static', 'manifest.json')
 
-# Route to serve service-worker.js
 @app.route('/service-worker.js')
 def service_worker():
-    response = make_response(send_from_directory('static', 'service-worker.js'))
-    response.headers['Cache-Control'] = 'no-cache'
-    response.headers['Service-Worker-Allowed'] = '/'
-    return response
+    return send_from_directory('static', 'service-worker.js'), 200, {'Content-Type': 'application/javascript'}
 
-# Route to serve icons
-@app.route('/icons/<path:filename>')
-def serve_icons(filename):
-    return send_from_directory('static/icons', filename)
+@app.route('/offline')
+def offline():
+    return render_template('offline.html')
 
-@app.route('/monitor/health')
-def monitor_health():
-    """Detailed health monitoring endpoint"""
+@app.route('/api/pwa/install-status')
+def pwa_install_status():
+    """Check if app is installed"""
+    display_mode = request.headers.get('Sec-Ch-Ua-Mobile') or request.headers.get('User-Agent', '')
+    is_installed = request.headers.get('X-Requested-With') == 'pwa' or 'standalone' in request.headers.get('Accept', '')
+    
     return jsonify({
-        'status': 'healthy',
-        'timestamp': datetime.now().isoformat(),
-        'components': {
-            'web_server': 'operational',
-            'database': 'connected' if database_connected else 'disconnected',
-            'api_endpoints': 'responsive'
-        }
+        'is_installed': is_installed,
+        'display_mode': 'standalone' if is_installed else 'browser'
     })
 import threading
 import time

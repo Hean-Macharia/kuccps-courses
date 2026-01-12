@@ -1,0 +1,166 @@
+<div id="installPrompt" class="install-prompt" style="display: none;">
+    <div class="install-prompt-content">
+        <div class="install-prompt-header">
+            <h3>📱 Install KUCCPS App</h3>
+            <button class="close-prompt" onclick="closeInstallPrompt()">×</button>
+        </div>
+        <div class="install-prompt-body">
+            <p>Install our app for a better experience:</p>
+            <ul>
+                <li>✅ Works offline</li>
+                <li>✅ Faster loading</li>
+                <li>✅ Push notifications</li>
+                <li>✅ Add to home screen</li>
+            </ul>
+        </div>
+        <div class="install-prompt-footer">
+            <button class="btn-secondary" onclick="closeInstallPrompt()">Continue in Browser</button>
+            <button class="btn-primary" onclick="installApp()">Install App</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.install-prompt {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.install-prompt-content {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.install-prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.install-prompt-header h3 {
+    margin: 0;
+    color: #1e40af;
+}
+
+.close-prompt {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.install-prompt-body ul {
+    padding-left: 20px;
+    margin: 15px 0;
+}
+
+.install-prompt-body li {
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.install-prompt-footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.install-prompt-footer button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: #1e40af;
+    color: white;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #64748b;
+}
+</style>
+
+<script>
+let deferredPrompt;
+const installPrompt = document.getElementById('installPrompt');
+const promptShownKey = 'installPromptShown';
+
+// Check if we should show the prompt
+if (!localStorage.getItem(promptShownKey) && window.matchMedia('(display-mode: browser)').matches) {
+    // Show after 5 seconds
+    setTimeout(showInstallPrompt, 5000);
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Show our custom prompt if not already shown
+    if (!localStorage.getItem(promptShownKey)) {
+        showInstallPrompt();
+    }
+});
+
+function showInstallPrompt() {
+    installPrompt.style.display = 'flex';
+    localStorage.setItem(promptShownKey, 'true');
+}
+
+function closeInstallPrompt() {
+    installPrompt.style.display = 'none';
+}
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            } else {
+                console.log('User dismissed the install prompt');
+            }
+            deferredPrompt = null;
+        });
+    } else {
+        // Fallback for browsers that don't support beforeinstallprompt
+        showInstallInstructions();
+    }
+    closeInstallPrompt();
+}
+
+function showInstallInstructions() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    let message = '';
+    if (isIOS) {
+        message = 'Tap the Share button, then "Add to Home Screen"';
+    } else if (isAndroid) {
+        message = 'Tap the menu (three dots), then "Install App" or "Add to Home Screen"';
+    } else {
+        message = 'Click the install icon in your browser\'s address bar';
+    }
+    
+    alert(`To install: ${message}`);
+}
+</script>
