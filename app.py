@@ -4695,7 +4695,30 @@ def keep_alive():
         'message': 'Service is alive and responsive',
         'server_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
     })
+@app.route('/api/offline/courses/<flow>')
+def get_offline_courses(flow):
+    """Get courses that should be cached for offline use"""
+    # This should return essential course data for caching
+    courses_data = []  # You'd populate this based on flow
+    
+    return jsonify({
+        'flow': flow,
+        'courses': courses_data[:50],  # Limit for offline storage
+        'cached_at': datetime.now().isoformat()
+    })
 
+@app.route('/api/offline/sync', methods=['POST'])
+def sync_offline_data():
+    """Sync data from offline storage when back online"""
+    data = request.get_json()
+    
+    # Process offline actions (basket updates, etc.)
+    # You'd need to implement this based on your needs
+    
+    return jsonify({
+        'success': True,
+        'message': 'Offline data synced'
+    })
 @app.route('/api/status')
 def api_status():
     """API status endpoint"""

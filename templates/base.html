@@ -1030,7 +1030,38 @@
             </button>
         </div>
     </div>
+    <!-- Add to templates/base.html -->
+<div id="offlineIndicator" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #f59e0b; color: white; padding: 10px; text-align: center; z-index: 10000;">
+    ⚠️ You are offline. Some features may be limited.
+</div>
+
+<script>
+// Online/offline detection
+function updateOnlineStatus() {
+    const indicator = document.getElementById('offlineIndicator');
     
+    if (navigator.onLine) {
+        indicator.style.display = 'none';
+        document.body.classList.remove('offline');
+        
+        // Sync offline data when back online
+        if (window.OfflineStorage) {
+            window.OfflineStorage.syncAll();
+        }
+    } else {
+        indicator.style.display = 'block';
+        document.body.classList.add('offline');
+        console.log('App is offline - using cached data');
+    }
+}
+
+// Listen for online/offline events
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// Initial check
+updateOnlineStatus();
+</script>
     <!-- iOS Installation Guide -->
     <div id="iosInstallGuide" class="ios-install-guide">
         <div class="ios-guide-content">
