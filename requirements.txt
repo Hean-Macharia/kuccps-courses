@@ -7,6 +7,7 @@ waitress==3.0.2
 # Database
 pymongo==4.15.1
 dnspython==2.8.0
+Pillow>=9.0.0
 
 # HTTP Requests & APIs
 requests==2.32.3

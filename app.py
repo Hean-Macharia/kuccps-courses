@@ -8,6 +8,7 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from dotenv import load_dotenv
 from bson import ObjectId
 import requests
+from flask import send_from_directory
 from requests.auth import HTTPBasicAuth
 import json
 import re
@@ -4705,6 +4706,24 @@ def api_status():
         'version': '2.0',
         'environment': os.environ.get('FLASK_ENV', 'production')
     })
+
+# Route to serve manifest.json
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('static', 'manifest.json')
+
+# Route to serve service-worker.js
+@app.route('/service-worker.js')
+def service_worker():
+    response = make_response(send_from_directory('static', 'service-worker.js'))
+    response.headers['Cache-Control'] = 'no-cache'
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
+
+# Route to serve icons
+@app.route('/icons/<path:filename>')
+def serve_icons(filename):
+    return send_from_directory('static/icons', filename)
 
 @app.route('/monitor/health')
 def monitor_health():

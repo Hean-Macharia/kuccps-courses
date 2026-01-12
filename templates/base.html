@@ -3,6 +3,21 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KUCCPS Courses">
+    
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152x152.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/icon-180x180.png') }}">
+    <link rel="apple-touch-icon" sizes="167x167" href="{{ url_for('static', filename='icons/icon-167x167.png') }}">
+    
+    <!-- Android/Chrome -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#C62828">
+    
     <title>{% block title %}KUCCPS Course Checker | Your Gateway to Success{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
@@ -22,7 +37,7 @@
     
     <style>
         :root {
-            /* KUCCPS Official Colors from Screenshot */
+            /* KUCCPS Official Colors */
             --primary-red: #C62828;
             --primary-yellow: #FBC02D;
             --light-grey: #F5F5F5;
@@ -31,7 +46,7 @@
             --black: #000000;
             --white: #FFFFFF;
             
-            /* Additional Colors for Variety */
+            /* Additional Colors */
             --red-light: #EF5350;
             --red-dark: #B71C1C;
             --yellow-light: #FFEB3B;
@@ -70,7 +85,7 @@
             position: relative;
         }
 
-        /* Modern Navigation - UPDATED */
+        /* Modern Navigation */
         .navbar-custom {
             background: var(--white);
             padding: 12px 0;
@@ -89,7 +104,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-left: 50px; /* Space for sidebar toggle */
+            margin-left: 50px;
         }
 
         .navbar-brand i {
@@ -135,12 +150,6 @@
             border-radius: 10px;
             font-weight: 700;
             border: 1px solid var(--black);
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
         }
 
         /* Enhanced Sidebar */
@@ -213,7 +222,7 @@
             color: var(--white);
         }
 
-        /* Enhanced Menu Toggle - UPDATED */
+        /* Enhanced Menu Toggle */
         .menu-toggle {
             position: fixed;
             top: 15px;
@@ -240,14 +249,159 @@
             box-shadow: var(--shadow-heavy);
         }
 
+        /* PWA Installation Prompt */
+        .pwa-install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--white);
+            border: 2px solid var(--primary-red);
+            border-radius: var(--border-radius-lg);
+            padding: 15px;
+            box-shadow: var(--shadow-heavy);
+            z-index: 1100;
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .pwa-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .pwa-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--border-radius-md);
+            background: var(--gradient-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .pwa-title {
+            flex: 1;
+            font-weight: 700;
+            color: var(--primary-red);
+        }
+        
+        .pwa-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .pwa-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--medium-grey);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        .install-app-btn {
+            background: var(--gradient-red);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .install-app-btn:hover {
+            background: var(--primary-red);
+            transform: translateY(-2px);
+        }
+        
+        .dismiss-btn {
+            background: var(--light-grey);
+            color: var(--dark-grey);
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .dismiss-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        /* iOS Installation Guide */
+        .ios-install-guide {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ios-guide-content {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            padding: 25px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .ios-steps {
+            text-align: left;
+            margin: 20px 0;
+        }
+        
+        .ios-step {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .ios-step-number {
+            background: var(--primary-red);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
         /* Hide Bootstrap navbar-toggler on mobile */
         .navbar-toggler {
             display: none !important;
-        }
-
-        /* Mobile Navigation Container - NEW */
-        .mobile-nav-container {
-            display: none;
         }
 
         .overlay {
@@ -698,18 +852,41 @@
             box-shadow: var(--shadow-heavy);
         }
 
-        /* RESPONSIVE DESIGN - UPDATED FOR MOBILE */
+        /* App Install Badge */
+        .install-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary-yellow);
+            color: var(--black);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 1px solid var(--primary-red);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* RESPONSIVE DESIGN */
         @media (max-width: 992px) {
             .navbar-brand {
-                margin-left: 60px; /* More space for sidebar toggle */
+                margin-left: 60px;
                 font-size: 1.4rem;
             }
             
             .navbar-nav {
-                display: none !important; /* Hide desktop nav on mobile */
+                display: none !important;
             }
             
-            /* Show mobile nav items in sidebar instead */
+            .pwa-install-prompt {
+                max-width: 90%;
+            }
         }
 
         @media (max-width: 768px) {
@@ -729,6 +906,11 @@
             .navbar-brand {
                 font-size: 1.3rem;
                 margin-left: 55px;
+            }
+            
+            .pwa-install-prompt {
+                bottom: 10px;
+                width: 95%;
             }
         }
 
@@ -769,6 +951,14 @@
                 top: 12px;
                 left: 12px;
             }
+            
+            .pwa-install-prompt {
+                padding: 12px;
+            }
+            
+            .pwa-buttons {
+                flex-direction: column;
+            }
         }
 
         @media (max-width: 400px) {
@@ -782,6 +972,10 @@
                 height: 38px;
                 font-size: 1.1rem;
             }
+            
+            .ios-guide-content {
+                padding: 15px;
+            }
         }
 
         /* Ensure images are responsive */
@@ -794,6 +988,15 @@
         .pulse {
             animation: pulse 2s infinite;
         }
+        
+        /* Standalone mode adjustments */
+        .standalone-mode .navbar-custom {
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        .standalone-mode .main-content {
+            padding-top: calc(30px + env(safe-area-inset-top));
+        }
     </style>
     
     {% block links %}{% endblock %}
@@ -805,7 +1008,56 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Modern Navigation - UPDATED -->
+    <!-- PWA Installation Prompt -->
+    <div id="pwaInstallPrompt" class="pwa-install-prompt" style="display: none;">
+        <button class="pwa-close" id="closePwaPrompt">&times;</button>
+        <div class="pwa-header">
+            <div class="pwa-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="pwa-title">
+                <h5 class="mb-0">Install KUCCPS App</h5>
+                <small class="text-muted">Get faster access</small>
+            </div>
+        </div>
+        <p>Install the KUCCPS Course Checker app on your device for quick access, even offline.</p>
+        <div class="pwa-buttons">
+            <button class="install-app-btn" id="installAppBtn">
+                <i class="fas fa-download me-2"></i>Install App
+            </button>
+            <button class="dismiss-btn" id="dismissPwaPrompt">
+                Not Now
+            </button>
+        </div>
+    </div>
+    
+    <!-- iOS Installation Guide -->
+    <div id="iosInstallGuide" class="ios-install-guide">
+        <div class="ios-guide-content">
+            <h4 style="color: var(--primary-red);">
+                <i class="fas fa-mobile-alt me-2"></i>Install KUCCPS App on iOS
+            </h4>
+            <div class="ios-steps">
+                <div class="ios-step">
+                    <div class="ios-step-number">1</div>
+                    <div>Tap the <strong>Share</strong> button <i class="fas fa-share-square"></i> at the bottom of Safari</div>
+                </div>
+                <div class="ios-step">
+                    <div class="ios-step-number">2</div>
+                    <div>Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+                </div>
+                <div class="ios-step">
+                    <div class="ios-step-number">3</div>
+                    <div>Tap <strong>"Add"</strong> in the top right corner</div>
+                </div>
+            </div>
+            <button class="btn btn-primary-custom w-100" id="closeIosGuide">
+                Got it!
+            </button>
+        </div>
+    </div>
+
+    <!-- Modern Navigation -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="/">
@@ -840,6 +1092,12 @@
                         <a class="nav-link position-relative" href="/basket" id="basketNavLink" style="display: none;">
                             <i class="fas fa-shopping-basket"></i> Basket
                             <span class="badge-notification" id="basketNavCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" id="navInstallItem" style="display: none;">
+                        <a class="nav-link position-relative" href="#" id="navInstallBtn">
+                            <i class="fas fa-download"></i> Install App
+                            <span class="install-badge">NEW</span>
                         </a>
                     </li>
                 </ul>
@@ -889,6 +1147,10 @@
             <i class="fas fa-shopping-basket"></i> My Basket
             <span class="badge-notification" id="sidebarBasketCount">0</span>
         </a>
+        <a href="#" class="sidebar-link" id="sidebarInstallLink" style="display: none;" onclick="toggleSidebar(); showPwaInstallPrompt();">
+            <i class="fas fa-download"></i> Install App
+            <span class="install-badge" style="position: absolute; right: 20px;">NEW</span>
+        </a>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -930,6 +1192,27 @@
             {% block hero %}{% endblock %}
             {% block course_buttons %}{% endblock %}
             {% block content %}{% endblock %}
+            
+            <!-- PWA Installation Call to Action -->
+            <div class="card border-0 shadow-lg mt-5 hover-lift" id="pwaCtaCard">
+                <div class="card-body text-center p-4">
+                    <div class="pwa-icon mb-3" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-graduation-cap" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h4 class="mb-3" style="color: var(--primary-red);">
+                        <i class="fas fa-mobile-alt me-2"></i>Get the KUCCPS App
+                    </h4>
+                    <p class="text-muted mb-4">Install our app for faster access, offline viewing, and notifications about new courses.</p>
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <button class="btn btn-primary-custom" onclick="showPwaInstallPrompt()">
+                            <i class="fas fa-download me-2"></i>Install Now
+                        </button>
+                        <a href="/install-app" class="btn btn-outline-secondary">
+                            <i class="fas fa-info-circle me-2"></i>Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Enhanced Footer -->
@@ -946,6 +1229,7 @@
                         <a href="/contact">Contact</a>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</a>
+                        <a href="#" onclick="showPwaInstallPrompt()">Install App</a>
                     </div>
                     
                     <div class="social-icons">
@@ -1292,7 +1576,7 @@
             });
         });
 
-        // Enhanced Verify Payment Form Submission - FIXED VERSION
+        // Enhanced Verify Payment Form Submission
         document.addEventListener('DOMContentLoaded', function () {
             const verifyPaymentForm = document.getElementById('verifyPaymentForm');
             const verifyPaymentModal = document.getElementById('verifyPaymentModal');
@@ -1498,6 +1782,214 @@
             });
         });
 
+        // PWA Installation Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            let deferredPrompt;
+            const installPrompt = document.getElementById('pwaInstallPrompt');
+            const installBtn = document.getElementById('installAppBtn');
+            const dismissBtn = document.getElementById('dismissPwaPrompt');
+            const closeBtn = document.getElementById('closePwaPrompt');
+            const iosGuide = document.getElementById('iosInstallGuide');
+            const closeIosGuideBtn = document.getElementById('closeIosGuide');
+            const navInstallItem = document.getElementById('navInstallItem');
+            const sidebarInstallLink = document.getElementById('sidebarInstallLink');
+            
+            // Check if already installed
+            function isAppInstalled() {
+                return window.matchMedia('(display-mode: standalone)').matches || 
+                       window.navigator.standalone === true ||
+                       document.referrer.includes('android-app://');
+            }
+            
+            // Check if iOS
+            function isIOS() {
+                return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            }
+            
+            // Check if Android Chrome
+            function isAndroidChrome() {
+                return /Android/.test(navigator.userAgent) && 
+                       /Chrome/.test(navigator.userAgent) && 
+                       !/Edge/.test(navigator.userAgent);
+            }
+            
+            // Show PWA installation prompt
+            function showPwaInstallPrompt() {
+                if (isAppInstalled()) {
+                    alert('App is already installed!');
+                    return;
+                }
+                
+                if (isIOS()) {
+                    iosGuide.style.display = 'flex';
+                } else if (isAndroidChrome() && deferredPrompt) {
+                    installPrompt.style.display = 'block';
+                } else {
+                    installPrompt.style.display = 'block';
+                }
+            }
+            
+            // Handle beforeinstallprompt event (Android Chrome)
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install button in navigation
+                if (navInstallItem) navInstallItem.style.display = 'block';
+                if (sidebarInstallLink) sidebarInstallLink.style.display = 'block';
+                
+                // Clear the deferredPrompt after 30 seconds
+                setTimeout(() => {
+                    deferredPrompt = null;
+                }, 30000);
+            });
+            
+            // Install button click handler
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        // Android Chrome
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        
+                        if (outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                            // Hide the install button
+                            if (navInstallItem) navInstallItem.style.display = 'none';
+                            if (sidebarInstallLink) sidebarInstallLink.style.display = 'none';
+                        } else {
+                            console.log('User dismissed the install prompt');
+                        }
+                        deferredPrompt = null;
+                        installPrompt.style.display = 'none';
+                    } else if (isIOS()) {
+                        // iOS - show guide
+                        installPrompt.style.display = 'none';
+                        iosGuide.style.display = 'flex';
+                    } else {
+                        // Fallback - show instructions
+                        alert('To install the app:\n1. Open your browser menu\n2. Tap "Add to Home Screen"\n3. Follow the prompts');
+                        installPrompt.style.display = 'none';
+                    }
+                    
+                    localStorage.setItem('pwaPromptDismissed', 'true');
+                    localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                });
+            }
+            
+            // Dismiss button handlers
+            if (dismissBtn) {
+                dismissBtn.addEventListener('click', () => {
+                    installPrompt.style.display = 'none';
+                    localStorage.setItem('pwaPromptDismissed', 'true');
+                    localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                });
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    installPrompt.style.display = 'none';
+                    localStorage.setItem('pwaPromptDismissed', 'true');
+                    localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                });
+            }
+            
+            if (closeIosGuideBtn) {
+                closeIosGuideBtn.addEventListener('click', () => {
+                    iosGuide.style.display = 'none';
+                    localStorage.setItem('pwaPromptDismissed', 'true');
+                    localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                });
+            }
+            
+            // Close iOS guide when clicking outside
+            if (iosGuide) {
+                iosGuide.addEventListener('click', (e) => {
+                    if (e.target === iosGuide) {
+                        iosGuide.style.display = 'none';
+                        localStorage.setItem('pwaPromptDismissed', 'true');
+                        localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                    }
+                });
+            }
+            
+            // Show install prompt after delay if not dismissed recently
+            function showInstallPromptAfterDelay() {
+                if (isAppInstalled()) return;
+                
+                // Check if user has dismissed before
+                const hasDismissed = localStorage.getItem('pwaPromptDismissed');
+                const dismissalTime = localStorage.getItem('pwaPromptDismissedTime');
+                
+                if (hasDismissed) {
+                    const now = Date.now();
+                    const daysSinceDismissal = (now - parseInt(dismissalTime)) / (1000 * 60 * 60 * 24);
+                    
+                    // Show again after 7 days
+                    if (daysSinceDismissal < 7) {
+                        return;
+                    }
+                }
+                
+                // Show prompt after 5 seconds
+                setTimeout(() => {
+                    if (isIOS()) {
+                        iosGuide.style.display = 'flex';
+                    } else {
+                        installPrompt.style.display = 'block';
+                    }
+                }, 5000);
+            }
+            
+            // Show install prompt
+            setTimeout(showInstallPromptAfterDelay, 1000);
+            
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/static/service-worker.js')
+                        .then(registration => {
+                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        })
+                        .catch(err => {
+                            console.log('ServiceWorker registration failed: ', err);
+                        });
+                });
+            }
+            
+            // Add install button to navigation
+            if (!isAppInstalled()) {
+                if (navInstallItem) navInstallItem.style.display = 'block';
+                if (sidebarInstallLink) sidebarInstallLink.style.display = 'block';
+                
+                // Add click handler to nav install button
+                const navInstallBtn = document.getElementById('navInstallBtn');
+                if (navInstallBtn) {
+                    navInstallBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        showPwaInstallPrompt();
+                    });
+                }
+            }
+            
+            // Detect app mode
+            window.addEventListener('load', () => {
+                if (isAppInstalled()) {
+                    console.log('Running in standalone mode');
+                    document.body.classList.add('standalone-mode');
+                    // Hide install buttons if app is installed
+                    if (navInstallItem) navInstallItem.style.display = 'none';
+                    if (sidebarInstallLink) sidebarInstallLink.style.display = 'none';
+                    // Hide the CTA card
+                    const pwaCtaCard = document.getElementById('pwaCtaCard');
+                    if (pwaCtaCard) pwaCtaCard.style.display = 'none';
+                }
+            });
+            
+            // Make showPwaInstallPrompt globally accessible
+            window.showPwaInstallPrompt = showPwaInstallPrompt;
+        });
+
         // Debug function for testing
         function debugVerifyPayment() {
             console.log('Debug: Testing verify payment functionality');
@@ -1506,9 +1998,6 @@
                 .then(data => console.log('Debug data:', data))
                 .catch(error => console.error('Debug error:', error));
         }
-
-        // Uncomment to enable debug testing
-        // debugVerifyPayment();
     </script>
 </body>
 </html>
