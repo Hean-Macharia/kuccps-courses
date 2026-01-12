@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Management - KUCCPS Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .stat-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .revenue-badge {
+            font-size: 1.2em;
+            padding: 8px 15px;
+        }
+        
+        .btn-danger-confirm {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .btn-danger-confirm:hover {
+            background-color: #bb2d3b;
+            border-color: #b02a37;
+        }
+        
+        .modal-backdrop {
+            z-index: 1040;
+        }
+        
+        .modal {
+            z-index: 1050;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">KUCCPS Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin_payment_management') }}">Payment Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_users') }}">Users</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_manual_activation') }}">Manual Activation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_system_health') }}">System Health</a>
+                    </li>
+                    <li class="nav-item ms-auto">
+                        <a class="nav-link" href="{{ url_for('admin_logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <h2>Payment Management Dashboard</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Statistics Dashboard -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card stat-card border-primary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-money-bill-wave fa-2x text-primary mb-3"></i>
+                        <h3 class="text-primary">Ksh {{ "%.2f"|format(stats.total_revenue) if stats and stats.total_revenue else 0 }}</h3>
+                        <p class="text-muted">Total Revenue</p>
+                        <small class="text-muted">{{ stats.total_payments if stats and stats.total_payments else 0 }} payments total</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card stat-card border-success">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                        <h3 class="text-success">{{ stats.confirmed_payments if stats and stats.confirmed_payments else 0 }}</h3>
+                        <p class="text-muted">Confirmed Payments</p>
+                        <small class="text-muted">Ksh {{ "%.2f"|format(stats.average_transaction) if stats and stats.average_transaction else 0 }} average</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card stat-card border-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-day fa-2x text-warning mb-3"></i>
+                        <h3 class="text-warning">{{ stats.today_payments if stats and stats.today_payments else 0 }}</h3>
+                        <p class="text-muted">Today's Payments</p>
+                        <small class="text-muted">Ksh {{ stats.today_revenue if stats and stats.today_revenue else 0 }} revenue</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="card stat-card border-info">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-week fa-2x text-info mb-3"></i>
+                        <h3 class="text-info">{{ stats.weekly_payments if stats and stats.weekly_payments else 0 }}</h3>
+                        <p class="text-muted">Weekly Payments</p>
+                        <small class="text-muted">Ksh {{ stats.weekly_revenue if stats and stats.weekly_revenue else 0 }} revenue</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h5>Quick Actions</h5>
+                                <p class="text-muted mb-0">Manage payment records and perform bulk operations</p>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteFailedModal">
+                                    <i class="fas fa-trash me-2"></i>Delete Failed Payments
+                                </button>
+                                <a href="{{ url_for('admin_export_payments') }}" class="btn btn-success">
+                                    <i class="fas fa-file-export me-2"></i>Export to CSV
+                                </a>
+                                <a href="{{ url_for('admin_payment_management') }}" class="btn btn-secondary">
+                                    <i class="fas fa-sync-alt me-2"></i>Refresh
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Filter Payments</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Payment Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All Payments</option>
+                            <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed Only</option>
+                            <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed Only</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="d-grid gap-2 w-100">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
+                            </button>
+                            <a href="{{ url_for('admin_payment_management') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Clear Filters
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Payments Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Payment Records ({{ total_records }} total)</h5>
+                <div>
+                    <span class="badge bg-success">{{ stats.confirmed_payments if stats and stats.confirmed_payments else 0 }} confirmed</span>
+                    <span class="badge bg-danger ms-2">{{ stats.failed_payments if stats and stats.failed_payments else 0 }} failed</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if payments and payments|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Index Number</th>
+                                <th>Email</th>
+                                <th>Level</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>M-Pesa Receipt</th>
+                                <th>Transaction Ref</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{ payment.get('index_number', 'N/A') }}</td>
+                                <td>{{ payment.get('email', 'N/A') }}</td>
+                                <td>
+                                    <span class="badge bg-info text-capitalize">{{ payment.get('level', 'N/A') }}</span>
+                                </td>
+                                <td class="fw-bold">
+                                    Ksh {{ payment.get('payment_amount', 0) }}
+                                </td>
+                                <td>
+                                    {% if payment.get('payment_confirmed') %}
+                                    <span class="badge bg-success">Confirmed</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Failed</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ payment.get('mpesa_receipt', 'N/A') }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if payment.get('transaction_ref') %}
+                                            {{ payment.transaction_ref|truncate(15) }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if payment.get('created_at') %}
+                                    {{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ page-1 }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+                        </li>
+                        
+                        {% for p in range(1, total_pages + 1) %}
+                        <li class="page-item {% if p == page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ p }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ p }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ page+1 }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-money-bill-wave fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No payment records found</h4>
+                    <p class="text-muted">Try adjusting your filters or check back later.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Daily Revenue (Last 30 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Top Categories by Revenue</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if stats and stats.top_categories and stats.top_categories|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Revenue</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in stats.top_categories %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-primary text-capitalize">{{ category._id }}</span>
+                                        </td>
+                                        <td class="fw-bold text-success">
+                                            Ksh {{ category.total_revenue }}
+                                        </td>
+                                        <td>{{ category.payment_count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No category data available</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Failed Payments Modal -->
+    <div class="modal fade" id="deleteFailedModal" tabindex="-1" aria-labelledby="deleteFailedModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" id="deleteFailedModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Delete Failed Payments
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Warning:</strong> This action will permanently delete all payment records with status "Failed" (payment_confirmed: false).
+                    </div>
+                    <p>This operation cannot be undone. Are you sure you want to proceed?</p>
+                    <p class="mb-0">
+                        <strong>Failed payments to delete:</strong> 
+                        <span class="badge bg-danger">{{ stats.failed_payments if stats and stats.failed_payments else 0 }} records</span>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{{ url_for('admin_payment_management') }}">
+                        <input type="hidden" name="delete_failed" value="true">
+                        <button type="submit" class="btn btn-danger-confirm">
+                            <i class="fas fa-trash me-2"></i>Yes, Delete All Failed Payments
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize Revenue Chart
+        const dailyPayments = {{ daily_payments|tojson }};
+        
+        if (dailyPayments && dailyPayments.length > 0) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const dates = dailyPayments.map(d => d.date);
+            const revenues = dailyPayments.map(d => d.revenue);
+            const counts = dailyPayments.map(d => d.count);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Revenue (Ksh)',
+                        data: revenues,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Payment Count',
+                        data: counts,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        type: 'line',
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Revenue (Ksh)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Payment Count'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            // Hide chart container if no data
+            const chartContainer = document.getElementById('revenueChart');
+            if (chartContainer && chartContainer.parentNode) {
+                chartContainer.parentNode.innerHTML = '<p class="text-muted">No daily revenue data available</p>';
+            }
+        }
+        
+        // Confirm delete action
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteForm = document.querySelector('form[action*="delete_failed"]');
+            if (deleteForm) {
+                deleteForm.addEventListener('submit', function(e) {
+                    const failedCount = {{ stats.failed_payments if stats and stats.failed_payments else 0 }};
+                    if (failedCount === 0) {
+                        e.preventDefault();
+                        alert('No failed payments to delete.');
+                        return;
+                    }
+                    
+                    if (!confirm('Are you absolutely sure? This will delete ' + failedCount + ' failed payment records permanently.')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

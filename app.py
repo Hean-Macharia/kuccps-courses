@@ -1,7 +1,7 @@
 import os
 import base64
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response
 from pymongo import MongoClient
 from courses import get_user_courses, save_user_courses
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
@@ -4230,6 +4230,325 @@ def admin_users():
         print(f"❌ Error loading admin users: {str(e)}")
         flash("Error loading user data", "error")
         return render_template('admin_users.html', users=[])
+# --- Enhanced Admin Payment Management Routes ---
+@app.route('/admin/payment-management', methods=['GET', 'POST'])
+def admin_payment_management():
+    """Comprehensive payment management with filtering, deletion, and analytics"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    # Initialize default values
+    stats = {}
+    payment_records = []
+    daily_payments = []
+    start_date_str = ''
+    end_date_str = ''
+    status_filter = ''
+    page = 1
+    total_pages = 1
+    total_records = 0
+    
+    try:
+        # Statistics for dashboard
+        stats = calculate_payment_statistics()
+        
+        # Handle deletion of failed payments
+        if request.method == 'POST' and 'delete_failed' in request.form:
+            deleted_count = delete_failed_payments()
+            if deleted_count > 0:
+                flash(f"Successfully deleted {deleted_count} failed payment records", "success")
+            else:
+                flash("No failed payments to delete", "info")
+            return redirect(url_for('admin_payment_management'))
+        
+        # Handle date range filtering
+        start_date_str = request.args.get('start_date', '')
+        end_date_str = request.args.get('end_date', '')
+        status_filter = request.args.get('status', '')
+        
+        # Calculate daily payments for chart
+        daily_payments = get_daily_payment_summary()
+        
+        # FIX: Compare with None instead of bool()
+        if database_connected and user_payments_collection is not None:
+            # Build filter query
+            filter_query = {}
+            
+            # Date filter
+            if start_date_str:
+                try:
+                    start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                    filter_query['created_at'] = {'$gte': start_date}
+                except ValueError:
+                    flash("Invalid start date format", "error")
+            
+            if end_date_str:
+                try:
+                    end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+                    end_date = end_date.replace(hour=23, minute=59, second=59)
+                    if 'created_at' in filter_query:
+                        filter_query['created_at']['$lte'] = end_date
+                    else:
+                        filter_query['created_at'] = {'$lte': end_date}
+                except ValueError:
+                    flash("Invalid end date format", "error")
+            
+            # Status filter
+            if status_filter == 'confirmed':
+                filter_query['payment_confirmed'] = True
+            elif status_filter == 'failed':
+                filter_query['payment_confirmed'] = False
+            
+            # Get payments with pagination
+            page = int(request.args.get('page', 1))
+            limit = 50
+            skip = (page - 1) * limit
+            
+            payment_records = list(user_payments_collection.find(filter_query)
+                                  .sort('created_at', -1)
+                                  .skip(skip)
+                                  .limit(limit))
+            
+            total_records = user_payments_collection.count_documents(filter_query)
+            total_pages = (total_records + limit - 1) // limit if total_records > 0 else 1
+        
+    except Exception as e:
+        print(f"❌ Error in payment management: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash("Error loading payment management data", "error")
+    
+    # Ensure all variables are defined
+    stats = stats or {}
+    payment_records = payment_records or []
+    daily_payments = daily_payments or []
+    
+    return render_template('admin_payment_management.html',
+                         payments=payment_records,
+                         stats=stats,
+                         daily_payments=daily_payments,
+                         start_date=start_date_str,
+                         end_date=end_date_str,
+                         status_filter=status_filter,
+                         page=page,
+                         total_pages=total_pages,
+                         total_records=total_records)
+
+def calculate_payment_statistics():
+    """Calculate comprehensive payment statistics with safe defaults"""
+    # Initialize stats with default values
+    stats = {
+        'total_payments': 0,
+        'total_revenue': 0.0,
+        'confirmed_payments': 0,
+        'failed_payments': 0,
+        'today_payments': 0,
+        'today_revenue': 0.0,
+        'weekly_payments': 0,
+        'weekly_revenue': 0.0,
+        'monthly_payments': 0,
+        'monthly_revenue': 0.0,
+        'average_transaction': 0.0,
+        'top_categories': []
+    }
+    
+    # FIX: Compare with None instead of not
+    if not database_connected or user_payments_collection is None:
+        print("⚠️ Database not connected for statistics calculation")
+        return stats
+    
+    try:
+        print("📊 Calculating payment statistics...")
+        
+        # Get all payments
+        all_payments = list(user_payments_collection.find({}))
+        stats['total_payments'] = len(all_payments)
+        
+        print(f"📊 Total payments found: {stats['total_payments']}")
+        
+        # Calculate confirmed vs failed
+        confirmed_count = 0
+        total_revenue = 0.0
+        
+        for payment in all_payments:
+            amount = float(payment.get('payment_amount', 0))
+            if payment.get('payment_confirmed'):
+                confirmed_count += 1
+                total_revenue += amount
+        
+        stats['confirmed_payments'] = confirmed_count
+        stats['failed_payments'] = stats['total_payments'] - confirmed_count
+        stats['total_revenue'] = total_revenue
+        stats['average_transaction'] = total_revenue / confirmed_count if confirmed_count > 0 else 0.0
+        
+        print(f"📊 Confirmed: {confirmed_count}, Failed: {stats['failed_payments']}, Revenue: {total_revenue}")
+        
+        # Today's statistics
+        today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_payments = list(user_payments_collection.find({
+            'created_at': {'$gte': today_start},
+            'payment_confirmed': True
+        }))
+        
+        stats['today_payments'] = len(today_payments)
+        stats['today_revenue'] = sum(float(p.get('payment_amount', 0)) for p in today_payments)
+        
+        # Weekly statistics (last 7 days)
+        week_start = today_start - timedelta(days=7)
+        weekly_payments = list(user_payments_collection.find({
+            'created_at': {'$gte': week_start},
+            'payment_confirmed': True
+        }))
+        
+        stats['weekly_payments'] = len(weekly_payments)
+        stats['weekly_revenue'] = sum(float(p.get('payment_amount', 0)) for p in weekly_payments)
+        
+        # Monthly statistics (last 30 days)
+        month_start = today_start - timedelta(days=30)
+        monthly_payments = list(user_payments_collection.find({
+            'created_at': {'$gte': month_start},
+            'payment_confirmed': True
+        }))
+        
+        stats['monthly_payments'] = len(monthly_payments)
+        stats['monthly_revenue'] = sum(float(p.get('payment_amount', 0)) for p in monthly_payments)
+        
+        # Top categories by revenue
+        try:
+            pipeline = [
+                {'$match': {'payment_confirmed': True}},
+                {'$group': {
+                    '_id': '$level',
+                    'total_revenue': {'$sum': '$payment_amount'},
+                    'payment_count': {'$sum': 1}
+                }},
+                {'$sort': {'total_revenue': -1}},
+                {'$limit': 5}
+            ]
+            
+            top_categories = list(user_payments_collection.aggregate(pipeline))
+            stats['top_categories'] = top_categories
+            print(f"📊 Top categories: {len(top_categories)}")
+        except Exception as e:
+            print(f"⚠️ Error calculating top categories: {e}")
+            stats['top_categories'] = []
+        
+        print(f"✅ Statistics calculation completed")
+        
+    except Exception as e:
+        print(f"❌ Error calculating payment statistics: {str(e)}")
+        import traceback
+        traceback.print_exc()
+    
+    return stats
+def get_daily_payment_summary(days=30):
+    """Get daily payment summary for chart"""
+    daily_data = []
+    
+    # FIX: Compare with None instead of bool()
+    if not database_connected or user_payments_collection is None:
+        return daily_data
+    
+    try:
+        # Get payments for last N days
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        
+        pipeline = [
+            {'$match': {
+                'created_at': {'$gte': start_date},
+                'payment_confirmed': True
+            }},
+            {'$group': {
+                '_id': {
+                    'year': {'$year': '$created_at'},
+                    'month': {'$month': '$created_at'},
+                    'day': {'$dayOfMonth': '$created_at'}
+                },
+                'total_revenue': {'$sum': '$payment_amount'},
+                'payment_count': {'$sum': 1}
+            }},
+            {'$sort': {'_id': 1}}
+        ]
+        
+        daily_results = list(user_payments_collection.aggregate(pipeline))
+        
+        for result in daily_results:
+            date_id = result['_id']
+            date_str = f"{date_id['year']}-{date_id['month']:02d}-{date_id['day']:02d}"
+            daily_data.append({
+                'date': date_str,
+                'revenue': float(result.get('total_revenue', 0)),
+                'count': result.get('payment_count', 0)
+            })
+        
+    except Exception as e:
+        print(f"❌ Error getting daily summary: {str(e)}")
+        import traceback
+        traceback.print_exc()
+    
+    return daily_data
+def delete_failed_payments():
+    """Delete all payments with payment_confirmed=False"""
+    if not database_connected:
+        return 0
+    
+    try:
+        result = user_payments_collection.delete_many({'payment_confirmed': False})
+        deleted_count = result.deleted_count
+        print(f"🗑️ Deleted {deleted_count} failed payment records")
+        return deleted_count
+    except Exception as e:
+        print(f"❌ Error deleting failed payments: {str(e)}")
+        return 0
+
+@app.route('/admin/export-payments')
+def admin_export_payments():
+    """Export payments to CSV"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    try:
+        # FIX: Compare with None instead of bool()
+        if not database_connected or user_payments_collection is None:
+            flash("Database not available for export", "error")
+            return redirect(url_for('admin_payment_management'))
+        
+        # Get all confirmed payments
+        payments = list(user_payments_collection.find({'payment_confirmed': True}))
+        
+        # Create CSV content
+        csv_content = "Index Number,Email,Level,Amount,M-Pesa Receipt,Transaction Ref,Date\n"
+        
+        for payment in payments:
+            index_number = payment.get('index_number', '')
+            email = payment.get('email', '')
+            level = payment.get('level', '')
+            amount = payment.get('payment_amount', 0)
+            receipt = payment.get('mpesa_receipt', '')
+            transaction_ref = payment.get('transaction_ref', '')
+            date = payment.get('created_at', datetime.now()).strftime('%Y-%m-%d %H:%M:%S')
+            
+            csv_content += f'"{index_number}","{email}","{level}",{amount},"{receipt}","{transaction_ref}","{date}"\n'
+        
+        # Create response with CSV file
+        response = make_response(csv_content)
+        response.headers['Content-Disposition'] = 'attachment; filename=payments_export.csv'
+        response.headers['Content-Type'] = 'text/csv'
+        
+        return response
+        
+    except Exception as e:
+        print(f"❌ Error exporting payments: {str(e)}")
+        flash("Error exporting payments", "error")
+        return redirect(url_for('admin_payment_management'))
+# Add to admin dashboard menu
+@app.route('/admin/view-payments')
+def admin_view_payments():
+    """Legacy redirect to new payment management"""
+    return redirect(url_for('admin_payment_management'))
 
 @app.route('/admin/system-health')
 def admin_system_health():
