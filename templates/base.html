@@ -875,6 +875,63 @@
             100% { transform: scale(1); }
         }
 
+        /* News Badge */
+        .news-badge-container {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            z-index: 1050;
+            transition: all 0.3s ease;
+        }
+
+        .news-bell-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient-red);
+            color: white;
+            border: 2px solid var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .news-bell-btn:hover {
+            transform: scale(1.1) rotate(-10deg);
+            background: var(--primary-red);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .news-bell-btn.pulse {
+            animation: bell-pulse 2s infinite;
+        }
+
+        @keyframes bell-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(198, 40, 40, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(198, 40, 40, 0); }
+        }
+
+        .news-badge-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary-yellow);
+            color: var(--black);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: 50%;
+            border: 2px solid var(--white);
+            min-width: 22px;
+            text-align: center;
+        }
+
         /* RESPONSIVE DESIGN */
         @media (max-width: 992px) {
             .navbar-brand {
@@ -888,6 +945,11 @@
             
             .pwa-install-prompt {
                 max-width: 90%;
+            }
+            
+            .news-badge-container {
+                top: 100px;
+                right: 15px;
             }
         }
 
@@ -913,6 +975,11 @@
             .pwa-install-prompt {
                 bottom: 10px;
                 width: 95%;
+            }
+            
+            .news-badge-container {
+                top: 90px;
+                right: 10px;
             }
         }
 
@@ -961,6 +1028,23 @@
             .pwa-buttons {
                 flex-direction: column;
             }
+            
+            .news-badge-container {
+                top: 80px;
+                right: 10px;
+            }
+            
+            .news-bell-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.1rem;
+            }
+            
+            .news-badge-count {
+                font-size: 0.6rem;
+                padding: 2px 5px;
+                min-width: 18px;
+            }
         }
 
         @media (max-width: 400px) {
@@ -978,6 +1062,11 @@
             .ios-guide-content {
                 padding: 15px;
             }
+            
+            .news-badge-container {
+                top: 70px;
+                right: 8px;
+            }
         }
 
         /* Ensure images are responsive */
@@ -986,11 +1075,6 @@
             height: auto;
         }
 
-        /* Pulse animation for notifications */
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
         /* Standalone mode adjustments */
         .standalone-mode .navbar-custom {
             padding-top: env(safe-area-inset-top);
@@ -1009,6 +1093,14 @@
     <button class="back-to-top" id="backToTop" aria-label="Back to top">
         <i class="fas fa-arrow-up"></i>
     </button>
+
+    <!-- News Notification Badge -->
+    <div class="news-badge-container" id="newsBadgeContainer" style="display: none;">
+        <button class="news-bell-btn" id="newsBellBtn" data-bs-toggle="modal" data-bs-target="#newsModal">
+            <i class="fas fa-bell"></i>
+            <span class="news-badge-count" id="newsBadgeCount">0</span>
+        </button>
+    </div>
 
     <!-- PWA Installation Prompt -->
     <div id="pwaInstallPrompt" class="pwa-install-prompt" style="display: none;">
@@ -1032,38 +1124,7 @@
             </button>
         </div>
     </div>
-    <!-- Add to templates/base.html -->
-<div id="offlineIndicator" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #f59e0b; color: white; padding: 10px; text-align: center; z-index: 10000;">
-    ⚠️ You are offline. Some features may be limited.
-</div>
 
-<script>
-// Online/offline detection
-function updateOnlineStatus() {
-    const indicator = document.getElementById('offlineIndicator');
-    
-    if (navigator.onLine) {
-        indicator.style.display = 'none';
-        document.body.classList.remove('offline');
-        
-        // Sync offline data when back online
-        if (window.OfflineStorage) {
-            window.OfflineStorage.syncAll();
-        }
-    } else {
-        indicator.style.display = 'block';
-        document.body.classList.add('offline');
-        console.log('App is offline - using cached data');
-    }
-}
-
-// Listen for online/offline events
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-
-// Initial check
-updateOnlineStatus();
-</script>
     <!-- iOS Installation Guide -->
     <div id="iosInstallGuide" class="ios-install-guide">
         <div class="ios-guide-content">
@@ -1127,6 +1188,11 @@ updateOnlineStatus();
                             <span class="badge-notification" id="basketNavCount">0</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/news">
+                            <i class="fas fa-newspaper"></i> News
+                        </a>
+                    </li>
                     <li class="nav-item" id="navInstallItem" style="display: none;">
                         <a class="nav-link position-relative" href="#" id="navInstallBtn">
                             <i class="fas fa-download"></i> Install App
@@ -1151,6 +1217,9 @@ updateOnlineStatus();
         <!-- Mobile Navigation Links -->
         <a href="/" class="sidebar-link active">
             <i class="fas fa-home"></i> Home
+        </a>
+        <a href="/news" class="sidebar-link">
+            <i class="fas fa-newspaper"></i> News & Updates
         </a>
         <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
             <i class="fas fa-check-circle"></i> Verify Payment
@@ -1491,9 +1560,12 @@ updateOnlineStatus();
                     <h6 class="fw-bold mt-4 mb-3">Data Protection</h6>
                     <p>All sensitive data is encrypted and stored securely. We never share your personal information with third parties without your explicit consent.</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">Close</button>
-                </div>
+               <div class="modal-footer">
+    <button type="button" class="btn btn-primary-custom" onclick="redirectToHome()">
+        <i class="fas fa-home me-2"></i>Go to Home
+    </button>
+    <a href="/news" class="btn btn-outline-secondary">View All News</a>
+</div>
             </div>
         </div>
     </div>
@@ -1524,6 +1596,59 @@ updateOnlineStatus();
                     
                     <h6 class="fw-bold mt-4 mb-3">Disclaimer</h6>
                     <p>While we strive to provide accurate information, course availability and requirements may change. Always verify information with the respective institutions before making decisions.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <!-- Enhanced News Modal -->
+<div class="modal fade modal-custom" id="newsModal" tabindex="-1" aria-labelledby="newsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: var(--gradient-red);">
+                <h5 class="modal-title text-white" id="newsModalLabel">
+                    <i class="fas fa-newspaper me-2"></i>Latest News & Updates
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeNewsModalBtn"></button>
+            </div>
+            <div class="modal-body">
+                <div id="newsContent">
+                    <!-- News will be loaded here dynamically -->
+                    <div class="text-center py-5">
+                        <div class="spinner-border spinner-custom" role="status">
+                            <span class="visually-hidden">Loading news...</span>
+                        </div>
+                        <p class="mt-3">Loading latest news...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary-custom" onclick="redirectToHome()">
+                    <i class="fas fa-home me-2"></i>Go to Home
+                </button>
+                <a href="/news" class="btn btn-outline-secondary">View All News</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Article View Modal -->
+    <div class="modal fade modal-custom" id="articleModal" tabindex="-1" aria-labelledby="articleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: var(--gradient-red);">
+                    <h5 class="modal-title text-white" id="articleModalLabel">
+                        <i class="fas fa-newspaper me-2"></i>News Article
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="articleModalContent">
+                        <!-- Article content will be loaded here dynamically -->
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">Close</button>
@@ -1816,12 +1941,14 @@ updateOnlineStatus();
         });
 
         // PWA Installation Logic
+        document.getElementById('closeNewsModalBtn').addEventListener('click', redirectToHome);
         document.addEventListener('DOMContentLoaded', function() {
             let deferredPrompt;
             const installPrompt = document.getElementById('pwaInstallPrompt');
             const installBtn = document.getElementById('installAppBtn');
             const dismissBtn = document.getElementById('dismissPwaPrompt');
             const closeBtn = document.getElementById('closePwaPrompt');
+            const newsModalElement = document.getElementById('newsModal');
             const iosGuide = document.getElementById('iosInstallGuide');
             const closeIosGuideBtn = document.getElementById('closeIosGuide');
             const navInstallItem = document.getElementById('navInstallItem');
@@ -2032,14 +2159,315 @@ updateOnlineStatus();
             window.showPwaInstallPrompt = showPwaInstallPrompt;
         });
 
-        // Debug function for testing
-        function debugVerifyPayment() {
-            console.log('Debug: Testing verify payment functionality');
-            fetch('/debug/verify-test')
-                .then(response => response.json())
-                .then(data => console.log('Debug data:', data))
-                .catch(error => console.error('Debug error:', error));
+        // Enhanced News System
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load latest news and show notification badge
+            loadLatestNews();
+            
+            // Check for new news periodically (every 10 minutes)
+            setInterval(checkForNewNews, 10 * 60 * 1000);
+        });
+
+        async function loadLatestNews() {
+            try {
+                const response = await fetch('/api/news/latest?limit=1');
+                const data = await response.json();
+                
+                if (data.success && data.news.length > 0) {
+                    const latestArticle = data.news[0];
+                    const lastSeenNewsId = localStorage.getItem('lastSeenNewsId');
+                    
+                    // Always show the notification badge (but pulse if there's new news)
+                    showNewsBadge();
+                    
+                    // If this is new news, pulse the badge
+                    if (lastSeenNewsId !== latestArticle._id) {
+                        startBadgePulse();
+                        // Don't automatically update localStorage - only update when user clicks
+                    }
+                    
+                    // Store the latest article ID for comparison
+                    localStorage.setItem('latestNewsId', latestArticle._id);
+                    
+                    // Preload news for modal
+                    loadNewsModal();
+                }
+            } catch (error) {
+                console.error('Error loading latest news:', error);
+            }
         }
+        function redirectToHome() {
+    // Get the modal instance
+    const newsModal = bootstrap.Modal.getInstance(document.getElementById('newsModal'));
+    
+    // Hide the modal first
+    if (newsModal) {
+        newsModal.hide();
+    }
+    
+    // Redirect to home after a short delay (better UX)
+    setTimeout(() => {
+        window.location.href = '/';
+    }, 300);
+}
+
+// Also add event listener for the close (X) button
+document.getElementById('closeNewsModalBtn').addEventListener('click', redirectToHome);
+        async function loadNewsModal() {
+            try {
+                const response = await fetch('/api/news/latest?limit=5');
+                const data = await response.json();
+                
+                if (data.success && data.news.length > 0) {
+                    const newsContent = document.getElementById('newsContent');
+                    let newsHTML = '';
+                    
+                    data.news.forEach((article, index) => {
+                        const articleDate = new Date(article.published_at || article.created_at);
+                        const formattedDate = articleDate.toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                        });
+                        
+                        newsHTML += `
+                            <div class="news-modal-item mb-4 ${index < data.news.length - 1 ? 'border-bottom pb-4' : ''}">
+                                <div class="d-flex align-items-start">
+                                    ${article.image_url ? `
+                                    <div class="flex-shrink-0 me-3">
+                                        <img src="${article.image_url}" alt="${article.title}" 
+                                             class="rounded" style="width: 80px; height: 60px; object-fit: cover;"
+                                             onerror="this.src='https://via.placeholder.com/80x60?text=News'">
+                                    </div>
+                                    ` : ''}
+                                    
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            ${article.is_featured ? '<i class="fas fa-star text-warning me-1"></i>' : ''}
+                                            ${article.title}
+                                        </h6>
+                                        <p class="text-muted mb-2 small">
+                                            ${article.excerpt || article.content.substring(0, 80) + '...'}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar-alt me-1"></i>${formattedDate}
+                                            </small>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewNewsArticle('${article._id}')">
+                                                Read <i class="fas fa-arrow-right ms-1"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    newsContent.innerHTML = newsHTML;
+                } else {
+                    newsContent.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                            <h5>No News Available</h5>
+                            <p class="text-muted">Check back later for updates.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading news modal:', error);
+                document.getElementById('newsContent').innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h5>Error Loading News</h5>
+                        <p class="text-muted">Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showNewsBadge() {
+            const newsBadgeContainer = document.getElementById('newsBadgeContainer');
+            const newsBadgeCount = document.getElementById('newsBadgeCount');
+            
+            if (newsBadgeContainer) {
+                newsBadgeContainer.style.display = 'block';
+                
+                // Check if we have a news count from localStorage
+                const unreadCount = localStorage.getItem('unreadNewsCount') || 1;
+                if (newsBadgeCount) {
+                    newsBadgeCount.textContent = unreadCount;
+                }
+            }
+        }
+
+        function startBadgePulse() {
+            const newsBellBtn = document.getElementById('newsBellBtn');
+            if (newsBellBtn) {
+                newsBellBtn.classList.add('pulse');
+                
+                // Stop pulsing after 10 seconds
+                setTimeout(() => {
+                    newsBellBtn.classList.remove('pulse');
+                }, 10000);
+            }
+        }
+
+        function checkForNewNews() {
+            fetch('/api/news/latest?limit=1')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.news.length > 0) {
+                        const latestArticle = data.news[0];
+                        const lastSeenId = localStorage.getItem('lastSeenNewsId');
+                        const latestStoredId = localStorage.getItem('latestNewsId');
+                        
+                        // If we have new news
+                        if (latestStoredId !== latestArticle._id) {
+                            localStorage.setItem('latestNewsId', latestArticle._id);
+                            
+                            // Increment unread count
+                            let unreadCount = parseInt(localStorage.getItem('unreadNewsCount') || '0');
+                            unreadCount++;
+                            localStorage.setItem('unreadNewsCount', unreadCount);
+                            
+                            // Update badge count
+                            const newsBadgeCount = document.getElementById('newsBadgeCount');
+                            if (newsBadgeCount) {
+                                newsBadgeCount.textContent = unreadCount;
+                            }
+                            
+                            // Start pulsing to indicate new news
+                            startBadgePulse();
+                            
+                            // Reload modal content
+                            loadNewsModal();
+                        }
+                    }
+                })
+                .catch(error => console.error('Error checking for new news:', error));
+        }
+
+        async function viewNewsArticle(articleId) {
+            try {
+                // Get article data
+                const response = await fetch('/api/news/latest?limit=50');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const article = data.news.find(a => a._id === articleId);
+                    if (article) {
+                        // Increment view count
+                        await fetch(`/api/news/increment-views/${articleId}`, { method: 'POST' });
+                        
+                        // Mark this article as read
+                        localStorage.setItem('lastSeenNewsId', articleId);
+                        
+                        // Decrease unread count
+                        let unreadCount = parseInt(localStorage.getItem('unreadNewsCount') || '0');
+                        if (unreadCount > 0) {
+                            unreadCount--;
+                            localStorage.setItem('unreadNewsCount', unreadCount);
+                            
+                            // Update badge count
+                            const newsBadgeCount = document.getElementById('newsBadgeCount');
+                            if (newsBadgeCount) {
+                                newsBadgeCount.textContent = unreadCount;
+                                if (unreadCount === 0) {
+                                    newsBadgeCount.textContent = '0';
+                                }
+                            }
+                        }
+                        
+                        // Show in article modal
+                        const articleDate = new Date(article.published_at || article.created_at);
+                        const formattedDate = articleDate.toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                        });
+                        
+                        let articleHTML = `
+                            <div class="article-modal-view">
+                                ${article.image_url ? `
+                                <div class="text-center mb-4">
+                                    <img src="${article.image_url}" alt="${article.title}" 
+                                         class="img-fluid rounded" style="max-height: 300px; object-fit: cover;"
+                                         onerror="this.src='https://via.placeholder.com/800x300?text=KUCCPS+News'">
+                                </div>
+                                ` : ''}
+                                
+                                <h4 class="mb-3">${article.title}</h4>
+                                
+                                <div class="d-flex align-items-center mb-4">
+                                    <span class="badge bg-light text-dark me-3">
+                                        <i class="fas fa-calendar-alt me-1"></i>${formattedDate}
+                                    </span>
+                                    ${article.is_featured ? `
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-star me-1"></i>Featured
+                                    </span>
+                                    ` : ''}
+                                </div>
+                                
+                                <div class="article-content mb-4" style="line-height: 1.7;">
+                                    ${article.content.replace(/\n/g, '<br>')}
+                                </div>
+                                
+                                ${article.external_link ? `
+                                <div class="alert alert-info">
+                                    <i class="fas fa-link me-2"></i>
+                                    <strong>Source:</strong>
+                                    <a href="${article.external_link}" target="_blank" class="alert-link ms-2">
+                                        View original article
+                                    </a>
+                                </div>
+                                ` : ''}
+                            </div>
+                        `;
+                        
+                        // Show in article modal
+                        const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
+                        document.getElementById('articleModalContent').innerHTML = articleHTML;
+                        document.getElementById('articleModalLabel').innerHTML = `
+                            <i class="fas fa-newspaper me-2"></i>${article.title.substring(0, 30)}...
+                        `;
+                        
+                        // Close news modal if open
+                        const newsModal = bootstrap.Modal.getInstance(document.getElementById('newsModal'));
+                        if (newsModal) {
+                            newsModal.hide();
+                        }
+                        
+                        articleModal.show();
+                    }
+                }
+            } catch (error) {
+                console.error('Error viewing article:', error);
+                alert('Error loading article. Please try again.');
+            }
+        }
+
+        // When news modal is opened, mark all as read
+        document.getElementById('newsModal').addEventListener('shown.bs.modal', function() {
+            // Update last seen to latest news
+            const latestNewsId = localStorage.getItem('latestNewsId');
+            if (latestNewsId) {
+                localStorage.setItem('lastSeenNewsId', latestNewsId);
+                localStorage.setItem('unreadNewsCount', '0');
+                
+                // Update badge count
+                const newsBadgeCount = document.getElementById('newsBadgeCount');
+                if (newsBadgeCount) {
+                    newsBadgeCount.textContent = '0';
+                }
+                
+                // Stop pulsing
+                const newsBellBtn = document.getElementById('newsBellBtn');
+                if (newsBellBtn) {
+                    newsBellBtn.classList.remove('pulse');
+                }
+            }
+        });
     </script>
 </body>
 </html>

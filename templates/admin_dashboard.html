@@ -95,7 +95,21 @@
         </div>
     </div>
 </div>
-
+<!-- Add this card to the row in admin_dashboard.html -->
+<div class="col-md-4 mb-4">
+    <div class="card text-white" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4><i class="fas fa-newspaper"></i></h4>
+                    <h5>News Management</h5>
+                </div>
+                <h3><i class="fas fa-bullhorn"></i></h3>
+            </div>
+            <a href="{{ url_for('admin_news') }}" class="btn btn-light btn-sm mt-2">Manage News</a>
+        </div>
+    </div>
+</div>
             <div class="col-md-4 mb-4">
                 <div class="card text-white bg-info">
                     <div class="card-body">

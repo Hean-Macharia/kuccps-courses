@@ -124,12 +124,14 @@ user_courses_collection = None
 user_baskets_collection = None
 admin_activations_collection = None
 database_connected = False
+client = None
+
 
 def initialize_database():
     """Initialize database connections with robust error handling and fixed index creation"""
     global db, db_user_data, db_diploma, db_kmtc, db_certificate, db_artisan, db_Teachers
     global user_payments_collection, user_courses_collection, user_baskets_collection, admin_activations_collection, database_connected
-    
+    global client
     max_retries = 3
     for attempt in range(max_retries):
         try:
@@ -420,7 +422,48 @@ database_connected = initialize_database()
 
 course_processing_lock = threading.Lock()
 course_processing_cache = {}   
-          
+
+# --- News Model ---
+# --- News Model ---
+def create_news_collection():
+    """Initialize news collection with indexes"""
+    global database_connected, db_user_data
+    
+    # SAFE CHECK: Use explicit None/False comparisons
+    if database_connected is False:
+        print("❌ Database connection flag is False")
+        return None
+    
+    # Don't check 'client' - instead check if we can access the database
+    if db_user_data is None:
+        print("❌ Database not properly initialized")
+        return None
+    
+    try:
+        # Create or get news collection
+        news_collection = db_user_data['news_articles']
+        
+        # Create indexes
+        existing_indexes = list(news_collection.list_indexes())
+        
+        # Index for published status and ordering
+        existing = [i for i in existing_indexes if i.get('key', {}) == {'is_published': 1, 'published_at': -1}]
+        if not existing:
+            news_collection.create_index([("is_published", 1), ("published_at", -1)], name='published_news_index')
+        
+        # Index for featured news
+        existing = [i for i in existing_indexes if i.get('key', {}) == {'is_featured': 1, 'published_at': -1}]
+        if not existing:
+            news_collection.create_index([("is_featured", 1), ("published_at", -1)], name='featured_news_index')
+        
+        print("✅ News collection initialized with indexes")
+        return news_collection
+    except Exception as e:
+        print(f"❌ Error creating news collection: {str(e)}")
+        return None
+# Initialize news collection
+news_collection = create_news_collection()
+
 def get_user_courses_data(email, index_number, level):
     """Get user courses from database with better validation"""
     courses_data = None
@@ -4789,6 +4832,385 @@ def pwa_install_status():
         'is_installed': is_installed,
         'display_mode': 'standalone' if is_installed else 'browser'
     })
+
+# --- Admin News Management Routes ---
+@app.route('/admin/news', methods=['GET', 'POST'])
+def admin_news():
+    """Admin news management - list, create, edit, delete news articles"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    # Handle POST requests (create/update news)
+    if request.method == 'POST':
+        action = request.form.get('action', '')
+        
+        if action == 'create':
+            return create_news_article(request)
+        elif action == 'update':
+            return update_news_article(request)
+        elif action == 'delete':
+            return delete_news_article(request)
+        elif action == 'toggle_feature':
+            return toggle_feature_news(request)
+        elif action == 'toggle_publish':
+            return toggle_publish_news(request)
+    
+    # GET request - display news management page
+    try:
+        # Get all news articles sorted by date
+        # FIX: Use 'is not None' instead of truthiness testing
+        news_articles = []
+        if database_connected and news_collection is not None:
+            news_articles = list(news_collection.find().sort('created_at', -1))
+        
+        return render_template('admin_news.html', news_articles=news_articles)
+    
+    except Exception as e:
+        print(f"❌ Error loading admin news: {str(e)}")
+        flash("Error loading news articles", "error")
+        return render_template('admin_news.html', news_articles=[])
+
+@app.route('/admin/news/create', methods=['GET'])
+def admin_create_news():
+    """Create new news article page"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    return render_template('admin_create_news.html')
+
+@app.route('/admin/news/edit/<news_id>', methods=['GET'])
+def admin_edit_news(news_id):
+    """Edit news article page"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    try:
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            news_article = news_collection.find_one({'_id': ObjectId(news_id)})
+            # FIX: Check if article is not None
+            if news_article is not None:
+                return render_template('admin_edit_news.html', article=news_article)
+        
+        flash("News article not found", "error")
+        return redirect(url_for('admin_news'))
+    
+    except Exception as e:
+        print(f"❌ Error loading news for editing: {str(e)}")
+        flash("Error loading news article", "error")
+        return redirect(url_for('admin_news'))
+
+def create_news_article(request):
+    """Create a new news article"""
+    try:
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        excerpt = request.form.get('excerpt', '').strip()
+        image_url = request.form.get('image_url', '').strip()
+        external_link = request.form.get('external_link', '').strip()
+        is_featured = request.form.get('is_featured') == 'on'
+        is_published = request.form.get('is_published') == 'on'
+        priority = int(request.form.get('priority', 5))
+        
+        if not title or not content:
+            flash("Title and content are required", "error")
+            return redirect(url_for('admin_news'))
+        
+        # Create news article
+        news_article = {
+            'title': title,
+            'content': content,
+            'excerpt': excerpt or content[:150] + '...',
+            'image_url': image_url,
+            'external_link': external_link,
+            'is_featured': is_featured,
+            'is_published': is_published,
+            'priority': min(max(priority, 1), 10),  # Limit between 1-10
+            'created_by': session.get('admin_username', 'admin'),
+            'created_at': datetime.now(),
+            'updated_at': datetime.now(),
+            'published_at': datetime.now() if is_published else None,
+            'views': 0
+        }
+        
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            result = news_collection.insert_one(news_article)
+            if result.inserted_id:
+                flash(f"News article '{title}' created successfully", "success")
+            else:
+                flash("Failed to create news article", "error")
+        else:
+            flash("Database not available. News saved to session only.", "warning")
+            # Store in session as fallback
+            session_key = f'news_{int(datetime.now().timestamp())}'
+            session[session_key] = news_article
+        
+        return redirect(url_for('admin_news'))
+    
+    except Exception as e:
+        print(f"❌ Error creating news article: {str(e)}")
+        flash("Error creating news article", "error")
+        return redirect(url_for('admin_news'))
+
+def update_news_article(request):
+    """Update existing news article"""
+    try:
+        news_id = request.form.get('news_id')
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        excerpt = request.form.get('excerpt', '').strip()
+        image_url = request.form.get('image_url', '').strip()
+        external_link = request.form.get('external_link', '').strip()
+        is_featured = request.form.get('is_featured') == 'on'
+        is_published = request.form.get('is_published') == 'on'
+        priority = int(request.form.get('priority', 5))
+        
+        if not news_id or not title or not content:
+            flash("News ID, title and content are required", "error")
+            return redirect(url_for('admin_news'))
+        
+        update_data = {
+            'title': title,
+            'content': content,
+            'excerpt': excerpt or content[:150] + '...',
+            'image_url': image_url,
+            'external_link': external_link,
+            'is_featured': is_featured,
+            'is_published': is_published,
+            'priority': min(max(priority, 1), 10),
+            'updated_at': datetime.now()
+        }
+        
+        # If publishing for first time, set publish date
+        # FIX: Use 'is not None' instead of truthiness testing
+        if is_published and database_connected and news_collection is not None:
+            existing = news_collection.find_one({'_id': ObjectId(news_id)})
+            # FIX: Check if existing is not None
+            if existing is not None and not existing.get('published_at'):
+                update_data['published_at'] = datetime.now()
+        
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            result = news_collection.update_one(
+                {'_id': ObjectId(news_id)},
+                {'$set': update_data}
+            )
+            
+            if result.modified_count > 0:
+                flash(f"News article '{title}' updated successfully", "success")
+            else:
+                flash("No changes made or article not found", "info")
+        else:
+            flash("Database not available. Update failed.", "error")
+        
+        return redirect(url_for('admin_news'))
+    
+    except Exception as e:
+        print(f"❌ Error updating news article: {str(e)}")
+        flash("Error updating news article", "error")
+        return redirect(url_for('admin_news'))
+
+def delete_news_article(request):
+    """Delete news article"""
+    try:
+        news_id = request.form.get('news_id')
+        
+        if not news_id:
+            flash("News ID is required", "error")
+            return redirect(url_for('admin_news'))
+        
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            result = news_collection.delete_one({'_id': ObjectId(news_id)})
+            
+            if result.deleted_count > 0:
+                flash("News article deleted successfully", "success")
+            else:
+                flash("News article not found", "error")
+        else:
+            flash("Database not available. Delete failed.", "error")
+        
+        return redirect(url_for('admin_news'))
+    
+    except Exception as e:
+        print(f"❌ Error deleting news article: {str(e)}")
+        flash("Error deleting news article", "error")
+        return redirect(url_for('admin_news'))
+
+def toggle_feature_news(request):
+    """Toggle featured status of news article"""
+    try:
+        news_id = request.form.get('news_id')
+        
+        if not news_id:
+            flash("News ID is required", "error")
+            return redirect(url_for('admin_news'))
+        
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            # Get current featured status
+            article = news_collection.find_one({'_id': ObjectId(news_id)})
+            # FIX: Check if article is not None
+            if article is not None:
+                new_status = not article.get('is_featured', False)
+                
+                result = news_collection.update_one(
+                    {'_id': ObjectId(news_id)},
+                    {'$set': {'is_featured': new_status, 'updated_at': datetime.now()}}
+                )
+                
+                status_text = "featured" if new_status else "unfeatured"
+                if result.modified_count > 0:
+                    flash(f"News article {status_text} successfully", "success")
+                else:
+                    flash("Failed to update featured status", "error")
+            else:
+                flash("News article not found", "error")
+        
+        return redirect(url_for('admin_news'))
+    
+    except Exception as e:
+        print(f"❌ Error toggling featured status: {str(e)}")
+        flash("Error updating featured status", "error")
+        return redirect(url_for('admin_news'))
+
+def toggle_publish_news(request):
+    """Toggle publish status of news article"""
+    try:
+        news_id = request.form.get('news_id')
+        
+        if not news_id:
+            flash("News ID is required", "error")
+            return redirect(url_for('admin_news'))
+        
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            # Get current publish status
+            article = news_collection.find_one({'_id': ObjectId(news_id)})
+            # FIX: Check if article is not None
+            if article is not None:
+                new_status = not article.get('is_published', False)
+                update_data = {
+                    'is_published': new_status,
+                    'updated_at': datetime.now()
+                }
+                
+                # Set or clear publish date
+                if new_status and not article.get('published_at'):
+                    update_data['published_at'] = datetime.now()
+                elif not new_status:
+                    update_data['published_at'] = None
+                
+                result = news_collection.update_one(
+                    {'_id': ObjectId(news_id)},
+                    {'$set': update_data}
+                )
+                
+                status_text = "published" if new_status else "unpublished"
+                if result.modified_count > 0:
+                    flash(f"News article {status_text} successfully", "success")
+                else:
+                    flash("Failed to update publish status", "error")
+            else:
+                flash("News article not found", "error")
+        
+        return redirect(url_for('admin_news'))
+    
+    except Exception as e:
+        print(f"❌ Error toggling publish status: {str(e)}")
+        flash("Error updating publish status", "error")
+        return redirect(url_for('admin_news'))
+
+@app.route('/api/news/latest')
+def get_latest_news():
+    """API endpoint to get latest news for frontend"""
+    try:
+        limit = int(request.args.get('limit', 5))
+        featured_only = request.args.get('featured', '').lower() == 'true'
+        
+        news_articles = []
+        
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            query = {'is_published': True}
+            if featured_only:
+                query['is_featured'] = True
+            
+            news_articles = list(news_collection.find(query)
+                                .sort([('priority', -1), ('published_at', -1)])
+                                .limit(limit))
+        
+        # Convert ObjectId to string for JSON
+        for article in news_articles:
+            if '_id' in article and isinstance(article['_id'], ObjectId):
+                article['_id'] = str(article['_id'])
+            if 'published_at' in article and isinstance(article['published_at'], datetime):
+                article['published_at'] = article['published_at'].isoformat()
+            if 'created_at' in article and isinstance(article['created_at'], datetime):
+                article['created_at'] = article['created_at'].isoformat()
+            if 'updated_at' in article and isinstance(article['updated_at'], datetime):
+                article['updated_at'] = article['updated_at'].isoformat()
+        
+        return jsonify({
+            'success': True,
+            'news': news_articles,
+            'count': len(news_articles)
+        })
+    
+    except Exception as e:
+        print(f"❌ Error getting latest news: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'news': []
+        })
+
+@app.route('/api/news/increment-views/<news_id>', methods=['POST'])
+def increment_news_views(news_id):
+    """Increment view count for a news article"""
+    try:
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            result = news_collection.update_one(
+                {'_id': ObjectId(news_id)},
+                {'$inc': {'views': 1}}
+            )
+            
+            return jsonify({
+                'success': result.modified_count > 0
+            })
+        
+        return jsonify({'success': False})
+    
+    except Exception as e:
+        print(f"❌ Error incrementing news views: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/news')
+def all_news():
+    """Display all news articles"""
+    try:
+        news_articles = []
+        
+        # FIX: Use 'is not None' instead of truthiness testing
+        if database_connected and news_collection is not None:
+            news_articles = list(news_collection.find({'is_published': True})
+                               .sort([('priority', -1), ('published_at', -1)]))
+            
+            # Convert ObjectId to string for template
+            for article in news_articles:
+                if '_id' in article and isinstance(article['_id'], ObjectId):
+                    article['_id'] = str(article['_id'])
+        
+        return render_template('news.html', news_articles=news_articles)
+    
+    except Exception as e:
+        print(f"❌ Error loading news page: {str(e)}")
+        return render_template('news.html', news_articles=[])
 import threading
 import time
 import requests

@@ -1,0 +1,220 @@
+<!-- admin_create_news.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create News - KUCCPS Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <style>
+        .image-preview {
+            max-width: 200px;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            display: none;
+        }
+        .form-label.required:after {
+            content: " *";
+            color: #dc3545;
+        }
+        .link-preview {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">KUCCPS Admin</a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user-shield"></i> {{ session.get('admin_username', 'Admin') }}
+                </span>
+                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a class="nav-link" href="{{ url_for('admin_news') }}">News</a>
+                <a class="nav-link" href="{{ url_for('admin_logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('admin_news') }}">News</a></li>
+                        <li class="breadcrumb-item active">Create News Article</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Create New News Article</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('admin_news') }}">
+                            <input type="hidden" name="action" value="create">
+                            
+                            <div class="mb-3">
+                                <label for="title" class="form-label required">Title</label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       required maxlength="200" placeholder="Enter news title">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="excerpt" class="form-label">Excerpt/Summary</label>
+                                <textarea class="form-control" id="excerpt" name="excerpt" 
+                                          rows="3" maxlength="300" 
+                                          placeholder="Brief summary of the news (optional)"></textarea>
+                                <small class="text-muted">Max 300 characters. If empty, first 150 characters of content will be used.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="content" class="form-label required">Content</label>
+                                <textarea class="form-control" id="content" name="content" required></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="image_url" class="form-label">Image URL</label>
+                                    <input type="url" class="form-control" id="image_url" name="image_url" 
+                                           placeholder="https://example.com/image.jpg">
+                                    <small class="text-muted">Optional. Provide a direct image URL.</small>
+                                    <div class="mt-2">
+                                        <img id="imagePreview" src="" alt="Image preview" class="image-preview">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="external_link" class="form-label">External Link</label>
+                                    <input type="url" class="form-control" id="external_link" name="external_link" 
+                                           placeholder="https://example.com/news">
+                                    <small class="text-muted">Optional. Link to external article or source.</small>
+                                    <div id="linkPreview" class="link-preview">
+                                        <small><i class="fas fa-link me-1"></i><span id="linkDomain"></span></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="priority" class="form-label">Priority</label>
+                                    <select class="form-select" id="priority" name="priority">
+                                        <option value="10">Highest (10)</option>
+                                        <option value="9">Very High (9)</option>
+                                        <option value="8">High (8)</option>
+                                        <option value="7">Medium High (7)</option>
+                                        <option value="6" selected>Medium (6)</option>
+                                        <option value="5">Medium Low (5)</option>
+                                        <option value="4">Low (4)</option>
+                                        <option value="3">Very Low (3)</option>
+                                        <option value="2">Lowest (2)</option>
+                                        <option value="1">Minimal (1)</option>
+                                    </select>
+                                    <small class="text-muted">Higher priority articles appear first</small>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <div class="form-check mt-4">
+                                        <input type="checkbox" class="form-check-input" id="is_featured" name="is_featured">
+                                        <label class="form-check-label" for="is_featured">
+                                            <i class="fas fa-star text-warning me-1"></i> Mark as Featured
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">Featured articles get highlighted</small>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <div class="form-check mt-4">
+                                        <input type="checkbox" class="form-check-input" id="is_published" name="is_published" checked>
+                                        <label class="form-check-label" for="is_published">
+                                            <i class="fas fa-eye text-success me-1"></i> Publish Immediately
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">Uncheck to save as draft</small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{{ url_for('admin_news') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Create Article
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Summernote editor
+            $('#content').summernote({
+                height: 300,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['font', ['strikethrough', 'superscript', 'subscript']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['height', ['height']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+            });
+
+            // Image URL preview
+            $('#image_url').on('input', function() {
+                const url = $(this).val();
+                const preview = $('#imagePreview');
+                
+                if (url) {
+                    preview.attr('src', url);
+                    preview.show();
+                } else {
+                    preview.hide();
+                }
+            });
+
+            // External link preview
+            $('#external_link').on('input', function() {
+                const url = $(this).val();
+                const preview = $('#linkPreview');
+                const domain = $('#linkDomain');
+                
+                if (url) {
+                    try {
+                        const urlObj = new URL(url);
+                        domain.text(urlObj.hostname);
+                        preview.show();
+                    } catch (e) {
+                        domain.text('Invalid URL');
+                        preview.show();
+                    }
+                } else {
+                    preview.hide();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
