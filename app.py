@@ -1,7 +1,7 @@
 import os
 import base64
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response, Response
 from pymongo import MongoClient
 from courses import get_user_courses, save_user_courses
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
@@ -886,6 +886,23 @@ def debug_user_courses():
         sess_rec = None
 
     return jsonify({'success': True, 'db_record': db_rec, 'session_record': sess_rec})
+@app.route('/sitemap.xml', methods=['GET']) 
+def sitemap(): 
+    pages = [] 
+    today = datetime.date.today().isoformat() # Collect all GET routes without arguments 
+    for rule in app.url_map.iter_rules(): 
+        if "GET" in rule.methods and not rule.arguments: 
+            url = url_for(rule.endpoint, _external=True) 
+            pages.append({ "loc": url, "lastmod": today, "priority": "0.8" }) # Build XML sitemap 
+            sitemap_xml = [ '<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' ] 
+            for page in pages: 
+                sitemap_xml.append(" <url>") 
+                sitemap_xml.append(f" <loc>{page['loc']}</loc>") 
+                sitemap_xml.append(f" <lastmod>{page['lastmod']}</lastmod>") 
+                sitemap_xml.append(f" <priority>{page['priority']}</priority>") 
+                sitemap_xml.append(" </url>") 
+            sitemap_xml.append('</urlset>') 
+            return Response("\n".join(sitemap_xml), mimetype='application/xml')
 
 @app.before_request
 def manage_session():
@@ -5212,24 +5229,6 @@ def all_news():
         print(f"❌ Error loading news page: {str(e)}")
         return render_template('news.html', news_articles=[])
 
-from flask import Response
-
-@app.route('/sitemap.xml')
-def sitemap():
-    sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
-    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-      <url>
-        <loc>https://kuccpscourses.co.ke/</loc>
-        <lastmod>2026-01-18</lastmod>
-        <priority>1.0</priority>
-      </url>
-      <url>
-        <loc>https://kuccpscourses.co.ke/courses</loc>
-        <lastmod>2026-01-18</lastmod>
-        <priority>0.8</priority>
-      </url>
-    </urlset>"""
-    return Response(sitemap_xml, mimetype='application/xml')
 
 
 import threading
