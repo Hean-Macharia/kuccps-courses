@@ -5211,6 +5211,27 @@ def all_news():
     except Exception as e:
         print(f"❌ Error loading news page: {str(e)}")
         return render_template('news.html', news_articles=[])
+
+from flask import Response
+
+@app.route('/sitemap.xml')
+def sitemap():
+    sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+        <loc>https://kuccpscourses.co.ke/</loc>
+        <lastmod>2026-01-18</lastmod>
+        <priority>1.0</priority>
+      </url>
+      <url>
+        <loc>https://kuccpscourses.co.ke/courses</loc>
+        <lastmod>2026-01-18</lastmod>
+        <priority>0.8</priority>
+      </url>
+    </urlset>"""
+    return Response(sitemap_xml, mimetype='application/xml')
+
+
 import threading
 import time
 import requests
