@@ -1,1 +1,12 @@
 app = "kuccps-courses"
+
+[http_service]
+  internal_port = 8080        # Must match the port your app listens on
+  force_https = true
+  auto_stop_machines = false  # Keep app running
+  auto_start_machines = true
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20

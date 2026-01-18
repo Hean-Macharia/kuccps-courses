@@ -886,23 +886,87 @@ def debug_user_courses():
         sess_rec = None
 
     return jsonify({'success': True, 'db_record': db_rec, 'session_record': sess_rec})
-@app.route('/sitemap.xml', methods=['GET']) 
-def sitemap(): 
-    pages = [] 
-    today = datetime.date.today().isoformat() # Collect all GET routes without arguments 
-    for rule in app.url_map.iter_rules(): 
-        if "GET" in rule.methods and not rule.arguments: 
-            url = url_for(rule.endpoint, _external=True) 
-            pages.append({ "loc": url, "lastmod": today, "priority": "0.8" }) # Build XML sitemap 
-            sitemap_xml = [ '<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' ] 
-            for page in pages: 
-                sitemap_xml.append(" <url>") 
-                sitemap_xml.append(f" <loc>{page['loc']}</loc>") 
-                sitemap_xml.append(f" <lastmod>{page['lastmod']}</lastmod>") 
-                sitemap_xml.append(f" <priority>{page['priority']}</priority>") 
-                sitemap_xml.append(" </url>") 
-            sitemap_xml.append('</urlset>') 
-            return Response("\n".join(sitemap_xml), mimetype='application/xml')
+
+
+def generate_sitemap():
+    """Generate sitemap with dynamic dates"""
+    base_url = 'https://kuccpscourses.co.ke'
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    # Define all static pages
+    static_pages = [
+        {'path': '/', 'priority': '1.0', 'freq': 'daily'},
+        {'path': '/courses', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/degree', 'priority': '0.8', 'freq': 'weekly'},
+        {'path': '/diploma', 'priority': '0.8', 'freq': 'weekly'},
+        {'path': '/certificate', 'priority': '0.8', 'freq': 'weekly'},
+        {'path': '/artisan', 'priority': '0.8', 'freq': 'weekly'},
+        {'path': '/kmtc', 'priority': '0.8', 'freq': 'weekly'},
+        {'path': '/ttc', 'priority': '0.8', 'freq': 'weekly'},
+        {'path': '/about', 'priority': '0.7', 'freq': 'monthly'},
+        {'path': '/contact', 'priority': '0.7', 'freq': 'monthly'},
+        {'path': '/user-guide', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/news', 'priority': '0.7', 'freq': 'daily'},
+        {'path': '/verify-payment', 'priority': '0.6', 'freq': 'weekly'},
+        {'path': '/results', 'priority': '0.6', 'freq': 'weekly'},
+        {'path': '/basket', 'priority': '0.6', 'freq': 'weekly'},
+    ]
+    
+    # Generate XML
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    for page in static_pages:
+        xml_parts.append('  <url>')
+        xml_parts.append(f'    <loc>{base_url}{page["path"]}</loc>')
+        xml_parts.append(f'    <lastmod>{today}</lastmod>')
+        xml_parts.append(f'    <changefreq>{page["freq"]}</changefreq>')
+        xml_parts.append(f'    <priority>{page["priority"]}</priority>')
+        xml_parts.append('  </url>')
+    
+    xml_parts.append('</urlset>')
+    
+    return '\n'.join(xml_parts)
+
+@app.route('/sitemap.xml')
+def sitemap():
+    """Serve the dynamically generated sitemap"""
+    sitemap_xml = generate_sitemap()
+    return Response(sitemap_xml, mimetype='application/xml')
+
+@app.route('/robots.txt')
+def robots():
+    """Serve robots.txt file"""
+    robots_txt = """User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /debug/
+Disallow: /temp-bypass/
+
+Sitemap: https://kuccpscourses.co.ke/sitemap.xml"""
+    
+    return Response(robots_txt, mimetype='text/plain')
+
+def update_sitemap_dates():
+    """Update lastmod dates in sitemap - run this periodically"""
+    # This would typically be called from a cron job or scheduler
+    print(f"🔄 Updating sitemap dates: {datetime.now().strftime('%Y-%m-%d')}")
+    # In production, you might want to update specific pages
+    # based on when they were actually modified
+    
+    # For now, we're using dynamic dates in generate_sitemap()
+    return True
+
+# Add meta tags to your base template
+@app.context_processor
+def inject_seo_meta():
+    """Inject SEO meta tags into templates"""
+    return {
+        'site_name': 'KUCCPS Courses',
+        'site_description': 'Find and compare courses from KUCCPS, universities, colleges, and technical institutions in Kenya.',
+        'site_url': 'https://kuccpscourses.co.ke',
+        'current_year': datetime.now().year
+    }
 
 @app.before_request
 def manage_session():
