@@ -1,7 +1,36 @@
 {% extends "base.html" %}
 
-{% block title %}Diploma Qualification Results{% endblock %}
+{% block title %}KUCCPS Diploma Qualification Results{% endblock %}
 
+{% block links %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "KUCCPS Diploma Programs",
+  "description": "Explore KUCCPS diploma programs available in Kenyan colleges and technical institutions. Match your KCSE grades with suitable diploma courses.",
+  "provider": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "url": "https://www.kuccpscourses.co.ke/"
+  },
+  "courseCode": "KUCCPS-DIPLOMA",
+  "educationalCredentialAwarded": "Diploma",
+  "timeToComplete": "P2Y",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": ["full-time", "part-time"],
+    "courseWorkload": "Technical training focused"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "200",
+    "priceCurrency": "KES",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+{% endblock %}
 {% block content %}
 <div class="container mt-5">
     <h1 class="text-primary mb-4">Diploma Qualification Results</h1>

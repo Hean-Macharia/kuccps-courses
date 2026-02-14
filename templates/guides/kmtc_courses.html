@@ -1,0 +1,809 @@
+{% extends "base.html" %}
+{% block title %}KMTC Courses in Kenya 2026 | Healthcare Training | KUCCPS Courses Checker{% endblock %}
+
+{% block links %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "https://www.kuccpscourses.co.ke"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "Guides",
+    "item": "https://www.kuccpscourses.co.ke/guides/"
+  },{
+    "@type": "ListItem",
+    "position": 3,
+    "name": "KMTC Courses",
+"item": "https://www.kuccpscourses.co.ke/guides/kmtc-courses-admission"
+  }]
+}
+</script>
+<style>
+    /* ============================================
+        GUIDE PAGE CUSTOM STYLES
+    ============================================= */
+    
+    /* Hero Section */
+    .guide-hero {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 70px 0 50px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .guide-hero h1 {
+        font-size: 2.4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .guide-subtitle {
+        font-size: 1.15rem;
+        opacity: 0.95;
+        max-width: 700px;
+    }
+    
+    .guide-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+    
+    .guide-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .guide-meta i {
+        color: var(--primary-yellow);
+        font-size: 1.1rem;
+    }
+    
+    /* Guide Content */
+    .guide-container {
+        padding: 50px 0;
+        background: var(--white);
+    }
+    
+    .guide-content {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .guide-content h2 {
+        color: var(--primary-red);
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-top: 3rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 1rem;
+        border-bottom: 4px solid var(--primary-yellow);
+    }
+    
+    .guide-content h2:first-child {
+        margin-top: 0;
+    }
+    
+    .guide-content h3 {
+        color: var(--dark-grey);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .guide-content p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--medium-grey);
+        margin-bottom: 1.2rem;
+    }
+    
+    /* Sections */
+    .guide-section {
+        margin-bottom: 2.5rem;
+        padding: 2rem;
+        background: var(--light-grey);
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-red);
+    }
+    
+    /* Benefits Box */
+    .benefits-box {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        margin-top: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border-top: 4px solid var(--primary-yellow);
+    }
+    
+    .benefits-box h3 {
+        color: var(--primary-red);
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .benefits-box ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .benefits-box li {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: flex-start;
+        color: var(--dark-grey);
+        line-height: 1.6;
+    }
+    
+    .benefits-box li:last-child {
+        border-bottom: none;
+    }
+    
+    .benefits-box li::before {
+        content: '✓';
+        color: var(--white);
+        font-weight: bold;
+        background: var(--primary-red);
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+    
+    /* Requirement Grid */
+    .requirement-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .requirement-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        border-top: 5px solid var(--primary-red);
+    }
+    
+    .requirement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .requirement-grade {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary-yellow);
+        margin-bottom: 0.5rem;
+    }
+    
+    .requirement-card h3 {
+        color: var(--primary-red);
+        font-size: 1.1rem;
+        margin: 0.5rem 0;
+    }
+    
+    .requirement-card p {
+        font-size: 0.95rem;
+        margin: 0;
+        color: var(--medium-grey);
+    }
+    
+    /* Course Grid */
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .course-category {
+        background: var(--white);
+        padding: 1.8rem;
+        border-radius: var(--radius-md);
+        border-top: 5px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .course-category:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-top-color: var(--primary-red);
+    }
+    
+    .course-category h3 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        margin-top: 0;
+    }
+    
+    .course-category ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .course-category li {
+        padding: 8px 0;
+        color: var(--medium-grey);
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    
+    .course-category li::before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: var(--primary-yellow);
+        font-weight: bold;
+    }
+    
+    /* Info Box */
+    .info-box {
+        background: linear-gradient(135deg, rgba(198, 40, 40, 0.08) 0%, rgba(251, 192, 45, 0.08) 100%);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-red);
+        margin: 1.5rem 0;
+    }
+    
+    .info-box h3 {
+        color: var(--primary-red);
+        margin-top: 0;
+    }
+    
+    .info-box ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .info-box li {
+        padding: 8px 0;
+        color: var(--dark-grey);
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    
+    .info-box li::before {
+        content: '◆';
+        position: absolute;
+        left: 0;
+        color: var(--primary-yellow);
+    }
+    
+    /* FAQ Section */
+    .faq {
+        background: var(--white);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .faq:hover {
+        box-shadow: var(--shadow-md);
+    }
+    
+    .faq h3 {
+        color: var(--primary-red);
+        font-size: 1.1rem;
+        margin: 0 0 0.8rem 0;
+    }
+    
+    .faq p {
+        margin: 0;
+        color: var(--medium-grey);
+    }
+    
+    /* Related Guides */
+    .related-guides {
+        margin-top: 4rem;
+        padding-top: 3rem;
+        border-top: 2px solid var(--light-grey);
+    }
+    
+    .related-guides h2 {
+        text-align: center;
+    }
+    
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .related-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        text-decoration: none;
+        color: inherit;
+        transition: all var(--transition-base);
+        border-top: 5px solid var(--primary-yellow);
+    }
+    
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-top-color: var(--primary-red);
+        color: var(--primary-red);
+    }
+    
+    .related-card h3 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin-top: 0;
+    }
+    
+    .related-card i {
+        margin-right: 0.5rem;
+        color: var(--primary-yellow);
+    }
+    
+    .related-card p {
+        color: var(--medium-grey);
+        margin: 0.8rem 0 0 0;
+    }
+    
+    /* CTA Section */
+    .guide-cta {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 3rem 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        margin-top: 4rem;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .guide-cta h2 {
+        color: var(--white);
+        border-bottom: 4px solid var(--primary-yellow);
+        font-size: 2rem;
+        margin-top: 0;
+    }
+    
+    .guide-cta p {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.15rem;
+        margin-bottom: 2rem;
+    }
+    
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .cta-btn {
+        padding: 12px 30px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .cta-btn-primary {
+        background: var(--primary-yellow);
+        color: var(--black);
+    }
+    
+    .cta-btn-primary:hover {
+        background: #FFEB3B;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--black);
+    }
+    
+    .cta-btn-secondary {
+        background: transparent;
+        color: var(--white);
+        border: 2px solid var(--white);
+    }
+    
+    .cta-btn-secondary:hover {
+        background: var(--white);
+        color: var(--primary-red);
+        transform: translateY(-2px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .guide-hero {
+            padding: 50px 0 40px;
+        }
+        
+        .guide-hero h1 {
+            font-size: 1.8rem;
+        }
+        
+        .guide-subtitle {
+            font-size: 1rem;
+        }
+        
+        .guide-meta {
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .guide-content h2 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .guide-content h3 {
+            font-size: 1.1rem;
+        }
+        
+        .guide-section {
+            padding: 1.5rem;
+        }
+        
+        .course-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .related-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .cta-buttons {
+            flex-direction: column;
+        }
+        
+        .cta-btn {
+            width: 100%;
+        }
+        
+        .guide-cta h2 {
+            font-size: 1.5rem;
+        }
+        
+        .guide-cta p {
+            font-size: 1rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .guide-hero h1 {
+            font-size: 1.5rem;
+        }
+        
+        .guide-meta {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .guide-content h2 {
+            font-size: 1.3rem;
+        }
+        
+        .requirement-grade {
+            font-size: 2rem;
+        }
+        
+        .guide-section {
+            padding: 1.2rem;
+        }
+        
+        .course-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "KMTC Courses in Kenya 2026",
+  "description": "Complete guide to Kenya Medical Training College (KMTC) programs. Discover healthcare training courses, requirements, admissions, and career opportunities.",
+  "image": "{{ url_for('static', filename='images/guide-banner.jpg', _external=True) }}",
+  "author": {"@type": "Organization", "name": "KUCCPS Courses Checker"},
+  "datePublished": "2026-01-21",
+  "dateModified": "2026-01-21"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="guide-hero">
+    <div class="container">
+        <h1>KMTC Courses in Kenya 2026</h1>
+        <p class="guide-subtitle">Train for a rewarding healthcare career with Kenya Medical Training College</p>
+        <div class="guide-meta">
+            <span><i class="fas fa-calendar"></i> Last Updated: January 2026</span>
+            <span><i class="fas fa-clock"></i> Read time: 10 min</span>
+            <span><i class="fas fa-book"></i> Category: Health Professions</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="guide-container">
+    <div class="container">
+        <div class="guide-content">
+            <!-- About KMTC -->
+            <h2>About Kenya Medical Training College (KMTC)</h2>
+            <p>Kenya Medical Training College (KMTC) is the leading government institution for training health professionals in Kenya. With multiple campuses across the country, KMTC offers recognized diploma programs in various healthcare fields. KMTC graduates are highly sought after by the Ministry of Health, private hospitals, and international healthcare organizations.</p>
+            
+            <div class="benefits-box">
+                <h3><i class="fas fa-heart-pulse"></i> Why Choose KMTC?</h3>
+                <ul>
+                    <li><strong>Government Institution:</strong> Quality-assured training with international standards</li>
+                    <li><strong>Recognized Qualifications:</strong> KMTC diploma is highly valued across East Africa</li>
+                    <li><strong>Multiple Campuses:</strong> Training centers in Nairobi, Kisumu, Nakuru, Mombasa and more</li>
+                    <li><strong>Career Security:</strong> High demand for healthcare professionals in Kenya and globally</li>
+                    <li><strong>Further Studies:</strong> Pathway to degree programs at universities</li>
+                    <li><strong>Competitive Salary:</strong> Good earning potential and career progression</li>
+                </ul>
+            </div>
+
+            <!-- Requirements -->
+            <h2>KMTC Program Entry Requirements</h2>
+            <div class="requirement-grid">
+                <div class="requirement-card">
+                    <div class="requirement-grade">C- and above</div>
+                    <h3>Minimum Mean Grade</h3>
+                    <p>Overall KCSE average performance</p>
+                </div>
+                
+                <div class="requirement-card">
+                    <div class="requirement-grade">C</div>
+                    <h3>English & Science</h3>
+                    <p>Required subject grades</p>
+                </div>
+                
+                <div class="requirement-card">
+                    <div class="requirement-grade">3</div>
+                    <h3>Program Duration</h3>
+                    <p>Years for most programs</p>
+                </div>
+                
+                <div class="requirement-card">
+                    <div class="requirement-grade">MOH</div>
+                    <h3>Employment Path</h3>
+                    <p>Ministry of Health placement</p>
+                </div>
+            </div>
+
+            <!-- About Programs -->
+            <h2>KMTC Programs & Career Paths</h2>
+            <p>KMTC offers a wide range of healthcare programs designed to prepare professionals for various roles in Kenya's health system:</p>
+            
+            <div class="course-grid">
+                <div class="course-category">
+                    <h3>🏥 Nursing Programs</h3>
+                    <ul>
+                        <li>Registered Nurse (RN)</li>
+                        <li>Community Health Nursing</li>
+                        <li>Mental Health Nursing</li>
+                        <li>Pediatric Nursing</li>
+                        <li>Maternal & Child Health</li>
+                    </ul>
+                </div>
+                
+                <div class="course-category">
+                    <h3>🧬 Clinical Support</h3>
+                    <ul>
+                        <li>Medical Laboratory Technician</li>
+                        <li>Pharmacy Technician</li>
+                        <li>Radiography/Imaging</li>
+                        <li>Dental Technician</li>
+                        <li>Health Records Officer</li>
+                    </ul>
+                </div>
+                
+                <div class="course-category">
+                    <h3>⚕️ Specialized Healthcare</h3>
+                    <ul>
+                        <li>Anesthesia Technician</li>
+                        <li>Operating Theatre Technician</li>
+                        <li>Environmental Health</li>
+                        <li>Public Health Officer</li>
+                        <li>Clinical Officer</li>
+                    </ul>
+                </div>
+                
+                <div class="course-category">
+                    <h3>🔬 Technical Health Services</h3>
+                    <ul>
+                        <li>Biomedical Engineering</li>
+                        <li>Medical Engineering Technician</li>
+                        <li>Health Informatics</li>
+                        <li>Nutrition & Dietetics</li>
+                        <li>Physiotherapy Technician</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- KMTC Campuses -->
+            <h2>KMTC Campuses in Kenya</h2>
+            <div class="info-box">
+                <h3>KMTC Training Locations:</h3>
+                <ul>
+                    <li><strong>Main Campus - Nairobi:</strong> Capital city location with diverse programs</li>
+                    <li><strong>Kisumu Campus:</strong> Serving Western Kenya region</li>
+                    <li><strong>Nakuru Campus:</strong> Serving Rift Valley region</li>
+                    <li><strong>Mombasa Campus:</strong> Coastal region training center</li>
+                    <li><strong>Kisii Campus:</strong> Highlands region programs</li>
+                    <li><strong>Nyeri Campus:</strong> Additional Eastern region location</li>
+                </ul>
+                <p><em>Choose based on proximity and specific program availability at different campuses.</em></p>
+            </div>
+
+            <!-- Career Prospects -->
+            <h2>Employment & Career Prospects</h2>
+            <p>KMTC graduates enjoy excellent employment prospects with multiple career pathways:</p>
+            
+            <div class="guide-section">
+                <ul>
+                    <li><strong>Ministry of Health Placement:</strong> Direct recruitment into government hospitals and health centers</li>
+                    <li><strong>Private Healthcare:</strong> High demand in private hospitals and clinics</li>
+                    <li><strong>International Opportunities:</strong> Many countries recruit Kenyan-trained healthcare professionals</li>
+                    <li><strong>NGO Positions:</strong> Health-focused NGOs value KMTC qualifications</li>
+                    <li><strong>Self-Employment:</strong> Opportunities to start private clinics or health businesses</li>
+                    <li><strong>Degree Pathways:</strong> Upgrade to degree programs at universities for higher roles</li>
+                </ul>
+            </div>
+
+            <!-- Study & Work -->
+            <h2>Balancing Study & Work</h2>
+            <div class="info-box">
+                <h3>Part-Time Study Options:</h3>
+                <ul>
+                    <li>Some KMTC programs offer part-time schedules for working professionals</li>
+                    <li>Full-time programs are intensive requiring dedicated study time</li>
+                    <li>Clinical/practical components have strict attendance requirements</li>
+                    <li>Discuss flexibility with your campus during registration</li>
+                </ul>
+            </div>
+
+            <!-- Frequently Asked Questions -->
+            <h2>Frequently Asked Questions About KMTC</h2>
+            <div class="faq">
+                <h3>Which KMTC campus should I choose?</h3>
+                <p>KMTC has campuses across Kenya. Choose based on proximity to your home/region and specific program availability. Check the KMTC website for program offerings at each campus.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>What are the job prospects for KMTC graduates?</h3>
+                <p>Excellent! Healthcare professionals are in high demand in Kenya and globally. Most KMTC graduates are employed by the Ministry of Health or private healthcare institutions.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Can I study part-time at KMTC?</h3>
+                <p>Some programs allow part-time schedules for working professionals. However, clinical and practical components require consistent, full-time presence during internship periods.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Can I upgrade from KMTC diploma to a degree?</h3>
+                <p>Absolutely! KMTC graduates can pursue degree programs in health sciences at various universities. Many universities have special pathways for KMTC diploma holders.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>What's the starting salary for KMTC graduates?</h3>
+                <p>KMTC graduates employed by the Ministry of Health earn competitive salaries with benefits. Specific amounts depend on the program and position level. Private sector salaries are often higher.</p>
+            </div>
+
+            <!-- Related Guides -->
+            <div class="related-guides">
+                <h2>Related Guides & Resources</h2>
+                <div class="related-grid">
+                    <a href="{{ url_for('kuccps_guides.kcse_admission') }}" class="related-card">
+                        <h3><i class="fas fa-graduation-cap"></i> KCSE Admission Requirements</h3>
+                        <p>Learn minimum KCSE grades needed for KMTC and other programs</p>
+                    </a>
+                    <a href="{{ url_for('kuccps_guides.diploma_courses') }}" class="related-card">
+                        <h3><i class="fas fa-certificate"></i> Other Diploma Courses</h3>
+                        <p>Explore diploma program options beyond healthcare</p>
+                    </a>
+                    <a href="{{ url_for('kuccps_guides.scholarships') }}" class="related-card">
+                        <h3><i class="fas fa-hand-holding-usd"></i> Scholarships & Funding</h3>
+                        <p>Financial aid opportunities for healthcare programs</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="guide-cta">
+                <h2>Start Your Healthcare Career</h2>
+                <p>Transform lives through a rewarding career in healthcare with KMTC training</p>
+                <div class="cta-buttons">
+                    <a href="/kmtc" class="cta-btn cta-btn-primary">
+                        <i class="fas fa-stethoscope"></i> Explore KMTC Programs
+                    </a>
+                    <a href="/guides" class="cta-btn cta-btn-secondary">
+                        <i class="fas fa-book"></i> View All Guides
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Which KMTC campus should I choose?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KMTC has campuses across Kenya. Choose based on proximity to your home/region and specific program availability. Check the KMTC website for program offerings at each campus."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the job prospects for KMTC graduates?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Excellent! Healthcare professionals are in high demand in Kenya and globally. Most KMTC graduates are employed by the Ministry of Health or private healthcare institutions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I study part-time at KMTC?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Some programs allow part-time schedules for working professionals. However, clinical and practical components require consistent, full-time presence during internship periods."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I upgrade from KMTC diploma to a degree?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Absolutely! KMTC graduates can pursue degree programs in health sciences at various universities. Many universities have special pathways for KMTC diploma holders."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's the starting salary for KMTC graduates?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KMTC graduates employed by the Ministry of Health earn competitive salaries with benefits. Specific amounts depend on the program and position level. Private sector salaries are often higher."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}

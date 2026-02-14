@@ -1,6 +1,9 @@
 {% extends "./base.html" %}
 {% block title %}Enter Details{% endblock %}
 {% block content %}
+
+
+
 <div class="container mt-5">
     <h2>Enter Your Email and KCSE Index Number</h2>
     <form action="{{ url_for('enter_details', flow=flow) }}" method="post">
@@ -40,4 +43,5 @@
         });
     });
 </script>
+
 {% endblock %}

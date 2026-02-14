@@ -1,0 +1,33 @@
+<!-- SEO Meta Tags Template -->
+{% set seo_meta = {
+    'title': 'KUCCPS Courses Checker 2026 | Find Your Courses',
+    'description': 'Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs in Kenya.',
+    'keywords': 'KUCCPS, courses, KCSE, Kenya, degree, diploma, certificate, artisan, TTC, KMTC, university, college, admission 2026',
+    'author': 'Hean Njuki',
+    'og_type': 'website',
+    'twitter_card': 'summary_large_image'
+} %}
+
+{% if seo_override %}
+    {% set seo_meta = seo_meta.update(seo_override) %}
+{% endif %}
+
+<!-- Primary Meta Tags -->
+<title>{{ seo_meta.title }}</title>
+<meta name="description" content="{{ seo_meta.description }}">
+<meta name="keywords" content="{{ seo_meta.keywords }}">
+<meta name="author" content="{{ seo_meta.author }}">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="{{ seo_meta.og_type }}">
+<meta property="og:url" content="{{ canonical_url|default(site_url) }}">
+<meta property="og:title" content="{{ seo_meta.title }}">
+<meta property="og:description" content="{{ seo_meta.description }}">
+<meta property="og:image" content="{{ og_image_url }}">
+
+<!-- Twitter -->
+<meta property="twitter:card" content="{{ seo_meta.twitter_card }}">
+<meta property="twitter:url" content="{{ canonical_url|default(site_url) }}">
+<meta property="twitter:title" content="{{ seo_meta.title }}">
+<meta property="twitter:description" content="{{ seo_meta.description }}">
+<meta property="twitter:image" content="{{ twitter_image_url }}">

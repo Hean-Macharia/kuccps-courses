@@ -1,0 +1,871 @@
+{% extends "base.html" %}
+{% block title %}KCSE Grades & University Admission 2026 | KUCCPS Courses Checker{% endblock %}
+
+{% block links %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "https://www.kuccpscourses.co.ke"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "Guides",
+    "item": "https://www.kuccpscourses.co.ke/guides/"
+  },{
+    "@type": "ListItem",
+    "position": 3,
+    "name": "KCSE Admission Requirements",
+    "item": "https://www.kuccpscourses.co.ke/guides/kcse-admission-requirements"
+  }]
+}
+</script>
+<style>
+    /* ============================================
+        GUIDE PAGE CUSTOM STYLES
+    ============================================= */
+    
+    /* Hero Section */
+    .guide-hero {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 70px 0 50px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .guide-hero h1 {
+        font-size: 2.4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .guide-subtitle {
+        font-size: 1.15rem;
+        opacity: 0.95;
+        max-width: 700px;
+    }
+    
+    .guide-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+    
+    .guide-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .guide-meta i {
+        color: var(--primary-yellow);
+        font-size: 1.1rem;
+    }
+    
+    /* Guide Content */
+    .guide-container {
+        padding: 50px 0;
+        background: var(--white);
+    }
+    
+    .guide-content {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .guide-content h2 {
+        color: var(--primary-red);
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-top: 3rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 1rem;
+        border-bottom: 4px solid var(--primary-yellow);
+    }
+    
+    .guide-content h2:first-child {
+        margin-top: 0;
+    }
+    
+    .guide-content h3 {
+        color: var(--dark-grey);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .guide-content p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--medium-grey);
+        margin-bottom: 1.2rem;
+    }
+    
+    /* Sections */
+    .guide-section {
+        margin-bottom: 2.5rem;
+        padding: 2rem;
+        background: var(--light-grey);
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-red);
+    }
+    
+    /* Benefits Box */
+    .benefits-box {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        margin-top: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border-top: 4px solid var(--primary-yellow);
+    }
+    
+    .benefits-box h3 {
+        color: var(--primary-red);
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .benefits-box ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .benefits-box li {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: flex-start;
+        color: var(--dark-grey);
+        line-height: 1.6;
+    }
+    
+    .benefits-box li:last-child {
+        border-bottom: none;
+    }
+    
+    .benefits-box li::before {
+        content: '✓';
+        color: var(--white);
+        font-weight: bold;
+        background: var(--primary-red);
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+    
+    /* Requirement Grid */
+    .requirement-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .requirement-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        border-top: 5px solid var(--primary-red);
+    }
+    
+    .requirement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .requirement-grade {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary-yellow);
+        margin-bottom: 0.5rem;
+    }
+    
+    .requirement-card h3 {
+        color: var(--primary-red);
+        font-size: 1.1rem;
+        margin: 0.5rem 0;
+    }
+    
+    .requirement-card p {
+        font-size: 0.95rem;
+        margin: 0;
+        color: var(--medium-grey);
+    }
+    
+    /* Pathway Chart */
+    .pathway-chart {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .pathway {
+        background: var(--white);
+        padding: 1.8rem;
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .pathway:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-left-color: var(--primary-red);
+    }
+    
+    .pathway h3 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin-top: 0;
+    }
+    
+    .pathway p {
+        color: var(--medium-grey);
+        margin: 0.8rem 0;
+    }
+    
+    .pathway ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .pathway li {
+        padding: 8px 0;
+        color: var(--medium-grey);
+        position: relative;
+        padding-left: 1.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .pathway li::before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: var(--primary-yellow);
+        font-weight: bold;
+    }
+    
+    /* Table Styles */
+    .subject-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 2rem 0;
+        background: var(--white);
+        box-shadow: var(--shadow-sm);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+    
+    .subject-table thead {
+        background: var(--primary-red);
+        color: var(--white);
+    }
+    
+    .subject-table th {
+        padding: 1.2rem;
+        text-align: left;
+        font-weight: 700;
+    }
+    
+    .subject-table td {
+        padding: 1rem 1.2rem;
+        border-bottom: 1px solid var(--light-grey);
+        color: var(--medium-grey);
+    }
+    
+    .subject-table tbody tr:hover {
+        background: rgba(198, 40, 40, 0.05);
+    }
+    
+    /* Info Box */
+    .info-box {
+        background: linear-gradient(135deg, rgba(198, 40, 40, 0.08) 0%, rgba(251, 192, 45, 0.08) 100%);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-red);
+        margin: 1.5rem 0;
+    }
+    
+    .info-box h3 {
+        color: var(--primary-red);
+        margin-top: 0;
+    }
+    
+    .info-box ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .info-box li {
+        padding: 8px 0;
+        color: var(--dark-grey);
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    
+    .info-box li::before {
+        content: '◆';
+        position: absolute;
+        left: 0;
+        color: var(--primary-yellow);
+    }
+    
+    /* Tips Grid */
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .tip {
+        background: var(--white);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        border-top: 4px solid var(--primary-yellow);
+    }
+    
+    .tip:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .tip h4 {
+        color: var(--primary-red);
+        margin-top: 0;
+        font-size: 1.1rem;
+    }
+    
+    .tip p {
+        margin: 0.8rem 0 0 0;
+        color: var(--medium-grey);
+        font-size: 0.95rem;
+    }
+    
+    /* FAQ Section */
+    .faq {
+        background: var(--white);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .faq:hover {
+        box-shadow: var(--shadow-md);
+    }
+    
+    .faq h3 {
+        color: var(--primary-red);
+        font-size: 1.1rem;
+        margin: 0 0 0.8rem 0;
+    }
+    
+    .faq p {
+        margin: 0;
+        color: var(--medium-grey);
+    }
+    
+    /* Related Guides */
+    .related-guides {
+        margin-top: 4rem;
+        padding-top: 3rem;
+        border-top: 2px solid var(--light-grey);
+    }
+    
+    .related-guides h2 {
+        text-align: center;
+    }
+    
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .related-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        text-decoration: none;
+        color: inherit;
+        transition: all var(--transition-base);
+        border-top: 5px solid var(--primary-yellow);
+    }
+    
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-top-color: var(--primary-red);
+        color: var(--primary-red);
+    }
+    
+    .related-card h3 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin-top: 0;
+    }
+    
+    .related-card i {
+        margin-right: 0.5rem;
+        color: var(--primary-yellow);
+    }
+    
+    .related-card p {
+        color: var(--medium-grey);
+        margin: 0.8rem 0 0 0;
+    }
+    
+    /* CTA Section */
+    .guide-cta {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 3rem 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        margin-top: 4rem;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .guide-cta h2 {
+        color: var(--white);
+        border-bottom: 4px solid var(--primary-yellow);
+        font-size: 2rem;
+        margin-top: 0;
+    }
+    
+    .guide-cta p {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.15rem;
+        margin-bottom: 2rem;
+    }
+    
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .cta-btn {
+        padding: 12px 30px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .cta-btn-primary {
+        background: var(--primary-yellow);
+        color: var(--black);
+    }
+    
+    .cta-btn-primary:hover {
+        background: #FFEB3B;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--black);
+    }
+    
+    .cta-btn-secondary {
+        background: transparent;
+        color: var(--white);
+        border: 2px solid var(--white);
+    }
+    
+    .cta-btn-secondary:hover {
+        background: var(--white);
+        color: var(--primary-red);
+        transform: translateY(-2px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .guide-hero {
+            padding: 50px 0 40px;
+        }
+        
+        .guide-hero h1 {
+            font-size: 1.8rem;
+        }
+        
+        .guide-subtitle {
+            font-size: 1rem;
+        }
+        
+        .guide-meta {
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .guide-content h2 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .guide-content h3 {
+            font-size: 1.1rem;
+        }
+        
+        .guide-section {
+            padding: 1.5rem;
+        }
+        
+        .requirement-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .pathway-chart {
+            grid-template-columns: 1fr;
+        }
+        
+        .related-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .cta-buttons {
+            flex-direction: column;
+        }
+        
+        .cta-btn {
+            width: 100%;
+        }
+        
+        .guide-cta h2 {
+            font-size: 1.5rem;
+        }
+        
+        .guide-cta p {
+            font-size: 1rem;
+        }
+        
+        .subject-table {
+            font-size: 0.9rem;
+        }
+        
+        .subject-table th,
+        .subject-table td {
+            padding: 0.8rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .guide-hero h1 {
+            font-size: 1.5rem;
+        }
+        
+        .guide-meta {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .guide-content h2 {
+            font-size: 1.3rem;
+        }
+        
+        .requirement-grade {
+            font-size: 2rem;
+        }
+        
+        .guide-section {
+            padding: 1.2rem;
+        }
+        
+        .requirement-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .tips-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "KCSE Grades and University Admission 2026",
+  "description": "Complete guide to KCSE grades required for university admission in Kenya 2026. Learn about minimum requirements, grade pathways, and admission strategies.",
+  "image": "{{ url_for('static', filename='images/guide-banner.jpg', _external=True) }}",
+  "author": {"@type": "Organization", "name": "KUCCPS Courses Checker"},
+  "datePublished": "2026-01-21",
+  "dateModified": "2026-01-21"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="guide-hero">
+    <div class="container">
+        <h1>KCSE Grades & University Admission 2026</h1>
+        <p class="guide-subtitle">Understand minimum KCSE requirements and explore all pathways to higher education</p>
+        <div class="guide-meta">
+            <span><i class="fas fa-calendar"></i> Last Updated: January 2026</span>
+            <span><i class="fas fa-clock"></i> Read time: 12 min</span>
+            <span><i class="fas fa-book"></i> Category: Admission Guides</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="guide-container">
+    <div class="container">
+        <div class="guide-content">
+            <!-- Introduction -->
+            <h2>Minimum University Entry Requirements</h2>
+            <p>To qualify for higher education in Kenya, you must meet specific minimum KCSE requirements. The grade requirements vary depending on whether you're applying for a university degree, diploma, certificate, or artisan program. Understanding these requirements helps you plan your educational pathway strategically.</p>
+            
+            <!-- Degree Requirements -->
+            <div class="guide-section">
+                <h2>Degree Program Entry Requirements</h2>
+                <div class="requirement-grid">
+                    <div class="requirement-card">
+                        <div class="requirement-grade">C+</div>
+                        <h3>Minimum Mean Grade</h3>
+                        <p>Overall KCSE average performance needed for degree programs</p>
+                    </div>
+                    
+                    <div class="requirement-card">
+                        <div class="requirement-grade">30+</div>
+                        <h3>Cluster Points</h3>
+                        <p>Minimum points for degree entry (varies by program)</p>
+                    </div>
+                    
+                    <div class="requirement-card">
+                        <div class="requirement-grade">4</div>
+                        <h3>Required Subjects</h3>
+                        <p>Subjects needed for cluster points calculation</p>
+                    </div>
+                    
+                    <div class="requirement-card">
+                        <div class="requirement-grade">C+</div>
+                        <h3>Subject Grade</h3>
+                        <p>Minimum in required cluster subjects</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grade Pathways -->
+            <h2>Grade Pathways to Higher Education</h2>
+            <p>Your KCSE grades determine which educational pathways are available to you. Here's how different grade ranges open different opportunities:</p>
+            
+            <div class="pathway-chart">
+                <div class="pathway">
+                    <h3>A to B+ (36-48 points)</h3>
+                    <p><strong>Program Type:</strong> University Degree</p>
+                    <ul>
+                        <li>Direct entry to Bachelor's degree programs</li>
+                        <li>Access to competitive courses (Medicine, Law, Engineering)</li>
+                        <li>4-6 year programs with highest earning potential</li>
+                        <li>Pathway to postgraduate studies</li>
+                    </ul>
+                </div>
+                
+                <div class="pathway">
+                    <h3>C+ to C (28-35 points)</h3>
+                    <p><strong>Program Type:</strong> Diploma or Degree</p>
+                    <ul>
+                        <li>Diploma programs (2-3 years) with upgrade option</li>
+                        <li>Some degree programs available</li>
+                        <li>Practical skills-focused education</li>
+                        <li>Cost-effective alternative to degree</li>
+                    </ul>
+                </div>
+                
+                <div class="pathway">
+                    <h3>C- to D+ (20-27 points)</h3>
+                    <p><strong>Program Type:</strong> Certificate Programs</p>
+                    <ul>
+                        <li>Certificate programs (1-2 years)</li>
+                        <li>Can progress to diploma/degree later</li>
+                        <li>Vocational skills training focus</li>
+                        <li>Quick entry to job market</li>
+                    </ul>
+                </div>
+                
+                <div class="pathway">
+                    <h3>D to E (Below 20)</h3>
+                    <p><strong>Program Type:</strong> Artisan Programs</p>
+                    <ul>
+                        <li>Technical skills training (6-12 months)</li>
+                        <li>Practical vocational focus</li>
+                        <li>Direct employment-ready skills</li>
+                        <li>Self-employment opportunities</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Requirements Table -->
+            <h2>Minimum Grades by Program Type</h2>
+            <table class="subject-table">
+                <thead>
+                    <tr>
+                        <th>Program Type</th>
+                        <th>Mean Grade</th>
+                        <th>Cluster Points</th>
+                        <th>Subject Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>University Degree</strong></td>
+                        <td>C+ (6.0)</td>
+                        <td>30+ (varies by course)</td>
+                        <td>C+ in required subjects</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Diploma</strong></td>
+                        <td>C (5.0)</td>
+                        <td>N/A</td>
+                        <td>C in core subjects</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Certificate</strong></td>
+                        <td>C- (4.0)</td>
+                        <td>N/A</td>
+                        <td>D+ in core subjects</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Artisan</strong></td>
+                        <td>D+ (3.0)</td>
+                        <td>N/A</td>
+                        <td>D+ or better</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Subject Requirements -->
+            <h2>Subject Requirements by Cluster</h2>
+            <div class="info-box">
+                <h3>Common Cluster Subject Requirements:</h3>
+                <ul>
+                    <li><strong>Engineering:</strong> Mathematics, Physics, Chemistry (+ 1 optional)</li>
+                    <li><strong>Medical Sciences:</strong> Biology, Chemistry, Physics/Math (+ 1 optional)</li>
+                    <li><strong>Biological Sciences:</strong> Biology, Chemistry, Math/Physics (+ 1 optional)</li>
+                    <li><strong>Business & Hospitality:</strong> Mathematics, English, Business Studies (+ 1 optional)</li>
+                    <li><strong>Humanities & Social Sciences:</strong> English, History, Geography/Economics (+ 1 optional)</li>
+                    <li><strong>Agriculture:</strong> Biology, Chemistry, Agriculture/Geography (+ 1 optional)</li>
+                </ul>
+            </div>
+
+            <!-- Strategies -->
+            <h2>Maximizing Your Admission Chances</h2>
+            <div class="tips-grid">
+                <div class="tip">
+                    <h4>🎯 Know Your Options</h4>
+                    <p>Research courses matching your grades and interests across all program types</p>
+                </div>
+                <div class="tip">
+                    <h4>📊 Calculate Cluster Points</h4>
+                    <p>Understand exactly how your grades translate to cluster points for degree programs</p>
+                </div>
+                <div class="tip">
+                    <h4>🔄 Plan Upgrade Pathway</h4>
+                    <p>Diploma to degree upgrade is possible - diploma isn't a dead end, it's a stepping stone</p>
+                </div>
+                <div class="tip">
+                    <h4>💼 Consider Career Goals</h4>
+                    <p>Match your program selection to your long-term career aspirations and earning potential</p>
+                </div>
+            </div>
+
+            <!-- FAQs -->
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq">
+                <h3>What's the difference between mean grade and cluster points?</h3>
+                <p>Mean grade is your overall KCSE average (all 8 subjects). Cluster points are calculated from your best 4 subjects in specific required areas. You need BOTH to qualify for degree programs.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Can I upgrade from diploma to degree?</h3>
+                <p>Yes! After successfully completing 2 years of diploma, you can apply for degree programs. Many universities have diploma-to-degree pathways that give you credit for your diploma studies.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>What if my grades fall below C+ minimum?</h3>
+                <p>You can still access education through certificate or artisan programs. These provide quality training and pathways to higher qualifications through further study.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Are there alternative paths to university if I don't meet KUCCPS requirements?</h3>
+                <p>Yes! You can apply to private universities, pursue diploma to degree programs, or consider parallel degree programs at some universities that don't go through KUCCPS.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Do different universities have different grade requirements?</h3>
+                <p>Public universities go through KUCCPS with standard requirements. Private universities may have different criteria. Check directly with specific institutions.</p>
+            </div>
+
+            <!-- Related Guides -->
+            <div class="related-guides">
+                <h2>Related Guides & Resources</h2>
+                <div class="related-grid">
+                    <a href="{{ url_for('kuccps_guides.cluster_points') }}" class="related-card">
+                        <h3><i class="fas fa-chart-bar"></i> Cluster Points Explained</h3>
+                        <p>Understand how cluster points are calculated from your KCSE grades</p>
+                    </a>
+                    <a href="{{ url_for('kuccps_guides.kuccps_application') }}" class="related-card">
+                        <h3><i class="fas fa-edit"></i> KUCCPS Application Guide</h3>
+                        <p>Step-by-step guide to applying for university through KUCCPS</p>
+                    </a>
+                    <a href="{{ url_for('kuccps_guides.diploma_courses') }}" class="related-card">
+                        <h3><i class="fas fa-certificate"></i> Diploma Courses</h3>
+                        <p>Explore high-quality diploma programs as alternative pathways</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="guide-cta">
+                <h2>Check Which Programs Suit Your Grades</h2>
+                <p>Use our course checker to discover all available programs matching your KCSE performance</p>
+                <div class="cta-buttons">
+                    <a href="/degree" class="cta-btn cta-btn-primary">
+                        <i class="fas fa-search"></i> Check My Courses
+                    </a>
+                    <a href="/guides" class="cta-btn cta-btn-secondary">
+                        <i class="fas fa-book"></i> All Guides
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

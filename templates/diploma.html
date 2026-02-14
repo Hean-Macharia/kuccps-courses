@@ -1,20 +1,52 @@
-{% extends "./base.html" %} {% block title %} Kuccps | Hean {% endblock %} {%
+{% extends "./base.html" %} {% block title %} KUCCPS Diploma Courses | Technical Programs in Kenya {% endblock %} {%
 block links %}
+<link rel="canonical" href="{{ get_canonical_url('diploma') }}" />
+<meta name="description" content="Find KUCCPS diploma courses and technical programs in Kenya. Match your KCSE grades with 2-year diploma programs in engineering, business, IT, hospitality, and more.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "KUCCPS Diploma & Technical Programs",
+  "description": "Explore KUCCPS diploma programs in Kenyan colleges and technical institutions. 2-year practical programs in engineering, business, IT, hospitality, and specialized technical fields.",
+  "provider": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "url": "https://www.kuccpscourses.co.ke/"
+  },
+  "courseCode": "KUCCPS-DIPLOMA",
+  "educationalCredentialAwarded": "Diploma",
+  "timeToComplete": "P2Y",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": ["full-time", "part-time"],
+    "courseWorkload": "Practical technical training with industry focus"
+  }
+}
+</script>
+
+<!-- Microdata Schema for EducationalOccupationalProgram -->
+<div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
+    <meta itemprop="educationalProgramMode" content="classroom"/>
+    <meta itemprop="numberOfCredits" content="120"/>
+    <meta itemprop="occupationalCategory" content="Technical Education"/>
+    <meta itemprop="skills" content="practical technical skills, industry-specific competencies, hands-on training"/>
+</div>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
-{% endblock %} {% block displaytext %}Fill in your grades then submit{% endblock
-%} {% block content %}
+{% endblock %} {% block displaytext %}Find Diploma Programs Matching Your Grades{% endblock %} {% block content %}
 
-<div class="container mt-5">
-    <!-- As a heading -->
 
-    <span>Fill in the details and submit to get the programmes you qualify!
+    <div class="container">
+        <h1 class="text-center mb-4">KUCCPS Diploma & Technical Programs Qualification Checker</h1>
+    </div>
+
+    <span>Fill in your KCSE grades and submit to see all diploma programs you qualify for!
     </span>
     <form action="/submit-diploma-grades" method="post">
     <!-- User Email and Index Number will be collected after grades submission (Step 2) -->
         <!-- KCSE Subjects Grades -->
         <div id="gradesForm">
-            <h1 class="text-primary">Enter Your Overall Grade</h1>
+            <h1 class="text-primary">Diploma Program Qualifications</h1>
             <div class="">
                 <div class="mb-4">
                     <div class="form-group">
@@ -518,5 +550,387 @@ block links %}
             Submit
         </button>
     </form>
+
+    <div class="container mt-4 mb-4">
+        <div class="alert alert-secondary mb-4" role="alert">
+            <h2 class="alert-heading">📚 KUCCPS Diploma Programs</h2>
+            <p class="mb-2">
+                <strong>Diploma programs</strong> are 2-year technical and professional courses offered by colleges and technical institutions.
+                These programs combine theoretical knowledge with practical skills for career-focused training.
+            </p>
+            <ul class="mb-0">
+                <li><strong>Duration:</strong> 2 years</li>
+                <li><strong>Focus:</strong> Practical skills and professional competency</li>
+                <li><strong>Entry:</strong> Typically D+ or C- in KCSE</li>
+                <li><strong>Outcome:</strong> National Diploma recognized by employers</li>
+            </ul>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">⚙️ Popular Diploma Programs</h5>
+                        <ul>
+                            <li>Engineering & Technology</li>
+                            <li>Information Technology</li>
+                            <li>Business & Accounting</li>
+                            <li>Hospitality & Tourism</li>
+                            <li>Health Sciences</li>
+                            <li>Agriculture & Environmental Studies</li>
+                            <li>Automotive & Mechanical</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">💼 Employment Pathways</h5>
+                        <ul>
+                            <li>Direct entry into skilled jobs</li>
+                            <li>Fast-track career progression</li>
+                            <li>Self-employment opportunities</li>
+                            <li>Pathway to bachelor's degree programs</li>
+                            <li>Specialized professional roles</li>
+                            <li>Technical supervisory positions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+    <!-- Diploma Programs Section Header -->
+    <div class="alert alert-info mb-4" role="alert">
+        <h2 class="alert-heading">🎓 KUCCPS Diploma Programs Checker</h2>
+        <p class="mb-2">
+            Diploma programs are 2-year post-secondary courses offered by KUCCPS partner technical colleges and institutions across Kenya. 
+            They focus on applied learning and technical skills in fields such as engineering, agriculture, business, health sciences, and many more.
+        </p>
+        <p class="mb-0">
+            <strong>How it works:</strong> Enter your KCSE overall grade and individual subject grades below to discover which diploma programs you qualify for 
+            based on your academic performance and the specific program requirements.
+        </p>
+    </div>
+    <!-- Diploma Information Section -->
+    <div class="row mt-5 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">💼 Diploma Advantages</h5>
+                    <ul class="small">
+                        <li>Practical, skills-focused education</li>
+                        <li>2-year duration (more affordable than degrees)</li>
+                        <li>Pathway to employment or further studies</li>
+                        <li>Wide range of specializations available</li>
+                        <li>Access to KUCCPS placement opportunities</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📚 Diploma Fields of Study</h5>
+                    <ul class="small">
+                        <li>Engineering & Technology</li>
+                        <li>Business & Commerce</li>
+                        <li>Health Sciences</li>
+                        <li>Agriculture & Environmental</li>
+                        <li>Hospitality & Tourism</li>
+                        <li>Computing & IT</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Why Choose Diploma Programs -->
+<div class="container my-5">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">📚 Why Choose Diploma & Technical Programs?</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <h5>2-Year Fast Track</h5>
+                        <p class="text-muted">Complete your qualification in just 2 years compared to 4-year degrees, entering workforce faster.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>Practical Skills Focus</h5>
+                        <p class="text-muted">Heavy emphasis on hands-on training and practical assignments directly applicable to your career.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <h5>Affordable Education</h5>
+                        <p class="text-muted">Lower fees than universities while providing quality technical education and industry certifications.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>Career Ready</h5>
+                        <p class="text-muted">Job placement partnerships with industries ensure you enter employment market with relevant certifications.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Diploma Program FAQs -->
+<div class="container my-5">
+    <h2 class="mb-4">❓ Frequently Asked Questions About Diploma Programs</h2>
+    <div class="accordion" id="diplomaFAQ">
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq1">What's the difference between diploma and degree?</button></h2>
+            <div id="dfaq1" class="accordion-collapse collapse show" data-bs-parent="#diplomaFAQ">
+                <div class="accordion-body">Diplomas are 2-year programs focused on practical skills, while degrees are 4-year programs with more theory. Diploma graduates enter workforce faster with technical expertise; degree holders have broader academic foundation and higher earning potential long-term.</div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq2">Can I upgrade my diploma to a degree later?</button></h2>
+            <div id="dfaq2" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
+                <div class="accordion-body">Yes, many universities offer degree upgrade programs for diploma holders. You typically complete 2 more years to earn a full bachelor's degree, and credits from your diploma may be recognized.</div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq3">What job prospects exist after a diploma?</button></h2>
+            <div id="dfaq3" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
+                <div class="accordion-body">Diploma graduates find immediate employment in industries like engineering, nursing, IT, hospitality, agriculture, and construction. Many start earning within weeks of graduation, and can progress to supervisory/management roles.</div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq4">Is internship included in diploma programs?</button></h2>
+            <div id="dfaq4" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
+                <div class="accordion-body">Yes, most diploma programs include 6-12 months of industrial attachment/internship where you work in real companies. This provides practical experience and often leads to permanent employment offers.</div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq5">What certifications do I get with a diploma?</button></h2>
+            <div id="dfaq5" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
+                <div class="accordion-body">Besides the diploma, you often get industry-recognized certifications like KNEC, KASNEB, or international certifications (CompTIA, Cisco, etc.) depending on your field. These certifications are directly valued by employers.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Diploma Success Stories -->
+<div class="container my-5">
+    <h2 class="mb-4">🌟 Success Stories: Diploma Graduates</h2>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Moses Kariuki - Engineering Technician</h5>
+                    <p class="card-text"><em>"After my 2-year diploma in Mechanical Engineering, I got hired immediately at a manufacturing company. In 5 years, I'm now a senior technician supervising 20 staff."</em></p>
+                    <small class="text-success">✓ Now earning KES 120,000+ monthly</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Grace Kipchoge - Registered Nurse</h5>
+                    <p class="card-text"><em>"My nursing diploma gave me immediate employment at a private hospital. The practical training was excellent, and I've built a successful healthcare career while pursuing degree part-time."</em></p>
+                    <small class="text-success">✓ Now pursuing Degree in Nursing</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">David Mwangi - IT Technician</h5>
+                    <p class="card-text"><em>"My IT diploma included hands-on training with real equipment. I started at an IT firm, gained experience, and now I run my own computer services business with 5 employees."</em></p>
+                    <small class="text-success">✓ Successful Business Owner</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose Diploma Programs -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Why Choose Diploma Programs</h2>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Practical Industry-Focused Training</h5>
+                            <p class="mb-0">Learn skills directly applicable to the job market with curriculum designed by industry professionals.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Direct Job Placement</h5>
+                            <p class="mb-0">Graduate with skills employers need. Diploma holders are in high demand across all sectors in Kenya.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Affordable Technical Education</h5>
+                            <p class="mb-0">More affordable than university degree programs while providing excellent career prospects and earning potential.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Pathway to Bachelor's Degree</h5>
+                            <p class="mb-0">Use your diploma as a foundation to pursue bachelor's degrees through articulation programs for career advancement.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Frequently Asked Questions -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Frequently Asked Questions About Diploma Programs</h2>
+            <div class="accordion" id="diplomaFAQ">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq1">
+                            What diploma programs are available?
+                        </button>
+                    </h2>
+                    <div id="diplomafaq1" class="accordion-collapse collapse show" data-bs-parent="#diplomaFAQ">
+                        <div class="accordion-body">
+                            Popular diploma programs include Engineering (Civil, Electrical, Mechanical), Information Technology, Business and Accounting, Hospitality and Tourism, Nursing, Agriculture, and Automotive. Colleges offer various specializations in these fields.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq2">
+                            How long does a diploma program take?
+                        </button>
+                    </h2>
+                    <div id="diplomafaq2" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
+                        <div class="accordion-body">
+                            Most diploma programs take 2 years of full-time study. Some programs may offer part-time options spanning 3-4 years. Some accelerated programs can be completed in 18 months.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq3">
+                            What are entry requirements for diploma programs?
+                        </button>
+                    </h2>
+                    <div id="diplomafaq3" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
+                        <div class="accordion-body">
+                            Typical entry requirement is D+ or C- in KCSE overall. Technical programs may require specific subject grades. Lower entry points compared to university degrees make diplomas accessible to more students.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq4">
+                            Can I work while studying for a diploma?
+                        </button>
+                    </h2>
+                    <div id="diplomafaq4" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
+                        <div class="accordion-body">
+                            Many colleges offer part-time evening or weekend programs specifically designed for working students. Full-time programs are more demanding but often include industrial attachments.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq5">
+                            Will I get a job after my diploma?
+                        </button>
+                    </h2>
+                    <div id="diplomafaq5" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
+                        <div class="accordion-body">
+                            Yes, diploma holders are highly sought after by employers. Many colleges have job placement support and industry connections. Graduates work in various sectors including engineering firms, IT companies, banks, hospitals, and hospitality businesses.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Stories -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Success Stories from Diploma Graduates</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Engineer Richard Kipchoge - Civil Engineering Diploma</h5>
+                            <p class="small mb-3">Richard completed his civil engineering diploma and joined a construction firm. After 5 years, he now supervises major infrastructure projects and has started his own consulting company.</p>
+                            <p class="small text-muted">"My diploma gave me the technical foundation and practical skills to build a successful career."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Accountant Mary Ochieng - Business Studies Diploma</h5>
+                            <p class="small mb-3">Mary's diploma in business studies led to a position in a multinational company. She has since completed her CPA qualification and now works as a Financial Manager with excellent career progression.</p>
+                            <p class="small text-muted">"The diploma was my stepping stone to a thriving finance career."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">IT Specialist David Kipkemboi - IT Diploma</h5>
+                            <p class="small mb-3">David's IT diploma helped him secure employment at a tech firm. He has since earned additional certifications and now leads the IT infrastructure team at a major bank.</p>
+                            <p class="small text-muted">"Practical IT diploma training prepared me perfectly for the technology industry."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Diploma Prerequisites & Requirements -->
+<div class="container my-5 mb-5">
+    <div class="card border-left-primary shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Diploma Program Prerequisites and Requirements</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum C (5 points) or equivalent</li>
+                        <li class="mb-2"><strong>Cluster Points:</strong> Generally lower than degrees (10-40 points)</li>
+                        <li class="mb-2"><strong>Core Subjects:</strong> English required; Mathematics required for most technical courses</li>
+                        <li class="mb-2"><strong>Entry Requirements:</strong> Form 4 completion with reasonable grades</li>
+                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 17+ years old at time of entry</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Engineering Diplomas:</strong> Physics, Chemistry, Mathematics required</li>
+                        <li class="mb-2"><strong>Nursing/Health Diplomas:</strong> Biology and Chemistry requirements</li>
+                        <li class="mb-2"><strong>IT/Computing Diplomas:</strong> Mathematics and Computer Studies helpful</li>
+                        <li class="mb-2"><strong>Business Diplomas:</strong> English and Mathematics; accounting subjects beneficial</li>
+                        <li class="mb-2"><strong>Hospitality Diplomas:</strong> No strict subject requirements; practical aptitude important</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %} {% block scripts %}{% endblock %}

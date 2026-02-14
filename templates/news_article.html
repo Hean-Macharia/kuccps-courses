@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} | KUCCPS News{% endblock %}
+{% block description %}{{ article.excerpt|default(article.content[:150]) }}{% endblock %}
+{% block links %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "headline": "{{ article.title }}",
+  "description": "{{ article.excerpt|default(article.content[:160]) }}",
+  "image": "{{ article.image_url|default(url_for('static', filename='images/og-image.jpg', _external=True)) }}",
+  "datePublished": "{{ article.published_at.isoformat() }}",
+  "dateModified": "{{ article.updated_at.isoformat() if article.updated_at else article.published_at.isoformat() }}",
+  "author": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "url": "https://www.kuccpscourses.co.ke"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.kuccpscourses.co.ke/static/images/kuccps.png"
+    }
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('all_news') }}">News</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Article</li>
+        </ol>
+    </nav>
+
+    <article class="news-article">
+        <header class="mb-4">
+            {% if article.image_url %}
+            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="img-fluid rounded mb-3">
+            {% endif %}
+            
+            <h1 class="display-5">{{ article.title }}</h1>
+            
+            <div class="article-meta text-muted mb-4">
+                <span><i class="far fa-calendar me-1"></i> {{ article.published_at.strftime('%B %d, %Y') }}</span>
+                {% if article.views %}
+                <span class="mx-2">•</span>
+                <span><i class="far fa-eye me-1"></i> {{ article.views }} views</span>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="article-content">
+            {{ article.content|safe }}
+        </div>
+
+        {% if article.external_link %}
+        <div class="mt-4 p-3 bg-light rounded">
+            <strong>Original Source:</strong>
+            <a href="{{ article.external_link }}" target="_blank" rel="nofollow">
+                {{ article.external_link|truncate(50) }}
+            </a>
+        </div>
+        {% endif %}
+    </article>
+
+    <!-- Related News -->
+    <div class="mt-5">
+        <h3 class="h4 mb-3">Related News</h3>
+        <div class="row">
+            <!-- Add related articles here -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">KUCCPS Announces 2026 Placement Dates</h5>
+                        <p class="card-text">Important dates for the 2026 placement cycle...</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

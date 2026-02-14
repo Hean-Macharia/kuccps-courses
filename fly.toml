@@ -1,12 +1,28 @@
 app = "kuccps-courses"
 
 [http_service]
-  internal_port = 8080        # Must match the port your app listens on
+  internal_port = 8080          # Must match the port your app listens on
   force_https = true
-  auto_stop_machines = false  # Keep app running
+  auto_stop_machines = false    # Keep app running
   auto_start_machines = true
 
   [http_service.concurrency]
     type = "connections"
-    hard_limit = 25
-    soft_limit = 20
+    hard_limit = 100            # Increased from 25 for better performance
+    soft_limit = 75             # Increased from 20
+
+[[services.http_checks]]
+  interval = "15s"              # How often Fly probes your app
+  timeout = "2s"                # How long Fly waits for a response
+  method = "GET"
+  path = "/health"              # Health endpoint in your Flask app
+  protocol = "http"
+
+# Machine resources
+[env]
+  FLASK_ENV = "production"
+
+# Scale machines for better performance
+[[vm]]
+  memory = "512mb"              # Recommended minimum for Flask app
+  cpus = 2                       # 2 shared CPUs for better concurrency

@@ -1,0 +1,916 @@
+{% extends "base.html" %}
+{% block title %}KUCCPS Cluster Points Explained 2026 | KUCCPS Courses Checker{% endblock %}
+
+{% block links %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "https://www.kuccpscourses.co.ke"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "Guides",
+    "item": "https://www.kuccpscourses.co.ke/guides/"
+  },{
+    "@type": "ListItem",
+    "position": 3,
+    "name": "Cluster Points Explained",
+    "item": "https://www.kuccpscourses.co.ke/guides/cluster-points-explained"
+  }]
+}
+</script>
+<style>
+    /* ============================================
+        GUIDE PAGE CUSTOM STYLES
+    ============================================= */
+    
+    /* Hero Section */
+    .guide-hero {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 70px 0 50px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .guide-hero h1 {
+        font-size: 2.4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .guide-subtitle {
+        font-size: 1.15rem;
+        opacity: 0.95;
+        max-width: 700px;
+    }
+    
+    .guide-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+    
+    .guide-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .guide-meta i {
+        color: var(--primary-yellow);
+        font-size: 1.1rem;
+    }
+    
+    /* Guide Content */
+    .guide-container {
+        padding: 50px 0;
+        background: var(--white);
+    }
+    
+    .guide-content {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .guide-content h2 {
+        color: var(--primary-red);
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-top: 3rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 1rem;
+        border-bottom: 4px solid var(--primary-yellow);
+    }
+    
+    .guide-content h2:first-child {
+        margin-top: 0;
+    }
+    
+    .guide-content h3 {
+        color: var(--dark-grey);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .guide-content p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--medium-grey);
+        margin-bottom: 1.2rem;
+    }
+    
+    /* Sections */
+    .guide-section {
+        margin-bottom: 2.5rem;
+        padding: 2rem;
+        background: var(--light-grey);
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-red);
+    }
+    
+    /* Benefits Box */
+    .benefits-box {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        margin-top: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border-top: 4px solid var(--primary-yellow);
+    }
+    
+    .benefits-box h3 {
+        color: var(--primary-red);
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .benefits-box ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .benefits-box li {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: flex-start;
+        color: var(--dark-grey);
+        line-height: 1.6;
+    }
+    
+    .benefits-box li:last-child {
+        border-bottom: none;
+    }
+    
+    .benefits-box li::before {
+        content: '✓';
+        color: var(--white);
+        font-weight: bold;
+        background: var(--primary-red);
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+    
+    /* Course Grid */
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .course-category {
+        background: var(--white);
+        padding: 1.8rem;
+        border-radius: var(--radius-md);
+        border-top: 5px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .course-category:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-top-color: var(--primary-red);
+    }
+    
+    .course-category h3 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .course-category ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .course-category li {
+        padding: 8px 0;
+        color: var(--medium-grey);
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    
+    .course-category li::before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: var(--primary-yellow);
+        font-weight: bold;
+    }
+    
+    /* Grade Requirements */
+    .grade-badge {
+        display: inline-block;
+        background: var(--primary-yellow);
+        color: var(--black);
+        padding: 10px 16px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-right: 0.5rem;
+    }
+    
+    .requirement-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        border-top: 5px solid var(--primary-red);
+    }
+    
+    .requirement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .requirement-grade {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary-yellow);
+        margin-bottom: 0.5rem;
+    }
+    
+    .requirement-card h3 {
+        color: var(--primary-red);
+        font-size: 1.1rem;
+        margin: 0.5rem 0;
+    }
+    
+    .requirement-card p {
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    
+    /* FAQ Section */
+    .faq {
+        background: var(--white);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .faq:hover {
+        box-shadow: var(--shadow-md);
+    }
+    
+    .faq h3 {
+        color: var(--primary-red);
+        font-size: 1.1rem;
+        margin: 0 0 0.8rem 0;
+    }
+    
+    .faq p {
+        margin: 0;
+        color: var(--medium-grey);
+    }
+    
+    /* Info Box */
+    .info-box {
+        background: linear-gradient(135deg, rgba(198, 40, 40, 0.08) 0%, rgba(251, 192, 45, 0.08) 100%);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-red);
+        margin: 1.5rem 0;
+    }
+    
+    .info-box h3 {
+        color: var(--primary-red);
+        margin-top: 0;
+    }
+    
+    .info-box ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .info-box li {
+        padding: 8px 0;
+        color: var(--dark-grey);
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    
+    .info-box li::before {
+        content: '◆';
+        position: absolute;
+        left: 0;
+        color: var(--primary-yellow);
+    }
+    
+    /* Table Styles */
+    .points-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 2rem 0;
+        background: var(--white);
+        box-shadow: var(--shadow-sm);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+    
+    .points-table thead {
+        background: var(--primary-red);
+        color: var(--white);
+    }
+    
+    .points-table th {
+        padding: 1.2rem;
+        text-align: left;
+        font-weight: 700;
+    }
+    
+    .points-table td {
+        padding: 1rem 1.2rem;
+        border-bottom: 1px solid var(--light-grey);
+    }
+    
+    .points-table tbody tr:hover {
+        background: rgba(198, 40, 40, 0.05);
+    }
+    
+    .cluster-card {
+        background: var(--white);
+        padding: 1.8rem;
+        border-radius: var(--radius-md);
+        border-top: 5px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .cluster-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-top-color: var(--primary-red);
+    }
+    
+    .cluster-card h3 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin-top: 0;
+    }
+    
+    .cluster-card p {
+        margin: 0.8rem 0;
+        color: var(--medium-grey);
+    }
+    
+    /* Tips Grid */
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .tip {
+        background: var(--white);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        border-top: 4px solid var(--primary-yellow);
+    }
+    
+    .tip:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .tip h4 {
+        color: var(--primary-red);
+        margin-top: 0;
+        font-size: 1.1rem;
+    }
+    
+    .tip p {
+        margin: 0.8rem 0 0 0;
+        color: var(--medium-grey);
+        font-size: 0.95rem;
+    }
+    
+    /* Related Guides */
+    .related-guides {
+        margin-top: 4rem;
+        padding-top: 3rem;
+        border-top: 2px solid var(--light-grey);
+    }
+    
+    .related-guides h2 {
+        text-align: center;
+    }
+    
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .related-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        text-decoration: none;
+        color: inherit;
+        transition: all var(--transition-base);
+        border-top: 5px solid var(--primary-yellow);
+    }
+    
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-top-color: var(--primary-red);
+        color: var(--primary-red);
+    }
+    
+    .related-card h3 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin-top: 0;
+    }
+    
+    .related-card i {
+        margin-right: 0.5rem;
+        color: var(--primary-yellow);
+    }
+    
+    .related-card p {
+        color: var(--medium-grey);
+        margin: 0.8rem 0 0 0;
+    }
+    
+    /* CTA Section */
+    .guide-cta {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 3rem 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        margin-top: 4rem;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .guide-cta h2 {
+        color: var(--white);
+        border-bottom: 4px solid var(--primary-yellow);
+        font-size: 2rem;
+        margin-top: 0;
+    }
+    
+    .guide-cta p {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.15rem;
+        margin-bottom: 2rem;
+    }
+    
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .cta-btn {
+        padding: 12px 30px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .cta-btn-primary {
+        background: var(--primary-yellow);
+        color: var(--black);
+    }
+    
+    .cta-btn-primary:hover {
+        background: #FFEB3B;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--black);
+    }
+    
+    .cta-btn-secondary {
+        background: transparent;
+        color: var(--white);
+        border: 2px solid var(--white);
+    }
+    
+    .cta-btn-secondary:hover {
+        background: var(--white);
+        color: var(--primary-red);
+        transform: translateY(-2px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .guide-hero {
+            padding: 50px 0 40px;
+        }
+        
+        .guide-hero h1 {
+            font-size: 1.8rem;
+        }
+        
+        .guide-subtitle {
+            font-size: 1rem;
+        }
+        
+        .guide-meta {
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .guide-content h2 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .guide-content h3 {
+            font-size: 1.1rem;
+        }
+        
+        .guide-section {
+            padding: 1.5rem;
+        }
+        
+        .course-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .related-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .cta-buttons {
+            flex-direction: column;
+        }
+        
+        .cta-btn {
+            width: 100%;
+        }
+        
+        .guide-cta h2 {
+            font-size: 1.5rem;
+        }
+        
+        .guide-cta p {
+            font-size: 1rem;
+        }
+        
+        .points-table {
+            font-size: 0.9rem;
+        }
+        
+        .points-table th,
+        .points-table td {
+            padding: 0.8rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .guide-hero h1 {
+            font-size: 1.5rem;
+        }
+        
+        .guide-meta {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .guide-content h2 {
+            font-size: 1.3rem;
+        }
+        
+        .requirement-grade {
+            font-size: 2rem;
+        }
+        
+        .guide-section {
+            padding: 1.2rem;
+        }
+        
+        .tips-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "KUCCPS Cluster Points Explained 2026",
+  "description": "Complete guide to KUCCPS cluster points for 2026 university admission. Learn how cluster points are calculated, cutoff requirements, and tips to maximize your points.",
+  "image": "{{ url_for('static', filename='images/guide-banner.jpg', _external=True) }}",
+  "author": {"@type": "Organization", "name": "KUCCPS Courses Checker"},
+  "datePublished": "2026-01-21",
+  "dateModified": "2026-01-21"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="guide-hero">
+    <div class="container">
+        <h1>KUCCPS Cluster Points Explained 2026</h1>
+        <p class="guide-subtitle">Master the cluster points system and understand how to maximize your university admission chances</p>
+        <div class="guide-meta">
+            <span><i class="fas fa-calendar"></i> Last Updated: January 2026</span>
+            <span><i class="fas fa-clock"></i> Read time: 10 min</span>
+            <span><i class="fas fa-book"></i> Category: Admission Guides</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="guide-container">
+    <div class="container">
+        <div class="guide-content">
+            <!-- Introduction -->
+            <h2>What Are Cluster Points?</h2>
+            <p>Cluster Points are the scoring system used by KUCCPS to place secondary school graduates into university degree programs. They determine which courses you qualify for based on your KCSE performance, subject combinations, and the specific requirements of each cluster. Understanding cluster points is crucial for strategic course selection.</p>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> Key Facts About Cluster Points</h3>
+                <ul>
+                    <li>Each university cluster has specific subject requirements</li>
+                    <li>Points are calculated from your best 4 subjects</li>
+                    <li>Different courses have different minimum cutoff points</li>
+                    <li>Points range varies by cluster (typically 30-48 points)</li>
+                    <li>You must meet both minimum mean grade AND minimum cluster points</li>
+                </ul>
+            </div>
+
+            <!-- How Calculation Works -->
+            <h2>How Cluster Points Are Calculated</h2>
+            <p><strong>Step-by-Step Process:</strong></p>
+            
+            <div class="guide-section">
+                <ol style="padding-left: 2rem; color: var(--medium-grey);">
+                    <li style="margin-bottom: 1rem;"><strong>Identify Your Cluster Requirements:</strong> Determine which clusters match your subject combination (e.g., Engineering needs Math, Physics, Chemistry)</li>
+                    <li style="margin-bottom: 1rem;"><strong>Select Your Best 4 Subjects:</strong> Choose your highest-scoring subjects that meet cluster requirements</li>
+                    <li style="margin-bottom: 1rem;"><strong>Convert Grades to Points:</strong> Use the KUCCPS grade-to-points conversion table below</li>
+                    <li style="margin-bottom: 1rem;"><strong>Sum Up Points:</strong> Add points from your best 4 subjects to get total cluster points</li>
+                    <li><strong>Compare with Cutoff:</strong> Check if your points meet the minimum requirement for your desired course</li>
+                </ol>
+            </div>
+
+            <!-- Grading Table -->
+            <h2>KCSE Grade to Points Conversion</h2>
+            <table class="points-table">
+                <thead>
+                    <tr>
+                        <th>KCSE Grade</th>
+                        <th>Cluster Points</th>
+                        <th>Performance Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="grade-badge">A</span></td>
+                        <td><strong>12 points</strong></td>
+                        <td>Excellent</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">A-</span></td>
+                        <td><strong>11 points</strong></td>
+                        <td>Very Good</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">B+</span></td>
+                        <td><strong>10 points</strong></td>
+                        <td>Good</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">B</span></td>
+                        <td><strong>9 points</strong></td>
+                        <td>Above Average</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">B-</span></td>
+                        <td><strong>8 points</strong></td>
+                        <td>Average</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">C+</span></td>
+                        <td><strong>7 points</strong></td>
+                        <td>Minimum University Entry</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">C</span></td>
+                        <td><strong>6 points</strong></td>
+                        <td>Diploma Entry</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">C-</span></td>
+                        <td><strong>5 points</strong></td>
+                        <td>Certificate Entry</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">D+</span></td>
+                        <td><strong>4 points</strong></td>
+                        <td>Artisan Entry</td>
+                    </tr>
+                    <tr>
+                        <td><span class="grade-badge">D</span></td>
+                        <td><strong>3 points</strong></td>
+                        <td>Below Minimum</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Common Clusters -->
+            <h2>Common Clusters & Their Requirements</h2>
+            <div class="course-grid">
+                <div class="cluster-card">
+                    <h3>Cluster 5: Engineering & Technology</h3>
+                    <p><strong>Required Subjects:</strong> Mathematics, Physics, Chemistry (+ 1 other)</p>
+                    <p><strong>Typical Cutoff Range:</strong> 36-48 points</p>
+                    <p><strong>Popular Programs:</strong> Software Engineering, Civil Engineering, Mechanical Engineering, Electrical Engineering</p>
+                </div>
+                
+                <div class="cluster-card">
+                    <h3>Cluster 9: Biological Sciences</h3>
+                    <p><strong>Required Subjects:</strong> Biology, Chemistry, Mathematics or Physics (+ 1 other)</p>
+                    <p><strong>Typical Cutoff Range:</strong> 32-45 points</p>
+                    <p><strong>Popular Programs:</strong> Zoology, Botany, Microbiology, Genetics, Environmental Science</p>
+                </div>
+                
+                <div class="cluster-card">
+                    <h3>Cluster 13: Medical & Health Sciences</h3>
+                    <p><strong>Required Subjects:</strong> Biology, Chemistry, Physics or Mathematics (+ 1 other)</p>
+                    <p><strong>Typical Cutoff Range:</strong> 38-48 points (Medicine 45-48)</p>
+                    <p><strong>Popular Programs:</strong> Medicine, Nursing, Public Health, Pharmacy, Physiotherapy</p>
+                </div>
+                
+                <div class="cluster-card">
+                    <h3>Cluster 2: Business & Hospitality</h3>
+                    <p><strong>Required Subjects:</strong> Mathematics, English, Business Studies (+ 1 other)</p>
+                    <p><strong>Typical Cutoff Range:</strong> 30-42 points</p>
+                    <p><strong>Popular Programs:</strong> Business Management, Accounting, Economics, Hospitality, Tourism</p>
+                </div>
+                
+                <div class="cluster-card">
+                    <h3>Cluster 11: Humanities & Social Sciences</h3>
+                    <p><strong>Required Subjects:</strong> English, History, Geography/Economics (+ 1 other)</p>
+                    <p><strong>Typical Cutoff Range:</strong> 28-40 points</p>
+                    <p><strong>Popular Programs:</strong> Law, Education, Social Work, Journalism, Public Administration</p>
+                </div>
+                
+                <div class="cluster-card">
+                    <h3>Cluster 1: Agriculture & Environment</h3>
+                    <p><strong>Required Subjects:</strong> Biology, Chemistry, Agriculture/Geography (+ 1 other)</p>
+                    <p><strong>Typical Cutoff Range:</strong> 30-42 points</p>
+                    <p><strong>Popular Programs:</strong> Agriculture, Veterinary Medicine, Environmental Science, Land Management</p>
+                </div>
+            </div>
+
+            <!-- Tips for Maximizing Points -->
+            <h2>Tips for Maximizing Your Cluster Points</h2>
+            <div class="tips-grid">
+                <div class="tip">
+                    <h4>📊 Focus on Required Subjects</h4>
+                    <p>Concentrate your study efforts on subjects required for your desired cluster to achieve the highest possible grades.</p>
+                </div>
+                <div class="tip">
+                    <h4>🎯 Know Cutoff Points</h4>
+                    <p>Research the exact cutoff points for courses you're interested in. Aim for 5-10 points above the minimum.</p>
+                </div>
+                <div class="tip">
+                    <h4>📈 Improve Weak Areas</h4>
+                    <p>Identify subjects where you're weakest and work to improve them - even small grade improvements add points.</p>
+                </div>
+                <div class="tip">
+                    <h4>🔄 Have Backup Options</h4>
+                    <p>Identify alternative clusters with similar subject requirements and similar cutoff points as backup choices.</p>
+                </div>
+                <div class="tip">
+                    <h4>💪 Strategic Subject Selection</h4>
+                    <p>If you excel in certain subjects, choose a cluster where those are required subjects for maximum points.</p>
+                </div>
+                <div class="tip">
+                    <h4>🎓 Understand Minimum Requirements</h4>
+                    <p>Remember you need BOTH minimum mean grade (C+) AND minimum cluster points - both are essential!</p>
+                </div>
+            </div>
+
+            <!-- Real Example -->
+            <h2>Worked Example: Calculating Cluster Points</h2>
+            <div class="guide-section">
+                <p><strong>Student Profile:</strong> Sarah with the following KCSE grades:</p>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 0.5rem 0;">Mathematics: <span class="grade-badge">A-</span> = 11 points</li>
+                    <li style="padding: 0.5rem 0;">Physics: <span class="grade-badge">B+</span> = 10 points</li>
+                    <li style="padding: 0.5rem 0;">Chemistry: <span class="grade-badge">B</span> = 9 points</li>
+                    <li style="padding: 0.5rem 0;">Biology: <span class="grade-badge">A</span> = 12 points</li>
+                    <li style="padding: 0.5rem 0;">English: <span class="grade-badge">B-</span> = 8 points</li>
+                </ul>
+                
+                <p style="margin-top: 1.5rem;"><strong>For Cluster 5 (Engineering):</strong></p>
+                <p style="color: var(--primary-red); font-weight: 700;">Math (11) + Physics (10) + Chemistry (9) + Biology (12) = <span style="font-size: 1.3rem;">42 points</span></p>
+                <p>✓ Qualifies for most engineering programs (typical cutoff 36-42 points)</p>
+                
+                <p style="margin-top: 1.5rem;"><strong>For Cluster 13 (Medicine):</strong></p>
+                <p style="color: var(--primary-red); font-weight: 700;">Biology (12) + Chemistry (9) + Physics (10) + Math (11) = <span style="font-size: 1.3rem;">42 points</span></p>
+                <p>✓ Close to medicine cutoff (45-48 points) - competitive</p>
+            </div>
+
+            <!-- FAQs -->
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq">
+                <h3>Can I apply with less than 4 subjects?</h3>
+                <p>No, KUCCPS requires at least 4 subjects for cluster points calculation. Ensure you have valid grades for all required cluster subjects.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>What if I don't meet the cutoff points?</h3>
+                <p>Consider diploma or certificate courses as alternative pathways. You can later upgrade through diploma-to-degree programs after gaining experience and better understanding your field.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Do cutoff points change every year?</h3>
+                <p>Yes, cutoff points vary annually based on competition and available spaces. Use previous years' cutoff points as a reference, but don't rely solely on them.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Can I improve my cluster points after KCSE?</h3>
+                <p>Your KCSE grades cannot be changed. However, you can improve through diploma programs or specialized courses, then upgrade to degrees.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Can I select multiple clusters?</h3>
+                <p>Yes! KUCCPS allows you to select courses from different clusters. This is strategic as it increases your chances of being placed.</p>
+            </div>
+
+            <!-- Related Guides -->
+            <div class="related-guides">
+                <h2>Related Guides & Resources</h2>
+                <div class="related-grid">
+                    <a href="{{ url_for('kuccps_guides.kcse_admission') }}" class="related-card">
+                        <h3><i class="fas fa-graduation-cap"></i> KCSE Admission Requirements</h3>
+                        <p>Learn about minimum KCSE grades needed for different programs</p>
+                    </a>
+                    <a href="{{ url_for('kuccps_guides.kuccps_application') }}" class="related-card">
+                        <h3><i class="fas fa-edit"></i> KUCCPS Application Process</h3>
+                        <p>Step-by-step guide to applying through KUCCPS 2026</p>
+                    </a>
+                    <a href="{{ url_for('kuccps_guides.diploma_courses') }}" class="related-card">
+                        <h3><i class="fas fa-certificate"></i> Diploma Courses</h3>
+                        <p>Alternative if degree isn't immediately achievable</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="guide-cta">
+                <h2>Ready to Check Your Cluster Points?</h2>
+                <p>Use our course checker tool to see which programs match your KCSE grades and cluster points</p>
+                <div class="cta-buttons">
+                    <a href="/degree" class="cta-btn cta-btn-primary">
+                        <i class="fas fa-search"></i> Find My Courses
+                    </a>
+                    <a href="/guides" class="cta-btn cta-btn-secondary">
+                        <i class="fas fa-book"></i> All Guides
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

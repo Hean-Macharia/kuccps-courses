@@ -1,6 +1,7 @@
 import os
 import base64
 from datetime import datetime
+from flask_caching import Cache
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response, Response
 from pymongo import MongoClient
 from courses import get_user_courses, save_user_courses
@@ -8,12 +9,15 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from dotenv import load_dotenv
 from bson import ObjectId
 import requests
+from guide_routes import register_guides
 from flask import send_from_directory
 from requests.auth import HTTPBasicAuth
 import json
 import re
 import threading
 from datetime import timedelta
+import gzip
+from io import BytesIO
 
 
 # --- Configuration and Setup ---
@@ -21,6 +25,19 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key_not_for_production')
+
+# Set SERVER_NAME for proper URL generation
+# This is critical for url_for() to work correctly with _external=True
+PRODUCTION_DOMAIN = 'www.kuccpscourses.co.ke'
+if os.getenv('FLASK_ENV') == 'production':
+    app.config['SERVER_NAME'] = PRODUCTION_DOMAIN
+
+# Performance optimizations
+app.config['JSON_SORT_KEYS'] = False  # Avoid sorting JSON keys
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static files
+app.config['PROPAGATE_EXCEPTIONS'] = True
+app.config['TRAP_EXCEPTIONS_ON_HANDLER_FAILURE'] = False
+
 app.config.update(
     SESSION_TYPE='filesystem',
     PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
@@ -30,6 +47,116 @@ app.config.update(
     SESSION_REFRESH_EACH_REQUEST=True,
     PREFERRED_URL_SCHEME='https'
 )
+
+# Configure cache - use Redis if available, fall back to simple for development
+REDIS_URL = os.getenv('REDIS_URL')
+if REDIS_URL:
+    cache_config = {
+        'CACHE_TYPE': 'RedisCache',
+        'CACHE_REDIS_URL': REDIS_URL,
+        'CACHE_DEFAULT_TIMEOUT': 300,
+        'CACHE_KEY_PREFIX': 'kuccps_'
+    }
+    print("✅ Redis cache enabled")
+else:
+    cache_config = {
+        'CACHE_TYPE': 'simple',
+        'CACHE_DEFAULT_TIMEOUT': 300
+    }
+    print("⚠️ Redis not available, using in-memory cache (not recommended for production)")
+
+cache = Cache(app, config=cache_config)
+
+# ============================================
+# CACHE CLEARING FUNCTIONS
+# ============================================
+
+def clear_all_cache():
+    """Clear all server-side cache (both Redis and simple)"""
+    try:
+        cache.clear()
+        print("✅ Server-side cache cleared successfully")
+        return True
+    except Exception as e:
+        print(f"❌ Error clearing server-side cache: {str(e)}")
+        return False
+
+def clear_cdn_cache_headers(response):
+    """Set headers to clear CDN cache on next request"""
+    # Cloudflare cache clearing headers
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
+    # Cloudflare specific
+    response.headers['CF-Cache-Control'] = 'no-cache'
+    
+    return response
+
+# ============================================
+# PERFORMANCE OPTIMIZATION MIDDLEWARE
+# ============================================
+
+@app.after_request
+def compress_response(response):
+    """Gzip compress responses for faster transmission"""
+    if response.direct_passthrough:
+        return response
+    
+    accept_encoding = request.headers.get('Accept-Encoding', '').lower()
+    if 'gzip' not in accept_encoding:
+        return response
+    
+    # Skip compression for small responses and certain types
+    if response.content_length and response.content_length < 1000:
+        return response
+    
+    if not response.is_sequence or response.direct_passthrough:
+        return response
+    
+    # Compressible content types
+    compressible_types = ['text/html', 'text/css', 'application/javascript', 'application/json', 'text/plain', 'text/xml', 'application/xml']
+    if not any(response.content_type.startswith(t) for t in compressible_types):
+        return response
+    
+    try:
+        gzip_buffer = BytesIO()
+        gzip_file = gzip.GzipFile(mode='wb', fileobj=gzip_buffer)
+        gzip_file.write(response.get_data())
+        gzip_file.close()
+        response.set_data(gzip_buffer.getvalue())
+        response.headers['Content-Encoding'] = 'gzip'
+        response.headers['Content-Length'] = len(response.get_data())
+        return response
+    except Exception as e:
+        print(f"⚠️ Gzip compression error: {str(e)}")
+        return response
+
+@app.after_request
+def set_cache_headers(response):
+    """Set aggressive caching headers for better performance"""
+    # Static assets - cache for 1 year
+    if request.path.startswith('/static/'):
+        response.cache_control.max_age = 31536000  # 1 year
+        response.cache_control.public = True
+        response.headers['ETag'] = response.headers.get('ETag', '')
+        return response
+    
+    # HTML pages - cache for 1 hour
+    if response.content_type and 'text/html' in response.content_type:
+        response.cache_control.max_age = 3600  # 1 hour
+        response.cache_control.public = True
+        return response
+    
+    # API responses - cache for 5 minutes
+    if response.content_type and 'application/json' in response.content_type:
+        response.cache_control.max_age = 300  # 5 minutes
+        response.cache_control.public = True
+        return response
+    
+    # Prevent caching for dynamic content
+    response.headers['Pragma'] = 'public'
+    return response
 
 # --- Constants ---
 SUBJECTS = {
@@ -421,7 +548,8 @@ def initialize_database():
 database_connected = initialize_database()            
 
 course_processing_lock = threading.Lock()
-course_processing_cache = {}   
+course_processing_cache = {}  
+register_guides(app) 
 
 # --- News Model ---
 # --- News Model ---
@@ -554,7 +682,7 @@ def clear_session_data(partial=False):
         'diploma_grades', 'diploma_mean_grade', 'diploma_data_submitted',
         'certificate_grades', 'certificate_mean_grade', 'certificate_data_submitted',
         'artisan_grades', 'artisan_mean_grade', 'artisan_data_submitted',
-        'kmtc_grades', 'kmtc_mean_grade', 'kmtc_data_submitted'
+        'kmtc_grades', 'kmtc_mean_grade', 'kmtc_data_submitted',
         'ttc_grades', 'ttc_mean_grade', 'ttc_data_submitted'
     }
     
@@ -574,6 +702,65 @@ def clear_session_data(partial=False):
     # Reinitialize session
     init_session()
 
+@app.route('/sitemap-index.xml')
+@cache.cached(timeout=86400)
+def sitemap_index():
+    """Generate sitemap index"""
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    xml = f'''<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://www.kuccpscourses.co.ke/sitemap.xml</loc>
+    <lastmod>{today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.kuccpscourses.co.ke/sitemap-guides.xml</loc>
+    <lastmod>{today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.kuccpscourses.co.ke/sitemap-news.xml</loc>
+    <lastmod>{today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.kuccpscourses.co.ke/sitemap-courses.xml</loc>
+    <lastmod>{today}</lastmod>
+  </sitemap>
+</sitemapindex>'''
+    
+    response = make_response(xml)
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return response
+@app.after_request
+def add_cache_headers(response):
+    """Add cache headers for performance"""
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    elif request.path.startswith('/sitemap') or request.path == '/robots.txt':
+        response.headers['Cache-Control'] = 'public, max-age=86400'  # 24 hours
+    return response
+
+@app.before_request
+def enforce_www_and_https():
+    """Enforce www subdomain for production domain only"""
+    # Skip health check endpoint
+    if request.path == '/health':
+        return None
+    
+    # Get the host
+    host = request.host.split(':')[0]  # Remove port if present
+    
+    # Skip all redirects for test/localhost domains
+    if host.endswith('.fly.dev') or host == 'localhost' or host == '127.0.0.1':
+        return None
+    
+    # Only apply www redirect to production domain (kuccpscourses.co.ke -> www.kuccpscourses.co.ke)
+    if host == 'kuccpscourses.co.ke':
+        # Redirect non-www to www
+        scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+        url = f'{scheme}://www.{host}{request.full_path}'
+        return redirect(url, code=301)
+
 @app.before_request
 def check_session_timeout():
     """Check for session timeout and handle accordingly"""
@@ -585,6 +772,36 @@ def check_session_timeout():
     
     session['last_activity'] = datetime.now().isoformat()
 
+def get_canonical_url(route_name, **kwargs):
+    """
+    Generate a guaranteed canonical URL with https and www.
+    This ensures consistency for Google Search Console and SEO.
+    """
+    try:
+        # Generate the URL using Flask's url_for with _external=True
+        url = url_for(route_name, _external=True, _scheme='https', **kwargs)
+        
+        # Ensure HTTPS
+        url = url.replace('http://', 'https://')
+        
+        # Ensure www subdomain for production domain
+        if 'kuccpscourses.co.ke' in url and not 'www.' in url:
+            url = url.replace('https://kuccpscourses.co.ke', 'https://www.kuccpscourses.co.ke')
+        
+        # Remove trailing slash for consistency (except for root)
+        if url != 'https://www.kuccpscourses.co.ke/' and url.endswith('/'):
+            url = url.rstrip('/')
+        
+        print(f"✅ Generated canonical URL for {route_name}: {url}")
+        return url
+    except Exception as e:
+        print(f"⚠️ Error generating canonical URL for {route_name}: {str(e)}")
+        # Fallback to explicit URL construction
+        fallback_url = f"https://www.kuccpscourses.co.ke{url_for(route_name, **kwargs)}"
+        if fallback_url.endswith('/') and fallback_url != 'https://www.kuccpscourses.co.ke/':
+            fallback_url = fallback_url.rstrip('/')
+        print(f"⚠️ Using fallback canonical URL: {fallback_url}")
+        return fallback_url
 # --- Helper Classes ---
 class JSONEncoder:
     """Custom JSON encoder for handling MongoDB ObjectId"""
@@ -889,30 +1106,27 @@ def debug_user_courses():
 
 
 def generate_sitemap():
-    """Generate sitemap with dynamic dates"""
-    base_url = 'https://kuccpscourses.co.ke'
+    """Generate accurate sitemap with only existing routes"""
+    base_url = 'https://www.kuccpscourses.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
     
-    # Define all static pages
+    # ONLY include routes that actually exist in your Flask app
     static_pages = [
         {'path': '/', 'priority': '1.0', 'freq': 'daily'},
-        {'path': '/courses', 'priority': '0.9', 'freq': 'weekly'},
-        {'path': '/degree', 'priority': '0.8', 'freq': 'weekly'},
-        {'path': '/diploma', 'priority': '0.8', 'freq': 'weekly'},
-        {'path': '/certificate', 'priority': '0.8', 'freq': 'weekly'},
-        {'path': '/artisan', 'priority': '0.8', 'freq': 'weekly'},
-        {'path': '/kmtc', 'priority': '0.8', 'freq': 'weekly'},
-        {'path': '/ttc', 'priority': '0.8', 'freq': 'weekly'},
+        {'path': '/degree', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/diploma', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/certificate', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/artisan', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/kmtc', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/ttc', 'priority': '0.9', 'freq': 'weekly'},
         {'path': '/about', 'priority': '0.7', 'freq': 'monthly'},
         {'path': '/contact', 'priority': '0.7', 'freq': 'monthly'},
         {'path': '/user-guide', 'priority': '0.8', 'freq': 'monthly'},
-        {'path': '/news', 'priority': '0.7', 'freq': 'daily'},
-        {'path': '/verify-payment', 'priority': '0.6', 'freq': 'weekly'},
+        {'path': '/news', 'priority': '0.8', 'freq': 'daily'},
         {'path': '/results', 'priority': '0.6', 'freq': 'weekly'},
         {'path': '/basket', 'priority': '0.6', 'freq': 'weekly'},
     ]
     
-    # Generate XML
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     
@@ -928,25 +1142,239 @@ def generate_sitemap():
     
     return '\n'.join(xml_parts)
 
+def generate_comprehensive_sitemap():
+    """Generate comprehensive sitemap with ONLY crawlable pages"""
+    base_url = 'https://www.kuccpscourses.co.ke'
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    # ONLY public, accessible pages
+    static_pages = [
+        {'path': '/', 'priority': '1.0', 'freq': 'daily'},
+        {'path': '/degree', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/diploma', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/certificate', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/artisan', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/kmtc', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/ttc', 'priority': '0.9', 'freq': 'weekly'},
+        {'path': '/about', 'priority': '0.7', 'freq': 'monthly'},
+        {'path': '/contact', 'priority': '0.7', 'freq': 'monthly'},
+        {'path': '/user-guide', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/news', 'priority': '0.8', 'freq': 'daily'},
+    ]
+    
+    # Add guide pages
+    guide_pages = [
+        {'path': '/guides/how-to-check-kuccps-courses-2026', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/kuccps-cluster-points-explained', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/kcse-grades-university-admission', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/diploma-courses-kenya-2026', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/certificate-courses-requirements', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/kmtc-courses-admission-2026', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/artisan-courses-2026', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/ttc-teacher-training-courses', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/kuccps-application-process', 'priority': '0.8', 'freq': 'monthly'},
+        {'path': '/guides/scholarships-opportunities-2026', 'priority': '0.8', 'freq': 'monthly'},
+    ]
+    
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    for page in static_pages + guide_pages:
+        xml_parts.append('  <url>')
+        xml_parts.append(f'    <loc>{base_url}{page["path"]}</loc>')
+        xml_parts.append(f'    <lastmod>{today}</lastmod>')
+        xml_parts.append(f'    <changefreq>{page["freq"]}</changefreq>')
+        xml_parts.append(f'    <priority>{page["priority"]}</priority>')
+        xml_parts.append('  </url>')
+    
+    xml_parts.append('</urlset>')
+    
+    return '\n'.join(xml_parts)
+
+from datetime import datetime
+from flask import make_response
+
 @app.route('/sitemap.xml')
-def sitemap():
-    """Serve the dynamically generated sitemap"""
-    sitemap_xml = generate_sitemap()
-    return Response(sitemap_xml, mimetype='application/xml')
+@cache.cached(timeout=86400)
+def sitemap_main():
+    """Generate main sitemap"""
+    base_url = 'https://www.kuccpscourses.co.ke'
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    # All main URLs with priorities
+    pages = [
+        # Homepage
+        {'path': '/', 'lastmod': today, 'freq': 'daily', 'priority': '1.0'},
+        
+        # Primary Course Pages
+        {'path': '/degree', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
+        {'path': '/diploma', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
+        {'path': '/certificate', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
+        {'path': '/artisan', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
+        {'path': '/kmtc', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
+        {'path': '/ttc', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
+        
+        # Information Pages
+        {'path': '/about', 'lastmod': today, 'freq': 'monthly', 'priority': '0.7'},
+        {'path': '/contact', 'lastmod': today, 'freq': 'monthly', 'priority': '0.6'},
+        {'path': '/user-guide', 'lastmod': today, 'freq': 'monthly', 'priority': '0.7'},
+        
+        # News & Updates
+        {'path': '/news', 'lastmod': today, 'freq': 'daily', 'priority': '0.8'},
+        
+        # Other Public Pages
+        {'path': '/offline', 'lastmod': today, 'freq': 'never', 'priority': '0.4'},
+    ]
+    
+    for page in pages:
+        xml_parts.append('  <url>')
+        xml_parts.append(f'    <loc>{base_url}{page["path"]}</loc>')
+        xml_parts.append(f'    <lastmod>{page["lastmod"]}</lastmod>')
+        xml_parts.append(f'    <changefreq>{page["freq"]}</changefreq>')
+        xml_parts.append(f'    <priority>{page["priority"]}</priority>')
+        xml_parts.append('  </url>')
+    
+    xml_parts.append('</urlset>')
+    
+    response = make_response('\n'.join(xml_parts))
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return response
+
+
+@app.route('/sitemap-guides.xml')
+@cache.cached(timeout=86400)
+def sitemap_guides():
+    """Generate sitemap for guides"""
+    base_url = 'https://www.kuccpscourses.co.ke'
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    guides_pages = [
+        {'path': '/guides/', 'priority': '0.9', 'freq': 'monthly'},
+        {'path': '/guides/cluster-points-explained', 'priority': '0.85', 'freq': 'monthly'},
+        {'path': '/guides/kcse-admission-requirements', 'priority': '0.85', 'freq': 'monthly'},
+        {'path': '/guides/diploma-courses-kenya', 'priority': '0.85', 'freq': 'monthly'},
+        {'path': '/guides/certificate-courses-requirements', 'priority': '0.85', 'freq': 'monthly'},
+        {'path': '/guides/kmtc-courses-admission', 'priority': '0.85', 'freq': 'monthly'},
+        {'path': '/guides/artisan-courses-kenya', 'priority': '0.85', 'freq': 'monthly'},
+        {'path': '/guides/ttc-teacher-training-courses', 'priority': '0.85', 'freq': 'monthly'},
+        {'path': '/guides/kuccps-application-process', 'priority': '0.85', 'freq': 'monthly'},
+        {'path': '/guides/scholarships-opportunities', 'priority': '0.85', 'freq': 'monthly'},
+    ]
+    
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    for page in guides_pages:
+        xml_parts.append('  <url>')
+        xml_parts.append(f'    <loc>{base_url}{page["path"]}</loc>')
+        xml_parts.append(f'    <lastmod>{today}</lastmod>')
+        xml_parts.append(f'    <changefreq>{page["freq"]}</changefreq>')
+        xml_parts.append(f'    <priority>{page["priority"]}</priority>')
+        xml_parts.append('  </url>')
+    
+    xml_parts.append('</urlset>')
+    
+    response = make_response('\n'.join(xml_parts))
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return response
+
+@app.route('/sitemap-news.xml')
+@cache.cached(timeout=86400)
+def sitemap_news():
+    """Generate sitemap for news articles"""
+    base_url = 'https://www.kuccpscourses.co.ke'
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    try:
+        if 'news_collection' in locals() or 'news_collection' in globals():
+            # Get published articles
+            articles = news_collection.find({'is_published': True}).sort('published_at', -1).limit(100)
+            
+            for article in articles:
+                article_id = str(article.get('_id', ''))
+                article_title = article.get('title', '').lower().replace(' ', '-')[:50]
+                published_date = article.get('published_at', datetime.now())
+                if isinstance(published_date, datetime):
+                    published_date = published_date.strftime('%Y-%m-%d')
+                else:
+                    published_date = today
+                
+                xml_parts.append('  <url>')
+                xml_parts.append(f'    <loc>{base_url}/news/{article_id}</loc>')
+                xml_parts.append(f'    <lastmod>{published_date}</lastmod>')
+                xml_parts.append(f'    <changefreq>never</changefreq>')
+                xml_parts.append(f'    <priority>0.7</priority>')
+                xml_parts.append('  </url>')
+    except Exception as e:
+        print(f"Error generating news sitemap: {e}")
+    
+    xml_parts.append('</urlset>')
+    
+    response = make_response('\n'.join(xml_parts))
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return response
 
 @app.route('/robots.txt')
+@cache.cached(timeout=86400) 
 def robots():
-    """Serve robots.txt file"""
-    robots_txt = """User-agent: *
+    """Generate robots.txt"""
+    robots_content = '''User-agent: *
 Allow: /
+
+
 Disallow: /admin/
 Disallow: /debug/
+Disallow: /api/
+Disallow: /enter-details/
+Disallow: /results/
+Disallow: /verified-dashboard
+Disallow: /verified-results/
+Disallow: /payment/
+Disallow: /payment-wait/
+Disallow: /check-payment/
+Disallow: /check-payment-status/
+Disallow: /check-courses-ready/
+Disallow: /mpesa/
+Disallow: /clear-session
 Disallow: /temp-bypass/
+Disallow: /collection-courses/
+Disallow: /search-courses/
+Disallow: /add-to-basket
+Disallow: /remove-from-basket
+Disallow: /clear-basket
+Disallow: /save-basket
+Disallow: /reset-basket
+Disallow: /load-basket
+Disallow: /get-basket
+Disallow: /manifest.json
+Disallow: /service-worker.js
+Disallow: /submit-grades
+Disallow: /submit-diploma-grades
+Disallow: /submit-certificate-grades
+Disallow: /submit-artisan-grades
+Disallow: /submit-kmtc-grades
+Disallow: /submit-ttc-grades
 
-Sitemap: https://kuccpscourses.co.ke/sitemap.xml"""
+Sitemap: https://www.kuccpscourses.co.ke/sitemap-index.xml
+Sitemap: https://www.kuccpscourses.co.ke/sitemap.xml
+Sitemap: https://www.kuccpscourses.co.ke/sitemap-guides.xml
+Sitemap: https://www.kuccpscourses.co.ke/sitemap-news.xml
+Sitemap: https://www.kuccpscourses.co.ke/sitemap-courses.xml
+
+Crawl-delay: 1
+
+User-agent: Googlebot
+Crawl-delay: 0.5'''
     
-    return Response(robots_txt, mimetype='text/plain')
-
+    response = make_response(robots_content)
+    response.headers['Content-Type'] = 'text/plain; charset=utf-8'
+    return response
 def update_sitemap_dates():
     """Update lastmod dates in sitemap - run this periodically"""
     # This would typically be called from a cron job or scheduler
@@ -957,17 +1385,23 @@ def update_sitemap_dates():
     # For now, we're using dynamic dates in generate_sitemap()
     return True
 
-# Add meta tags to your base template
 @app.context_processor
-def inject_seo_meta():
-    """Inject SEO meta tags into templates"""
+def inject_global_vars():
+    """Inject global variables into all templates"""
+    base_url = request.url_root.rstrip('/')
+    
     return {
-        'site_name': 'KUCCPS Courses',
-        'site_description': 'Find and compare courses from KUCCPS, universities, colleges, and technical institutions in Kenya.',
-        'site_url': 'https://kuccpscourses.co.ke',
-        'current_year': datetime.now().year
+        'site_name': 'KUCCPS Courses Checker',
+        'site_description': 'Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs in Kenya.',
+        'site_url': base_url,
+        'current_year': datetime.now().year,
+        'request': request,
+        'current_path': request.path,
+        'full_url': request.url,
+        'og_image_url': f"{base_url}{url_for('static', filename='images/og-image.jpg')}",
+        'twitter_image_url': f"{base_url}{url_for('static', filename='images/twitter-card.jpg')}",
+        'get_canonical_url': get_canonical_url
     }
-
 @app.before_request
 def manage_session():
     """Manage session state and handle page refreshes"""
@@ -1016,6 +1450,7 @@ def manage_session():
         request.protected_session_data = {
             k: session[k] for k in protected_keys if k in session
         }
+
 
 @app.after_request
 def restore_protected_data(response):
@@ -1101,45 +1536,7 @@ def check_existing_user_data(email, index_number):
     except Exception as e:
         print(f"❌ Error checking existing user data: {str(e)}")
         return False
-def get_user_courses_data(email, index_number, level):
-    """Get user courses from database with better validation"""
-    courses_data = None
-    
-    # Try database first
-    if database_connected:
-        try:
-            courses_data = user_courses_collection.find_one({
-                'email': email, 
-                'index_number': index_number, 
-                'level': level
-            })
-            
-            if courses_data and 'courses' in courses_data:
-                # Validate and convert courses
-                valid_courses = []
-                for course in courses_data['courses']:
-                    if course and isinstance(course, dict):
-                        course_dict = dict(course)
-                        if '_id' in course_dict and isinstance(course_dict['_id'], ObjectId):
-                            course_dict['_id'] = str(course_dict['_id'])
-                        valid_courses.append(course_dict)
-                
-                courses_data['courses'] = valid_courses
-                courses_data['courses_count'] = len(valid_courses)
-                print(f"✅ Loaded {len(valid_courses)} courses from database for {level}")
-                
-        except Exception as e:
-            print(f"❌ Error getting user courses from database: {str(e)}")
-    
-    # Fallback to session
-    if not courses_data or not courses_data.get('courses'):
-        session_key = f'{level}_courses_{index_number}'
-        courses_data = session.get(session_key)
-        
-        if courses_data and 'courses' in courses_data:
-            print(f"✅ Loaded {len(courses_data['courses'])} courses from session for {level}")
-    
-    return courses_data
+
 
 def mark_payment_confirmed(transaction_ref, mpesa_receipt=None):
     """Mark payment as confirmed - ONLY with valid M-Pesa receipt"""
@@ -1318,7 +1715,6 @@ def process_courses_after_payment(email, index_number, flow):
             # Remove from cache on error
             course_processing_cache.pop(cache_key, None)
             return False
-
 # --- MPesa API Credentials ---
 MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
@@ -1377,35 +1773,7 @@ def get_mpesa_access_token():
 
 
 
-def mark_payment_confirmed_by_account(account_number, mpesa_receipt, amount=None):
-    """Mark payment as confirmed by account number (index number) - for Paybill payments"""
-    if not database_connected:
-        for key in session:
-            if session[key].get('index_number') == account_number:
-                session[key]['payment_confirmed'] = True
-                session[key]['mpesa_receipt'] = mpesa_receipt
-                if amount:
-                    session[key]['payment_amount'] = amount
-                return True
-        return False
-        
-    try:
-        update_data = {
-            'payment_confirmed': True,
-            'mpesa_receipt': mpesa_receipt,
-            'payment_date': datetime.now()
-        }
-        if amount:
-            update_data['payment_amount'] = amount
-            
-        result = user_payments_collection.update_one(
-            {'index_number': account_number},
-            {'$set': update_data}
-        )
-        return result.modified_count > 0
-    except Exception as e:
-        print(f"❌ Error marking payment confirmed by account: {str(e)}")
-        return False
+
 
 def save_user_payment(email, index_number, level, transaction_ref=None, amount=1):
     """Save user payment information to payments collection"""
@@ -1536,9 +1904,9 @@ def initiate_stk_push(phone, amount=1, flow=None):
         
         
         if os.environ.get('FLASK_ENV') == 'production' or 'render.com' in os.environ.get('RENDER_EXTERNAL_HOSTNAME', ''):
-            base_url = 'https://kuccps-courses-px6s.onrender.com'
+            base_url = 'https://www.kuccpscourses.co.ke'
         else:
-            base_url = 'https://kuccps-courses-px6s.onrender.com'
+            base_url = 'https://www.kuccpscourses.co.ke'
         
         callback_url = f"{base_url}/mpesa/callback"
         
@@ -1803,7 +2171,18 @@ def create_manual_activation_payment(email, index_number, flow, mpesa_receipt):
         session_key = f'{flow}_payment_{index_number}'
         session[session_key] = payment_record
         return True
+
+# Site Configuration
+class Config:
+    SITE_NAME = "KUCCPS Courses Checker"
+    SITE_DESCRIPTION = "Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs in Kenya."
+    SITE_URL = "https://www.kuccpscourses.co.ke"
     
+    # SEO Settings
+    META_AUTHOR = "Hean Njuki"
+    META_KEYWORDS = "KUCCPS, courses, KCSE, Kenya, degree, diploma, certificate, artisan, TTC, KMTC, university, college"
+    
+app.config.from_object(Config)  
 
 def has_user_paid_for_category(email, index_number, category):
     """Check if user has already paid for a specific category - STRICTER VERSION"""
@@ -2100,37 +2479,147 @@ def clear_user_basket(index_number):
     return True
 # --- Routes ---
 @app.route('/')
+@cache.cached(timeout=3600, query_string=False)  # Cache homepage for 1 hour
 def index():
-    return render_template('index.html')
+    canonical = get_canonical_url('index')
+    return render_template('index.html', 
+                         title='KUCCPS Courses Checker | Home',
+                         meta_description='Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs in Kenya.',
+                         canonical_url=canonical)
+
+# ============================================
+# UNIQUE CONTENT HELPER FOR SEO
+# ============================================
+
+def get_unique_content_for_flow(flow):
+    """Return unique content for each course flow to avoid duplicate content issues"""
+    unique_content = {
+        'degree': {
+            'h1': 'KUCCPS University Degree Programs Qualification Checker',
+            'intro': 'Find university degree programs matching your KCSE grades and cluster points.',
+            'key_features': ['4-year programs', 'University education', 'Bachelor degrees', 'Research-focused']
+        },
+        'diploma': {
+            'h1': 'KUCCPS Diploma & Technical Programs Qualification Checker',
+            'intro': 'Find technical diploma programs matching your KCSE grades for 2-year college education.',
+            'key_features': ['2-year programs', 'Technical colleges', 'Practical skills', 'Career-focused']
+        },
+        'kmtc': {
+            'h1': 'KMTC Medical & Healthcare Programs Qualification Checker',
+            'intro': 'Find Kenya Medical Training College healthcare programs matching your KCSE grades.',
+            'key_features': ['Medical training', 'Healthcare careers', 'Clinical practice', 'Ministry of Health accredited']
+        },
+        'certificate': {
+            'h1': 'KUCCPS Certificate Programs Qualification Checker',
+            'intro': 'Find certificate programs matching your KCSE grades for vocational training.',
+            'key_features': ['1-2 year programs', 'Vocational training', 'Skills development', 'Employment ready']
+        },
+        'artisan': {
+            'h1': 'KUCCPS Artisan & Trade Programs Qualification Checker',
+            'intro': 'Find artisan trade programs matching your KCSE grades for hands-on technical skills.',
+            'key_features': ['Trade skills', 'Practical training', 'Self-employment', 'Technical crafts']
+        },
+        'ttc': {
+            'h1': 'Teacher Training College (TTC) Programs Qualification Checker',
+            'intro': 'Find teacher training programs matching your KCSE grades for education careers.',
+            'key_features': ['Teacher education', 'Classroom training', 'Education diploma', 'Teaching practice']
+        }
+    }
+    
+    return unique_content.get(flow, unique_content['degree'])
 
 @app.route('/degree')
+@cache.cached(timeout=3600, query_string=False)  # Cache for 1 hour
 def degree():
-    return render_template('degree.html')
+    canonical = get_canonical_url('degree')
+    unique_content = get_unique_content_for_flow('degree')
+    return render_template('degree.html',
+                         title='KUCCPS Degree Courses | University Programs in Kenya',
+                         meta_description='Find KUCCPS university degree programs in Kenya. Match your KCSE grades and cluster points with bachelor degree courses in engineering, medicine, business, education, and more.',
+                         canonical_url=canonical,
+                         unique_content=unique_content)
 
 @app.route('/diploma')
+@cache.cached(timeout=3600, query_string=False)  # Cache for 1 hour
 def diploma():
-    return render_template('diploma.html')
+    canonical = get_canonical_url('diploma')
+    unique_content = get_unique_content_for_flow('diploma')
+    return render_template('diploma.html',
+                         title='KUCCPS Diploma Courses | Technical Programs in Kenya',
+                         meta_description='Find KUCCPS diploma courses and technical programs in Kenya. Match your KCSE grades with 2-year diploma programs in engineering, business, IT, hospitality, and more.',
+                         canonical_url=canonical,
+                         unique_content=unique_content)
 
 @app.route('/kmtc')
+@cache.cached(timeout=3600, query_string=False)  # Cache for 1 hour
 def kmtc():
-    return render_template('kmtc.html')
+    canonical = get_canonical_url('kmtc')
+    unique_content = get_unique_content_for_flow('kmtc')
+    return render_template('kmtc.html',
+                         title='KMTC Courses | Kenya Medical Training College Programs',
+                         meta_description='Browse KMTC medical courses and healthcare training programs available through KUCCPS. Find nursing, clinical medicine, lab technology programs matching your KCSE grades.',
+                         canonical_url=canonical,
+                         unique_content=unique_content)
 
 @app.route('/certificate')
+@cache.cached(timeout=3600, query_string=False)  # Cache for 1 hour
 def certificate():
-    return render_template('certificate.html')
-
+    canonical = get_canonical_url('certificate')
+    unique_content = get_unique_content_for_flow('certificate')
+    return render_template('certificate.html',
+                         title='KUCCPS Certificate Courses | Vocational Programs in Kenya',
+                         meta_description='Find KUCCPS certificate courses and vocational programs in Kenya. Match your KCSE grades with 1-2 year certificate programs in business, IT, hospitality, beauty, and skilled trades.',
+                         canonical_url=canonical,
+                         unique_content=unique_content)
 @app.route('/artisan')
+@cache.cached(timeout=3600, query_string=False)  # Cache for 1 hour
 def artisan():
-    return render_template('artisan.html')
-
+    canonical = get_canonical_url('artisan')
+    unique_content = get_unique_content_for_flow('artisan')
+    return render_template('artisan.html',
+                         title='KUCCPS Artisan Courses | Skills Training in Kenya',
+                         meta_description='Find KUCCPS artisan courses and vocational skills training programs in Kenya. Match your KCSE grades with practical trade programs in plumbing, electrical, carpentry, and more.',
+                         canonical_url=canonical,
+                         unique_content=unique_content)
 @app.route('/results')
 def results():
-    return render_template('results.html')
+    canonical = get_canonical_url('results')
+    return render_template('results.html',
+                         title='KUCCPS Course Results | View Your Qualified Courses',
+                         meta_description='View your KUCCPS qualified courses based on your KCSE grades. See degree, diploma, certificate, and artisan courses that match your results.',
+                         canonical_url=canonical)
 
+@app.route('/sitemap-courses.xml')
+@cache.cached(timeout=86400)
+def sitemap_courses():
+    """Generate sitemap for course-related content (NOT main category pages)
+    
+    NOTE: Main course category pages (/degree, /diploma, /certificate, /artisan, /kmtc, /ttc)
+    are already included in sitemap.xml to avoid duplication.
+    This sitemap is reserved for course-specific subpages if needed in the future.
+    """
+    base_url = 'https://www.kuccpscourses.co.ke'
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    # This sitemap is intentionally minimal to avoid duplicates with sitemap.xml
+    # The main course category pages are in sitemap.xml
+    # Add only course-specific subpages here if they are created in the future
+    
+    xml_parts.append('</urlset>')
+    
+    response = make_response('\n'.join(xml_parts))
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return response
 @app.route('/user-guide')
 def userguide():
-    return render_template('user-guide.html')
-
+    canonical = get_canonical_url('userguide')
+    return render_template('user-guide.html',
+                         title='KUCCPS User Guide | How to Use This Platform',
+                         meta_description='Learn how to use KUCCPS Courses Checker to find courses that match your KCSE grades. Step-by-step guide.',
+                         canonical_url=canonical)
 
 # --- Grade Submission Routes ---
 @app.route('/submit-grades', methods=['POST'])
@@ -2201,8 +2690,15 @@ def submit_ttc_grades():
         flash("An error occurred while processing your request", "error")
         return redirect(url_for('ttc'))
 @app.route('/ttc')
+@cache.cached(timeout=3600, query_string=False)  # Cache for 1 hour
 def ttc():
-    return render_template('ttc.html')
+    canonical = get_canonical_url('ttc')
+    unique_content = get_unique_content_for_flow('ttc')
+    return render_template('ttc.html',
+                         title='TTC Courses | Teacher Training Colleges in Kenya',
+                         meta_description='Find KUCCPS teacher training college (TTC) programs in Kenya. Match your KCSE grades with 2-year education diploma programs for primary, secondary, and technical teacher training.',
+                         canonical_url=canonical,
+                         unique_content=unique_content)
 
 @app.route('/submit-diploma-grades', methods=['POST'])
 def submit_diploma_grades():
@@ -2669,54 +3165,173 @@ def payment(flow):
     
 @app.route('/payment-wait/<flow>')
 def payment_wait(flow):
-    email = session.get('email')
-    index_number = session.get('index_number')
-    transaction_ref = request.args.get('transaction_ref')
-    
-    if email and index_number and not transaction_ref:
-        user_payment = get_user_payment(email, index_number, flow)
-        if user_payment:
-            transaction_ref = user_payment.get('transaction_ref')
-            
-    return render_template('payment_wait.html', 
-                         flow=flow, 
-                         transaction_ref=transaction_ref,
-                         check_status_url=url_for('check_payment_status', flow=flow))
-
-@app.route('/check-courses-ready/<flow>')
-def check_courses_ready(flow):
-    """Check if courses have been processed and are ready to display"""
+    """Payment waiting page"""
     email = session.get('email')
     index_number = session.get('index_number')
     
     if not email or not index_number:
-        return jsonify({'ready': False, 'error': 'Session data missing'})
+        flash("Session expired. Please start again.", "error")
+        return redirect(url_for('enter_details', flow=flow))
     
-    # Check if courses exist in database for this user and flow
-    courses_data = get_user_courses_data(email, index_number, flow)
+    # Get transaction reference
+    user_payment = get_user_payment(email, index_number, flow)
+    transaction_ref = user_payment.get('transaction_ref') if user_payment else None
     
-    if courses_data and courses_data.get('courses'):
-        # Courses are ready
+    # Get payment amount
+    amount = session.get('payment_amount', 1)
+    
+    print(f"🔍 Payment wait for {flow}: {email}, transaction: {transaction_ref}")
+    
+    return render_template('payment_wait.html', 
+                         flow=flow, 
+                         email=email,
+                         index_number=index_number,
+                         transaction_ref=transaction_ref,
+                         amount=amount)
+
+@app.route('/check-courses-ready/<flow>')
+def check_courses_ready(flow):
+    """Check if courses have been processed and are ready to display - SIMPLIFIED"""
+    email = session.get('email')
+    index_number = session.get('index_number')
+    
+    if not email or not index_number:
         return jsonify({
-            'ready': True,
-            'redirect_url': url_for('show_results', flow=flow)
+            'ready': False, 
+            'error': 'Session data missing',
+            'should_redirect': True,
+            'redirect_url': url_for('index')
         })
-    else:
-        # Courses not ready yet - try to process them
-        print(f"🔄 Courses not found, attempting to process for {flow}")
-        success = process_courses_after_payment(email, index_number, flow)
-        
-        if success:
-            # Check again after processing
-            courses_data = get_user_courses_data(email, index_number, flow)
+    
+    print(f"🎯 CHECKING COURSES READY: {flow} for {email}")
+    
+    # 🔥 FIRST: Check database for courses
+    if database_connected:
+        try:
+            courses_data = user_courses_collection.find_one({
+                'email': email,
+                'index_number': index_number,
+                'level': flow
+            })
+            
             if courses_data and courses_data.get('courses'):
+                course_count = len(courses_data['courses'])
+                print(f"✅ COURSES READY IN DATABASE: Found {course_count} courses for {flow}")
+                
+                # Mark as paid in session
+                session[f'paid_{flow}'] = True
+                session.modified = True
+                
                 return jsonify({
                     'ready': True,
-                    'redirect_url': url_for('show_results', flow=flow)
+                    'courses_count': course_count,
+                    'redirect_url': url_for('show_results', flow=flow),
+                    'message': f'Found {course_count} courses matching your grades!',
+                    'status': 'courses_ready'
                 })
-        
-        # Courses not ready yet
-        return jsonify({'ready': False})
+                
+        except Exception as e:
+            print(f"❌ Error checking database for courses: {str(e)}")
+    
+    # 🔥 SECOND: Check processing status
+    cache_key = f"{email}_{index_number}_{flow}"
+    
+    if cache_key in course_processing_cache:
+        cache_data = course_processing_cache[cache_key]
+        if isinstance(cache_data, dict):
+            status = cache_data.get('status', 'processing')
+            
+            if status == 'completed':
+                # Courses should now be in database, check again
+                if database_connected:
+                    try:
+                        courses_data = user_courses_collection.find_one({
+                            'email': email,
+                            'index_number': index_number,
+                            'level': flow
+                        })
+                        
+                        if courses_data and courses_data.get('courses'):
+                            course_count = len(courses_data['courses'])
+                            print(f"✅ PROCESSING COMPLETED: {course_count} courses ready for {flow}")
+                            
+                            session[f'paid_{flow}'] = True
+                            session.modified = True
+                            
+                            return jsonify({
+                                'ready': True,
+                                'courses_count': course_count,
+                                'redirect_url': url_for('show_results', flow=flow),
+                                'message': f'Processing complete! Found {course_count} courses.',
+                                'status': 'processing_completed'
+                            })
+                    except Exception as e:
+                        print(f"❌ Error checking database after processing: {e}")
+                
+                # Even if no courses found, processing is complete
+                session[f'paid_{flow}'] = True
+                session.modified = True
+                
+                return jsonify({
+                    'ready': True,
+                    'courses_count': 0,
+                    'redirect_url': url_for('show_results', flow=flow),
+                    'message': 'Processing complete. No qualifying courses found.',
+                    'status': 'processing_completed_no_courses'
+                })
+            
+            elif status == 'processing':
+                print(f"🔄 PROCESSING IN PROGRESS: Courses being generated for {flow}")
+                return jsonify({
+                    'ready': False,
+                    'message': 'Courses are being generated... Please wait a moment.',
+                    'processing': True,
+                    'estimated_time': '30 seconds',
+                    'status': 'processing_in_progress'
+                })
+            
+            elif status == 'failed':
+                error_msg = cache_data.get('error', 'Unknown error')
+                print(f"❌ PROCESSING FAILED: Could not generate courses for {flow}: {error_msg}")
+                return jsonify({
+                    'ready': False,
+                    'message': f'Error generating courses: {error_msg}',
+                    'error': True,
+                    'status': 'processing_failed'
+                })
+    
+    # 🔥 THIRD: No processing in cache, check if payment is confirmed
+    if not session.get(f'paid_{flow}'):
+        print(f"❌ PAYMENT NOT CONFIRMED: {flow} payment not confirmed yet")
+        return jsonify({
+            'ready': False,
+            'message': 'Payment not confirmed yet',
+            'should_check_payment': True,
+            'payment_check_url': url_for('check_payment_status', flow=flow),
+            'status': 'waiting_for_payment'
+        })
+    
+    # 🔥 FOURTH: Payment confirmed but no courses yet
+    print(f"⚠️ Payment confirmed but courses not found. Triggering processing...")
+    
+    success = process_courses_after_payment(email, index_number, flow)
+    
+    if success:
+        return jsonify({
+            'ready': False,
+            'message': 'Course processing started... Please wait.',
+            'processing': True,
+            'check_again': True,
+            'check_delay': 2000,
+            'status': 'processing_started'
+        })
+    else:
+        return jsonify({
+            'ready': False,
+            'message': 'Failed to start course processing.',
+            'error': True,
+            'status': 'processing_start_failed'
+        })
 @app.route('/check-payment-status/<flow>')
 def check_payment_status(flow):
     """ULTRA-FAST payment status check optimized for frontend polling"""
@@ -2784,6 +3399,302 @@ def check_payment_status(flow):
         'status': 'pending',
         'message': 'Waiting for payment confirmation...'
     }
+def check_payment_status(flow):
+    """ULTRA-FAST payment status check - optimized for 1-second response"""
+    email = session.get('email')
+    index_number = session.get('index_number')
+    
+    if not email or not index_number:
+        return jsonify({
+            'paid': False, 
+            'error': 'Session data missing',
+            'status': 'session_missing'
+        })
+    
+    # 🔥 ULTRA-FAST STEP 1: Check session cache FIRST (milliseconds)
+    if session.get(f'paid_{flow}'):
+        print(f"⚡ ULTRA-FAST: Payment confirmed via session cache")
+        return jsonify({
+            'paid': True,
+            'redirect_url': url_for('show_results', flow=flow),
+            'status': 'confirmed_via_session',
+            'method': 'session_cache',
+            'courses_ready': True,
+            'message': 'Payment confirmed! Redirecting to results...'
+        })
+    
+    # 🔥 ULTRA-FAST STEP 2: Check in-memory cache
+    cache_key = f"{email}_{index_number}_{flow}"
+    if cache_key in course_processing_cache:
+        cache_data = course_processing_cache[cache_key]
+        if isinstance(cache_data, dict) and cache_data.get('status') == 'completed':
+            print(f"⚡ ULTRA-FAST: Payment confirmed via memory cache")
+            session[f'paid_{flow}'] = True
+            return jsonify({
+                'paid': True,
+                'redirect_url': url_for('show_results', flow=flow),
+                'status': 'confirmed_via_memory',
+                'method': 'memory_cache',
+                'courses_ready': True,
+                'message': 'Payment confirmed! Redirecting to results...'
+            })
+    
+    # 🔥 ULTRA-FAST STEP 3: Ultra-fast database check with timeout
+    if database_connected:
+        try:
+            # Use a projection for faster query
+            payment_data = user_payments_collection.find_one(
+                {
+                    'email': email, 
+                    'index_number': index_number, 
+                    'level': flow,
+                    'payment_confirmed': True
+                },
+                {'_id': 1, 'transaction_ref': 1}  # Minimal fields for speed
+            )
+            
+            if payment_data:
+                print(f"✅ ULTRA-FAST: Payment confirmed in database (ultra-fast query)")
+                
+                # Update session for future ultra-fast checks
+                session[f'paid_{flow}'] = True
+                session.modified = True
+                
+                # Update cache
+                course_processing_cache[cache_key] = {
+                    'status': 'completed',
+                    'confirmed_at': datetime.now().isoformat(),
+                    'method': 'ultra_fast_db'
+                }
+                
+                return jsonify({
+                    'paid': True,
+                    'redirect_url': url_for('show_results', flow=flow),
+                    'status': 'confirmed_via_database',
+                    'method': 'ultra_fast_db',
+                    'courses_ready': True,
+                    'message': 'Payment confirmed! Redirecting to results...'
+                })
+        except Exception as e:
+            print(f"❌ ULTRA-FAST: Database error (non-critical): {e}")
+            # Continue to other checks
+    
+    # 🔥 ULTRA-FAST STEP 4: Check for manual activation
+    try:
+        if check_manual_activation(email, index_number, flow):
+            print(f"✅ ULTRA-FAST: Manual activation found")
+            session[f'paid_{flow}'] = True
+            return jsonify({
+                'paid': True,
+                'redirect_url': url_for('show_results', flow=flow),
+                'status': 'confirmed_via_manual',
+                'method': 'manual_activation',
+                'courses_ready': True,
+                'message': 'Manual activation confirmed! Redirecting...'
+            })
+    except Exception as e:
+        print(f"⚠️ ULTRA-FAST: Manual activation check error: {e}")
+    
+    # 🔥 ULTRA-FAST STEP 5: Check transaction ref if we have one
+    transaction_ref = None
+    if database_connected:
+        try:
+            # Check if there's a transaction ref waiting for callback
+            pending_payment = user_payments_collection.find_one(
+                {
+                    'email': email,
+                    'index_number': index_number,
+                    'level': flow,
+                    'payment_confirmed': False,
+                    'transaction_ref': {'$exists': True, '$ne': None}
+                },
+                {'transaction_ref': 1}
+            )
+            
+            if pending_payment:
+                transaction_ref = pending_payment.get('transaction_ref')
+                return jsonify({
+                    'paid': False,
+                    'status': 'pending',
+                    'message': 'Payment initiated. Waiting for M-Pesa confirmation...',
+                    'has_transaction': True,
+                    'transaction_ref': transaction_ref,
+                    'check_again': True,
+                    'check_delay': 1000  # Check again in 1 second
+                })
+        except Exception as e:
+            print(f"⚠️ ULTRA-FAST: Pending payment check error: {e}")
+    
+    # 🔥 If nothing found, payment not yet confirmed
+    return jsonify({
+        'paid': False, 
+        'status': 'not_found',
+        'message': 'Payment not yet confirmed. Please wait...',
+        'should_retry': True,
+        'retry_delay': 1000  # Retry in 1 second
+    })
+
+@app.route('/ultra-fast-check/<flow>')
+def ultra_fast_check(flow):
+    """ULTRA-FAST endpoint for instant payment confirmation"""
+    email = session.get('email')
+    index_number = session.get('index_number')
+    
+    if not email or not index_number:
+        return jsonify({'success': False, 'paid': False, 'error': 'No session'})
+    
+    # STEP 1: Check session cache (INSTANT)
+    if session.get(f'paid_{flow}'):
+        return jsonify({
+            'success': True,
+            'paid': True,
+            'redirect': url_for('show_results', flow=flow),
+            'reason': 'session_cache',
+            'instant': True
+        })
+    
+    # STEP 2: Check memory cache (FAST)
+    cache_key = f"{email}_{index_number}_{flow}"
+    if cache_key in course_processing_cache:
+        cache_data = course_processing_cache[cache_key]
+        if isinstance(cache_data, dict):
+            status = cache_data.get('status')
+            if status == 'completed':
+                # Update session
+                session[f'paid_{flow}'] = True
+                return jsonify({
+                    'success': True,
+                    'paid': True,
+                    'redirect': url_for('show_results', flow=flow),
+                    'reason': 'memory_cache_completed',
+                    'instant': True
+                })
+            elif status == 'processing':
+                return jsonify({
+                    'success': True,
+                    'paid': False,
+                    'processing': True,
+                    'message': 'Courses being processed...',
+                    'check_again': 1000  # Check in 1 second
+                })
+    
+    # STEP 3: Quick database check (FAST with projection)
+    if database_connected:
+        try:
+            # Ultra-fast query with only _id field
+            payment_data = user_payments_collection.find_one(
+                {
+                    'email': email,
+                    'index_number': index_number,
+                    'level': flow,
+                    'payment_confirmed': True
+                },
+                {'_id': 1}  # Only need to know if it exists
+            )
+            
+            if payment_data:
+                # Update session and cache
+                session[f'paid_{flow}'] = True
+                course_processing_cache[cache_key] = {
+                    'status': 'processing',
+                    'started_at': datetime.now().isoformat()
+                }
+                return jsonify({
+                    'success': True,
+                    'paid': True,
+                    'redirect': url_for('show_results', flow=flow),
+                    'reason': 'database_confirmed',
+                    'instant': True
+                })
+        except Exception as e:
+            print(f"⚠️ Ultra-fast DB error: {e}")
+    
+    # STEP 4: Check for pending transaction (for UI updates)
+    if database_connected:
+        try:
+            pending = user_payments_collection.find_one(
+                {
+                    'email': email,
+                    'index_number': index_number,
+                    'level': flow,
+                    'transaction_ref': {'$exists': True, '$ne': None},
+                    'payment_confirmed': False
+                },
+                {'transaction_ref': 1}
+            )
+            
+            if pending:
+                return jsonify({
+                    'success': True,
+                    'paid': False,
+                    'pending': True,
+                    'message': 'Waiting for M-Pesa confirmation...',
+                    'check_again': 1000  # Check in 1 second
+                })
+        except Exception as e:
+            print(f"⚠️ Pending check error: {e}")
+    
+    # No payment found yet
+    return jsonify({
+        'success': True,
+        'paid': False,
+        'message': 'Payment not yet confirmed',
+        'check_again': 2000  # Check in 2 seconds
+    })
+def ultra_fast_process_courses(email, index_number, flow):
+    """Ultra-fast course processing that runs in under 1 second"""
+    try:
+        # Check cache first
+        cache_key = f"{email}_{index_number}_{flow}"
+        if cache_key in course_processing_cache:
+            cache_data = course_processing_cache[cache_key]
+            if isinstance(cache_data, dict) and cache_data.get('status') == 'completed':
+                return True
+        
+        print(f"⚡ Ultra-fast processing for {flow}")
+        
+        # Get qualifying courses
+        qualifying_courses = []
+        
+        if flow == 'degree':
+            user_grades = session.get('degree_grades', {})
+            user_cluster_points = session.get('degree_cluster_points', {})
+            if user_grades and user_cluster_points:
+                qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
+        
+        elif flow == 'diploma':
+            user_grades = session.get('diploma_grades', {})
+            user_mean_grade = session.get('diploma_mean_grade', '')
+            if user_grades and user_mean_grade:
+                qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
+        
+        # [Add other flows similarly...]
+        
+        # Save to database if we have courses
+        if qualifying_courses:
+            try:
+                save_user_courses(email, index_number, flow, qualifying_courses)
+                print(f"⚡ Saved {len(qualifying_courses)} courses")
+            except Exception as e:
+                print(f"⚠️ Error saving courses: {e}")
+                # Still mark as success
+        
+        # Update cache
+        course_processing_cache[cache_key] = {
+            'status': 'completed',
+            'courses_count': len(qualifying_courses),
+            'completed_at': datetime.now().isoformat(),
+            'ultra_fast': True
+        }
+        
+        # Update session
+        session[f'paid_{flow}'] = True
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Ultra-fast processing error: {e}")
+        return False
 # --- MPesa Callback Routes ---
 @app.route('/mpesa/callback', methods=['POST'])
 def mpesa_callback():
@@ -2888,7 +3799,13 @@ def mpesa_callback():
         return {'success': False, 'error': 'Internal server error'}, 400
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    """About page"""
+    canonical = get_canonical_url('about')
+    return render_template('about.html',
+                         title='About KUCCPS Courses Checker | Our Mission',
+                         meta_description='Learn about KUCCPS Courses Checker - helping Kenyan students find suitable university, college, and technical courses based on KCSE results.',
+                         canonical_url=canonical)
+
 
 @app.route('/mpesa/confirmation', methods=['POST'])
 def mpesa_confirmation():
@@ -2918,151 +3835,77 @@ def show_results(flow):
         flash("Please complete the qualification process first", "error")
         return redirect(url_for('index'))
     
-    # 🔥 STRICTER PAYMENT VERIFICATION
-    user_payment = get_user_payment(email, index_number, flow)
-    session_paid = session.get(f'paid_{flow}')
-    
-    # Check if payment is confirmed in database OR session
-    payment_confirmed = False
-    if user_payment and user_payment.get('payment_confirmed'):
-        payment_confirmed = True
-        # Ensure session is updated
-        session[f'paid_{flow}'] = True
-    elif session_paid:
-        payment_confirmed = True
-        # If only in session, try to verify with database
-        if database_connected and user_payment:
-            # Double-check database
-            fresh_payment = user_payments_collection.find_one({
-                'email': email, 
-                'index_number': index_number, 
-                'level': flow,
-                'payment_confirmed': True
-            })
-            if not fresh_payment:
-                payment_confirmed = False
-                session[f'paid_{flow}'] = False
-    
-    if not payment_confirmed:
-        print(f"❌ Payment not confirmed for {flow}. User payment: {user_payment}, Session paid: {session_paid}")
+    # 🔥 Check if user has paid for this category
+    if not session.get(f'paid_{flow}'):
         flash('Please complete payment to view your results.', 'error')
         return redirect(url_for('payment', flow=flow))
     
-    # 🔥 PREVENT DUPLICATE ACCESS TO SAME CATEGORY
-    # Check if user is trying to access same category again without proper flow
-    current_flow = session.get('current_flow')
-    if current_flow != flow:
-        # User might be trying to access results directly without proper flow
-        print(f"⚠️ Suspicious access: current_flow={current_flow}, requested_flow={flow}")
-        # Still allow if they have paid, but log it
-        if not has_user_paid_for_category(email, index_number, flow):
-            flash('Invalid access attempt. Please complete the qualification process.', 'error')
-            return redirect(url_for('index'))
-
-    # Store the current flow for basket redirects
-    session['current_flow'] = flow
-    print(f"🔗 Stored current flow: {flow}")
-
-    qualifying_courses = []
-    user_grades = {}
-    user_mean_grade = None
-    user_cluster_points = {}
+    print(f"🎯 Loading results for {flow}: {email}")
     
-    try:
-        # Get courses from database first (if they exist)
-        courses_data = get_user_courses_data(email, index_number, flow)
-        if courses_data and courses_data.get('courses'):
-            qualifying_courses = courses_data['courses']
-            print(f"✅ Loaded {len(qualifying_courses)} courses from database for {flow}")
-        else:
-            # Generate courses if not in database
-            print(f"🔄 Courses not in database, generating for {flow}")
-            if flow == 'degree':
-                user_grades = session.get('degree_grades', {})
-                user_cluster_points = session.get('degree_cluster_points', {})
-                qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
-                
-            elif flow == 'diploma':
-                user_grades = session.get('diploma_grades', {})
-                user_mean_grade = session.get('diploma_mean_grade', '')
-                qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'certificate':
-                user_grades = session.get('certificate_grades', {})
-                user_mean_grade = session.get('certificate_mean_grade', '')
-                qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'artisan':
-                user_grades = session.get('artisan_grades', {})
-                user_mean_grade = session.get('artisan_mean_grade', '')
-                qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'kmtc':
-                user_grades = session.get('kmtc_grades', {})
-                user_mean_grade = session.get('kmtc_mean_grade', '')
-                qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+    # 🔥 ALWAYS get courses from database, never from session
+    qualifying_courses = []
+    
+    if database_connected:
+        try:
+            courses_data = user_courses_collection.find_one({
+                'email': email,
+                'index_number': index_number,
+                'level': flow
+            })
             
-            elif flow == 'ttc':
-                user_grades = session.get('ttc_grades', {})
-                user_mean_grade = session.get('ttc_mean_grade', '')
-                qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
-            
-            # Save courses to database
-            if qualifying_courses:
-                save_user_courses(email, index_number, flow, qualifying_courses)
-            
-        # Convert ObjectId to string for JSON serialization in template
-        converted_courses = []
-        for course in qualifying_courses:
-            course_dict = dict(course)
-            if '_id' in course_dict and isinstance(course_dict['_id'], ObjectId):
-                course_dict['_id'] = str(course_dict['_id'])
-            converted_courses.append(course_dict)
-        qualifying_courses = converted_courses
-        
-        # Group courses by collection with proper names
-        courses_by_collection = {}
-        for course in qualifying_courses:
-            if flow == 'degree':
-                collection_key = course.get('cluster', 'Other')
-                # Use the proper cluster name for display
-                collection_name = CLUSTER_NAMES.get(collection_key, collection_key)
+            if courses_data and courses_data.get('courses'):
+                qualifying_courses = courses_data['courses']
+                print(f"✅ Loaded {len(qualifying_courses)} courses from database for {flow}")
+                
+                # Convert ObjectId to string for template
+                for course in qualifying_courses:
+                    if '_id' in course and isinstance(course['_id'], ObjectId):
+                        course['_id'] = str(course['_id'])
             else:
-                collection_key = course.get('collection', 'Other')
-                collection_name = collection_key.replace('_', ' ').title()
-            
-            if collection_key not in courses_by_collection:
-                courses_by_collection[collection_key] = {
-                    'name': collection_name,
-                    'courses': []
-                }
-            courses_by_collection[collection_key]['courses'].append(course)
-
-        # Load user's existing basket from database
-        if email and index_number:
-            existing_basket = get_user_basket_by_index(index_number)
-            if existing_basket:
-                session['course_basket'] = existing_basket
-        
-        print(f"🎯 Displaying {len(qualifying_courses)} courses for {flow}")
-        
-        return render_template('collection_results.html', 
-                             courses=qualifying_courses,
-                             courses_by_collection=courses_by_collection,
-                             user_grades=user_grades, 
-                             user_mean_grade=user_mean_grade,
-                             user_cluster_points=user_cluster_points,
-                             subjects=SUBJECTS, 
-                             email=email, 
-                             index_number=index_number,
-                             flow=flow,
-                             cluster_names=CLUSTER_NAMES)
-                             
-    except Exception as e:
-        print(f"❌ Error in show_results: {str(e)}")
-        flash("An error occurred while generating your results", "error")
+                print(f"⚠️ No courses found in database for {flow}")
+                flash("No courses found. Please try again.", "warning")
+                return redirect(url_for('payment', flow=flow))
+                
+        except Exception as e:
+            print(f"❌ Error getting courses from database: {str(e)}")
+            flash("Error loading courses. Please try again.", "error")
+            return redirect(url_for('index'))
+    else:
+        flash("Database connection error. Please try again.", "error")
         return redirect(url_for('index'))
-
+    
+    # Group courses by collection
+    courses_by_collection = {}
+    for course in qualifying_courses:
+        if flow == 'degree':
+            collection_key = course.get('cluster', 'Other')
+            collection_name = CLUSTER_NAMES.get(collection_key, collection_key)
+        else:
+            collection_key = course.get('collection', 'Other')
+            collection_name = collection_key.replace('_', ' ').title()
+        
+        if collection_key not in courses_by_collection:
+            courses_by_collection[collection_key] = {
+                'name': collection_name,
+                'courses': []
+            }
+        courses_by_collection[collection_key]['courses'].append(course)
+    
+    print(f"🎯 Displaying {len(qualifying_courses)} courses for {flow}")
+    
+    return render_template('collection_results.html', 
+                         courses=qualifying_courses,
+                         courses_by_collection=courses_by_collection,
+                         user_grades={}, 
+                         user_mean_grade=None,
+                         user_cluster_points={},
+                         subjects=SUBJECTS, 
+                         email=email, 
+                         index_number=index_number,
+                         flow=flow,
+                         cluster_names=CLUSTER_NAMES)
+                             
+    
 # --- Collection-based Results Routes ---
 @app.route('/collection-courses/<flow>/<collection_name>')
 def show_collection_courses(flow, collection_name):
@@ -3697,7 +4540,12 @@ def view_basket():
         session['course_basket'] = processed_basket
         session.modified = True
         
-        return render_template('basket.html', basket=processed_basket, basket_count=basket_count)
+        return render_template('basket.html', 
+                             basket=processed_basket, 
+                             basket_count=basket_count,
+                             title='My Basket | KUCCPS Courses Checker',
+                             meta_description='Review and manage your selected KUCCPS courses in your basket.',
+                             canonical_url=get_canonical_url('view_basket'))
     
     except Exception as e:
         print(f"❌ Critical error in view_basket: {str(e)}")
@@ -4064,7 +4912,76 @@ def admin_logout():
     flash("Admin logged out successfully", "info")
     return redirect(url_for('admin_login'))
 
-@app.route('/admin/manual-activation', methods=['GET', 'POST'])
+@app.route('/admin/clear-cache', methods=['GET', 'POST'])
+def admin_clear_cache():
+    """Clear all server-side and CDN cache - Admin only"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    if request.method == 'POST':
+        try:
+            # Clear server-side cache
+            server_cleared = clear_all_cache()
+            
+            # Log the cache clearing action
+            print(f"🧹 Cache clearing initiated by admin at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            if server_cleared:
+                flash("✅ All cache has been cleared successfully! Server-side and CDN cache will be refreshed.", "success")
+            else:
+                flash("⚠️ Server-side cache cleared, but there were some issues.", "warning")
+            
+            return redirect(url_for('admin_clear_cache'))
+        except Exception as e:
+            print(f"❌ Error during cache clearing: {str(e)}")
+            flash(f"❌ Error clearing cache: {str(e)}", "error")
+            return redirect(url_for('admin_clear_cache'))
+    
+    # Display cache status on GET request
+    try:
+        cache_status = {
+            'cache_type': cache_config.get('CACHE_TYPE', 'Unknown'),
+            'last_cleared': session.get('cache_last_cleared', 'Never'),
+            'redis_available': bool(REDIS_URL),
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+    except:
+        cache_status = {
+            'cache_type': 'Unknown',
+            'last_cleared': 'Error retrieving status',
+            'redis_available': False,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+    
+    return render_template('admin_clear_cache.html', cache_status=cache_status)
+
+@app.route('/admin/clear-cache-api', methods=['POST'])
+def admin_clear_cache_api():
+    """API endpoint to clear cache - requires admin authentication"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        # Clear server-side cache
+        clear_all_cache()
+        
+        # Update last cleared timestamp in session
+        session['cache_last_cleared'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        return jsonify({
+            'success': True,
+            'message': 'Cache cleared successfully',
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'cache_type': cache_config.get('CACHE_TYPE', 'Unknown')
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/manual-activation', methods=['GET', 'POST'])
 def admin_manual_activation():
     """Manual activation for users who paid but didn't get results"""
     if not session.get('admin_logged_in'):
@@ -4674,6 +5591,9 @@ def admin_export_payments():
 def admin_view_payments():
     """Legacy redirect to new payment management"""
     return redirect(url_for('admin_payment_management'))
+@app.route("/health") 
+def health(): 
+    return "OK", 200
 
 @app.route('/admin/system-health')
 def admin_system_health():
@@ -4738,6 +5658,8 @@ def debug_database():
     
     return jsonify(status)
 
+
+
 @app.route('/debug/basket-status')
 def debug_basket_status():
     """Debug route to check basket status"""
@@ -4760,7 +5682,12 @@ def debug_basket_status():
 
 @app.route('/contact')
 def contact():
-    return render_template("contact.html")
+    """Contact page"""
+    canonical = get_canonical_url('contact')
+    return render_template('contact.html',
+                         title='Contact KUCCPS Courses Checker | Support',
+                         meta_description='Contact our support team for help with KUCCPS course selection, payment issues, or general inquiries about degree, diploma, and certificate programs.',
+                         canonical_url=canonical)
     
 @app.route('/temp-bypass/<flow>')
 def temp_bypass(flow):
@@ -5276,306 +6203,67 @@ def all_news():
     """Display all news articles"""
     try:
         news_articles = []
-        
+        canonical = get_canonical_url('all_news')
+
         # FIX: Use 'is not None' instead of truthiness testing
         if database_connected and news_collection is not None:
-            news_articles = list(news_collection.find({'is_published': True})
-                               .sort([('priority', -1), ('published_at', -1)]))
-            
+            news_articles = list(
+                news_collection.find({'is_published': True})
+                .sort([('priority', -1), ('published_at', -1)])
+            )
+
             # Convert ObjectId to string for template
             for article in news_articles:
                 if '_id' in article and isinstance(article['_id'], ObjectId):
                     article['_id'] = str(article['_id'])
-        
-        return render_template('news.html', news_articles=news_articles)
-    
+
+        return render_template(
+            'news.html',
+            news_articles=news_articles,
+            title='Latest KUCCPS News & Updates',
+            meta_description='Stay updated with the latest KUCCPS news, course announcements, and placement information.',
+            canonical_url=canonical
+        )
+
     except Exception as e:
         print(f"❌ Error loading news page: {str(e)}")
-        return render_template('news.html', news_articles=[])
+        canonical = get_canonical_url('all_news')
+        return render_template(
+            'news.html',
+            news_articles=[],
+            title='Latest KUCCPS News & Updates',
+            meta_description='Stay updated with the latest KUCCPS news, course announcements, and placement information.',
+            canonical_url=canonical
+        )
+@app.after_request
+def add_header(response):
+    """Add caching headers to static files"""
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    return response
 
-
-
-import threading
-import time
-import requests
-from datetime import datetime, timedelta
-import random
-import os
-
-class UltimateKeepAliveService:
-    def __init__(self):
-        """
-        Ultimate keep-alive service designed specifically for Render free tier
-        """
-        self.base_url = "https://kuccps-courses.onrender.com"
-        self.is_running = False
-        self.thread = None
-        self.consecutive_failures = 0
-        self.max_consecutive_failures = 5
-        self.cycle_count = 0
-        
-        # Comprehensive list of endpoints to simulate real user traffic
-        self.endpoints = [
-            "",  # root
-            "/",
-            "/health",
-            "/ping", 
-            "/keep-alive",
-            "/api/status",
-            "/monitor/health",
-            "/degree",
-            "/diploma",
-            "/kmtc",
-            "/certificate",
-            "/artisan",
-            "/results",
-            "/about",
-            "/contact",
-            "/verify-payment"
-        ]
-        
-        # Realistic user agents to simulate browser traffic
-        self.user_agents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0) Gecko/20100101 Firefox/90.0'
-        ]
-        
-        print("🛡️  Ultimate Keep-Alive Service Initialized")
-        
-    def get_random_headers(self):
-        """Generate realistic browser headers"""
-        return {
-            'User-Agent': random.choice(self.user_agents),
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Cache-Control': 'max-age=0'
-        }
-    
-    def smart_request(self, url):
-        """Make intelligent requests with multiple fallback strategies"""
-        methods = ['GET', 'HEAD']  # Try both GET and HEAD requests
-        timeouts = [15, 25, 30]   # Multiple timeout values
-        
-        for method in methods:
-            for timeout in timeouts:
-                try:
-                    # Random delay to avoid pattern detection
-                    time.sleep(random.uniform(1, 4))
-                    
-                    if method == 'GET':
-                        response = requests.get(
-                            url,
-                            headers=self.get_random_headers(),
-                            timeout=timeout,
-                            verify=True,
-                            allow_redirects=True
-                        )
-                    else:  # HEAD
-                        response = requests.head(
-                            url,
-                            headers=self.get_random_headers(),
-                            timeout=timeout,
-                            verify=True,
-                            allow_redirects=True
-                        )
-                    
-                    # Consider 2xx, 3xx, and 404 as successful pings (service is responding)
-                    if response.status_code < 500:  # Any status under 500 means service is up
-                        response_time = response.elapsed.total_seconds() * 1000
-                        print(f"✅ {method} {url} - Status: {response.status_code} - Time: {response_time:.0f}ms")
-                        return True
-                    else:
-                        print(f"⚠️  {method} {url} - Server Error: {response.status_code}")
-                        
-                except requests.exceptions.Timeout:
-                    print(f"⏰ {method} {url} - Timeout after {timeout}s")
-                    continue
-                    
-                except requests.exceptions.ConnectionError as e:
-                    print(f"🔌 {method} {url} - Connection Error: {e}")
-                    continue
-                    
-                except requests.exceptions.RequestException as e:
-                    print(f"❌ {method} {url} - Request Exception: {e}")
-                    continue
-                    
-                except Exception as e:
-                    print(f"💥 {method} {url} - Unexpected Error: {e}")
-                    continue
-        
-        return False
-    
-    def execute_ping_cycle(self):
-        """Execute one complete ping cycle"""
-        self.cycle_count += 1
-        print(f"\n🔄 Keep-Alive Cycle #{self.cycle_count} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print("=" * 60)
-        
-        # Select random endpoints for this cycle (2-4 endpoints per cycle)
-        endpoints_to_ping = random.sample(self.endpoints, random.randint(2, 4))
-        success_count = 0
-        
-        for endpoint in endpoints_to_ping:
-            full_url = f"{self.base_url}{endpoint}"
-            if self.smart_request(full_url):
-                success_count += 1
-            else:
-                print(f"🚨 Failed to ping: {endpoint}")
-            
-            # Random delay between pings (2-8 seconds)
-            time.sleep(random.uniform(2, 8))
-        
-        # Calculate success rate
-        total_attempts = len(endpoints_to_ping)
-        success_rate = (success_count / total_attempts) * 100
-        
-        print(f"📊 Cycle Results: {success_count}/{total_attempts} successful ({success_rate:.1f}%)")
-        print(f"📈 Consecutive Failures: {self.consecutive_failures}")
-        print("=" * 60)
-        
-        # Update failure tracking
-        if success_count == 0:
-            self.consecutive_failures += 1
-            print(f"🚨 ALERT: Consecutive failures increased to {self.consecutive_failures}")
-        else:
-            self.consecutive_failures = max(0, self.consecutive_failures - 1)
-        
-        return success_count > 0  # Return True if at least one ping succeeded
-    
-    def calculate_next_interval(self):
-        """Dynamically calculate next ping interval based on failure rate"""
-        base_interval = 4 * 60  # 4 minutes base in seconds
-        
-        if self.consecutive_failures >= 3:
-            # Emergency mode - ping more frequently
-            emergency_interval = max(30, base_interval - (self.consecutive_failures * 30))  # Minimum 30 seconds
-            print(f"🚨 EMERGENCY MODE: Next ping in {emergency_interval}s")
-            return emergency_interval
-        elif self.consecutive_failures >= 1:
-            # Warning mode - slightly more frequent
-            warning_interval = base_interval - 60  # 3 minutes
-            print(f"⚠️  WARNING MODE: Next ping in {warning_interval}s")
-            return warning_interval
-        else:
-            # Normal mode - 4 minutes
-            print(f"✅ NORMAL MODE: Next ping in {base_interval}s")
-            return base_interval
-    
-    def run_service(self):
-        """Main service loop with intelligent adaptive intervals"""
-        self.is_running = True
-        
-        print("\n" + "🎯" * 20)
-        print("🚀 ULTIMATE KEEP-ALIVE SERVICE STARTED")
-        print(f"📍 Target: {self.base_url}")
-        print(f"📋 Monitoring {len(self.endpoints)} endpoints")
-        print("🎯" * 20 + "\n")
-        
-        # Immediate first ping
-        print("🔔 Sending immediate wake-up ping...")
-        self.execute_ping_cycle()
-        
-        while self.is_running:
-            try:
-                # Calculate dynamic interval based on current health
-                sleep_interval = self.calculate_next_interval()
-                
-                # Sleep in small chunks to allow for graceful shutdown
-                chunks = sleep_interval // 5  # Check every 5 seconds if we should stop
-                for _ in range(chunks):
-                    if not self.is_running:
-                        break
-                    time.sleep(5)
-                
-                if self.is_running:
-                    # Execute ping cycle
-                    cycle_success = self.execute_ping_cycle()
-                    
-                    # If completely failed for too long, try emergency recovery
-                    if self.consecutive_failures >= self.max_consecutive_failures:
-                        print(f"💥 CRITICAL FAILURE: {self.consecutive_failures} consecutive failures!")
-                        print("🆘 Attempting emergency recovery with aggressive pinging...")
-                        self.emergency_recovery()
-                        
-            except Exception as e:
-                print(f"💥 KEEP-ALIVE SERVICE CRASHED: {e}")
-                print("🔄 Restarting service in 30 seconds...")
-                time.sleep(30)
-                continue
-    
-    def emergency_recovery(self):
-        """Aggressive pinging to recover from complete failure"""
-        print("🚑 STARTING EMERGENCY RECOVERY PROCEDURE...")
-        
-        recovery_attempts = 0
-        max_recovery_attempts = 10
-        
-        while recovery_attempts < max_recovery_attempts and self.is_running:
-            recovery_attempts += 1
-            print(f"🚑 Recovery attempt {recovery_attempts}/{max_recovery_attempts}")
-            
-            # Try all endpoints aggressively
-            for endpoint in random.sample(self.endpoints, min(5, len(self.endpoints))):
-                full_url = f"{self.base_url}{endpoint}"
-                if self.smart_request(full_url):
-                    print("✅ RECOVERY SUCCESSFUL! Service is responding.")
-                    self.consecutive_failures = 0
-                    return True
-                time.sleep(2)  # Short delay between aggressive pings
-            
-            print(f"🚑 Recovery failed, waiting 10 seconds before next attempt...")
-            time.sleep(10)
-        
-        print("💀 EMERGENCY RECOVERY FAILED - Service appears to be completely offline")
-        return False
-    
-    def start(self):
-        """Start the ultimate keep-alive service"""
-        if self.thread and self.thread.is_alive():
-            print("⚠️  Keep-alive service already running")
-            return False
-            
-        try:
-            self.thread = threading.Thread(target=self.run_service, daemon=True)
-            self.thread.start()
-            print("✅ ULTIMATE KEEP-ALIVE SERVICE STARTED SUCCESSFULLY")
-            return True
-        except Exception as e:
-            print(f"❌ FAILED TO START KEEP-ALIVE SERVICE: {e}")
-            return False
-    
-    def stop(self):
-        """Stop the keep-alive service gracefully"""
-        self.is_running = False
-        print("🛑 ULTIMATE KEEP-ALIVE SERVICE STOPPED")
-
-ultimate_keep_alive = UltimateKeepAliveService()
 if __name__ == "__main__":
     print("🚀 Starting KUCCPS Application...")
     print(f"📊 Database Connection Status: {'✅ Connected' if database_connected else '❌ Disconnected'}")
     
-    # Start the ultimate keep-alive service
-    try:
-        success = ultimate_keep_alive.start()
-        if success:
-            print("✅ Ultimate keep-alive service activated")
-        else:
-            print("⚠️ Keep-alive service failed to start, but application will continue")
-    except Exception as e:
-        print(f"⚠️ Keep-alive service initialization error: {e}")
+    # Only start keep-alive in production
+    if os.environ.get('FLASK_ENV') == 'production':
+        try:
+            success = ultimate_keep_alive.start()
+            if success:
+                print("✅ Ultimate keep-alive service activated")
+        except Exception as e:
+            print(f"⚠️ Keep-alive service error: {e}")
     
     # Start Flask application
     port = int(os.environ.get('PORT', 8080))
-    print(f"🌐 Starting Flask server on port {port}...")
+    debug_mode = os.environ.get('FLASK_ENV') != 'production'
+    
+    print(f"🌐 Starting Flask server on port {port} (debug={debug_mode})...")
     
     app.run(
         host='0.0.0.0', 
         port=port, 
-        debug=False, 
+        debug=debug_mode,  
         threaded=True
     )

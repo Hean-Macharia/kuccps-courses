@@ -1,20 +1,158 @@
-{% extends "./base.html" %} {% block title %} Kuccps | Hean {% endblock %} {%
+{% extends "./base.html" %} {% block title %} KUCCPS Artisan Courses | Skills Training in Kenya {% endblock %} {%
 block links %}
+<link rel="canonical" href="{{ get_canonical_url('artisan') }}" />
+<!-- Explicit Self-Referential Canonical Tag for /artisan -->
+<meta name="description" content="Find KUCCPS artisan courses and vocational skills training programs in Kenya. Match your KCSE grades with practical trade programs in plumbing, electrical, carpentry, and more.">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "KUCCPS Artisan Trade Programs",
+    "description": "Explore KUCCPS artisan programs for vocational skills training in Kenya. Practical courses in trades like plumbing, electrical, carpentry, welding, and automotive repair.",
+    "provider": {
+        "@type": "Organization",
+        "name": "KUCCPS Courses Checker",
+        "url": "https://www.kuccpscourses.co.ke/"
+    },
+    "courseCode": "KUCCPS-ARTISAN",
+    "educationalCredentialAwarded": "Artisan Certificate",
+    "timeToComplete": "P1Y",
+    "hasCourseInstance": {
+        "@type": "CourseInstance",
+        "courseMode": ["full-time", "apprenticeship"],
+        "courseWorkload": "Practical skills training focused"
+    }
+}
+</script>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
-{% endblock %} {% block displaytext %}Fill in your grades then submit{% endblock
+<!-- Microdata Schema for EducationalOccupationalProgram -->
+<div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
+    <meta itemprop="educationalProgramMode" content="hands-on training"/>
+    <meta itemprop="occupationalCategory" content="Vocational Training"/>
+    <meta itemprop="skills" content="practical trades, technical skills, hands-on competencies, craft mastery"/>
+</div>
+
+<style>
+    .artisan-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .artisan-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+    
+    #gradesForm {
+        padding: 30px;
+        background: white;
+    }
+    
+    #gradesForm h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #00f2fe;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #00f2fe;
+    }
+    
+    #gradesForm h2 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #4facfe;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        padding-left: 10px;
+        border-left: 4px solid #4facfe;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.95rem;
+    }
+    
+    .form-select {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-select:focus {
+        border-color: #00f2fe;
+        box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.1);
+        outline: none;
+    }
+    
+    .form-select:hover {
+        border-color: #00f2fe;
+    }
+    
+    .subjects {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    
+    form button {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border: none;
+        color: white;
+        padding: 12px 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 30px;
+        width: 100%;
+    }
+    
+    form button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 242, 254, 0.3);
+    }
+    
+    .intro-span {
+        font-size: 1.1rem;
+        color: #555;
+        display: block;
+        margin-bottom: 30px;
+        font-weight: 500;
+    }
+</style>
+{% endblock %} {% block displaytext %}Find Artisan Programs Matching Your Grades{% endblock
 %} {% block content %}
 
-<div class="container mt-5">
-    <!-- As a heading -->
+    <div class="container">
+        <h1 class="text-center mb-4">KUCCPS Artisan & Trade Programs Qualification Checker</h1>
+    </div>
 
-    <span>Fill in the details and submit to get the programmes you qualify!
+    <span>Fill in your KCSE grades and submit to see all artisan programs you qualify for!
     </span>
     <form action="{{ url_for('submit_artisan_grades') }}" method="POST">
     <!-- User Email and Index Number will be collected after grades submission (Step 2) -->
         <!-- KCSE Subjects Grades -->
         <div id="gradesForm">
-            <h1 class="text-primary">Enter Your Overall Grade</h1>
+            <h1 class="text-primary">Artisan Training Qualifications</h1>
             <div class="">
                 <div class="mb-4">
                     <div class="form-group">
@@ -518,5 +656,189 @@ block links %}
             Submit
         </button>
     </form>
+
+<!-- Why Choose Artisan Programs -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Why Choose Artisan Trade Programs</h2>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Hands-On Practical Learning</h5>
+                            <p class="mb-0">Learn by doing - develop real trade skills through intensive practical training in workshops and actual work environments.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Self-Employment Opportunity</h5>
+                            <p class="mb-0">Start your own business immediately - artisan skills are always in demand, from plumbing to electrical work to carpentry.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Quick Skills Development</h5>
+                            <p class="mb-0">Complete your training in 1-2 years and be job-ready immediately with skills employers desperately need.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>High Income Potential</h5>
+                            <p class="mb-0">Skilled tradespeople earn excellent incomes, with many earning more than degree holders, especially as business owners.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Frequently Asked Questions -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Frequently Asked Questions About Artisan Programs</h2>
+            <div class="accordion" id="artisanFAQ">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq1">
+                            What trades are available in artisan programs?
+                        </button>
+                    </h2>
+                    <div id="artisanfaq1" class="accordion-collapse collapse show" data-bs-parent="#artisanFAQ">
+                        <div class="accordion-body">
+                            Popular artisan trades include plumbing, electrical installation, carpentry, welding, motor mechanics, masonry, hairdressing, catering, and beauty therapy. Each provides specific technical skills for job placement or self-employment.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq2">
+                            Can I start my own business after artisan training?
+                        </button>
+                    </h2>
+                    <div id="artisanfaq2" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
+                        <div class="accordion-body">
+                            Absolutely. Artisan training is specifically designed for self-employment. Many graduates start their own workshops, businesses, or work as independent contractors with excellent earning potential.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq3">
+                            What are entry requirements for artisan programs?
+                        </button>
+                    </h2>
+                    <div id="artisanfaq3" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
+                        <div class="accordion-body">
+                            Artisan programs have flexible entry requirements, typically minimum D- or D grade in KCSE. The focus is on practical aptitude and willingness to learn rather than high academic grades.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq4">
+                            How long does artisan training take?
+                        </button>
+                    </h2>
+                    <div id="artisanfaq4" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
+                        <div class="accordion-body">
+                            Most artisan programs take 1-2 years. Some trades may offer accelerated programs or apprenticeships. The duration varies by trade and institution offering the training.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq5">
+                            What qualifications will I earn?
+                        </button>
+                    </h2>
+                    <div id="artisanfaq5" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
+                        <div class="accordion-body">
+                            You will earn an Artisan Certificate or Trade Certificate recognized by relevant trade bodies and employers. These qualifications allow you to practice your trade, register as a tradesperson, and operate your own business.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Stories -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Success Stories from Artisan Graduates</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">John Kipchoge - Electrical Installation</h5>
+                            <p class="small mb-3">After completing his electrical installation artisan course, John started his own electrical business. He now employs 6 technicians and handles major commercial projects across Nairobi.</p>
+                            <p class="small text-muted">"From tradesperson to business owner - artisan training made it possible."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Miriam Omondi - Hairdressing</h5>
+                            <p class="small mb-3">Miriam completed her hairdressing and beauty therapy artisan course and opened a salon. Five years later, her salon employs 4 stylists and she trains apprentices in modern hairdressing techniques.</p>
+                            <p class="small text-muted">"My salon is thriving because of the practical skills I learned in the artisan program."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">David Kipkorir - Motor Vehicle Mechanics</h5>
+                            <p class="small mb-3">David's mechanics artisan certificate helped him establish a successful workshop that serves a whole district. He now contracts with local transport companies for vehicle maintenance.</p>
+                            <p class="small text-muted">"The hands-on training gave me confidence to start and grow my business."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prerequisites and Requirements -->
+<div class="container my-5 mb-5">
+    <div class="card border-left-primary shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Artisan Program Prerequisites and Requirements</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum D- or D grade - flexible requirements</li>
+                        <li class="mb-2"><strong>Form 4 Completion:</strong> Basic secondary school education</li>
+                        <li class="mb-2"><strong>Entry Score:</strong> Very flexible, low cluster point requirements</li>
+                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 16+ years at entry</li>
+                        <li class="mb-2"><strong>Additional:</strong> Basic literacy and numeracy skills helpful</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>All Trades:</strong> Physical fitness and ability to perform manual work</li>
+                        <li class="mb-2"><strong>Electrical/Plumbing:</strong> Safety awareness, attention to detail important</li>
+                        <li class="mb-2"><strong>Mechanical Trades:</strong> Problem-solving ability and mechanical aptitude</li>
+                        <li class="mb-2"><strong>Beauty/Hairdressing:</strong> Interpersonal skills, creativity, patience</li>
+                        <li class="mb-2"><strong>Health Requirements:</strong> Good health and ability to work in trade environments</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 {% endblock %} {% block scripts %}{% endblock %}

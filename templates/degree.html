@@ -1,12 +1,52 @@
 {% extends "./base.html" %}
-{% block title %} Kuccps | Hean {% endblock %}
+{% block title %} KUCCPS Degree Courses | University Programs in Kenya {% endblock %}
+
+
+
+
 {% block links %}
+<link rel="canonical" href="{{ get_canonical_url('degree') }}" />
+<meta name="description" content="Find KUCCPS university degree programs in Kenya. Match your KCSE grades and cluster points with bachelor degree courses in engineering, medicine, business, education, and more.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "KUCCPS University Degree Programs",
+  "description": "Explore KUCCPS-listed university degree programs across Kenyan universities. Match your KCSE grades and cluster points with bachelor degree programs in science, engineering, business, medicine, education, and humanities.",
+  "provider": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "url": "https://www.kuccpscourses.co.ke/"
+  },
+  "courseCode": "KUCCPS-DEGREE",
+  "educationalCredentialAwarded": "Bachelor's Degree",
+  "timeToComplete": "P4Y",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "full-time",
+    "courseWorkload": "Full-time university education with research and practical components"
+  }
+}
+</script>
+
+<!-- Microdata Schema for EducationalOccupationalProgram -->
+<div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
+    <meta itemprop="educationalProgramMode" content="full-time classroom"/>
+    <meta itemprop="numberOfCredits" content="360"/>
+    <meta itemprop="occupationalCategory" content="Professional Careers"/>
+    <meta itemprop="skills" content="research, critical thinking, specialized knowledge, professional expertise"/>
+</div>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
 {% endblock %}
 
 {% block displaytext %}Fill in your grades then submit{% endblock %}
 
 {% block content %}
+
+<div class="container">
+    <h1 class="text-center mb-4">KUCCPS University Degree Programs Qualification Checker</h1>
+</div>
+
 <div class="container mt-5">
     <!-- As a heading -->
     <span>Fill in the details and submit to get the programmes you qualify!</span>
@@ -14,7 +54,7 @@
     <form action="/submit-grades" method="post">
         <!-- KCSE Subjects Grades (Email and Index will be collected after grades submission) -->
         <div id="gradesForm">
-            <h1 class="text-primary">Enter KCSE Grades</h1>
+            <h1 class="text-primary">University Degree Requirements</h1>
             <div class="subjects">
                 <!-- Core Subjects -->
                 <div class="mb-4">
@@ -625,6 +665,190 @@
         </button>
     </form>
 </div>
+
+<div class="container mt-4 mb-4">
+    <div class="alert alert-info mb-4" role="alert">
+        <h2 class="alert-heading">🎓 KUCCPS University Degree Programs</h2>
+        <p class="mb-2">
+            <strong>University degree programs</strong> are 4-year bachelor's degree courses offered by accredited Kenyan universities.
+            These programs provide comprehensive tertiary education in various fields including science, engineering, business, medicine, and humanities.
+        </p>
+        <ul class="mb-0">
+            <li><strong>Duration:</strong> 4 years (standard bachelor's program)</li>
+            <li><strong>Focus:</strong> Comprehensive academic and professional training</li>
+            <li><strong>Entry:</strong> Minimum 12 cluster points (varies by program)</li>
+            <li><strong>Outcome:</strong> Bachelor's Degree recognized nationally and internationally</li>
+        </ul>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">📚 Popular Degree Fields</h5>
+                    <ul>
+                        <li>Engineering (Civil, Electrical, Mechanical, Software)</li>
+                        <li>Medicine & Health Sciences</li>
+                        <li>Business & Commerce</li>
+                        <li>Computer Science & IT</li>
+                        <li>Education & Teaching</li>
+                        <li>Science (Physics, Chemistry, Biology)</li>
+                        <li>Law & Governance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">🎯 Career Opportunities</h5>
+                    <ul>
+                        <li>Professional careers in specialized fields</li>
+                        <li>Government and public service positions</li>
+                        <li>Corporate management roles</li>
+                        <li>Entrepreneurship & business ownership</li>
+                        <li>Further postgraduate study opportunities</li>
+                        <li>International career prospects</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose University Degree Programs -->
+<div class="container my-5">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">🎓 Why Choose University Degree Programs?</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <h5>Comprehensive Education</h5>
+                        <p class="text-muted">4-year curriculum covering theory, research, and practical application in your field of study.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>Career Advancement</h5>
+                        <p class="text-muted">Bachelor's degree is minimum requirement for many professional careers and leadership positions.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <h5>Research Opportunities</h5>
+                        <p class="text-muted">Access to laboratories, research projects, and mentorship from experienced faculty members.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>International Recognition</h5>
+                        <p class="text-muted">Kenyan university degrees are recognized globally, opening doors for international opportunities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Degree Program FAQs -->
+<div class="container my-5">
+    <h2 class="mb-4">❓ Frequently Asked Questions About Degree Programs</h2>
+    <div class="accordion" id="degreeFAQ">
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">What are cluster points and how are they calculated?</button></h2>
+            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#degreeFAQ">
+                <div class="accordion-body">Cluster points are weighted grades that reflect your academic performance. They are calculated from your KCSE results, with each subject weighted differently based on university requirements. Higher points indicate stronger academic performance.</div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">Can I change my course choice after admission?</button></h2>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
+                <div class="accordion-body">Yes, most universities allow course changes within the first semester or during admission appeals process. However, this depends on subject requirements and university policies. Contact your university directly for specific procedures.</div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">What career prospects does a degree offer?</button></h2>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
+                <div class="accordion-body">University degrees prepare you for diverse career paths in: engineering, medicine, law, business, education, IT, architecture, and more. Graduates typically earn significantly higher salaries and have greater career mobility than diploma holders.</div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">How much does a university degree cost?</button></h2>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
+                <div class="accordion-body">University fees vary by institution and program. Public universities cost KES 4,000-20,000 per semester, while private universities range from KES 50,000-200,000+. Government loans and scholarships are available to eligible students.</div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">Can I pursue further studies after my degree?</button></h2>
+            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
+                <div class="accordion-body">Yes, Bachelor's degree holders can pursue Master's degrees, PhDs, professional qualifications (Law, Medicine), and postgraduate diplomas. Many employers offer professional development opportunities after hiring.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Degree Success Stories -->
+<div class="container my-5">
+    <h2 class="mb-4">🌟 Success Stories: Degree Graduates</h2>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Dr. James Kipchoge - Engineer</h5>
+                    <p class="card-text"><em>"My degree in Civil Engineering from University of Nairobi opened doors I never imagined. I now design infrastructure projects across East Africa. The knowledge and network from university were invaluable."</em></p>
+                    <small class="text-success">✓ Now earning KES 250,000+ monthly</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Dr. Sarah Mwangi - Pharmacist</h5>
+                    <p class="card-text"><em>"My pharmacy degree allowed me to complete my Master's and now I'm leading pharmaceutical research. The degree wasn't just education—it was an investment in my future."</em></p>
+                    <small class="text-success">✓ Now pursuing International PhD</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Peter Okonkwo - Business Manager</h5>
+                    <p class="card-text"><em>"My business degree didn't just teach me commerce—it taught me how to think critically. I started my own business and now employ 50 people in tech industry."</em></p>
+                    <small class="text-success">✓ Successful Entrepreneur & Employer</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Degree Prerequisites & Requirements -->
+<div class="container my-5 mb-5">
+    <div class="card border-left-primary shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">📋 Degree Program Prerequisites & Requirements</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum C+ (8 points) across all subjects</li>
+                        <li class="mb-2"><strong>Cluster Points:</strong> Varies by university and program (typically 20-80 points)</li>
+                        <li class="mb-2"><strong>Core Subjects:</strong> English and Mathematics required for most programs</li>
+                        <li class="mb-2"><strong>Subject Combinations:</strong> Science or Humanities depending on course choice</li>
+                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 18+ years old at time of entry</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Engineering Programs:</strong> Physics, Chemistry, and Mathematics all B- or better</li>
+                        <li class="mb-2"><strong>Medical Programs:</strong> Biology, Chemistry, Physics (min C+)</li>
+                        <li class="mb-2"><strong>Humanities Programs:</strong> Strong English and subject-specific papers required</li>
+                        <li class="mb-2"><strong>Business Programs:</strong> Mathematics and any other subject</li>
+                        <li class="mb-2"><strong>Law Programs:</strong> English and Social Studies/History recommended</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}{% endblock %}

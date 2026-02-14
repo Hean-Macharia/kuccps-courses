@@ -1,54 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- ============================================
+        META TAGS SECTION
+    ============================================= -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs in Kenya.">
+    <meta name="keywords" content="KUCCPS, courses, KCSE, Kenya, degree, diploma, certificate, artisan, TTC, KMTC, university, college, admission 2026">
+    <meta name="author" content="Hean Njuki">
     
     <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="KUCCPS Courses">
-    <meta property="og:title" content="{{ site_name }}">
-<meta property="og:description" content="{{ site_description }}">
-<meta property="og:image" content="https://kuccpscourses.co.ke/static/images/og-image.jpg">
-<meta property="og:url" content="{{ site_url }}">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ site_name }}">
-<meta name="twitter:description" content="{{ site_description }}">
-<meta name="twitter:image" content="https://kuccpscourses.co.ke/static/images/twitter-card.jpg">
+    <meta name="apple-mobile-web-app-title" content="{{ site_name }}">
+    
+    <!-- Open Graph & Twitter Meta Tags -->
+    <meta property="og:title" content="{{ title|default(site_name) }}">
+    <meta property="og:description" content="{{ meta_description|default(site_description) }}">
+    <meta property="og:url" content="{{ canonical_url|default(site_url) }}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/og-image.jpg', _external=True) }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="KUCCPS Courses Checker">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ title|default(site_name) }}">
+    <meta name="twitter:description" content="{{ meta_description|default(site_description) }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='images/twitter-card.jpg', _external=True) }}">
+    <meta name="twitter:creator" content="@kuccpschecker">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ canonical_url|default(site_url) }}" />
+    
+    <!-- PWA Assets -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#C62828">
     
     <!-- iOS Icons -->
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152x152.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/icon-180x180.png') }}">
     <link rel="apple-touch-icon" sizes="167x167" href="{{ url_for('static', filename='icons/icon-167x167.png') }}">
     
-    <!-- Android/Chrome -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#C62828">
+    <!-- Favicon -->
+    <link rel="icon" href="https://img.icons8.com/color/96/000000/graduation-cap.png" type="image/x-icon">
     
-    <title>{% block title %}KUCCPS Courses Checker | Degree, Diploma, Certificate & Artisan Programs in Kenya{% endblock %}</title>
+    <!-- ============================================
+        PAGE TITLE
+    ============================================= -->
+    <title>{% block title %}{{ title|default('KUCCPS Courses Checker') }}{% endblock %}</title>
     
+    <!-- ============================================
+        CSS LIBRARIES
+    ============================================= -->
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Animate.css for animations -->
+    <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="https://img.icons8.com/color/96/000000/graduation-cap.png" type="image/x-icon" />
-    <script src="{{ url_for('static', filename='js/offline-storage.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/pwa.js') }}"></script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "KUCCPS Courses Checker",
+  "url": "https://www.kuccpscourses.co.ke",
+  "description": "Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://www.kuccpscourses.co.ke/?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "KUCCPS Courses Checker",
+  "url": "https://www.kuccpscourses.co.ke",
+  "logo": "https://www.kuccpscourses.co.ke/static/images/kuccps.png",
+  "description": "Intelligent KUCCPS course matching platform for Kenyan students",
+  "sameAs": [
+    "https://www.facebook.com/kuccpscourses",
+    "https://www.twitter.com/kuccpschecker"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+254791196121",
+    "contactType": "Customer Service",
+    "email": "courseschecker@gmail.com"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {
+      "@type": "Course",
+      "name": "KUCCPS Degree Programs",
+      "description": "Find KUCCPS degree programs matching your KCSE grades from Kenyan universities.",
+      "url": "https://www.kuccpscourses.co.ke/degree",
+      "provider": {
+        "@type": "Organization",
+        "name": "KUCCPS Courses Checker",
+        "url": "https://www.kuccpscourses.co.ke"
+      },
+      "educationalLevel": "Higher Education",
+      "learningResourceType": "Course Guidance",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "Course",
+      "name": "KUCCPS Diploma Programs",
+      "description": "Explore KUCCPS diploma programs with technical and vocational training in Kenya.",
+      "url": "https://www.kuccpscourses.co.ke/diploma",
+      "provider": {
+        "@type": "Organization",
+        "name": "KUCCPS Courses Checker",
+        "url": "https://www.kuccpscourses.co.ke"
+      },
+      "educationalLevel": "Advanced Secondary / Tertiary",
+      "learningResourceType": "Course Guidance",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "Course",
+      "name": "KUCCPS Certificate Programs",
+      "description": "Find KUCCPS certificate courses for skills development and career advancement in Kenya.",
+      "url": "https://www.kuccpscourses.co.ke/certificate",
+      "provider": {
+        "@type": "Organization",
+        "name": "KUCCPS Courses Checker",
+        "url": "https://www.kuccpscourses.co.ke"
+      },
+      "educationalLevel": "Secondary / Tertiary",
+      "learningResourceType": "Course Guidance",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "Course",
+      "name": "KMTC Healthcare Programs",
+      "description": "Explore Kenya Medical Training College (KMTC) healthcare and nursing diploma programs.",
+      "url": "https://www.kuccpscourses.co.ke/kmtc",
+      "provider": {
+        "@type": "Organization",
+        "name": "KUCCPS Courses Checker",
+        "url": "https://www.kuccpscourses.co.ke"
+      },
+      "educationalLevel": "Advanced Secondary / Tertiary",
+      "learningResourceType": "Course Guidance",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "Course",
+      "name": "TTC Teacher Training Programs",
+      "description": "Find TTC teacher training courses for primary and secondary education in Kenya.",
+      "url": "https://www.kuccpscourses.co.ke/ttc",
+      "provider": {
+        "@type": "Organization",
+        "name": "KUCCPS Courses Checker",
+        "url": "https://www.kuccpscourses.co.ke"
+      },
+      "educationalLevel": "Advanced Secondary / Tertiary",
+      "learningResourceType": "Course Guidance",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "Course",
+      "name": "KUCCPS Artisan Programs",
+      "description": "Discover KUCCPS artisan courses and vocational skills training in Kenya.",
+      "url": "https://www.kuccpscourses.co.ke/artisan",
+      "provider": {
+        "@type": "Organization",
+        "name": "KUCCPS Courses Checker",
+        "url": "https://www.kuccpscourses.co.ke"
+      },
+      "educationalLevel": "Secondary",
+      "learningResourceType": "Course Guidance",
+      "inLanguage": "en"
+    }
+  ]
+}
+</script>
+
+    <!-- ============================================
+        CUSTOM STYLES
+    ============================================= -->
     <style>
+        /* ============================================
+            CSS VARIABLES (DESIGN TOKENS)
+        ============================================= */
         :root {
-            /* KUCCPS Official Colors */
+            /* Color Palette */
             --primary-red: #C62828;
             --primary-yellow: #FBC02D;
             --light-grey: #F5F5F5;
@@ -56,12 +209,18 @@
             --dark-grey: #424242;
             --black: #000000;
             --white: #FFFFFF;
+            --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
             
-            /* Additional Colors */
+            /* Semantic Colors */
             --red-light: #EF5350;
             --red-dark: #B71C1C;
             --yellow-light: #FFEB3B;
             --yellow-dark: #F57F17;
+            --success-green: #4CAF50;
+            --info-blue: #2196F3;
+            --warning-orange: #FF9800;
+            --danger-red: #D32F2F;
             
             /* Gradients */
             --gradient-red: linear-gradient(135deg, var(--primary-red) 0%, var(--red-dark) 100%);
@@ -69,25 +228,59 @@
             --gradient-grey: linear-gradient(135deg, var(--light-grey) 0%, #E0E0E0 100%);
             
             /* Shadows */
-            --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.08);
-            --shadow-medium: 0 5px 20px rgba(0, 0, 0, 0.12);
-            --shadow-heavy: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 5px 20px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.2);
             
             /* Border Radius */
-            --border-radius-sm: 8px;
-            --border-radius-md: 12px;
-            --border-radius-lg: 16px;
-            --border-radius-xl: 20px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+            
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 300ms ease;
+            --transition-slow: 500ms ease;
+            
+                       /* Typography - System Fonts (No Google Fonts) */
+            --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            /* Z-index Layers */
+            --z-dropdown: 1000;
+            --z-sticky: 1020;
+            --z-fixed: 1030;
+            --z-modal-backdrop: 1040;
+            --z-modal: 1050;
+            --z-popover: 1060;
+            --z-tooltip: 1070;
         }
-
+        
+        /* ============================================
+            BASE STYLES
+        ============================================= */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--font-body);
             background: var(--white);
             color: var(--black);
             line-height: 1.7;
@@ -95,61 +288,109 @@
             overflow-x: hidden;
             position: relative;
         }
-
-        /* Modern Navigation */
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color var(--transition-base);
+        }
+        
+        button {
+            font-family: var(--font-body);
+        }
+        
+        /* ============================================
+            LAYOUT COMPONENTS
+        ============================================= */
+        /* Main Wrapper */
+        .main-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: var(--space-xl);
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        /* Container Adjustments */
+        .container {
+            max-width: 1320px;
+        }
+        
+        /* ============================================
+            NAVIGATION
+        ============================================= */
+        /* Navbar */
         .navbar-custom {
             background: var(--white);
-            padding: 12px 0;
-            box-shadow: var(--shadow-light);
+            padding: var(--space-md) 0;
+            box-shadow: var(--shadow-sm);
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: var(--z-sticky);
             border-bottom: 3px solid var(--primary-red);
+            transition: box-shadow var(--transition-base);
         }
-
+        
+        .navbar-custom.scrolled {
+            box-shadow: var(--shadow-md);
+        }
+        
         .navbar-brand {
-            font-family: 'Montserrat', sans-serif;
+            font-family: var(--font-heading);
             font-weight: 800;
             font-size: 1.6rem;
             color: var(--primary-red);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: var(--space-sm);
             margin-left: 50px;
         }
-
+        
         .navbar-brand i {
             color: var(--primary-yellow);
         }
-
+        
+        /* Nav Links */
         .nav-link {
             color: var(--dark-grey) !important;
             font-weight: 600;
-            padding: 10px 18px !important;
-            margin: 0 4px;
-            border-radius: var(--border-radius-md);
-            transition: all 0.3s ease;
+            padding: var(--space-sm) var(--space-lg) !important;
+            margin: 0 var(--space-xs);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-base);
             position: relative;
             font-size: 0.9rem;
         }
-
+        
         .nav-link:hover {
             color: var(--primary-red) !important;
             background: rgba(198, 40, 40, 0.08);
             transform: translateY(-2px);
         }
-
+        
         .nav-link.active {
             background: var(--gradient-red);
             color: var(--white) !important;
-            box-shadow: var(--shadow-medium);
+            box-shadow: var(--shadow-md);
         }
-
+        
         .nav-link i {
-            margin-right: 8px;
+            margin-right: var(--space-sm);
             font-size: 1rem;
         }
-
+        
+        /* Navigation Badges */
         .badge-notification {
             position: absolute;
             top: -5px;
@@ -162,8 +403,30 @@
             font-weight: 700;
             border: 1px solid var(--black);
         }
-
-        /* Enhanced Sidebar */
+        
+        .install-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary-yellow);
+            color: var(--black);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 1px solid var(--primary-red);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* ============================================
+            SIDEBAR
+        ============================================= */
         .sidebar {
             position: fixed;
             top: 0;
@@ -171,107 +434,500 @@
             width: 320px;
             height: 100vh;
             background: var(--white);
-            z-index: 1050;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: var(--z-modal);
+            transition: transform var(--transition-slow) cubic-bezier(0.175, 0.885, 0.32, 1.275);
             padding-top: 80px;
-            box-shadow: var(--shadow-heavy);
+            box-shadow: var(--shadow-lg);
             overflow-y: auto;
             border-right: 4px solid var(--primary-red);
         }
-
+        
         .sidebar.show {
-            left: 0;
+            transform: translateX(320px);
         }
-
+        
         .sidebar-header {
-            padding: 25px;
+            padding: var(--space-xl);
             text-align: center;
             background: var(--gradient-red);
-            margin-bottom: 20px;
+            margin-bottom: var(--space-lg);
             color: var(--white);
         }
-
+        
         .sidebar-header h3 {
             font-weight: 700;
             margin: 0;
             font-size: 1.4rem;
         }
-
+        
         .sidebar-link {
             color: var(--dark-grey);
-            padding: 16px 25px;
+            padding: var(--space-lg) var(--space-xl);
             display: flex;
             align-items: center;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all var(--transition-base);
             border-left: 4px solid transparent;
             margin: 2px 0;
             font-weight: 500;
         }
-
+        
         .sidebar-link:hover {
             background: rgba(198, 40, 40, 0.08);
             color: var(--primary-red);
             border-left: 4px solid var(--primary-yellow);
             transform: translateX(5px);
         }
-
-        .sidebar-link i {
-            width: 25px;
-            margin-right: 15px;
-            font-size: 1.1rem;
-            color: var(--primary-red);
-        }
-
+        
         .sidebar-link.active {
             background: var(--gradient-red);
             border-left: 4px solid var(--primary-yellow);
             color: var(--white);
         }
-
+        
+        .sidebar-link i {
+            width: 25px;
+            margin-right: var(--space-md);
+            font-size: 1.1rem;
+            color: var(--primary-red);
+        }
+        
         .sidebar-link.active i {
             color: var(--white);
         }
-
-        /* Enhanced Menu Toggle */
+        
+        /* Sidebar Sections */
+        .sidebar-section {
+            padding: var(--space-lg) var(--space-xl);
+            border-top: 1px solid var(--light-grey);
+        }
+        
+        .sidebar-section h4 {
+            font-family: var(--font-heading);
+            color: var(--primary-red);
+            margin-bottom: var(--space-md);
+            font-size: 1.1rem;
+        }
+        
+        /* ============================================
+            UI COMPONENTS
+        ============================================= */
+        /* Menu Toggle Button */
         .menu-toggle {
             position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1060;
+            top: var(--space-md);
+            left: var(--space-md);
+            z-index: var(--z-fixed);
             background: var(--gradient-red);
             border: 2px solid var(--white);
             color: var(--white);
             width: 48px;
             height: 48px;
-            border-radius: 50%;
+            border-radius: var(--radius-full);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.4rem;
-            box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-base);
             cursor: pointer;
         }
-
+        
         .menu-toggle:hover {
             transform: scale(1.1) rotate(90deg);
             background: var(--primary-red);
-            box-shadow: var(--shadow-heavy);
+            box-shadow: var(--shadow-lg);
         }
-
+        
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: var(--z-modal-backdrop);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-base);
+            backdrop-filter: blur(3px);
+        }
+        
+        .overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: var(--space-xl);
+            right: var(--space-xl);
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-red);
+            color: var(--white);
+            border: 2px solid var(--white);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-base);
+            z-index: 999;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            background: var(--primary-red);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* News Notification Badge */
+        .news-badge-container {
+            position: fixed;
+            top: 120px;
+            right: var(--space-lg);
+            z-index: var(--z-fixed);
+            transition: all var(--transition-base);
+        }
+        
+        .news-bell-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-full);
+            background: var(--gradient-red);
+            color: white;
+            border: 2px solid var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-base);
+            position: relative;
+        }
+        
+        .news-bell-btn:hover {
+            transform: scale(1.1) rotate(-10deg);
+            background: var(--primary-red);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .news-bell-btn.pulse {
+            animation: bell-pulse 2s infinite;
+        }
+        
+        @keyframes bell-pulse {
+            0% { 
+                transform: scale(1); 
+                box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.7); 
+            }
+            70% { 
+                transform: scale(1.05); 
+                box-shadow: 0 0 0 10px rgba(198, 40, 40, 0); 
+            }
+            100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 0 0 rgba(198, 40, 40, 0); 
+            }
+        }
+        
+        .news-badge-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary-yellow);
+            color: var(--black);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: var(--radius-full);
+            border: 2px solid var(--white);
+            min-width: 22px;
+            text-align: center;
+        }
+        
+        /* ============================================
+            ALERTS & NOTIFICATIONS
+        ============================================= */
+        .alert-custom {
+            border: none;
+            border-radius: var(--radius-md);
+            padding: var(--space-lg) var(--space-xl);
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            border-left: 5px solid;
+            animation: slideInDown 0.5s ease;
+            background: var(--white);
+        }
+        
+        .alert-success {
+            border-left-color: var(--success-green);
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+        }
+        
+        .alert-info {
+            border-left-color: var(--primary-red);
+            background: rgba(198, 40, 40, 0.1);
+            color: var(--primary-red);
+        }
+        
+        .alert-warning {
+            border-left-color: var(--warning-orange);
+            background: rgba(255, 152, 0, 0.1);
+            color: #E65100;
+        }
+        
+        .alert-danger {
+            border-left-color: var(--danger-red);
+            background: rgba(211, 47, 47, 0.1);
+            color: var(--danger-red);
+        }
+        
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* ============================================
+            FORMS
+        ============================================= */
+        .form-control-custom {
+            border: 2px solid var(--light-grey);
+            border-radius: var(--radius-sm);
+            padding: var(--space-md);
+            font-size: 0.95rem;
+            transition: all var(--transition-base);
+            background: var(--white);
+            font-family: var(--font-body);
+        }
+        
+        .form-control-custom:focus {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.15);
+            outline: none;
+        }
+        
+        .form-label-custom {
+            font-weight: 600;
+            color: var(--dark-grey);
+            margin-bottom: var(--space-sm);
+            font-size: 0.95rem;
+            display: block;
+        }
+        
+        .input-group-custom .input-group-text {
+            background: var(--primary-red);
+            color: var(--white);
+            border: none;
+            font-weight: 600;
+        }
+        
+        /* ============================================
+            BUTTONS
+        ============================================= */
+        .btn-custom {
+            padding: var(--space-md) var(--space-xl);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all var(--transition-base);
+            border: none;
+            position: relative;
+            overflow: hidden;
+            font-family: var(--font-body);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+        
+        .btn-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-custom:hover::before {
+            left: 100%;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-custom:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary-custom {
+            background: var(--gradient-red);
+            color: var(--white);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-primary-custom:hover {
+            background: var(--primary-red);
+        }
+        
+        .btn-yellow-custom {
+            background: var(--gradient-yellow);
+            color: var(--black);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-yellow-custom:hover {
+            background: var(--primary-yellow);
+        }
+        
+        .btn-outline-custom {
+            background: transparent;
+            border: 2px solid var(--primary-red);
+            color: var(--primary-red);
+        }
+        
+        .btn-outline-custom:hover {
+            background: var(--primary-red);
+            color: var(--white);
+        }
+        
+        /* ============================================
+            CARDS
+        ============================================= */
+        .card-custom {
+            border: none;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-base);
+        }
+        
+        .card-custom:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .card-header-custom {
+            background: var(--gradient-red);
+            color: var(--white);
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: none;
+            font-family: var(--font-heading);
+        }
+        
+        .card-body-custom {
+            padding: var(--space-xl);
+        }
+        
+        /* ============================================
+            MODALS
+        ============================================= */
+        .modal-custom .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            animation: modalFadeIn 0.4s ease;
+            background: var(--white);
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-custom .modal-header {
+            background: var(--gradient-red);
+            color: var(--white);
+            border-bottom: none;
+            padding: var(--space-lg) var(--space-xl);
+            position: relative;
+        }
+        
+        .modal-custom .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary-yellow);
+        }
+        
+        .modal-custom .modal-title {
+            font-weight: 700;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .modal-custom .modal-body {
+            padding: var(--space-xl);
+        }
+        
+        .modal-custom .modal-footer {
+            border-top: 1px solid var(--light-grey);
+            padding: var(--space-lg) var(--space-xl);
+        }
+        
+        .modal-custom .btn-close {
+            filter: invert(1);
+            opacity: 0.8;
+            transition: opacity var(--transition-fast);
+        }
+        
+        .modal-custom .btn-close:hover {
+            opacity: 1;
+        }
+        
+        /* ============================================
+            PWA COMPONENTS
+        ============================================= */
         /* PWA Installation Prompt */
         .pwa-install-prompt {
             position: fixed;
-            bottom: 20px;
+            bottom: var(--space-xl);
             left: 50%;
             transform: translateX(-50%);
             background: var(--white);
             border: 2px solid var(--primary-red);
-            border-radius: var(--border-radius-lg);
-            padding: 15px;
-            box-shadow: var(--shadow-heavy);
-            z-index: 1100;
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-xl);
+            z-index: var(--z-modal);
             max-width: 400px;
             width: 90%;
             animation: slideUp 0.5s ease;
@@ -291,76 +947,65 @@
         .pwa-header {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: var(--space-md);
         }
         
         .pwa-icon {
             width: 48px;
             height: 48px;
-            border-radius: var(--border-radius-md);
+            border-radius: var(--radius-md);
             background: var(--gradient-red);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 12px;
+            margin-right: var(--space-md);
             color: white;
             font-size: 1.5rem;
+            flex-shrink: 0;
         }
         
         .pwa-title {
             flex: 1;
-            font-weight: 700;
+        }
+        
+        .pwa-title h5 {
             color: var(--primary-red);
+            margin-bottom: var(--space-xs);
+            font-weight: 700;
+        }
+        
+        .pwa-title small {
+            color: var(--medium-grey);
+            font-size: 0.85rem;
         }
         
         .pwa-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
         }
         
         .pwa-close {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: var(--space-sm);
+            right: var(--space-sm);
             background: none;
             border: none;
             color: var(--medium-grey);
             cursor: pointer;
             font-size: 1.2rem;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-full);
+            transition: all var(--transition-fast);
         }
         
-        .install-app-btn {
-            background: var(--gradient-red);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--border-radius-md);
-            font-weight: 600;
-            cursor: pointer;
-            flex: 1;
-            transition: all 0.3s ease;
-        }
-        
-        .install-app-btn:hover {
-            background: var(--primary-red);
-            transform: translateY(-2px);
-        }
-        
-        .dismiss-btn {
+        .pwa-close:hover {
             background: var(--light-grey);
             color: var(--dark-grey);
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--border-radius-md);
-            font-weight: 600;
-            cursor: pointer;
-            flex: 1;
-            transition: all 0.3s ease;
-        }
-        
-        .dismiss-btn:hover {
-            background: #e0e0e0;
         }
         
         /* iOS Installation Guide */
@@ -371,28 +1016,29 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.9);
-            z-index: 1200;
+            z-index: var(--z-popover);
             display: none;
             align-items: center;
             justify-content: center;
+            padding: var(--space-lg);
         }
         
         .ios-guide-content {
             background: var(--white);
-            border-radius: var(--border-radius-lg);
-            padding: 25px;
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
             max-width: 400px;
-            width: 90%;
+            width: 100%;
             text-align: center;
         }
         
         .ios-steps {
             text-align: left;
-            margin: 20px 0;
+            margin: var(--space-lg) 0;
         }
         
         .ios-step {
-            margin-bottom: 15px;
+            margin-bottom: var(--space-md);
             display: flex;
             align-items: flex-start;
         }
@@ -402,98 +1048,27 @@
             color: white;
             width: 24px;
             height: 24px;
-            border-radius: 50%;
+            border-radius: var(--radius-full);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 10px;
+            margin-right: var(--space-sm);
             flex-shrink: 0;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
-
-        /* Hide Bootstrap navbar-toggler on mobile */
-        .navbar-toggler {
-            display: none !important;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1040;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(3px);
-        }
-
-        .overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* Main Content */
-        .main-wrapper {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* Enhanced Alerts */
-        .alert-custom {
-            border: none;
-            border-radius: var(--border-radius-md);
-            padding: 18px 22px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow-light);
-            border-left: 5px solid;
-            animation: slideInDown 0.5s ease;
-            background: var(--white);
-        }
-
-        .alert-success {
-            border-left-color: #4CAF50;
-            background: rgba(76, 175, 80, 0.1);
-            color: #2E7D32;
-        }
-
-        .alert-info {
-            border-left-color: var(--primary-red);
-            background: rgba(198, 40, 40, 0.1);
-            color: var(--primary-red);
-        }
-
-        .alert-warning {
-            border-left-color: var(--primary-yellow);
-            background: rgba(251, 192, 45, 0.1);
-            color: #FF8F00;
-        }
-
-        .alert-danger {
-            border-left-color: #D32F2F;
-            background: rgba(211, 47, 47, 0.1);
-            color: #C62828;
-        }
-
-        /* Enhanced Footer */
+        
+        /* ============================================
+            FOOTER
+        ============================================= */
         .footer {
             background: var(--dark-grey);
             color: var(--white);
-            padding: 40px 0 20px;
+            padding: var(--space-2xl) 0 var(--space-lg);
             margin-top: auto;
             position: relative;
         }
-
+        
         .footer-content {
             display: flex;
             flex-direction: column;
@@ -502,33 +1077,36 @@
             position: relative;
             z-index: 1;
         }
-
+        
         .footer-logo {
-            font-family: 'Montserrat', sans-serif;
+            font-family: var(--font-heading);
             font-size: 1.8rem;
             font-weight: 800;
             color: var(--primary-yellow);
-            margin-bottom: 20px;
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
         }
-
+        
         .footer-links {
             display: flex;
-            gap: 25px;
-            margin-bottom: 25px;
+            gap: var(--space-xl);
+            margin-bottom: var(--space-xl);
             flex-wrap: wrap;
             justify-content: center;
         }
-
+        
         .footer-links a {
             color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all var(--transition-base);
             font-weight: 500;
-            padding: 5px 0;
+            padding: var(--space-xs) 0;
             position: relative;
             font-size: 0.9rem;
         }
-
+        
         .footer-links a::after {
             content: '';
             position: absolute;
@@ -537,411 +1115,120 @@
             width: 0;
             height: 2px;
             background: var(--primary-yellow);
-            transition: width 0.3s ease;
+            transition: width var(--transition-base);
         }
-
+        
         .footer-links a:hover {
             color: var(--primary-yellow);
         }
-
+        
         .footer-links a:hover::after {
             width: 100%;
         }
-
+        
         .social-icons {
             display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
         }
-
+        
         .social-icons a {
             width: 40px;
             height: 40px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+            border-radius: var(--radius-full);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--white);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all var(--transition-base);
             font-size: 1.1rem;
         }
-
+        
         .social-icons a:hover {
             background: var(--primary-yellow);
             color: var(--black);
             transform: translateY(-3px);
-            box-shadow: var(--shadow-light);
+            box-shadow: var(--shadow-sm);
         }
-
+        
         .copyright {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.85rem;
-            padding-top: 20px;
+            padding-top: var(--space-lg);
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             width: 100%;
             line-height: 1.6;
         }
-
+        
         .copyright p {
-            margin-bottom: 5px;
+            margin-bottom: var(--space-xs);
         }
-
-        /* Enhanced Modals */
-        .modal-custom .modal-content {
-            border: none;
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-heavy);
-            animation: modalFadeIn 0.4s ease;
-            background: var(--white);
+        
+        /* ============================================
+            UTILITY CLASSES
+        ============================================= */
+        .hover-lift {
+            transition: transform var(--transition-base), box-shadow var(--transition-base);
         }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
-
-        .modal-custom .modal-header {
-            background: var(--gradient-red);
-            color: var(--white);
-            border-bottom: none;
-            padding: 20px 25px;
-            position: relative;
-        }
-
-        .modal-custom .modal-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--primary-yellow);
-        }
-
-        .modal-custom .modal-title {
-            font-weight: 700;
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .modal-custom .modal-body {
-            padding: 25px;
-        }
-
-        .modal-custom .modal-footer {
-            border-top: 1px solid var(--light-grey);
-            padding: 18px 25px;
-        }
-
-        .modal-custom .btn-close {
-            filter: invert(1);
-            opacity: 0.8;
-        }
-
-        .modal-custom .btn-close:hover {
-            opacity: 1;
-        }
-
-        /* Enhanced Form Controls */
-        .form-control-custom {
-            border: 2px solid var(--light-grey);
-            border-radius: var(--border-radius-sm);
-            padding: 12px 16px;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            background: var(--white);
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .form-control-custom:focus {
-            border-color: var(--primary-red);
-            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.15);
-        }
-
-        .form-label-custom {
-            font-weight: 600;
-            color: var(--dark-grey);
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
-
-        /* Enhanced Buttons */
-        .btn-custom {
-            padding: 12px 28px;
-            border-radius: var(--border-radius-md);
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-            overflow: hidden;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .btn-custom::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn-custom:hover::before {
-            left: 100%;
-        }
-
-        .btn-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .btn-primary-custom {
-            background: var(--gradient-red);
-            color: var(--white);
-            box-shadow: var(--shadow-light);
-        }
-
-        .btn-primary-custom:hover {
-            background: var(--primary-red);
-        }
-
-        .btn-yellow-custom {
-            background: var(--gradient-yellow);
-            color: var(--black);
-            box-shadow: var(--shadow-light);
-        }
-
-        .btn-yellow-custom:hover {
-            background: var(--primary-yellow);
-        }
-
-        /* Loading Spinner */
+        
         .spinner-custom {
             width: 3rem;
             height: 3rem;
             color: var(--primary-red);
             animation: rotate 1s linear infinite;
         }
-
+        
         @keyframes rotate {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-
-        /* KUCCPS Logo Styling */
-        .kuccps-logo {
-            max-width: 600px;
-            height: auto;
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
-            margin: 0 auto 25px;
-            display: block;
-            border: 3px solid var(--white);
-        }
-
-        .kuccps-logo:hover {
-            transform: scale(1.01);
-            box-shadow: var(--shadow-heavy);
-        }
-
-        /* Back to Top Button */
-        .back-to-top {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 48px;
-            height: 48px;
-            background: var(--gradient-red);
-            color: var(--white);
-            border: 2px solid var(--white);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 999;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .back-to-top.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .back-to-top:hover {
-            transform: translateY(-3px);
-            background: var(--primary-red);
-            box-shadow: var(--shadow-heavy);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--light-grey);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-red);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--red-dark);
-        }
-
-        /* Verify Payment Preview Styling */
-        #verifyPreview .card {
-            border: none;
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
-        }
-
-        #verifyPreview .card-header {
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        #showResultsBtn {
-            font-weight: 600;
-            padding: 10px 24px;
-            border-radius: var(--border-radius-md);
-            transition: all 0.3s ease;
-        }
-
-        #showResultsBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        /* Badge styling for course levels */
-        .badge {
-            font-size: 0.85rem;
-            font-weight: 600;
-            border-radius: 20px;
-        }
-
-        /* Loading animation */
+        
         .progress-bar-animated {
             animation: progress-bar-stripes 1s linear infinite;
         }
-
+        
         @keyframes progress-bar-stripes {
             from { background-position: 1rem 0; }
             to { background-position: 0 0; }
         }
-
-        /* Card Hover Effects */
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        
+        /* ============================================
+            CUSTOM SCROLLBAR
+        ============================================= */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-
-        .hover-lift:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-heavy);
+        
+        ::-webkit-scrollbar-track {
+            background: var(--light-grey);
+            border-radius: var(--radius-sm);
         }
-
-        /* App Install Badge */
-        .install-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--primary-yellow);
-            color: var(--black);
-            font-size: 0.7rem;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: 700;
-            border: 1px solid var(--primary-red);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        /* News Badge */
-        .news-badge-container {
-            position: fixed;
-            top: 120px;
-            right: 20px;
-            z-index: 1050;
-            transition: all 0.3s ease;
-        }
-
-        .news-bell-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gradient-red);
-            color: white;
-            border: 2px solid var(--white);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .news-bell-btn:hover {
-            transform: scale(1.1) rotate(-10deg);
+        
+        ::-webkit-scrollbar-thumb {
             background: var(--primary-red);
-            box-shadow: var(--shadow-heavy);
+            border-radius: var(--radius-sm);
         }
-
-        .news-bell-btn.pulse {
-            animation: bell-pulse 2s infinite;
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--red-dark);
         }
-
-        @keyframes bell-pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(198, 40, 40, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(198, 40, 40, 0); }
+        
+        /* ============================================
+            RESPONSIVE DESIGN
+        ============================================= */
+        @media (max-width: 1200px) {
+            .main-content {
+                padding: var(--space-lg);
+            }
         }
-
-        .news-badge-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--primary-yellow);
-            color: var(--black);
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 3px 7px;
-            border-radius: 50%;
-            border: 2px solid var(--white);
-            min-width: 22px;
-            text-align: center;
-        }
-
-        /* RESPONSIVE DESIGN */
+        
         @media (max-width: 992px) {
             .navbar-brand {
                 margin-left: 60px;
@@ -958,18 +1245,22 @@
             
             .news-badge-container {
                 top: 100px;
-                right: 15px;
+                right: var(--space-md);
             }
         }
-
+        
         @media (max-width: 768px) {
             .sidebar {
                 width: 280px;
                 left: -280px;
             }
             
+            .sidebar.show {
+                transform: translateX(280px);
+            }
+            
             .modal-dialog.modal-lg {
-                margin: 10px;
+                margin: var(--space-sm);
             }
             
             .footer-logo {
@@ -982,39 +1273,35 @@
             }
             
             .pwa-install-prompt {
-                bottom: 10px;
+                bottom: var(--space-sm);
                 width: 95%;
             }
             
             .news-badge-container {
                 top: 90px;
-                right: 10px;
+                right: var(--space-sm);
             }
         }
-
+        
         @media (max-width: 576px) {
             .main-content {
-                padding: 15px 10px;
+                padding: var(--space-md) var(--space-sm);
             }
             
             .footer-links {
                 flex-direction: column;
-                gap: 12px;
+                gap: var(--space-md);
             }
             
             .modal-custom .modal-header,
             .modal-custom .modal-body,
             .modal-custom .modal-footer {
-                padding: 15px;
+                padding: var(--space-lg);
             }
             
             .btn-custom {
-                padding: 10px 20px;
+                padding: var(--space-sm) var(--space-lg);
                 font-size: 0.9rem;
-            }
-            
-            .kuccps-logo {
-                max-width: 100%;
             }
             
             .navbar-brand {
@@ -1026,12 +1313,12 @@
                 width: 42px;
                 height: 42px;
                 font-size: 1.2rem;
-                top: 12px;
-                left: 12px;
+                top: var(--space-sm);
+                left: var(--space-sm);
             }
             
             .pwa-install-prompt {
-                padding: 12px;
+                padding: var(--space-md);
             }
             
             .pwa-buttons {
@@ -1040,7 +1327,7 @@
             
             .news-badge-container {
                 top: 80px;
-                right: 10px;
+                right: var(--space-sm);
             }
             
             .news-bell-btn {
@@ -1055,7 +1342,7 @@
                 min-width: 18px;
             }
         }
-
+        
         @media (max-width: 400px) {
             .navbar-brand {
                 font-size: 1.1rem;
@@ -1069,41 +1356,113 @@
             }
             
             .ios-guide-content {
-                padding: 15px;
+                padding: var(--space-lg);
             }
             
             .news-badge-container {
                 top: 70px;
-                right: 8px;
+                right: var(--space-xs);
             }
         }
-
-        /* Ensure images are responsive */
-        img {
-            max-width: 100%;
-            height: auto;
-        }
-
-        /* Standalone mode adjustments */
+        
+        /* ============================================
+            STANDALONE MODE ADJUSTMENTS
+        ============================================= */
         .standalone-mode .navbar-custom {
             padding-top: env(safe-area-inset-top);
         }
         
         .standalone-mode .main-content {
-            padding-top: calc(30px + env(safe-area-inset-top));
+            padding-top: calc(var(--space-xl) + env(safe-area-inset-top));
+        }
+        
+        /* ============================================
+            PRINT STYLES
+        ============================================= */
+        @media print {
+            .navbar-custom,
+            .footer,
+            .menu-toggle,
+            .back-to-top,
+            .news-badge-container,
+            .pwa-install-prompt {
+                display: none !important;
+            }
+            
+            .main-content {
+                padding: 0;
+            }
+            
+            a {
+                text-decoration: none !important;
+                color: var(--black) !important;
+            }
         }
     </style>
+    
+    <!-- ============================================
+        SCHEMA MARKUP (JSON-LD)
+    ============================================= -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "name": "{{ site_name }}",
+                "alternateName": "KUCCPS Course Checker",
+                "url": "{{ site_url }}",
+                "logo": "{{ url_for('static', filename='images/kuccps.png', _external=True) }}",
+                "description": "{{ site_description }}",
+                "foundingDate": "2024",
+                "founder": {
+                    "@type": "Person",
+                    "name": "Hean Njuki"
+                },
+                "contactPoint": {
+                    "@type": "ContactPoint",
+                    "contactType": "customer service",
+                    "telephone": "+254791196121",
+                    "email": "courseschecker@gmail.com",
+                    "availableLanguage": ["English", "Swahili"],
+                    "areaServed": "KE"
+                },
+                "sameAs": [
+                    "https://chat.whatsapp.com/GjntLnCi5XO8odojJLWJqw"
+                ]
+            },
+            {
+                "@type": "WebSite",
+                "name": "KUCCPS Courses Checker",
+                "url": "https://www.kuccpscourses.co.ke/",
+                "description": "Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs in Kenya.",
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https://www.kuccpscourses.co.ke/search?q={search_term_string}"
+                    },
+                    "query-input": "required name=search_term_string"
+                }
+            }
+        ]
+    }
+    </script>
     
     {% block links %}{% endblock %}
 </head>
 
 <body>
-    <!-- Back to Top Button -->
+    <!-- ============================================
+        BACK TO TOP BUTTON
+    ============================================= -->
     <button class="back-to-top" id="backToTop" aria-label="Back to top">
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- News Notification Badge -->
+    <!-- ============================================
+        NEWS NOTIFICATION BADGE
+    ============================================= -->
     <div class="news-badge-container" id="newsBadgeContainer" style="display: none;">
         <button class="news-bell-btn" id="newsBellBtn" data-bs-toggle="modal" data-bs-target="#newsModal">
             <i class="fas fa-bell"></i>
@@ -1111,9 +1470,11 @@
         </button>
     </div>
 
-    <!-- PWA Installation Prompt -->
+    <!-- ============================================
+        PWA INSTALLATION PROMPT
+    ============================================= -->
     <div id="pwaInstallPrompt" class="pwa-install-prompt" style="display: none;">
-        <button class="pwa-close" id="closePwaPrompt">&times;</button>
+        <button class="pwa-close" id="closePwaPrompt" aria-label="Close">&times;</button>
         <div class="pwa-header">
             <div class="pwa-icon">
                 <i class="fas fa-graduation-cap"></i>
@@ -1125,19 +1486,21 @@
         </div>
         <p>Install the KUCCPS Course Checker app on your device for quick access, even offline.</p>
         <div class="pwa-buttons">
-            <button class="install-app-btn" id="installAppBtn">
+            <button class="btn btn-primary-custom" id="installAppBtn">
                 <i class="fas fa-download me-2"></i>Install App
             </button>
-            <button class="dismiss-btn" id="dismissPwaPrompt">
+            <button class="btn btn-outline-secondary" id="dismissPwaPrompt">
                 Not Now
             </button>
         </div>
     </div>
 
-    <!-- iOS Installation Guide -->
+    <!-- ============================================
+        iOS INSTALLATION GUIDE
+    ============================================= -->
     <div id="iosInstallGuide" class="ios-install-guide">
         <div class="ios-guide-content">
-            <h4 style="color: var(--primary-red);">
+            <h4 class="mb-4" style="color: var(--primary-red);">
                 <i class="fas fa-mobile-alt me-2"></i>Install KUCCPS App on iOS
             </h4>
             <div class="ios-steps">
@@ -1154,16 +1517,18 @@
                     <div>Tap <strong>"Add"</strong> in the top right corner</div>
                 </div>
             </div>
-            <button class="btn btn-primary-custom w-100" id="closeIosGuide">
+            <button class="btn btn-primary-custom w-100 mt-4" id="closeIosGuide">
                 Got it!
             </button>
         </div>
     </div>
 
-    <!-- Modern Navigation -->
+    <!-- ============================================
+        MAIN NAVIGATION
+    ============================================= -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="/">
+            <a class="navbar-brand" href="/" aria-label="KUCCPS Course Checker Home">
                 <i class="fas fa-graduation-cap"></i>
                 KUCCPS Course Checker
             </a>
@@ -1171,18 +1536,20 @@
             <!-- Desktop Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
+                                    <li class="nav-item">
                         <a class="nav-link active" href="/">
                             <i class="fas fa-home"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
-                            <i class="fas fa-check-circle"></i> Verify Payment
+                            <i class="fas fa-check-circle"></i> My Paid Courses
                         </a>
                     </li>
+                                      
+                   
                     <li class="nav-item">
-                        <a class="nav-link" href="https://students.kuccps.net/login" target="_blank">
+                        <a class="nav-link" href="https://students.kuccps.net/login" target="_blank" rel="noopener noreferrer">
                             <i class="fas fa-external-link-alt"></i> KUCCPS Portal
                         </a>
                     </li>
@@ -1213,7 +1580,9 @@
         </div>
     </nav>
 
-    <!-- Modern Sidebar (For Mobile Navigation) -->
+    <!-- ============================================
+        MOBILE SIDEBAR
+    ============================================= -->
     <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
         <i class="fas fa-bars"></i>
     </button>
@@ -1227,13 +1596,16 @@
         <a href="/" class="sidebar-link active">
             <i class="fas fa-home"></i> Home
         </a>
+        <a href="https://web-development-6fdl.onrender.com" target="_blank" class="sidebar-link" onclick="toggleSidebar();" rel="noopener noreferrer">
+            <i class="fas fa-crown"></i> Premium Programs
+        </a>
         <a href="/news" class="sidebar-link">
             <i class="fas fa-newspaper"></i> News & Updates
         </a>
         <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
-            <i class="fas fa-check-circle"></i> Verify Payment
+            <i class="fas fa-check-circle"></i> My Paid Courses
         </a>
-        <a href="https://students.kuccps.net/login" target="_blank" class="sidebar-link" onclick="toggleSidebar();">
+        <a href="https://students.kuccps.net/login" target="_blank" class="sidebar-link" onclick="toggleSidebar();" rel="noopener noreferrer">
             <i class="fas fa-external-link-alt"></i> KUCCPS Portal
         </a>
         <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#helpModal">
@@ -1251,9 +1623,6 @@
         <a href="/user-guide" target="_blank" class="sidebar-link" onclick="toggleSidebar();">
             <i class="fas fa-book"></i> User Guide
         </a>
-        <a href="https://web-development-6fdl.onrender.com" target="_blank" class="sidebar-link" onclick="toggleSidebar();">
-            <i class="fas fa-crown"></i> Premium Programs
-        </a>
         <a href="/basket" class="sidebar-link" id="sidebarBasketLink" style="display: none;" onclick="toggleSidebar();">
             <i class="fas fa-shopping-basket"></i> My Basket
             <span class="badge-notification" id="sidebarBasketCount">0</span>
@@ -1262,51 +1631,89 @@
             <i class="fas fa-download"></i> Install App
             <span class="install-badge" style="position: absolute; right: 20px;">NEW</span>
         </a>
+        <!-- Guides Section -->
+        <div class="sidebar-section">
+            <h4><i class="fas fa-book me-2"></i>Guides</h4>
+            <a href="{{ url_for('kuccps_guides.guides_index') }}" class="sidebar-link" onclick="toggleSidebar();">
+                <i class="fas fa-list"></i> All Guides
+            </a>
+            <a href="{{ url_for('kuccps_guides.cluster_points') }}" class="sidebar-link" onclick="toggleSidebar();">
+                <i class="fas fa-chart-bar"></i> Cluster Points
+            </a>
+            <a href="{{ url_for('kuccps_guides.kcse_admission') }}" class="sidebar-link" onclick="toggleSidebar();">
+                <i class="fas fa-graduation-cap"></i> KCSE Requirements
+            </a>
+            <a href="{{ url_for('kuccps_guides.diploma_courses') }}" class="sidebar-link" onclick="toggleSidebar();">
+                <i class="fas fa-certificate"></i> Diploma Courses
+            </a>
+            <a href="{{ url_for('kuccps_guides.certificate_courses') }}" class="sidebar-link" onclick="toggleSidebar();">
+                <i class="fas fa-file-certificate"></i> Certificate Courses
+            </a>
+            <a href="{{ url_for('kuccps_guides.kuccps_application') }}" class="sidebar-link" onclick="toggleSidebar();">
+                <i class="fas fa-edit"></i> Apply to KUCCPS
+            </a>
+            <a href="{{ url_for('kuccps_guides.scholarships') }}" class="sidebar-link" onclick="toggleSidebar();">
+                <i class="fas fa-hand-holding-usd"></i> Scholarships
+            </a>
+        </div>
     </div>
-
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Main Content -->
+    <!-- ============================================
+        MAIN CONTENT AREA
+    ============================================= -->
     <div class="main-wrapper">
         <div class="main-content container">
-            <!-- Alert Messages -->
+            <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-custom alert-dismissible fade show" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'exclamation-circle' }} me-3" style="font-size: 1.3rem;"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1">{{ message }}</h5>
-                        {% if category == 'warning' %}
-                        <div class="mt-2">
-                            <button class="btn btn-yellow-custom btn-sm" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
-                                <i class="fas fa-credit-card me-1"></i>Already Made Payment?
-                            </button>
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-custom alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center">
+                                {% set icon = {
+                                    'success': 'check-circle',
+                                    'warning': 'exclamation-triangle',
+                                    'info': 'info-circle',
+                                    'danger': 'exclamation-circle'
+                                }[category] or 'info-circle' %}
+                                <i class="fas fa-{{ icon }} me-3" style="font-size: 1.3rem;"></i>
+                                <div>
+                                    <h5 class="alert-heading mb-1">{{ message }}</h5>
+                                    {% if category == 'warning' %}
+                                        <div class="mt-2">
+                                            <button class="btn btn-yellow-custom btn-sm" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
+                                                <i class="fas fa-credit-card me-1"></i>Already Made Payment?
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                        {% endif %}
-                    </div>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
-            {% endif %}
+                    {% endfor %}
+                {% endif %}
             {% endwith %}
 
             <!-- KUCCPS Logo -->
             <div class="text-center mb-4 animate__animated animate__fadeIn">
-                <img src="{{ url_for('static', filename='images/kuccps.png') }}" 
-                     alt="KUCCPS Placement Service Logo" 
-                     class="kuccps-logo img-fluid">
+               <picture>
+  <source srcset="{{ url_for('static', filename='images/kuccps.png') }}" type="image/webp">
+  <img src="{{ url_for('static', filename='images/kuccps.png') }}" 
+       alt="KUCCPS Logo" 
+       class="kuccps-logo img-fluid"
+       width="1000" height="200" loading="lazy">
+       
+</picture>
             </div>
 
+            <!-- Page Content Blocks -->
             {% block hero %}{% endblock %}
             {% block course_buttons %}{% endblock %}
             {% block content %}{% endblock %}
             
-            <!-- PWA Installation Call to Action -->
-            <div class="card border-0 shadow-lg mt-5 hover-lift" id="pwaCtaCard">
-                <div class="card-body text-center p-4">
+            <!-- PWA Installation CTA -->
+            <div class="card-custom mt-5 hover-lift" id="pwaCtaCard">
+                <div class="card-body-custom text-center">
                     <div class="pwa-icon mb-3" style="width: 80px; height: 80px; margin: 0 auto;">
                         <i class="fas fa-graduation-cap" style="font-size: 2.5rem;"></i>
                     </div>
@@ -1318,7 +1725,7 @@
                         <button class="btn btn-primary-custom" onclick="showPwaInstallPrompt()">
                             <i class="fas fa-download me-2"></i>Install Now
                         </button>
-                        <a href="/install-app" class="btn btn-outline-secondary">
+                        <a href="/install-app" class="btn btn-outline-custom">
                             <i class="fas fa-info-circle me-2"></i>Learn More
                         </a>
                     </div>
@@ -1326,12 +1733,15 @@
             </div>
         </div>
 
-        <!-- Enhanced Footer -->
+        <!-- ============================================
+            FOOTER
+        ============================================= -->
         <footer class="footer">
             <div class="container">
                 <div class="footer-content">
                     <div class="footer-logo">
-                        <i class="fas fa-graduation-cap me-2"></i>KUCCPS Course Checker
+                        <i class="fas fa-graduation-cap"></i>
+                        KUCCPS Course Checker
                     </div>
                     
                     <div class="footer-links">
@@ -1344,25 +1754,25 @@
                     </div>
                     
                     <div class="social-icons">
-                        <a href="https://chat.whatsapp.com/GjntLnCi5XO8odojJLWJqw" target="_blank" title="WhatsApp">
+                        <a href="https://chat.whatsapp.com/GjntLnCi5XO8odojJLWJqw" target="_blank" rel="noopener noreferrer" title="WhatsApp Group" aria-label="Join our WhatsApp group">
                             <i class="fab fa-whatsapp"></i>
                         </a>
-                        <a href="https://facebook.com" target="_blank" title="Facebook">
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Follow us on Facebook">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="https://twitter.com" target="_blank" title="Twitter">
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" title="Twitter" aria-label="Follow us on Twitter">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="https://instagram.com" target="_blank" title="Instagram">
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Follow us on Instagram">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="mailto:courseschecker@gmail.com" title="Email">
+                        <a href="mailto:courseschecker@gmail.com" title="Email us" aria-label="Send us an email">
                             <i class="fas fa-envelope"></i>
                         </a>
                     </div>
                     
                     <div class="copyright">
-                        <p>&copy; 2025 KUCCPS Course Checker. All rights reserved.</p>
+                        <p>&copy; 2026 KUCCPS Course Checker. All rights reserved.</p>
                         <p class="mb-1">Empowering students' academic journeys across Kenya</p>
                         <p class="mt-1">Designed by Hean Njuki</p>
                     </div>
@@ -1371,7 +1781,11 @@
         </footer>
     </div>
 
-    <!-- Enhanced Help Modal -->
+    <!-- ============================================
+        MODALS
+    ============================================= -->
+    
+    <!-- Help Modal -->
     <div class="modal fade modal-custom" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -1391,7 +1805,7 @@
                     <div class="contact-options">
                         <div class="contact-option mb-3">
                             <h6 class="mb-2"><i class="fab fa-whatsapp me-2" style="color: #25D366;"></i>WhatsApp Support</h6>
-                            <a href="https://chat.whatsapp.com/GjntLnCi5XO8odojJLWJqw" target="_blank" class="btn btn-yellow-custom w-100">
+                            <a href="https://chat.whatsapp.com/GjntLnCi5XO8odojJLWJqw" target="_blank" rel="noopener noreferrer" class="btn btn-yellow-custom w-100">
                                 <i class="fab fa-whatsapp me-2"></i>Join WhatsApp Group
                             </a>
                             <small class="text-muted mt-2 d-block">Get instant responses from our support team</small>
@@ -1424,7 +1838,7 @@
         </div>
     </div>
 
-    <!-- Enhanced Verify Payment Modal -->
+    <!-- Verify Payment Modal -->
     <div class="modal fade modal-custom" id="verifyPaymentModal" tabindex="-1" aria-labelledby="verifyPaymentLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -1446,13 +1860,13 @@
                     </div>
 
                     <form id="verifyPaymentForm" class="needs-validation" novalidate>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-6">
                                 <label for="mpesa_receipt" class="form-label-custom">
                                     <i class="fas fa-receipt me-2"></i>M-Pesa Receipt Number *
                                 </label>
-                                <div class="input-group">
-                                    <span class="input-group-text" style="background: var(--primary-red); color: white;">
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text">
                                         <i class="fas fa-mobile-alt"></i>
                                     </span>
                                     <input type="text" class="form-control form-control-custom" id="mpesa_receipt" 
@@ -1463,12 +1877,12 @@
                                     <i class="fas fa-lightbulb me-1"></i>10-character code from your M-Pesa confirmation message
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 <label for="index_number_verify" class="form-label-custom">
                                     <i class="fas fa-id-card me-2"></i>KCSE Index Number *
                                 </label>
-                                <div class="input-group">
-                                    <span class="input-group-text" style="background: var(--primary-yellow); color: black;">
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text">
                                         <i class="fas fa-graduation-cap"></i>
                                     </span>
                                     <input type="text" class="form-control form-control-custom" id="index_number_verify"
@@ -1481,10 +1895,11 @@
                             </div>
                         </div>
 
-                        <div id="verifyError" class="alert alert-danger alert-custom" role="alert" style="display:none;"></div>
+                        <!-- Error Message -->
+                        <div id="verifyError" class="alert alert-danger alert-custom mt-3" role="alert" style="display:none;"></div>
 
-                        <!-- Loading Animation -->
-                        <div id="verifyLoading" class="text-center" style="display: none;">
+                        <!-- Loading State -->
+                        <div id="verifyLoading" class="text-center mt-4" style="display: none;">
                             <div class="spinner-border spinner-custom" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
@@ -1496,14 +1911,14 @@
                         </div>
 
                         <!-- Results Preview -->
-                        <div id="verifyPreview" style="display: none;">
-                            <div class="card border-0 shadow-lg mt-4 hover-lift">
-                                <div class="card-header text-white py-3" style="background: var(--gradient-red);">
+                        <div id="verifyPreview" class="mt-4" style="display: none;">
+                            <div class="card-custom hover-lift">
+                                <div class="card-header-custom">
                                     <h6 class="mb-0">
                                         <i class="fas fa-check-circle me-2"></i>Payment Verified Successfully!
                                     </h6>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body-custom">
                                     <div id="previewInfo" class="mb-4"></div>
                                     
                                     <div class="mb-4">
@@ -1530,6 +1945,7 @@
                             </div>
                         </div>
 
+                        <!-- Form Actions -->
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary-custom py-2" id="verifySubmitBtn">
                                 <i class="fas fa-search me-2"></i>Verify & View Courses
@@ -1544,7 +1960,7 @@
         </div>
     </div>
 
-    <!-- Additional Modals -->
+    <!-- Privacy Policy Modal -->
     <div class="modal fade modal-custom" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -1569,16 +1985,14 @@
                     <h6 class="fw-bold mt-4 mb-3">Data Protection</h6>
                     <p>All sensitive data is encrypted and stored securely. We never share your personal information with third parties without your explicit consent.</p>
                 </div>
-               <div class="modal-footer">
-    <button type="button" class="btn btn-primary-custom" onclick="redirectToHome()">
-        <i class="fas fa-home me-2"></i>Go to Home
-    </button>
-    <a href="/news" class="btn btn-outline-secondary">View All News</a>
-</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Terms of Service Modal -->
     <div class="modal fade modal-custom" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -1613,42 +2027,41 @@
         </div>
     </div>
 
-   <!-- Enhanced News Modal -->
-<div class="modal fade modal-custom" id="newsModal" tabindex="-1" aria-labelledby="newsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background: var(--gradient-red);">
-                <h5 class="modal-title text-white" id="newsModalLabel">
-                    <i class="fas fa-newspaper me-2"></i>Latest News & Updates
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeNewsModalBtn"></button>
-            </div>
-            <div class="modal-body">
-                <div id="newsContent">
-                    <!-- News will be loaded here dynamically -->
-                    <div class="text-center py-5">
-                        <div class="spinner-border spinner-custom" role="status">
-                            <span class="visually-hidden">Loading news...</span>
+    <!-- News Modal -->
+    <div class="modal fade modal-custom" id="newsModal" tabindex="-1" aria-labelledby="newsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white" id="newsModalLabel">
+                        <i class="fas fa-newspaper me-2"></i>Latest News & Updates
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeNewsModalBtn"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="newsContent">
+                        <div class="text-center py-5">
+                            <div class="spinner-border spinner-custom" role="status">
+                                <span class="visually-hidden">Loading news...</span>
+                            </div>
+                            <p class="mt-3">Loading latest news...</p>
                         </div>
-                        <p class="mt-3">Loading latest news...</p>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary-custom" onclick="redirectToHome()">
-                    <i class="fas fa-home me-2"></i>Go to Home
-                </button>
-                <a href="/news" class="btn btn-outline-secondary">View All News</a>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary-custom" onclick="redirectToHome()">
+                        <i class="fas fa-home me-2"></i>Go to Home
+                    </button>
+                    <a href="/news" class="btn btn-outline-secondary">View All News</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Article View Modal -->
     <div class="modal fade modal-custom" id="articleModal" tabindex="-1" aria-labelledby="articleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header" style="background: var(--gradient-red);">
+                <div class="modal-header">
                     <h5 class="modal-title text-white" id="articleModalLabel">
                         <i class="fas fa-newspaper me-2"></i>News Article
                     </h5>
@@ -1666,44 +2079,93 @@
         </div>
     </div>
 
-    <!-- JavaScript Libraries -->
+    <!-- ============================================
+        JAVASCRIPT LIBRARIES
+    ============================================= -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Custom JS Files -->
+    <script defer src="{{ url_for('static', filename='js/offline-storage.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/pwa.js') }}"></script>
     
     {% block scripts %}{% endblock %}
     
+    <!-- ============================================
+        MAIN JAVASCRIPT
+    ============================================= -->
     <script>
-        // Enhanced Sidebar Toggle
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        
+        /**
+         * Toggle sidebar menu
+         */
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebarMenu');
             const overlay = document.getElementById('overlay');
             const menuToggle = document.querySelector('.menu-toggle');
             
-            sidebar.classList.toggle('show');
+            const isShowing = sidebar.classList.toggle('show');
             overlay.classList.toggle('show');
             
-            const isShowing = sidebar.classList.contains('show');
             menuToggle.innerHTML = isShowing ? 
                 '<i class="fas fa-times"></i>' : 
                 '<i class="fas fa-bars"></i>';
             menuToggle.setAttribute('aria-expanded', isShowing);
-            menuToggle.setAttribute('aria-label', isShowing ? 'Close navigation menu' : 'Open navigation menu');
+            menuToggle.setAttribute('aria-label', 
+                isShowing ? 'Close navigation menu' : 'Open navigation menu');
             
             document.body.style.overflow = isShowing ? 'hidden' : '';
         }
-
-        // Close sidebar when clicking on overlay or links
-        document.getElementById('overlay').addEventListener('click', toggleSidebar);
         
-        // Auto-close sidebar when clicking on sidebar links on mobile
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth < 992) {
-                    toggleSidebar();
-                }
-            });
+        /**
+         * Redirect to home page
+         */
+        function redirectToHome() {
+            const newsModal = bootstrap.Modal.getInstance(document.getElementById('newsModal'));
+            if (newsModal) {
+                newsModal.hide();
+            }
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 300);
+        }
+        
+        // ============================================
+        // DOM CONTENT LOADED
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all components
+            initNavigation();
+            initBackToTop();
+            initVerifyPaymentForm();
+            initPWAFeatures();
+            initNewsSystem();
+            initScrollEffects();
+            initModals();
         });
-
-        // Basket Navigation Functions
+        
+        // ============================================
+        // NAVIGATION FUNCTIONS
+        // ============================================
+        function initNavigation() {
+            // Close sidebar when clicking on overlay
+            document.getElementById('overlay').addEventListener('click', toggleSidebar);
+            
+            // Auto-close sidebar when clicking on sidebar links on mobile
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 992) {
+                        toggleSidebar();
+                    }
+                });
+            });
+        }
+        
+        /**
+         * Show/hide basket navigation
+         */
         function showBasketNavigation(basketCount) {
             const basketNavLink = document.getElementById('basketNavLink');
             const sidebarBasketLink = document.getElementById('sidebarBasketLink');
@@ -1717,40 +2179,61 @@
                 if (sidebarBasketCount) sidebarBasketCount.textContent = basketCount;
             }
         }
-
+        
         function hideBasketNavigation() {
             const basketNavLink = document.getElementById('basketNavLink');
             const sidebarBasketLink = document.getElementById('sidebarBasketLink');
             if (basketNavLink) basketNavLink.style.display = 'none';
             if (sidebarBasketLink) sidebarBasketLink.style.display = 'none';
         }
-
-        // Back to Top Button
-        const backToTopButton = document.getElementById('backToTop');
         
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                backToTopButton.classList.add('show');
-            } else {
-                backToTopButton.classList.remove('show');
-            }
-        });
-        
-        backToTopButton.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+        // ============================================
+        // BACK TO TOP FUNCTIONALITY
+        // ============================================
+        function initBackToTop() {
+            const backToTopButton = document.getElementById('backToTop');
+            
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    backToTopButton.classList.add('show');
+                } else {
+                    backToTopButton.classList.remove('show');
+                }
             });
-        });
-
-        // Enhanced Verify Payment Form Submission
-        document.addEventListener('DOMContentLoaded', function () {
+            
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+        
+        // ============================================
+        // SCROLL EFFECTS
+        // ============================================
+        function initScrollEffects() {
+            // Navbar shadow on scroll
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar-custom');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+        }
+        
+        // ============================================
+        // VERIFY PAYMENT FORM
+        // ============================================
+        function initVerifyPaymentForm() {
             const verifyPaymentForm = document.getElementById('verifyPaymentForm');
             const verifyPaymentModal = document.getElementById('verifyPaymentModal');
             
             if (!verifyPaymentForm) return;
-
-            verifyPaymentForm.addEventListener('submit', function (e) {
+            
+            verifyPaymentForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const mpesaReceipt = document.getElementById('mpesa_receipt').value.trim().toUpperCase();
@@ -1772,210 +2255,198 @@
                     return;
                 }
                 
-                // Validate M-Pesa receipt format
                 if (!/^[A-Z0-9]{10}$/.test(mpesaReceipt)) {
                     showError('Invalid M-Pesa receipt format. Must be exactly 10 alphanumeric characters (e.g., RJ89A5LBQ2).');
                     return;
                 }
                 
-                // Validate index number format
                 if (!/^\d{11}\/\d{4}$/.test(indexNumber)) {
                     showError('Invalid index number format. Must be: 12345678901/2024 (11 digits/year)');
                     return;
                 }
                 
-                // Make AJAX request
-                fetch('/verify-payment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
-                        'mpesa_receipt': mpesaReceipt,
-                        'index_number': indexNumber
-                    })
-                })
-                .then(response => {
+                try {
+                    const response = await fetch('/verify-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            'mpesa_receipt': mpesaReceipt,
+                            'index_number': indexNumber
+                        })
+                    });
+                    
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    return response.json();
-                })
-                .then(data => {
+                    
+                    const data = await response.json();
                     loadingDiv.style.display = 'none';
                     submitBtn.disabled = false;
                     
                     if (data.success) {
                         // Payment verified successfully
-                        console.log('Verification success:', data);
-                        
-                        // Store verification in sessionStorage
-                        sessionStorage.setItem('userVerified', 'true');
-                        sessionStorage.setItem('userIndex', indexNumber);
-                        sessionStorage.setItem('userReceipt', mpesaReceipt);
-                        
-                        // Show preview with course information
-                        showPreview(data);
+                        handleVerificationSuccess(data, mpesaReceipt, indexNumber);
                     } else {
-                        // Show error
                         showError(data.error || 'Verification failed. Please check your details and try again.');
                     }
-                })
-                .catch(error => {
+                } catch (error) {
                     console.error('Verification error:', error);
                     loadingDiv.style.display = 'none';
                     submitBtn.disabled = false;
                     showError('Network error. Please check your connection and try again.');
-                });
+                }
             });
             
-            function showError(message) {
-                const errorDiv = document.getElementById('verifyError');
-                errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
-                errorDiv.style.display = 'block';
-                const loadingDiv = document.getElementById('verifyLoading');
-                loadingDiv.style.display = 'none';
-                const submitBtn = document.getElementById('verifySubmitBtn');
-                submitBtn.disabled = false;
-            }
-            
-            function showPreview(data) {
-                const previewDiv = document.getElementById('verifyPreview');
-                const previewInfo = document.getElementById('previewInfo');
-                const courseLevels = document.getElementById('courseLevels');
-                const showResultsBtn = document.getElementById('showResultsBtn');
-                const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
-                
-                // Update preview information
-                previewInfo.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong><i class="fas fa-id-card me-2"></i>Index Number:</strong><br>${data.index_number || document.getElementById('index_number_verify').value}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong><i class="fas fa-receipt me-2"></i>Receipt:</strong><br>${data.mpesa_receipt || document.getElementById('mpesa_receipt').value.toUpperCase()}</p>
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-12">
-                            <p><strong><i class="fas fa-graduation-cap me-2"></i>Total Courses Found:</strong> ${data.courses_count || 0}</p>
-                        </div>
-                    </div>
-                `;
-                
-                // Update course levels
-                if (data.levels && data.levels.length > 0) {
-                    courseLevels.innerHTML = '';
-                    data.levels.forEach(level => {
-                        const badge = document.createElement('span');
-                        badge.className = 'badge bg-primary px-3 py-2 me-2 mb-2';
-                        badge.style.cssText = 'background: var(--gradient-red)!important; font-size: 0.9rem;';
-                        badge.innerHTML = `<i class="fas fa-university me-1"></i>${level.toUpperCase()}`;
-                        courseLevels.appendChild(badge);
-                    });
-                } else {
-                    courseLevels.innerHTML = '<p class="text-muted">No course levels found</p>';
-                }
-                
-                // Update show results button
-                showResultsBtn.onclick = function() {
-                    // Redirect to verified dashboard
-                    if (data.redirect_url) {
-                        console.log('Redirecting to:', data.redirect_url);
-                        window.location.href = data.redirect_url;
-                    } else {
-                        // Fallback redirect with parameters
-                        const params = new URLSearchParams({
-                            index: data.index_number || document.getElementById('index_number_verify').value,
-                            receipt: data.mpesa_receipt || document.getElementById('mpesa_receipt').value.toUpperCase()
-                        });
-                        window.location.href = `/verified-dashboard?${params.toString()}`;
-                    }
-                };
-                
-                // Cancel preview button
-                cancelPreviewBtn.onclick = function() {
-                    previewDiv.style.display = 'none';
-                    verifyPaymentForm.reset();
-                };
-                
-                // Show preview
-                previewDiv.style.display = 'block';
-                
-                // Scroll to preview
-                previewDiv.scrollIntoView({ behavior: 'smooth' });
-            }
-            
             // Reset form when modal is hidden
-            verifyPaymentModal.addEventListener('hidden.bs.modal', function () {
-                const form = document.getElementById('verifyPaymentForm');
-                if (form) {
-                    form.reset();
-                }
+            verifyPaymentModal.addEventListener('hidden.bs.modal', function() {
+                verifyPaymentForm.reset();
                 document.getElementById('verifyError').style.display = 'none';
                 document.getElementById('verifyLoading').style.display = 'none';
                 document.getElementById('verifyPreview').style.display = 'none';
                 document.getElementById('verifySubmitBtn').disabled = false;
             });
-
+            
             // Check for existing verification on page load
             if (sessionStorage.getItem('userVerified')) {
-                fetch('/load-basket')
-                    .then(response => response.json())
-                    .then(basketData => {
-                        if (basketData.success && basketData.basket_count > 0) {
-                            showBasketNavigation(basketData.basket_count);
-                        }
-                    })
-                    .catch(() => {
-                        console.log('No saved basket found');
-                    });
+                loadBasketCount();
             }
-
-            // Add scroll event for navbar
-            window.addEventListener('scroll', function() {
-                const navbar = document.querySelector('.navbar-custom');
-                if (window.scrollY > 50) {
-                    navbar.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.1)';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('verifyError');
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
+            errorDiv.style.display = 'block';
+            const loadingDiv = document.getElementById('verifyLoading');
+            loadingDiv.style.display = 'none';
+            const submitBtn = document.getElementById('verifySubmitBtn');
+            submitBtn.disabled = false;
+        }
+        
+        function handleVerificationSuccess(data, mpesaReceipt, indexNumber) {
+            // Store verification in sessionStorage
+            sessionStorage.setItem('userVerified', 'true');
+            sessionStorage.setItem('userIndex', indexNumber);
+            sessionStorage.setItem('userReceipt', mpesaReceipt);
+            
+            // Show preview with course information
+            showPreview(data, indexNumber, mpesaReceipt);
+        }
+        
+        function showPreview(data, indexNumber, mpesaReceipt) {
+            const previewDiv = document.getElementById('verifyPreview');
+            const previewInfo = document.getElementById('previewInfo');
+            const courseLevels = document.getElementById('courseLevels');
+            const showResultsBtn = document.getElementById('showResultsBtn');
+            const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
+            
+            // Update preview information
+            previewInfo.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-id-card me-2"></i>Index Number:</strong><br>${data.index_number || indexNumber}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-receipt me-2"></i>Receipt:</strong><br>${data.mpesa_receipt || mpesaReceipt}</p>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <p><strong><i class="fas fa-graduation-cap me-2"></i>Total Courses Found:</strong> ${data.courses_count || 0}</p>
+                    </div>
+                </div>
+            `;
+            
+            // Update course levels
+            updateCourseLevels(data.levels);
+            
+            // Update show results button
+            setupResultsButton(data, indexNumber, mpesaReceipt);
+            
+            // Cancel preview button
+            cancelPreviewBtn.onclick = function() {
+                previewDiv.style.display = 'none';
+                document.getElementById('verifyPaymentForm').reset();
+            };
+            
+            // Show preview
+            previewDiv.style.display = 'block';
+            previewDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function updateCourseLevels(levels) {
+            const courseLevels = document.getElementById('courseLevels');
+            courseLevels.innerHTML = '';
+            
+            if (levels && levels.length > 0) {
+                levels.forEach(level => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge px-3 py-2 me-2 mb-2';
+                    badge.style.cssText = 'background: var(--gradient-red)!important; font-size: 0.9rem; color: white;';
+                    badge.innerHTML = `<i class="fas fa-university me-1"></i>${level.toUpperCase()}`;
+                    courseLevels.appendChild(badge);
+                });
+            } else {
+                courseLevels.innerHTML = '<p class="text-muted">No course levels found</p>';
+            }
+        }
+        
+        function setupResultsButton(data, indexNumber, mpesaReceipt) {
+            const showResultsBtn = document.getElementById('showResultsBtn');
+            showResultsBtn.onclick = function() {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
                 } else {
-                    navbar.style.boxShadow = 'var(--shadow-light)';
+                    const params = new URLSearchParams({
+                        index: data.index_number || indexNumber,
+                        receipt: data.mpesa_receipt || mpesaReceipt
+                    });
+                    window.location.href = `/verified-dashboard?${params.toString()}`;
                 }
-            });
-
-            // Initialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        });
-
-        // PWA Installation Logic
-        document.getElementById('closeNewsModalBtn').addEventListener('click', redirectToHome);
-        document.addEventListener('DOMContentLoaded', function() {
+            };
+        }
+        
+        async function loadBasketCount() {
+            try {
+                const response = await fetch('/load-basket');
+                const basketData = await response.json();
+                if (basketData.success && basketData.basket_count > 0) {
+                    showBasketNavigation(basketData.basket_count);
+                }
+            } catch (error) {
+                console.log('No saved basket found');
+            }
+        }
+        
+        // ============================================
+        // PWA FUNCTIONALITY
+        // ============================================
+        function initPWAFeatures() {
             let deferredPrompt;
             const installPrompt = document.getElementById('pwaInstallPrompt');
             const installBtn = document.getElementById('installAppBtn');
             const dismissBtn = document.getElementById('dismissPwaPrompt');
             const closeBtn = document.getElementById('closePwaPrompt');
-            const newsModalElement = document.getElementById('newsModal');
             const iosGuide = document.getElementById('iosInstallGuide');
             const closeIosGuideBtn = document.getElementById('closeIosGuide');
             const navInstallItem = document.getElementById('navInstallItem');
             const sidebarInstallLink = document.getElementById('sidebarInstallLink');
+            const navInstallBtn = document.getElementById('navInstallBtn');
             
-            // Check if already installed
+            // Check if app is already installed
             function isAppInstalled() {
                 return window.matchMedia('(display-mode: standalone)').matches || 
                        window.navigator.standalone === true ||
                        document.referrer.includes('android-app://');
             }
             
-            // Check if iOS
+            // Detect iOS
             function isIOS() {
                 return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             }
             
-            // Check if Android Chrome
+            // Detect Android Chrome
             function isAndroidChrome() {
                 return /Android/.test(navigator.userAgent) && 
                        /Chrome/.test(navigator.userAgent) && 
@@ -1983,7 +2454,7 @@
             }
             
             // Show PWA installation prompt
-            function showPwaInstallPrompt() {
+            window.showPwaInstallPrompt = function() {
                 if (isAppInstalled()) {
                     alert('App is already installed!');
                     return;
@@ -1996,18 +2467,18 @@
                 } else {
                     installPrompt.style.display = 'block';
                 }
-            }
+            };
             
-            // Handle beforeinstallprompt event (Android Chrome)
+            // Handle beforeinstallprompt event
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
                 
-                // Show install button in navigation
+                // Show install buttons
                 if (navInstallItem) navInstallItem.style.display = 'block';
                 if (sidebarInstallLink) sidebarInstallLink.style.display = 'block';
                 
-                // Clear the deferredPrompt after 30 seconds
+                // Clear deferredPrompt after 30 seconds
                 setTimeout(() => {
                     deferredPrompt = null;
                 }, 30000);
@@ -2018,17 +2489,20 @@
                 installBtn.addEventListener('click', async () => {
                     if (deferredPrompt) {
                         // Android Chrome
-                        deferredPrompt.prompt();
-                        const { outcome } = await deferredPrompt.userChoice;
-                        
-                        if (outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                            // Hide the install button
-                            if (navInstallItem) navInstallItem.style.display = 'none';
-                            if (sidebarInstallLink) sidebarInstallLink.style.display = 'none';
-                        } else {
-                            console.log('User dismissed the install prompt');
+                        try {
+                            deferredPrompt.prompt();
+                            const { outcome } = await deferredPrompt.userChoice;
+                            
+                            if (outcome === 'accepted') {
+                                console.log('User accepted the install prompt');
+                                hideInstallButtons();
+                            } else {
+                                console.log('User dismissed the install prompt');
+                            }
+                        } catch (error) {
+                            console.error('Installation error:', error);
                         }
+                        
                         deferredPrompt = null;
                         installPrompt.style.display = 'none';
                     } else if (isIOS()) {
@@ -2036,13 +2510,12 @@
                         installPrompt.style.display = 'none';
                         iosGuide.style.display = 'flex';
                     } else {
-                        // Fallback - show instructions
+                        // Fallback
                         alert('To install the app:\n1. Open your browser menu\n2. Tap "Add to Home Screen"\n3. Follow the prompts');
                         installPrompt.style.display = 'none';
                     }
                     
-                    localStorage.setItem('pwaPromptDismissed', 'true');
-                    localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                    savePwaDismissal();
                 });
             }
             
@@ -2050,24 +2523,21 @@
             if (dismissBtn) {
                 dismissBtn.addEventListener('click', () => {
                     installPrompt.style.display = 'none';
-                    localStorage.setItem('pwaPromptDismissed', 'true');
-                    localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                    savePwaDismissal();
                 });
             }
             
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => {
                     installPrompt.style.display = 'none';
-                    localStorage.setItem('pwaPromptDismissed', 'true');
-                    localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                    savePwaDismissal();
                 });
             }
             
             if (closeIosGuideBtn) {
                 closeIosGuideBtn.addEventListener('click', () => {
                     iosGuide.style.display = 'none';
-                    localStorage.setItem('pwaPromptDismissed', 'true');
-                    localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                    savePwaDismissal();
                 });
             }
             
@@ -2076,31 +2546,50 @@
                 iosGuide.addEventListener('click', (e) => {
                     if (e.target === iosGuide) {
                         iosGuide.style.display = 'none';
-                        localStorage.setItem('pwaPromptDismissed', 'true');
-                        localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+                        savePwaDismissal();
                     }
                 });
             }
             
-            // Show install prompt after delay if not dismissed recently
+            // Nav install button handler
+            if (navInstallBtn) {
+                navInstallBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showPwaInstallPrompt();
+                });
+            }
+            
+            // Hide install buttons if app is installed
+            function hideInstallButtons() {
+                if (navInstallItem) navInstallItem.style.display = 'none';
+                if (sidebarInstallLink) sidebarInstallLink.style.display = 'none';
+                const pwaCtaCard = document.getElementById('pwaCtaCard');
+                if (pwaCtaCard) pwaCtaCard.style.display = 'none';
+            }
+            
+            // Save dismissal to localStorage
+            function savePwaDismissal() {
+                localStorage.setItem('pwaPromptDismissed', 'true');
+                localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
+            }
+            
+            // Show install prompt after delay
             function showInstallPromptAfterDelay() {
-                if (isAppInstalled()) return;
+                if (isAppInstalled()) {
+                    document.body.classList.add('standalone-mode');
+                    hideInstallButtons();
+                    return;
+                }
                 
-                // Check if user has dismissed before
                 const hasDismissed = localStorage.getItem('pwaPromptDismissed');
                 const dismissalTime = localStorage.getItem('pwaPromptDismissedTime');
                 
                 if (hasDismissed) {
                     const now = Date.now();
                     const daysSinceDismissal = (now - parseInt(dismissalTime)) / (1000 * 60 * 60 * 24);
-                    
-                    // Show again after 7 days
-                    if (daysSinceDismissal < 7) {
-                        return;
-                    }
+                    if (daysSinceDismissal < 7) return;
                 }
                 
-                // Show prompt after 5 seconds
                 setTimeout(() => {
                     if (isIOS()) {
                         iosGuide.style.display = 'flex';
@@ -2110,73 +2599,44 @@
                 }, 5000);
             }
             
-            // Show install prompt
+            // Show prompt
             setTimeout(showInstallPromptAfterDelay, 1000);
             
             // Register service worker
-           if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(registration => {
-                console.log('ServiceWorker registered with scope:', registration.scope);
-                
-                // Check for updates
-                registration.onupdatefound = () => {
-                    const newWorker = registration.installing;
-                    newWorker.onstatechange = () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('New content available; please refresh.');
-                        }
-                    };
-                };
-            })
-            .catch(error => {
-                console.log('ServiceWorker registration failed:', error);
-            });
-    });
-}
-            // Add install button to navigation
-            if (!isAppInstalled()) {
-                if (navInstallItem) navInstallItem.style.display = 'block';
-                if (sidebarInstallLink) sidebarInstallLink.style.display = 'block';
-                
-                // Add click handler to nav install button
-                const navInstallBtn = document.getElementById('navInstallBtn');
-                if (navInstallBtn) {
-                    navInstallBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        showPwaInstallPrompt();
-                    });
-                }
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(registration => {
+                            console.log('ServiceWorker registered with scope:', registration.scope);
+                            
+                            // Check for updates
+                            registration.onupdatefound = () => {
+                                const newWorker = registration.installing;
+                                newWorker.onstatechange = () => {
+                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                        console.log('New content available; please refresh.');
+                                    }
+                                };
+                            };
+                        })
+                        .catch(error => {
+                            console.log('ServiceWorker registration failed:', error);
+                        });
+                });
             }
-            
-            // Detect app mode
-            window.addEventListener('load', () => {
-                if (isAppInstalled()) {
-                    console.log('Running in standalone mode');
-                    document.body.classList.add('standalone-mode');
-                    // Hide install buttons if app is installed
-                    if (navInstallItem) navInstallItem.style.display = 'none';
-                    if (sidebarInstallLink) sidebarInstallLink.style.display = 'none';
-                    // Hide the CTA card
-                    const pwaCtaCard = document.getElementById('pwaCtaCard');
-                    if (pwaCtaCard) pwaCtaCard.style.display = 'none';
-                }
-            });
-            
-            // Make showPwaInstallPrompt globally accessible
-            window.showPwaInstallPrompt = showPwaInstallPrompt;
-        });
-
-        // Enhanced News System
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load latest news and show notification badge
+        }
+        
+        // ============================================
+        // NEWS SYSTEM
+        // ============================================
+        function initNewsSystem() {
             loadLatestNews();
-            
-            // Check for new news periodically (every 10 minutes)
             setInterval(checkForNewNews, 10 * 60 * 1000);
-        });
-
+            
+            // News modal close handler
+            document.getElementById('closeNewsModalBtn').addEventListener('click', redirectToHome);
+        }
+        
         async function loadLatestNews() {
             try {
                 const response = await fetch('/api/news/latest?limit=1');
@@ -2186,42 +2646,20 @@
                     const latestArticle = data.news[0];
                     const lastSeenNewsId = localStorage.getItem('lastSeenNewsId');
                     
-                    // Always show the notification badge (but pulse if there's new news)
                     showNewsBadge();
                     
-                    // If this is new news, pulse the badge
                     if (lastSeenNewsId !== latestArticle._id) {
                         startBadgePulse();
-                        // Don't automatically update localStorage - only update when user clicks
                     }
                     
-                    // Store the latest article ID for comparison
                     localStorage.setItem('latestNewsId', latestArticle._id);
-                    
-                    // Preload news for modal
                     loadNewsModal();
                 }
             } catch (error) {
                 console.error('Error loading latest news:', error);
             }
         }
-        function redirectToHome() {
-    // Get the modal instance
-    const newsModal = bootstrap.Modal.getInstance(document.getElementById('newsModal'));
-    
-    // Hide the modal first
-    if (newsModal) {
-        newsModal.hide();
-    }
-    
-    // Redirect to home after a short delay (better UX)
-    setTimeout(() => {
-        window.location.href = '/';
-    }, 300);
-}
-
-// Also add event listener for the close (X) button
-document.getElementById('closeNewsModalBtn').addEventListener('click', redirectToHome);
+        
         async function loadNewsModal() {
             try {
                 const response = await fetch('/api/news/latest?limit=5');
@@ -2245,7 +2683,9 @@ document.getElementById('closeNewsModalBtn').addEventListener('click', redirectT
                                     ${article.image_url ? `
                                     <div class="flex-shrink-0 me-3">
                                         <img src="${article.image_url}" alt="${article.title}" 
-                                             class="rounded" style="width: 80px; height: 60px; object-fit: cover;"
+     width="400" height="300"
+     class="img-fluid rounded" style="max-height: 300px; object-fit: cover;"
+     loading="lazy">
                                              onerror="this.src='https://via.placeholder.com/80x60?text=News'">
                                     </div>
                                     ` : ''}
@@ -2293,72 +2733,62 @@ document.getElementById('closeNewsModalBtn').addEventListener('click', redirectT
                 `;
             }
         }
-
+        
         function showNewsBadge() {
             const newsBadgeContainer = document.getElementById('newsBadgeContainer');
             const newsBadgeCount = document.getElementById('newsBadgeCount');
             
             if (newsBadgeContainer) {
                 newsBadgeContainer.style.display = 'block';
-                
-                // Check if we have a news count from localStorage
                 const unreadCount = localStorage.getItem('unreadNewsCount') || 1;
                 if (newsBadgeCount) {
                     newsBadgeCount.textContent = unreadCount;
                 }
             }
         }
-
+        
         function startBadgePulse() {
             const newsBellBtn = document.getElementById('newsBellBtn');
             if (newsBellBtn) {
                 newsBellBtn.classList.add('pulse');
-                
-                // Stop pulsing after 10 seconds
                 setTimeout(() => {
                     newsBellBtn.classList.remove('pulse');
                 }, 10000);
             }
         }
-
-        function checkForNewNews() {
-            fetch('/api/news/latest?limit=1')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.news.length > 0) {
-                        const latestArticle = data.news[0];
-                        const lastSeenId = localStorage.getItem('lastSeenNewsId');
-                        const latestStoredId = localStorage.getItem('latestNewsId');
+        
+        async function checkForNewNews() {
+            try {
+                const response = await fetch('/api/news/latest?limit=1');
+                const data = await response.json();
+                
+                if (data.success && data.news.length > 0) {
+                    const latestArticle = data.news[0];
+                    const latestStoredId = localStorage.getItem('latestNewsId');
+                    
+                    if (latestStoredId !== latestArticle._id) {
+                        localStorage.setItem('latestNewsId', latestArticle._id);
                         
-                        // If we have new news
-                        if (latestStoredId !== latestArticle._id) {
-                            localStorage.setItem('latestNewsId', latestArticle._id);
-                            
-                            // Increment unread count
-                            let unreadCount = parseInt(localStorage.getItem('unreadNewsCount') || '0');
-                            unreadCount++;
-                            localStorage.setItem('unreadNewsCount', unreadCount);
-                            
-                            // Update badge count
-                            const newsBadgeCount = document.getElementById('newsBadgeCount');
-                            if (newsBadgeCount) {
-                                newsBadgeCount.textContent = unreadCount;
-                            }
-                            
-                            // Start pulsing to indicate new news
-                            startBadgePulse();
-                            
-                            // Reload modal content
-                            loadNewsModal();
+                        let unreadCount = parseInt(localStorage.getItem('unreadNewsCount') || '0');
+                        unreadCount++;
+                        localStorage.setItem('unreadNewsCount', unreadCount);
+                        
+                        const newsBadgeCount = document.getElementById('newsBadgeCount');
+                        if (newsBadgeCount) {
+                            newsBadgeCount.textContent = unreadCount;
                         }
+                        
+                        startBadgePulse();
+                        loadNewsModal();
                     }
-                })
-                .catch(error => console.error('Error checking for new news:', error));
+                }
+            } catch (error) {
+                console.error('Error checking for new news:', error);
+            }
         }
-
+        
         async function viewNewsArticle(articleId) {
             try {
-                // Get article data
                 const response = await fetch('/api/news/latest?limit=50');
                 const data = await response.json();
                 
@@ -2368,86 +2798,12 @@ document.getElementById('closeNewsModalBtn').addEventListener('click', redirectT
                         // Increment view count
                         await fetch(`/api/news/increment-views/${articleId}`, { method: 'POST' });
                         
-                        // Mark this article as read
+                        // Mark as read
                         localStorage.setItem('lastSeenNewsId', articleId);
+                        decreaseUnreadCount();
                         
-                        // Decrease unread count
-                        let unreadCount = parseInt(localStorage.getItem('unreadNewsCount') || '0');
-                        if (unreadCount > 0) {
-                            unreadCount--;
-                            localStorage.setItem('unreadNewsCount', unreadCount);
-                            
-                            // Update badge count
-                            const newsBadgeCount = document.getElementById('newsBadgeCount');
-                            if (newsBadgeCount) {
-                                newsBadgeCount.textContent = unreadCount;
-                                if (unreadCount === 0) {
-                                    newsBadgeCount.textContent = '0';
-                                }
-                            }
-                        }
-                        
-                        // Show in article modal
-                        const articleDate = new Date(article.published_at || article.created_at);
-                        const formattedDate = articleDate.toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
-                        
-                        let articleHTML = `
-                            <div class="article-modal-view">
-                                ${article.image_url ? `
-                                <div class="text-center mb-4">
-                                    <img src="${article.image_url}" alt="${article.title}" 
-                                         class="img-fluid rounded" style="max-height: 300px; object-fit: cover;"
-                                         onerror="this.src='https://via.placeholder.com/800x300?text=KUCCPS+News'">
-                                </div>
-                                ` : ''}
-                                
-                                <h4 class="mb-3">${article.title}</h4>
-                                
-                                <div class="d-flex align-items-center mb-4">
-                                    <span class="badge bg-light text-dark me-3">
-                                        <i class="fas fa-calendar-alt me-1"></i>${formattedDate}
-                                    </span>
-                                    ${article.is_featured ? `
-                                    <span class="badge bg-warning">
-                                        <i class="fas fa-star me-1"></i>Featured
-                                    </span>
-                                    ` : ''}
-                                </div>
-                                
-                                <div class="article-content mb-4" style="line-height: 1.7;">
-                                    ${article.content.replace(/\n/g, '<br>')}
-                                </div>
-                                
-                                ${article.external_link ? `
-                                <div class="alert alert-info">
-                                    <i class="fas fa-link me-2"></i>
-                                    <strong>Source:</strong>
-                                    <a href="${article.external_link}" target="_blank" class="alert-link ms-2">
-                                        View original article
-                                    </a>
-                                </div>
-                                ` : ''}
-                            </div>
-                        `;
-                        
-                        // Show in article modal
-                        const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
-                        document.getElementById('articleModalContent').innerHTML = articleHTML;
-                        document.getElementById('articleModalLabel').innerHTML = `
-                            <i class="fas fa-newspaper me-2"></i>${article.title.substring(0, 30)}...
-                        `;
-                        
-                        // Close news modal if open
-                        const newsModal = bootstrap.Modal.getInstance(document.getElementById('newsModal'));
-                        if (newsModal) {
-                            newsModal.hide();
-                        }
-                        
-                        articleModal.show();
+                        // Show article
+                        showArticleModal(article);
                     }
                 }
             } catch (error) {
@@ -2455,28 +2811,114 @@ document.getElementById('closeNewsModalBtn').addEventListener('click', redirectT
                 alert('Error loading article. Please try again.');
             }
         }
-
-        // When news modal is opened, mark all as read
-        document.getElementById('newsModal').addEventListener('shown.bs.modal', function() {
-            // Update last seen to latest news
-            const latestNewsId = localStorage.getItem('latestNewsId');
-            if (latestNewsId) {
-                localStorage.setItem('lastSeenNewsId', latestNewsId);
-                localStorage.setItem('unreadNewsCount', '0');
+        
+        function decreaseUnreadCount() {
+            let unreadCount = parseInt(localStorage.getItem('unreadNewsCount') || '0');
+            if (unreadCount > 0) {
+                unreadCount--;
+                localStorage.setItem('unreadNewsCount', unreadCount);
                 
-                // Update badge count
                 const newsBadgeCount = document.getElementById('newsBadgeCount');
                 if (newsBadgeCount) {
-                    newsBadgeCount.textContent = '0';
-                }
-                
-                // Stop pulsing
-                const newsBellBtn = document.getElementById('newsBellBtn');
-                if (newsBellBtn) {
-                    newsBellBtn.classList.remove('pulse');
+                    newsBadgeCount.textContent = unreadCount;
+                    if (unreadCount === 0) {
+                        newsBadgeCount.textContent = '0';
+                    }
                 }
             }
-        });
+        }
+        
+        function showArticleModal(article) {
+            const articleDate = new Date(article.published_at || article.created_at);
+            const formattedDate = articleDate.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            
+            const articleHTML = `
+                <div class="article-modal-view">
+                    ${article.image_url ? `
+                    <div class="text-center mb-4">
+                        <img src="${article.image_url}" alt="${article.title}" 
+                             class="img-fluid rounded" style="max-height: 300px; object-fit: cover;"
+                             onerror="this.src='https://via.placeholder.com/800x300?text=KUCCPS+News'">
+                    </div>
+                    ` : ''}
+                    
+                    <h4 class="mb-3">${article.title}</h4>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <span class="badge bg-light text-dark me-3">
+                            <i class="fas fa-calendar-alt me-1"></i>${formattedDate}
+                        </span>
+                        ${article.is_featured ? `
+                        <span class="badge bg-warning">
+                            <i class="fas fa-star me-1"></i>Featured
+                        </span>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="article-content mb-4" style="line-height: 1.7;">
+                        ${article.content.replace(/\n/g, '<br>')}
+                    </div>
+                    
+                    ${article.external_link ? `
+                    <div class="alert alert-info">
+                        <i class="fas fa-link me-2"></i>
+                        <strong>Source:</strong>
+                        <a href="${article.external_link}" target="_blank" class="alert-link ms-2" rel="noopener noreferrer">
+                            View original article
+                        </a>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
+            document.getElementById('articleModalContent').innerHTML = articleHTML;
+            document.getElementById('articleModalLabel').innerHTML = `
+                <i class="fas fa-newspaper me-2"></i>${article.title.substring(0, 30)}...
+            `;
+            
+            // Close news modal if open
+            const newsModal = bootstrap.Modal.getInstance(document.getElementById('newsModal'));
+            if (newsModal) {
+                newsModal.hide();
+            }
+            
+            articleModal.show();
+        }
+        
+        // ============================================
+        // MODAL INITIALIZATION
+        // ============================================
+        function initModals() {
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Mark all news as read when news modal is opened
+            document.getElementById('newsModal').addEventListener('shown.bs.modal', function() {
+                const latestNewsId = localStorage.getItem('latestNewsId');
+                if (latestNewsId) {
+                    localStorage.setItem('lastSeenNewsId', latestNewsId);
+                    localStorage.setItem('unreadNewsCount', '0');
+                    
+                    const newsBadgeCount = document.getElementById('newsBadgeCount');
+                    if (newsBadgeCount) {
+                        newsBadgeCount.textContent = '0';
+                    }
+                    
+                    const newsBellBtn = document.getElementById('newsBellBtn');
+                    if (newsBellBtn) {
+                        newsBellBtn.classList.remove('pulse');
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>

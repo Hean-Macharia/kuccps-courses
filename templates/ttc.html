@@ -1,14 +1,176 @@
 {% extends "./base.html" %} 
-{% block title %} Teacher Training Colleges (TTC) | KUCCPS {% endblock %} 
+{% block title %}KUCCPS Teacher Training Colleges (TTC) | KUCCPS {% endblock %} 
 
 {% block links %}
+<link rel="canonical" href="{{ get_canonical_url('ttc') }}" />
+<meta name="description" content="Find KUCCPS teacher training college (TTC) programs in Kenya. Match your KCSE grades with 2-year education diploma programs for primary, secondary, and technical teacher training.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "Teacher Training College (TTC) Programs",
+  "description": "Explore Teacher Training College programs across Kenya. 2-year education diploma programs preparing students for teaching careers in primary schools, secondary schools, and technical institutions.",
+  "provider": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "url": "https://www.kuccpscourses.co.ke/"
+  },
+  "courseCode": "KUCCPS-TTC",
+  "educationalCredentialAwarded": "Diploma in Education",
+  "timeToComplete": "P3Y",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "full-time",
+    "courseWorkload": "3-year teacher training with classroom practice and teaching methodology"
+  }
+}
+</script>
+
+<!-- Microdata Schema for EducationalOccupationalProgram -->
+<div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
+    <meta itemprop="educationalProgramMode" content="classroom practice"/>
+    <meta itemprop="numberOfCredits" content="120"/>
+    <meta itemprop="occupationalCategory" content="Teacher Education"/>
+    <meta itemprop="skills" content="teaching methodology, pedagogy, classroom management, subject expertise"/>
+</div>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
+<style>
+    /* TTC Card Styling */
+    .ttc-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 30px 0;
+    }
+    
+    .ttc-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 12px 12px 0 0;
+        margin-bottom: 0;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .ttc-header h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .ttc-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+    
+    #gradesForm {
+        padding: 30px;
+        background: white;
+    }
+    
+    #gradesForm h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    #gradesForm h2 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #764ba2;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        padding-left: 10px;
+        border-left: 4px solid #764ba2;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.95rem;
+    }
+    
+    .form-select {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+    
+    .form-select:hover {
+        border-color: #667eea;
+    }
+    
+    .subjects {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    
+    form button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 30px;
+        width: 100%;
+    }
+    
+    form button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    }
+    
+    .intro-span {
+        font-size: 1.1rem;
+        color: #555;
+        display: block;
+        margin-bottom: 30px;
+        font-weight: 500;
+    }
+</style>
 {% endblock %} 
 
+{% block displaytext %}Find Teacher Training Programs Matching Your Grades{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-primary">Teacher Training Colleges (TTC)</h1>
-    <p>Fill in your KCSE grades to see which Teacher Training College programmes you qualify for.</p>
+
+    <div class="container">
+        <h1 class="text-center mb-4">Teacher Training College (TTC) Programs Qualification Checker</h1>
+    </div>
+
+    <div class="container mt-4 mb-4">
+    <span class="intro-span">Fill in your KCSE grades and submit to see all teacher training programs you qualify for!
+    </span>
     
     <form action="/submit-ttc-grades" method="post">
         <!-- KCSE Subjects Grades -->
@@ -517,5 +679,238 @@
             Submit
         </button>
     </form>
+    <div class="container mt-5">
+    <!-- TTC Programs Section Header -->
+    <div class="alert alert-dark mb-4" role="alert">
+        <h2 class="alert-heading">👨‍🏫 Teachers Training Colleges (TTC) Programs</h2>
+        <p class="mb-2">
+            Teacher Training Colleges (TTC) prepare passionate individuals for careers in education. These KUCCPS-partnered programs offer 
+            specialized training in primary teacher education, secondary subject specialization, and special needs education across Kenya's accredited training centers.
+        </p>
+        <p class="mb-0">
+            <strong>How it works:</strong> Enter your KCSE overall grade and subject grades below to find which teacher training programs you qualify for. 
+            Teaching careers are rewarding, stable, and essential for Kenya's educational development. Most TTC programs are 2-3 years in duration.
+        </p>
+    </div>
+    
+    <!-- TTC Information Section -->
+    <div class="row mt-5 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🎓 TTC Teaching Specializations</h5>
+                    <ul class="small">
+                        <li>Primary Teacher Education</li>
+                        <li>Secondary Teacher Education</li>
+                        <li>Science Teaching</li>
+                        <li>Mathematics Teaching</li>
+                        <li>Language Teaching (English, Kiswahili)</li>
+                        <li>Special Needs Education</li>
+                        <li>Early Childhood Development</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📚 Why Choose Teaching</h5>
+                    <ul class="small">
+                        <li>Stable, secure government employment</li>
+                        <li>Regular salary and pension benefits</li>
+                        <li>Holidays aligned with school calendar</li>
+                        <li>Professional development opportunities</li>
+                        <li>Make a lasting impact on students' lives</li>
+                        <li>Growing demand for teachers in Kenya</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose Teacher Training Programs -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Why Choose Teacher Training College Programs</h2>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Secure Government Employment</h5>
+                            <p class="mb-0">Teaching is recognized by TSC, guaranteeing stable government employment with pension benefits and regular salary progression.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Respected Professional Career</h5>
+                            <p class="mb-0">Teaching is a noble profession that impacts society. Teachers are respected members of the community with professional development opportunities.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>TSC Benefits and Pension</h5>
+                            <p class="mb-0">Access to Teachers Service Commission benefits including healthcare, housing allowance, and comprehensive retirement pension scheme.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Work-Life Balance</h5>
+                            <p class="mb-0">School holidays align with your personal calendar, offering excellent work-life balance and time with family.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Frequently Asked Questions -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Frequently Asked Questions About Teacher Training</h2>
+            <div class="accordion" id="ttcFAQ">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq1">
+                            What are the different teaching specializations available?
+                        </button>
+                    </h2>
+                    <div id="ttcfaq1" class="accordion-collapse collapse show" data-bs-parent="#ttcFAQ">
+                        <div class="accordion-body">
+                            TTCs offer programs in Primary Teacher Training, Secondary Teacher Training in various subjects (Science, Mathematics, Language Arts), Technical Teacher Training, and Special Needs Education. You choose based on your interests and qualifications.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq2">
+                            Will I get a job after completing teacher training?
+                        </button>
+                    </h2>
+                    <div id="ttcfaq2" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
+                        <div class="accordion-body">
+                            Yes. TTC graduates are absorbed into schools. The Teachers Service Commission recruits qualified teachers regularly. Job placement is virtually guaranteed, with teachers posted to schools across Kenya.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq3">
+                            What is the entry requirement for TTC programs?
+                        </button>
+                    </h2>
+                    <div id="ttcfaq3" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
+                        <div class="accordion-body">
+                            You need a minimum C grade in KCSE overall. For secondary teaching, you also need relevant subject passes at C or better. Primary teaching has slightly more flexible requirements in some institutions.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq4">
+                            What salary will I earn as a teacher?
+                        </button>
+                    </h2>
+                    <div id="ttcfaq4" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
+                        <div class="accordion-body">
+                            Starting salaries for TSC teachers range from 25,000 to 35,000 Kenya shillings per month, with regular progression up to 80,000+ shillings with experience and promotions. Add to this housing allowance and other TSC benefits.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq5">
+                            Can I pursue further studies after TTC?
+                        </button>
+                    </h2>
+                    <div id="ttcfaq5" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
+                        <div class="accordion-body">
+                            Yes, absolutely. Many TTC graduates pursue bachelor's degrees in Education through distance learning or university transfer programs while working as teachers. TSC also supports staff development.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Stories -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Success Stories from TTC Graduates</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Teacher Rose Kipchoge - Primary Teaching</h5>
+                            <p class="small mb-3">Rose completed her primary teacher training and has been teaching for 8 years. She recently promoted to Senior Teacher and now mentors junior teachers while running a school library program.</p>
+                            <p class="small text-muted">"Teaching changed my life and enabled me to impact thousands of children."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Teacher James Ochieng - Secondary Mathematics</h5>
+                            <p class="small mb-3">James' TTC training led to a position teaching mathematics at a national school. He completed his bachelor's degree while teaching and was promoted to Head of Department after 5 years.</p>
+                            <p class="small text-muted">"TTC provided the foundation for a rewarding career in education."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Teacher Grace Mwangi - Special Needs Education</h5>
+                            <p class="small mb-3">Grace specialized in Special Needs Education through TTC. She works at an inclusive school supporting learners with diverse needs and has won recognition for her innovative teaching methods.</p>
+                            <p class="small text-muted">"My TTC training gave me the skills to make a real difference for every child."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prerequisites and Requirements -->
+<div class="container my-5 mb-5">
+    <div class="card border-left-primary shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Teacher Training Program Prerequisites and Requirements</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum C (5 points) - higher for secondary streams</li>
+                        <li class="mb-2"><strong>English Language:</strong> Minimum C for communication skills essential</li>
+                        <li class="mb-2"><strong>For Secondary:</strong> Minimum C in teaching subject required</li>
+                        <li class="mb-2"><strong>Cluster Points:</strong> Typically 40-60 points depending on TTC</li>
+                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 18+ years at entry</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Primary Teaching:</strong> Love for working with children, communication skills</li>
+                        <li class="mb-2"><strong>Secondary Teaching:</strong> Strong subject knowledge in chosen specialization</li>
+                        <li class="mb-2"><strong>Technical Teaching:</strong> Practical aptitude and technical subject knowledge</li>
+                        <li class="mb-2"><strong>Special Needs Education:</strong> Compassion, patience, and commitment to inclusion</li>
+                        <li class="mb-2"><strong>All Programs:</strong> Good character, health screening, and teaching aptitude</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 {% endblock %} {% block scripts %}{% endblock %}

@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+{% block title %}KUCCPS Application Process 2026 | Complete Step-by-Step Guide{% endblock %}
+
+{% block links %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "https://www.kuccpscourses.co.ke"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "Guides",
+    "item": "https://www.kuccpscourses.co.ke/guides/"
+  },{
+    "@type": "ListItem",
+    "position": 3,
+    "name": "KUCCPS Application Process",
+    "item": "https://www.kuccpscourses.co.ke/guides/kuccps-application-process"
+  }]
+}
+</script>
+<style>
+    /* ============================================
+        GUIDE PAGE CUSTOM STYLES
+    ============================================= */
+    
+    /* Hero Section */
+    .guide-hero {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 70px 0 50px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .guide-hero h1 {
+        font-size: 2.4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .guide-subtitle {
+        font-size: 1.15rem;
+        opacity: 0.95;
+        max-width: 700px;
+    }
+    
+    .guide-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+    
+    .guide-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .guide-meta i {
+        color: var(--primary-yellow);
+        font-size: 1.1rem;
+    }
+    
+    /* Guide Content */
+    .guide-container {
+        padding: 50px 0;
+        background: var(--white);
+    }
+    
+    .guide-content {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .guide-content h2 {
+        color: var(--primary-red);
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-top: 3rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 1rem;
+        border-bottom: 4px solid var(--primary-yellow);
+    }
+    
+    .guide-content h2:first-child {
+        margin-top: 0;
+    }
+    
+    .guide-content h3 {
+        color: var(--dark-grey);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .guide-content p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--medium-grey);
+        margin-bottom: 1.2rem;
+    }
+    
+    /* Sections */
+    .guide-section {
+        margin-bottom: 2.5rem;
+        padding: 2rem;
+        background: var(--light-grey);
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-red);
+    }
+    
+    /* Process Steps */
+    .process-steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .step {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        border-left: 5px solid var(--primary-yellow);
+        position: relative;
+    }
+    
+    .step:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        background: var(--primary-red);
+        color: var(--white);
+        border-radius: 50%;
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        margin-top: -2rem;
+    }
+    
+    .step h4 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin: 0 0 0.8rem 0;
+    }
+    
+    .step p {
+        color: var(--medium-grey);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    /* Tips Grid */
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .tip {
+        background: var(--white);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        border-top: 4px solid var(--primary-yellow);
+    }
+    
+    .tip:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .tip h4 {
+        color: var(--primary-red);
+        margin-top: 0;
+        font-size: 1.1rem;
+    }
+    
+    .tip p {
+        margin: 0.8rem 0 0 0;
+        color: var(--medium-grey);
+        font-size: 0.95rem;
+    }
+    
+    /* Info Box */
+    .info-box {
+        background: linear-gradient(135deg, rgba(198, 40, 40, 0.08) 0%, rgba(251, 192, 45, 0.08) 100%);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        border-left: 5px solid var(--primary-red);
+        margin: 1.5rem 0;
+    }
+    
+    .info-box h3 {
+        color: var(--primary-red);
+        margin-top: 0;
+    }
+    
+    .info-box ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .info-box li {
+        padding: 8px 0;
+        color: var(--dark-grey);
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    
+    .info-box li::before {
+        content: '◆';
+        position: absolute;
+        left: 0;
+        color: var(--primary-yellow);
+    }
+    
+    /* FAQ Section */
+    .faq {
+        background: var(--white);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .faq:hover {
+        box-shadow: var(--shadow-md);
+    }
+    
+    .faq h3 {
+        color: var(--primary-red);
+        font-size: 1.1rem;
+        margin: 0 0 0.8rem 0;
+    }
+    
+    .faq p {
+        margin: 0;
+        color: var(--medium-grey);
+    }
+    
+    /* Related Guides */
+    .related-guides {
+        margin-top: 4rem;
+        padding-top: 3rem;
+        border-top: 2px solid var(--light-grey);
+    }
+    
+    .related-guides h2 {
+        text-align: center;
+    }
+    
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .related-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        text-decoration: none;
+        color: inherit;
+        transition: all var(--transition-base);
+        border-top: 5px solid var(--primary-yellow);
+    }
+    
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-top-color: var(--primary-red);
+        color: var(--primary-red);
+    }
+    
+    .related-card h3 {
+        color: var(--primary-red);
+        font-size: 1.2rem;
+        margin-top: 0;
+    }
+    
+    .related-card i {
+        margin-right: 0.5rem;
+        color: var(--primary-yellow);
+    }
+    
+    .related-card p {
+        color: var(--medium-grey);
+        margin: 0.8rem 0 0 0;
+    }
+    
+    /* CTA Section */
+    .guide-cta {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 3rem 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        margin-top: 4rem;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .guide-cta h2 {
+        color: var(--white);
+        border-bottom: 4px solid var(--primary-yellow);
+        font-size: 2rem;
+        margin-top: 0;
+    }
+    
+    .guide-cta p {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.15rem;
+        margin-bottom: 2rem;
+    }
+    
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .cta-btn {
+        padding: 12px 30px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .cta-btn-primary {
+        background: var(--primary-yellow);
+        color: var(--black);
+    }
+    
+    .cta-btn-primary:hover {
+        background: #FFEB3B;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--black);
+    }
+    
+    .cta-btn-secondary {
+        background: transparent;
+        color: var(--white);
+        border: 2px solid var(--white);
+    }
+    
+    .cta-btn-secondary:hover {
+        background: var(--white);
+        color: var(--primary-red);
+        transform: translateY(-2px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .guide-hero {
+            padding: 50px 0 40px;
+        }
+        
+        .guide-hero h1 {
+            font-size: 1.8rem;
+        }
+        
+        .guide-subtitle {
+            font-size: 1rem;
+        }
+        
+        .guide-meta {
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .guide-content h2 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .guide-content h3 {
+            font-size: 1.1rem;
+        }
+        
+        .guide-section {
+            padding: 1.5rem;
+        }
+        
+        .process-steps {
+            grid-template-columns: 1fr;
+        }
+        
+        .related-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .cta-buttons {
+            flex-direction: column;
+        }
+        
+        .cta-btn {
+            width: 100%;
+        }
+        
+        .guide-cta h2 {
+            font-size: 1.5rem;
+        }
+        
+        .guide-cta p {
+            font-size: 1rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .guide-hero h1 {
+            font-size: 1.5rem;
+        }
+        
+        .guide-meta {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .guide-content h2 {
+            font-size: 1.3rem;
+        }
+        
+        .guide-section {
+            padding: 1.2rem;
+        }
+        
+        .tips-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            font-size: 1.4rem;
+        }
+    }
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "KUCCPS Application Process 2026",
+  "description": "Complete step-by-step guide to KUCCPS application process 2026. Learn how to apply for university, diploma, and certificate courses in Kenya.",
+  "image": "{{ url_for('static', filename='images/guide-banner.jpg', _external=True) }}",
+  "author": {"@type": "Organization", "name": "KUCCPS Courses Checker"},
+  "datePublished": "2026-01-21",
+  "dateModified": "2026-01-21"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="guide-hero">
+    <div class="container">
+        <h1>KUCCPS Application Process 2026</h1>
+        <p class="guide-subtitle">Your complete step-by-step guide to applying for university, diploma, and certificate programs</p>
+        <div class="guide-meta">
+            <span><i class="fas fa-calendar"></i> Last Updated: January 2026</span>
+            <span><i class="fas fa-clock"></i> Read time: 12 min</span>
+            <span><i class="fas fa-book"></i> Category: Application Guide</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="guide-container">
+    <div class="container">
+        <div class="guide-content">
+            <!-- About KUCCPS -->
+            <h2>What is KUCCPS?</h2>
+            <p>KUCCPS (Kenya Universities and Colleges Central Placement Service) is the official government platform for placing secondary school graduates into publicly funded universities, colleges, and training institutions in Kenya. It's the centralized admission system that processes applications from thousands of students annually.</p>
+            
+            <!-- Key Dates -->
+            <h2>Key Application Dates 2026</h2>
+            <div class="info-box">
+                <h3><i class="fas fa-calendar-check"></i> Important Timeline:</h3>
+                <ul>
+                    <li><strong>Application Opens:</strong> Typically March/April - Check KUCCPS website</li>
+                    <li><strong>Application Closes:</strong> End of April/Early May - Don't miss deadline!</li>
+                    <li><strong>Results Release:</strong> May/June - Preliminary placement results</li>
+                    <li><strong>First Revision Window:</strong> June - Opportunity to change choices</li>
+                    <li><strong>Final Placement:</strong> July - Confirmed university/college placement</li>
+                    <li><strong>Admission Begins:</strong> August/September - Reporting to institutions</li>
+                </ul>
+                <p><em><strong>Note:</strong> Dates may vary yearly. Always check www.kuccps.net for exact 2026 dates. Mark these on your calendar!</em></p>
+            </div>
+
+            <!-- Step-by-Step Process -->
+            <h2>6-Step KUCCPS Application Process</h2>
+            <p>Follow these steps carefully to successfully submit your KUCCPS application:</p>
+            
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h4>Visit KUCCPS Website</h4>
+                    <p>Go to www.kuccps.net and click "Register New Account" or log in if you already have an account</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h4>Create Account & Register</h4>
+                    <p>Use your email and KCSE index number to create an account. Verify your email address with the confirmation link sent</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h4>Complete Your Profile</h4>
+                    <p>Fill in personal details: name, date of birth, county, phone, address. This information must be accurate</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h4>Enter Your KCSE Grades</h4>
+                    <p>Accurately enter all 8 KCSE subject grades. Double-check each grade matches your exam result slip</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h4>Select Your Courses</h4>
+                    <p>Choose up to 10 course choices in order of preference. Start with realistic choices, then add ambitious ones</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <h4>Review & Submit</h4>
+                    <p>Review all information carefully. Submit your application. Save confirmation number for reference</p>
+                </div>
+            </div>
+
+            <!-- Course Selection Strategy -->
+            <h2>How to Choose Your Courses Strategically</h2>
+            <p>Your course selection is crucial. Balance realistic choices with aspirational ones to maximize placement chances:</p>
+            
+            <div class="tips-grid">
+                <div class="tip">
+                    <h4>🎯 Be Realistic First</h4>
+                    <p>Choose courses your grades definitely qualify for - place these first</p>
+                </div>
+                <div class="tip">
+                    <h4>🔍 Research Thoroughly</h4>
+                    <p>Understand curriculum, job prospects, and cost before selecting</p>
+                </div>
+                <div class="tip">
+                    <h4>📊 Mix Your Choices</h4>
+                    <p>Blend realistic (5), moderate (3), and ambitious (2) courses</p>
+                </div>
+                <div class="tip">
+                    <h4>💼 Career Alignment</h4>
+                    <p>Select programs matching your long-term goals and interests</p>
+                </div>
+            </div>
+
+            <!-- Course Selection Tips -->
+            <h2>Course Selection Tips & Strategy</h2>
+            <div class="guide-section">
+                <h3>Research Before Choosing:</h3>
+                <ul>
+                    <li><strong>Check Cluster Points:</strong> Verify your cluster points qualify for degree courses</li>
+                    <li><strong>Know Cutoff Points:</strong> Research previous years' cutoff points for target courses</li>
+                    <li><strong>Understand Requirements:</strong> Confirm subject requirements match your KCSE grades</li>
+                    <li><strong>Explore Career Paths:</strong> Research job prospects and salaries for courses you select</li>
+                    <li><strong>Consider Cost:</strong> Private universities cost more than public institutions</li>
+                    <li><strong>Location Matters:</strong> Think about distance and convenience of institution location</li>
+                </ul>
+            </div>
+
+            <!-- What to Know -->
+            <h2>Important Things to Know During Application</h2>
+            <div class="info-box">
+                <h3>Application Requirements & Tips:</h3>
+                <ul>
+                    <li><strong>KCSE Index Number:</strong> Essential - you need your index number to apply</li>
+                    <li><strong>Email Address:</strong> Provide active email - you'll receive important updates there</li>
+                    <li><strong>Phone Number:</strong> Provide current phone number for contact information</li>
+                    <li><strong>Grade Accuracy:</strong> Even small errors prevent correct processing - triple-check grades</li>
+                    <li><strong>Application Fees:</strong> Application is free through KUCCPS - don't pay anyone</li>
+                    <li><strong>HELB Application:</strong> Apply for HELB loan during KUCCPS if you need financial aid</li>
+                </ul>
+            </div>
+
+            <!-- FAQs -->
+            <h2>Frequently Asked Questions About KUCCPS</h2>
+            <div class="faq">
+                <h3>What if I don't have a KCSE index number?</h3>
+                <p>You absolutely need a KCSE index number to apply. Contact your former school or the county education office if you haven't received it. This number identifies your exam results in the system.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Can I apply late?</h3>
+                <p>Late applications may be accepted, but you could miss initial placement results. The system prioritizes early applications. Apply immediately when the portal opens to avoid missing deadlines.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>What if I'm not placed in any course?</h3>
+                <p>If not placed initially, you can: (1) Apply during revision windows, (2) Apply to private institutions, (3) Pursue diploma programs and upgrade later, or (4) Try again the following year.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>Can I change my choices after submitting?</h3>
+                <p>Yes! KUCCPS opens revision windows where you can change your course choices. You typically get opportunities in June before final placement in July. Monitor the website for revision dates.</p>
+            </div>
+            
+            <div class="faq">
+                <h3>What's the difference between KUCCPS and direct university applications?</h3>
+                <p>KUCCPS is the central admission system for public universities and colleges. Direct applications are for private universities. You can apply through both systems simultaneously for maximum opportunities.</p>
+            </div>
+
+            <!-- Post-Placement -->
+            <h2>After You're Placed - What's Next?</h2>
+            <div class="guide-section">
+                <ul>
+                    <li><strong>Receive Admission Letter:</strong> Your institution will send admission details to your email</li>
+                    <li><strong>Complete Registration:</strong> Register online or in person at your institution</li>
+                    <li><strong>Pay Initial Fees:</strong> Submit fees as per institution's payment schedule</li>
+                    <li><strong>Arrange Accommodation:</strong> Apply for hostel/campus housing if needed</li>
+                    <li><strong>Attend Orientation:</strong> Participate in induction/orientation programs</li>
+                    <li><strong>Purchase Materials:</strong> Buy course materials, textbooks, and equipment needed</li>
+                </ul>
+            </div>
+
+            <!-- Related Guides -->
+            <div class="related-guides">
+                <h2>Related Guides & Resources</h2>
+                <div class="related-grid">
+                    <a href="{{ url_for('kuccps_guides.cluster_points') }}" class="related-card">
+                        <h3><i class="fas fa-chart-bar"></i> Understanding Cluster Points</h3>
+                        <p>Learn how KUCCPS calculates your qualification for courses</p>
+                    </a>
+                    <a href="{{ url_for('kuccps_guides.kcse_admission') }}" class="related-card">
+                        <h3><i class="fas fa-graduation-cap"></i> KCSE Admission Requirements</h3>
+                        <p>Understand minimum grades needed for different programs</p>
+                    </a>
+                    <a href="{{ url_for('kuccps_guides.scholarships') }}" class="related-card">
+                        <h3><i class="fas fa-hand-holding-usd"></i> Scholarships & Financial Aid</h3>
+                        <p>Explore funding options including HELB loans</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="guide-cta">
+                <h2>Ready to Apply to KUCCPS?</h2>
+                <p>Use our course checker to find programs you qualify for before applying</p>
+                <div class="cta-buttons">
+                    <a href="/degree" class="cta-btn cta-btn-primary">
+                        <i class="fas fa-search"></i> Find Your Courses
+                    </a>
+                    <a href="/guides" class="cta-btn cta-btn-secondary">
+                        <i class="fas fa-book"></i> More Guides
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

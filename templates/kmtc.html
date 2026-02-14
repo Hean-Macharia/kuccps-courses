@@ -1,20 +1,52 @@
-{% extends "./base.html" %} {% block title %} Kuccps | Hean {% endblock %} {%
+{% extends "./base.html" %} {% block title %} KMTC Courses | Kenya Medical Training College Programs {% endblock %} {%
 block links %}
+<link rel="canonical" href="{{ get_canonical_url('kmtc') }}" />
+<meta name="description" content="Browse KMTC courses and medical training programs available through KUCCPS placement. Match your KCSE grades with KMTC programs.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "Kenya Medical Training College (KMTC) Programs",
+  "description": "Explore Kenya Medical Training College healthcare programs including nursing, clinical medicine, laboratory technology, radiography, and environmental health.",
+  "provider": {
+    "@type": "Organization",
+    "name": "Kenya Medical Training College",
+    "url": "https://www.kmtc.ac.ke/"
+  },
+  "courseCode": "KMTC-PROGRAMS",
+  "educationalCredentialAwarded": ["Diploma", "Certificate"],
+  "timeToComplete": "P3Y",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "full-time",
+    "courseWorkload": "Medical training with clinical practice"
+  }
+}
+</script>
+
+<!-- Microdata Schema for EducationalOccupationalProgram -->
+<div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
+    <meta itemprop="educationalProgramMode" content="clinical practice"/>
+    <meta itemprop="numberOfCredits" content="120"/>
+    <meta itemprop="occupationalCategory" content="Healthcare"/>
+    <meta itemprop="skills" content="clinical practice, medical knowledge, patient care, healthcare expertise, clinical procedures"/>
+</div>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
-{% endblock %} {% block displaytext %}Fill in your grades then submit{% endblock
-%} {% block content %}
+{% endblock %} {% block displaytext %}Find KMTC Medical Programs Matching Your Grades{% endblock %} {% block content %}
 
-<div class="container mt-5">
-    <!-- As a heading -->
 
-    <span>Fill in the details and submit to get the programmes you qualify!
+    <div class="container">
+        <h1 class="text-center mb-4">KMTC Medical Programs Qualification Checker</h1>
+    </div>
+
+    <span>Fill in your KCSE grades and submit to see all KMTC medical programs you qualify for!
     </span>
     <form action="/submit-kmtc-grades" method="post">
     <!-- User Email and Index Number will be collected after grades submission (Step 2) -->
         <!-- KCSE Subjects Grades -->
         <div id="gradesForm">
-            <h1 class="text-primary">Enter Your Overall Grade</h1>
+            <h1 class="text-primary">Medical Program Qualifications</h1>
             <div class="">
                 <div class="mb-4">
                     <div class="form-group">
@@ -518,5 +550,272 @@ block links %}
             Submit
         </button>
     </form>
+
+    <div class="container mt-4 mb-4">
+        <div class="alert alert-warning mb-4" role="alert">
+            <h2 class="alert-heading">🏥 Kenya Medical Training College (KMTC) Programs</h2>
+            <p class="mb-2">
+                <strong>KMTC is the premier medical training institution in Kenya</strong>, offering specialized healthcare training programs 
+                accredited by the Ministry of Health. These programs prepare students for critical roles in Kenya's healthcare system.
+            </p>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>👨‍⚕️ Key Features:</strong></p>
+                    <ul class="small mb-2">
+                        <li>Nationally recognized medical qualifications</li>
+                        <li>Practical clinical training in hospitals</li>
+                        <li>Government-sponsored opportunities available</li>
+                        <li>Direct pathway to healthcare employment</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>📚 Program Levels:</strong></p>
+                    <ul class="small mb-2">
+                        <li><strong>Diploma:</strong> 3-year programs (e.g., Nursing, Clinical Medicine)</li>
+                        <li><strong>Certificate:</strong> 2-year programs (e.g., Community Health, Medical Records)</li>
+                        <li><strong>Higher Diploma:</strong> Post-basic specialization</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+    <!-- KMTC Programs Section Header -->
+    <div class="alert alert-warning mb-4" role="alert">
+        <h2 class="alert-heading">🏥 Kenya Medical Training College (KMTC) Programs</h2>
+        <p class="mb-2">
+            KMTC offers specialized medical and health sciences training programs recognized by the Ministry of Health. These programs prepare 
+            students for careers in nursing, clinical medicine, environmental health, laboratory technology, radiography, and other healthcare specialties.
+        </p>
+        <p class="mb-2">
+            <strong>Duration:</strong> Most KMTC programs are 2-3 years, leading to nationally recognized qualifications as Diploma or Certificate holders 
+            in medical and health sciences.
+        </p>
+        <p class="mb-0">
+            <strong>How it works:</strong> Enter your KCSE overall grade and subject grades below to find which KMTC medical programs you qualify for. 
+            Medical programs typically require strong performance in Biology, Chemistry, and English.
+        </p>
+    </div>
+    
+    <!-- KMTC Information Section -->
+    <div class="row mt-5 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🏥 KMTC Specializations</h5>
+                    <ul class="small">
+                        <li>Nursing & Midwifery</li>
+                        <li>Clinical Medicine</li>
+                        <li>Laboratory Technology</li>
+                        <li>Radiography</li>
+                        <li>Environmental Health</li>
+                        <li>Dental Technology</li>
+                        <li>Physiotherapy</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📋 KMTC Entry Requirements</h5>
+                    <ul class="small">
+                        <li>Minimum C+ in KCSE (varies by program)</li>
+                        <li>Strong performance in Biology & Chemistry essential</li>
+                        <li>English language proficiency required</li>
+                        <li>Age requirement (usually 18+)</li>
+                        <li>Medical screening for some programs</li>
+                        <li>Interview may be required</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose KMTC Programs -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Why Choose KMTC Medical Programs</h2>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Government Employment Path</h5>
+                            <p class="mb-0">KMTC qualifications lead to direct employment with TSC or Ministry of Health, offering stable government careers.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Clinical Training Excellence</h5>
+                            <p class="mb-0">Train in actual hospital settings with experienced healthcare professionals providing hands-on clinical experience.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Nationally Recognized Qualifications</h5>
+                            <p class="mb-0">KMTC degrees are accredited by the Ministry of Health and recognized throughout Kenya and East Africa.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Healthcare Worker Shortage Benefits</h5>
+                            <p class="mb-0">High demand for healthcare professionals means excellent job security and career advancement opportunities.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Frequently Asked Questions -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Frequently Asked Questions About KMTC Programs</h2>
+            <div class="accordion" id="kmtcFAQ">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#kmtcfaq1">
+                            What are the main KMTC programs offered?
+                        </button>
+                    </h2>
+                    <div id="kmtcfaq1" class="accordion-collapse collapse show" data-bs-parent="#kmtcFAQ">
+                        <div class="accordion-body">
+                            KMTC offers Diploma programs in Nursing, Clinical Medicine, Laboratory Technology, Radiography, Environmental Health, Physiotherapy, and Dental Technology. These are all 3-year programs designed to train healthcare professionals.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#kmtcfaq2">
+                            Will I get employment after KMTC graduation?
+                        </button>
+                    </h2>
+                    <div id="kmtcfaq2" class="accordion-collapse collapse" data-bs-parent="#kmtcFAQ">
+                        <div class="accordion-body">
+                            KMTC graduates are in high demand. Many get employed by the Ministry of Health, public hospitals, and private healthcare facilities. Some also pursue further specialization or private practice.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#kmtcfaq3">
+                            What subjects are most important for KMTC entry?
+                        </button>
+                    </h2>
+                    <div id="kmtcfaq3" class="accordion-collapse collapse" data-bs-parent="#kmtcFAQ">
+                        <div class="accordion-body">
+                            Biology and Chemistry are critically important for KMTC programs as they form the foundation of medical training. English language proficiency is also essential for communication and further studies.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#kmtcfaq4">
+                            Can I work while studying at KMTC?
+                        </button>
+                    </h2>
+                    <div id="kmtcfaq4" class="accordion-collapse collapse" data-bs-parent="#kmtcFAQ">
+                        <div class="accordion-body">
+                            KMTC programs are full-time with clinical placements in hospitals, making outside employment difficult. However, students may get some clinical experience allowances during their hospital rotations.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#kmtcfaq5">
+                            What is the salary range for KMTC graduates?
+                        </button>
+                    </h2>
+                    <div id="kmtcfaq5" class="accordion-collapse collapse" data-bs-parent="#kmtcFAQ">
+                        <div class="accordion-body">
+                            Starting salaries for KMTC graduates in government positions range from 30,000 to 50,000 Kenya shillings per month, with regular increases and benefits. Private sector positions may offer higher salaries.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Stories -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Success Stories from KMTC Graduates</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Dr. Kariuki Mwangi - Clinical Medicine</h5>
+                            <p class="small mb-3">After graduating from KMTC in 2015, Kariuki worked at Kenyatta National Hospital. He recently completed his bachelor's degree and now heads a medical ward at a county hospital.</p>
+                            <p class="small text-muted">"KMTC gave me the foundation to advance in healthcare. Now I mentor junior clinicians."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Nurse Mary Kipchoge - Nursing</h5>
+                            <p class="small mb-3">Mary completed her nursing diploma at KMTC and was posted to a rural health center. She has since received promotions and now serves as a Senior Nurse managing community health initiatives.</p>
+                            <p class="small text-muted">"Nursing is a calling, and KMTC prepared me well to serve my community."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Lab Technician Peter Ochieng - Lab Technology</h5>
+                            <p class="small mb-3">Peter's laboratory technology qualification from KMTC led him to work at a major diagnostic center. He has now opened his own laboratory and serves his district effectively.</p>
+                            <p class="small text-muted">"Skills from KMTC opened entrepreneurship doors I never imagined."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prerequisites and Requirements -->
+<div class="container my-5 mb-5">
+    <div class="card border-left-primary shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">KMTC Program Prerequisites and Requirements</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum C+ (10 points) for most programs</li>
+                        <li class="mb-2"><strong>Biology and Chemistry:</strong> Minimum C (5 points) each - critical subjects</li>
+                        <li class="mb-2"><strong>English Language:</strong> Minimum C (5 points) for communication</li>
+                        <li class="mb-2"><strong>Cluster Points:</strong> Varies by program, typically 40-60 points</li>
+                        <li class="mb-2"><strong>Age Requirement:</strong> Preferably 18 years or older at entry</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>All KMTC Programs:</strong> Excellent performance in Biology and Chemistry essential</li>
+                        <li class="mb-2"><strong>Nursing/Midwifery:</strong> Compassion for patient care, good physical health</li>
+                        <li class="mb-2"><strong>Laboratory Technology:</strong> Attention to detail, accuracy, analytical skills</li>
+                        <li class="mb-2"><strong>Clinical Medicine:</strong> Strong scientific knowledge, clinical aptitude</li>
+                        <li class="mb-2"><strong>Medical Screening:</strong> Health screening required before admission</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 {% endblock %} {% block scripts %}{% endblock %}

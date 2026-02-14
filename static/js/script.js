@@ -1,3 +1,16 @@
+
+// Ensure DOM is loaded before running scripts
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
+
+function initializeApp() {
+    // All your existing script initialization code goes here
+    // Make sure all DOM queries happen inside this function
+    console.log('App initialized');
+}
 // API configuration
 const API_BASE_URL = 'http://localhost:5000';
 

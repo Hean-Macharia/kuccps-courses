@@ -1,0 +1,722 @@
+{% extends "base.html" %}
+{% block title %}KUCCPS Guides & Resources 2026 | Complete Educational Guides{% endblock %}
+
+{% block links %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "https://www.kuccpscourses.co.ke"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "Guides",
+    "item": "https://www.kuccpscourses.co.ke/guides/"
+  },{
+    "@type": "ListItem",
+    "position": 3,
+    "name": "Diploma Courses",
+    "item": "https://www.kuccpscourses.co.ke/guides/diploma-courses-kenya"
+  }]
+}
+</script>
+<style>
+    /* ============================================
+        GUIDES INDEX PAGE STYLES
+    ============================================= */
+    
+    /* Hero Section */
+    .guides-hero {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 80px 0 60px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .guides-hero h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .guides-hero p {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    /* Guide Container */
+    .guides-container {
+        padding: 60px 0;
+        background: var(--white);
+    }
+    
+    /* Section Headers */
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .section-header h2 {
+        color: var(--primary-red);
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        position: relative;
+        display: inline-block;
+        padding-bottom: 1rem;
+        border-bottom: 4px solid var(--primary-yellow);
+    }
+    
+    .section-header p {
+        color: var(--medium-grey);
+        font-size: 1.05rem;
+        margin-top: 1rem;
+    }
+    
+    /* Guides Grid */
+    .guides-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2.5rem;
+        margin: 3rem 0;
+    }
+    
+    .guide-card {
+        background: var(--white);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+        border-top: 5px solid var(--primary-yellow);
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .guide-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-top-color: var(--primary-red);
+    }
+    
+    .guide-card-icon {
+        background: linear-gradient(135deg, rgba(198, 40, 40, 0.1) 0%, rgba(251, 192, 45, 0.1) 100%);
+        padding: 2rem;
+        text-align: center;
+        font-size: 3rem;
+        color: var(--primary-red);
+    }
+    
+    .guide-card-content {
+        padding: 2rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .guide-card h3 {
+        color: var(--primary-red);
+        font-size: 1.3rem;
+        margin: 0 0 0.8rem 0;
+        font-weight: 700;
+    }
+    
+    .guide-card p {
+        color: var(--medium-grey);
+        margin: 0 0 1.5rem 0;
+        flex-grow: 1;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    
+    .guide-card-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: var(--medium-grey);
+        padding-top: 1rem;
+        border-top: 1px solid var(--light-grey);
+    }
+    
+    .guide-card-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .guide-card-meta i {
+        color: var(--primary-yellow);
+    }
+    
+    /* Category Section */
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2.5rem 0;
+    }
+    
+    .category-card {
+        background: linear-gradient(135deg, rgba(198, 40, 40, 0.05) 0%, rgba(251, 192, 45, 0.05) 100%);
+        padding: 2.5rem 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        transition: all var(--transition-base);
+        border: 2px solid transparent;
+        cursor: pointer;
+    }
+    
+    .category-card:hover {
+        background: linear-gradient(135deg, rgba(198, 40, 40, 0.15) 0%, rgba(251, 192, 45, 0.15) 100%);
+        border-color: var(--primary-yellow);
+        transform: translateY(-3px);
+    }
+    
+    .category-icon {
+        font-size: 3rem;
+        color: var(--primary-red);
+        margin-bottom: 1rem;
+    }
+    
+    .category-card h3 {
+        color: var(--primary-red);
+        font-size: 1.3rem;
+        margin: 0 0 0.5rem 0;
+        font-weight: 700;
+    }
+    
+    .category-card p {
+        color: var(--medium-grey);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    /* Featured Guide */
+    .featured-section {
+        background: linear-gradient(135deg, rgba(198, 40, 40, 0.08) 0%, rgba(251, 192, 45, 0.08) 100%);
+        padding: 3rem 2rem;
+        border-radius: var(--radius-md);
+        margin: 3rem 0;
+        border-left: 5px solid var(--primary-red);
+    }
+    
+    .featured-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: center;
+        background: var(--white);
+        padding: 2.5rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .featured-content h3 {
+        color: var(--primary-red);
+        font-size: 1.5rem;
+        margin-top: 0;
+        font-weight: 700;
+    }
+    
+    .featured-content p {
+        color: var(--medium-grey);
+        line-height: 1.8;
+    }
+    
+    .featured-badge {
+        display: inline-block;
+        background: var(--primary-yellow);
+        color: var(--black);
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .featured-meta {
+        display: flex;
+        gap: 2rem;
+        margin: 1.5rem 0;
+        font-size: 0.95rem;
+        color: var(--medium-grey);
+    }
+    
+    .featured-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .featured-meta i {
+        color: var(--primary-yellow);
+    }
+    
+    /* FAQ Section */
+    .faq-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin: 2.5rem 0;
+    }
+    
+    .faq-item {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--primary-yellow);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+    
+    .faq-item:hover {
+        box-shadow: var(--shadow-md);
+    }
+    
+    .faq-item h3 {
+        color: var(--primary-red);
+        font-size: 1.1rem;
+        margin: 0 0 0.8rem 0;
+        font-weight: 700;
+    }
+    
+    .faq-item p {
+        color: var(--medium-grey);
+        margin: 0;
+        line-height: 1.6;
+    }
+    
+    .faq-item a {
+        color: var(--primary-red);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    
+    .faq-item a:hover {
+        text-decoration: underline;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: var(--gradient-red);
+        color: var(--white);
+        padding: 3.5rem 2rem;
+        border-radius: var(--radius-md);
+        text-align: center;
+        margin: 3rem 0;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .cta-section h2 {
+        color: var(--white);
+        font-size: 2rem;
+        margin: 0 0 1rem 0;
+        font-weight: 800;
+    }
+    
+    .cta-section p {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .cta-buttons {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .cta-btn {
+        padding: 12px 35px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .cta-btn-primary {
+        background: var(--primary-yellow);
+        color: var(--black);
+    }
+    
+    .cta-btn-primary:hover {
+        background: #FFEB3B;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .cta-btn-secondary {
+        background: transparent;
+        color: var(--white);
+        border: 2px solid var(--white);
+    }
+    
+    .cta-btn-secondary:hover {
+        background: var(--white);
+        color: var(--primary-red);
+        transform: translateY(-2px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .guides-hero {
+            padding: 50px 0 40px;
+        }
+        
+        .guides-hero h1 {
+            font-size: 1.8rem;
+        }
+        
+        .guides-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .featured-card {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .cta-buttons {
+            flex-direction: column;
+        }
+        
+        .cta-btn {
+            width: 100%;
+        }
+        
+        .section-header h2 {
+            font-size: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .guides-hero h1 {
+            font-size: 1.5rem;
+        }
+        
+        .guides-hero p {
+            font-size: 1rem;
+        }
+        
+        .guide-card {
+            margin: 0;
+        }
+        
+        .featured-content h3 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "KUCCPS Guides & Resources",
+  "description": "Comprehensive guides for KUCCPS admission, courses, and educational planning in Kenya",
+  "url": "{{ url_for('kuccps_guides.guides_index', _external=True) }}",
+  "image": "{{ url_for('static', filename='images/guide-banner.jpg', _external=True) }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="guides-hero">
+    <div class="container">
+        <h1>KUCCPS Guides & Resources 2026</h1>
+        <p>Everything you need to know about university admission, course selection, and your educational future</p>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="guides-container">
+    <div class="container">
+        <!-- All Guides Section -->
+        <div class="section-header">
+            <h2>All Guides</h2>
+            <p>Comprehensive resources covering admission, courses, and career planning</p>
+        </div>
+        
+        <div class="guides-grid">
+            <!-- Cluster Points Guide -->
+            <a href="{{ url_for('kuccps_guides.cluster_points') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>Cluster Points Explained</h3>
+                    <p>Complete guide to understanding how cluster points are calculated and what you need for university admission.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 10 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- KCSE Admission Guide -->
+            <a href="{{ url_for('kuccps_guides.kcse_admission') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>KCSE Admission Requirements</h3>
+                    <p>Learn about minimum KCSE grades needed for different programs and educational pathways.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 12 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- KUCCPS Application Guide -->
+            <a href="{{ url_for('kuccps_guides.kuccps_application') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>KUCCPS Application Guide</h3>
+                    <p>Step-by-step instructions for applying through KUCCPS and selecting your ideal courses.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 12 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Diploma Courses Guide -->
+            <a href="{{ url_for('kuccps_guides.diploma_courses') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>Diploma Courses & Programs</h3>
+                    <p>Explore affordable diploma programs and understand how they lead to degree opportunities.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 10 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Certificate Courses Guide -->
+            <a href="{{ url_for('kuccps_guides.certificate_courses') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>Certificate Courses & Training</h3>
+                    <p>Short-term vocational programs for quick skill development and employment.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 8 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Artisan Courses Guide -->
+            <a href="{{ url_for('kuccps_guides.artisan_courses') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-hammer"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>Artisan Training Programs</h3>
+                    <p>Practical vocational training for hands-on skills and immediate employment opportunities.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 10 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- KMTC Courses Guide -->
+            <a href="{{ url_for('kuccps_guides.kmtc_courses') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>KMTC Healthcare Programs</h3>
+                    <p>Complete guide to Kenya Medical Training College courses and healthcare career paths.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 10 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- TTC Courses Guide -->
+            <a href="{{ url_for('kuccps_guides.ttc_courses') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-chalkboard"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>Teacher Training Programs</h3>
+                    <p>Explore teacher training colleges and the rewarding profession of education.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 11 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Scholarships Guide -->
+            <a href="{{ url_for('kuccps_guides.scholarships') }}" class="guide-card">
+                <div class="guide-card-icon">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <div class="guide-card-content">
+                    <h3>Scholarships & Financial Aid</h3>
+                    <p>Discover funding opportunities including HELB loans and scholarships to support your studies.</p>
+                    <div class="guide-card-meta">
+                        <span><i class="fas fa-clock"></i> 13 min</span>
+                        <span><i class="fas fa-calendar"></i> Jan 2026</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Categories Section -->
+        <div style="margin-top: 5rem;">
+            <div class="section-header">
+                <h2>Browse by Category</h2>
+                <p>Find guides organized by topic and educational pathway</p>
+            </div>
+            
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>Admission Guides</h3>
+                    <p>Requirements, processes, and timelines for university entry</p>
+                </div>
+                
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>Course Guides</h3>
+                    <p>Degree, diploma, certificate, and vocational programs</p>
+                </div>
+                
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <h3>Financial Support</h3>
+                    <p>Scholarships, loans, grants, and funding opportunities</p>
+                </div>
+                
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h3>Career Planning</h3>
+                    <p>Job markets, career paths, and professional development</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Featured Guide Section -->
+        <div class="featured-section">
+            <div class="section-header">
+                <h2>Featured Guide</h2>
+            </div>
+            
+            <div class="featured-card">
+                <div class="featured-content">
+                    <span class="featured-badge"><i class="fas fa-star"></i> Most Popular</span>
+                    <h3>KUCCPS Cluster Points Explained</h3>
+                    <p>Learn exactly how cluster points are calculated from your KCSE grades and what you need to qualify for different university programs. This guide covers all 13 clusters, cutoff requirements, and strategies to maximize your points.</p>
+                    <div class="featured-meta">
+                        <span><i class="fas fa-clock"></i> 10 min read</span>
+                        <span><i class="fas fa-calendar"></i> Updated Jan 2026</span>
+                        <span><i class="fas fa-users"></i> 15K+ reads</span>
+                    </div>
+                    <a href="{{ url_for('kuccps_guides.cluster_points') }}" class="cta-btn cta-btn-primary">
+                        Read Full Guide <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div style="text-align: center; font-size: 4rem; color: var(--primary-yellow);">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FAQ Section -->
+        <div style="margin-top: 5rem;">
+            <div class="section-header">
+                <h2>Frequently Asked Questions</h2>
+                <p>Quick answers to common questions about KUCCPS and university admission</p>
+            </div>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3><i class="fas fa-question-circle"></i> What are cluster points?</h3>
+                    <p>Cluster points are KUCCPS's scoring system based on your KCSE grades in specific subjects. They determine which university programs you can apply for. <a href="{{ url_for('kuccps_guides.cluster_points') }}">Learn more about cluster points</a></p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3><i class="fas fa-question-circle"></i> What's the minimum grade for university?</h3>
+                    <p>The minimum mean grade is C+ for university degree programs. However, competitive courses may require higher grades. <a href="{{ url_for('kuccps_guides.kcse_admission') }}">Check admission requirements</a></p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3><i class="fas fa-question-circle"></i> When is the application deadline?</h3>
+                    <p>The KUCCPS application deadline varies yearly, typically in March/April. Check the official KUCCPS website for exact 2026 dates.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3><i class="fas fa-question-circle"></i> Can I change my course choices?</h3>
+                    <p>Yes, KUCCPS allows multiple revision windows where you can change your course choices. Revision typically happens in April and June.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3><i class="fas fa-question-circle"></i> What if I don't qualify for degrees?</h3>
+                    <p>You can pursue diploma or certificate programs as alternatives. These programs lead to employment and offer pathways to upgrade to degrees. <a href="{{ url_for('kuccps_guides.diploma_courses') }}">Explore diploma options</a></p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3><i class="fas fa-question-circle"></i> Are there scholarships available?</h3>
+                    <p>Yes! HELB loans, government scholarships, private scholarships, and institutional aid are available. <a href="{{ url_for('kuccps_guides.scholarships') }}">Discover funding options</a></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2>Ready to Find Your Perfect Course?</h2>
+            <p>Use our free KUCCPS Courses Checker to discover all programs matching your KCSE grades</p>
+            <div class="cta-buttons">
+                <a href="/degree" class="cta-btn cta-btn-primary">
+                    <i class="fas fa-search"></i> Check Degree Courses
+                </a>
+                <a href="/diploma" class="cta-btn cta-btn-secondary">
+                    <i class="fas fa-certificate"></i> Check Diploma Courses
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

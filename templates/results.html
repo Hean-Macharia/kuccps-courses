@@ -1,5 +1,25 @@
 {% extends "base.html" %}
 
+{% block title %}Your Course Results | KUCCPS Courses Checker{% endblock %}
+
+{% block links %}
+<link rel="canonical" href="{{ request.url }}" />
+<meta name="description" content="Your personalized KUCCPS course matching results. View all courses you qualify for based on your KCSE grades.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SearchResultsPage",
+  "name": "KUCCPS Course Qualification Results",
+  "description": "Personalized course results based on user's KCSE grades",
+  "publisher": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "url": "https://www.kuccpscourses.co.ke/"
+  }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <h1 class="text-primary">Qualification Results</h1>

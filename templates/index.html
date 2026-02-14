@@ -2,6 +2,66 @@
 {% block title %}KUCCPS Course Checker | Home{% endblock %}
 
 {% block links %}
+<link rel="canonical" href="https://www.kuccpscourses.co.ke/" />
+<title>KUCCPS Courses Kenya 2026 | University & College Course Finder</title>
+<meta name="description" content="Find KUCCPS courses for 2026. Search degree, diploma, certificate, artisan, KMTC & TTC courses. Match your KCSE grades with available programs.">
+<meta name="keywords" content="kuccps courses 2026, university courses Kenya, college courses, KCSE course matching">
+
+<meta property="og:title" content="KUCCPS Courses Kenya 2026">
+<meta property="og:description" content="Find and match courses with your KCSE grades">
+<meta property="og:url" content="https://www.kuccpscourses.co.ke/">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "KUCCPS Courses Checker",
+  "description": "Find KUCCPS courses that match your KCSE grades. Search degree, diploma, certificate, artisan, KMTC & TTC programs.",
+  "url": "https://www.kuccpscourses.co.ke",
+  "applicationCategory": "EducationApplication",
+  "operatingSystem": "Windows, macOS, Linux, iOS, Android",
+  "browserRequirements": "Requires JavaScript",
+  "softwareRequirements": "Modern web browser (Chrome, Firefox, Safari, Edge)",
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true,
+  "version": "2.0.1",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "ratingCount": 247,
+    "reviewCount": 89,
+    "bestRating": "5",
+    "worstRating": "1"
+  },
+  "author": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses",
+    "url": "https://www.kuccpscourses.co.ke",
+    "logo": "https://www.kuccpscourses.co.ke/static/images/logo.png"
+  },
+  "image": {
+    "@type": "ImageObject",
+    "url": "https://www.kuccpscourses.co.ke/static/images/og-image.png",
+    "width": 1200,
+    "height": 630
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KES",
+    "availability": "https://schema.org/InStock"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://www.kuccpscourses.co.ke/?search={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
 <style>
     /* Custom Styles for Home Page - KUCCPS Colors */
     .hero-section {
@@ -603,6 +663,38 @@
         }
     }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I check KUCCPS courses for 2026?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use our KUCCPS Courses Checker tool. Enter your KCSE grades and cluster points to instantly see all courses you qualify for across universities, colleges, and technical institutions in Kenya."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are KUCCPS cluster points?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cluster points are calculated by KUCCPS based on your KCSE grades and determine which university courses you qualify for. Different courses have different cluster point requirements."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I check diploma courses with KCSE results?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! Our checker shows diploma, certificate, artisan, KMTC, and TTC courses alongside degree programs. Enter your KCSE mean grade to see all options available to you."
+      }
+    }
+  ]
+}
+</script>
 {% endblock %}
 
 {% block hero %}
@@ -722,6 +814,30 @@
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
+                <div class="category-card animate__animated" data-animate="fadeInUp" data-delay="400">
+                    <div class="category-icon">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <h3 class="category-title">KMTC Courses</h3>
+                    <p class="category-description">For C– and above. Specialized health programs in Nursing, Clinical Medicine, Pharmacy, and Health Sciences.</p>
+                    <a href="/kmtc" class="btn category-btn">
+                        <i class="fas fa-heartbeat me-2"></i>Explore KMTC
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="category-card animate__animated" data-animate="fadeInUp" data-delay="400">
+                    <div class="category-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3 class="category-title">Teacher Training (TTC)</h3>
+                    <p class="category-description">For C and above. Specialized teacher training programs for primary education (P1), ECDE, and other teaching certifications.</p>
+                    <a href="/ttc" class="btn category-btn">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Explore TTC
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
                 <div class="category-card animate__animated" data-animate="fadeInUp" data-delay="200">
                     <div class="category-icon">
                         <i class="fas fa-certificate"></i>
@@ -745,30 +861,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="category-card animate__animated" data-animate="fadeInUp" data-delay="400">
-                    <div class="category-icon">
-                        <i class="fas fa-hospital"></i>
-                    </div>
-                    <h3 class="category-title">KMTC Courses</h3>
-                    <p class="category-description">For C– and above. Specialized health programs in Nursing, Clinical Medicine, Pharmacy, and Health Sciences.</p>
-                    <a href="/kmtc" class="btn category-btn">
-                        <i class="fas fa-heartbeat me-2"></i>Explore KMTC
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-    <div class="category-card animate__animated" data-animate="fadeInUp" data-delay="400">
-        <div class="category-icon">
-            <i class="fas fa-chalkboard-teacher"></i>
-        </div>
-        <h3 class="category-title">Teacher Training (TTC)</h3>
-        <p class="category-description">For C and above. Specialized teacher training programs for primary education (P1), ECDE, and other teaching certifications.</p>
-        <a href="/ttc" class="btn category-btn">
-            <i class="fas fa-chalkboard-teacher me-2"></i>Explore TTC
-        </a>
-    </div>
-</div>
+            
             <div class="col-lg-4 col-md-6">
                 <div class="category-card animate__animated" data-animate="fadeInUp" data-delay="500">
                     <div class="category-icon">

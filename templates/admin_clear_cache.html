@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Clear Cache | KUCCPS Courses Checker{% endblock %}
+
+{% block links %}
+<link rel="canonical" href="{{ get_canonical_url('admin_clear_cache') }}" />
+<meta name="description" content="Admin dashboard for clearing server-side and CDN cache.">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0">
+                        <i class="fas fa-trash-alt"></i> Cache Management
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <!-- Cache Status Section -->
+                    <div class="alert alert-info mb-4">
+                        <h5><i class="fas fa-info-circle"></i> Cache Status</h5>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <strong>Cache Type:</strong>
+                                <p>
+                                    {% if cache_status.cache_type == 'RedisCache' %}
+                                        <span class="badge badge-success">Redis Cache <i class="fas fa-check"></i></span>
+                                    {% else %}
+                                        <span class="badge badge-warning">In-Memory Cache <i class="fas fa-exclamation-triangle"></i></span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Redis Available:</strong>
+                                <p>
+                                    {% if cache_status.redis_available %}
+                                        <span class="badge badge-success">Yes <i class="fas fa-check"></i></span>
+                                    {% else %}
+                                        <span class="badge badge-danger">No <i class="fas fa-times"></i></span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Last Cleared:</strong>
+                                <p><code>{{ cache_status.last_cleared }}</code></p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Current Time:</strong>
+                                <p><code>{{ cache_status.timestamp }}</code></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cache Clearing Section -->
+                    <div class="alert alert-warning mb-4">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Clear Cache Warning</h5>
+                        <p>Clearing the cache will:</p>
+                        <ul class="mb-0">
+                            <li>Remove all server-side cached data</li>
+                            <li>Purge CDN cache for all pages</li>
+                            <li>Force fresh content delivery on next request</li>
+                            <li>Temporarily increase server load during content regeneration</li>
+                            <li>Reset all cached sitemaps, routes, and API responses</li>
+                        </ul>
+                    </div>
+
+                    <!-- Clear Cache Button -->
+                    <form method="POST" class="mb-4">
+                        <div class="form-group mb-3">
+                            <button type="submit" class="btn btn-danger btn-lg btn-block" onclick="return confirm('Are you sure you want to clear ALL cache? This will affect all users.');">
+                                <i class="fas fa-trash-alt"></i> Clear All Cache Now
+                            </button>
+                        </div>
+                        <small class="text-muted">This will clear both server-side and CDN cache immediately.</small>
+                    </form>
+
+                    <!-- What Gets Cleared -->
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> What Gets Cleared</h5>
+                        <ul class="mb-0">
+                            <li><strong>Route Cache:</strong> All cached page renders (homepage, course pages, guides)</li>
+                            <li><strong>Sitemap Cache:</strong> Regenerated sitemaps on next request</li>
+                            <li><strong>API Cache:</strong> All API response caches</li>
+                            <li><strong>Static Content Cache:</strong> If applicable</li>
+                            <li><strong>CDN Edge Cache:</strong> Cloudflare and other CDN caches invalidated</li>
+                            <li><strong>Database Query Cache:</strong> If Redis is available</li>
+                        </ul>
+                    </div>
+
+                    <!-- Back to Admin Dashboard -->
+                    <div class="mt-4">
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Test Section (Optional) -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">API Test (Advanced)</h5>
+                </div>
+                <div class="card-body">
+                    <p>You can also clear cache programmatically using the API endpoint:</p>
+                    <pre><code>POST /admin/clear-cache-api
+Authorization: Admin Session Required
+Content-Type: application/json</code></pre>
+                    <button type="button" class="btn btn-info" onclick="testClearCacheAPI()">
+                        <i class="fas fa-flask"></i> Test API Endpoint
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge-success {
+        background-color: #28a745 !important;
+    }
+    .badge-danger {
+        background-color: #dc3545 !important;
+    }
+    .badge-warning {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+    }
+    code {
+        background-color: #f4f4f4;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+    }
+    .btn-block {
+        display: block;
+        width: 100%;
+    }
+</style>
+
+<script>
+    function testClearCacheAPI() {
+        if (!confirm('Test cache clearing API endpoint?')) {
+            return;
+        }
+        
+        fetch('/admin/clear-cache-api', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ Cache cleared successfully!\n\nTimestamp: ' + data.timestamp + '\nCache Type: ' + data.cache_type);
+                location.reload();
+            } else {
+                alert('❌ Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('❌ API Error: ' + error);
+        });
+    }
+</script>
+{% endblock %}

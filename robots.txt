@@ -1,0 +1,49 @@
+User-agent: *
+Allow: /
+
+
+Disallow: /admin/
+Disallow: /debug/
+Disallow: /api/
+Disallow: /health
+Disallow: /offline
+Disallow: /news/
+Disallow: /search
+Disallow: /verify-payment
+Disallow: /install-app
+Disallow: /cdn-cgi/
+Disallow: /enter-details/
+Disallow: /results/
+Disallow: /verified-dashboard
+Disallow: /verified-results/
+Disallow: /payment/
+Disallow: /payment-wait/
+Disallow: /check-payment/
+Disallow: /check-payment-status/
+Disallow: /check-courses-ready/
+Disallow: /mpesa/
+Disallow: /clear-session
+Disallow: /temp-bypass/
+Disallow: /collection-courses/
+Disallow: /search-courses/
+Disallow: /add-to-basket
+Disallow: /remove-from-basket
+Disallow: /clear-basket
+Disallow: /save-basket
+Disallow: /reset-basket
+Disallow: /load-basket
+Disallow: /get-basket
+Disallow: /manifest.json
+Disallow: /service-worker.js
+Disallow: /submit-grades
+Disallow: /submit-diploma-grades
+Disallow: /submit-certificate-grades
+Disallow: /submit-artisan-grades
+Disallow: /submit-kmtc-grades
+Disallow: /submit-ttc-grades
+
+Sitemap: https://www.kuccpscourses.co.ke/sitemap-index.xml
+
+Crawl-delay: 1
+User-agent: Googlebot
+Crawl-delay: 0

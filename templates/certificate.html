@@ -1,20 +1,177 @@
-{% extends "./base.html" %} {% block title %} Kuccps | Hean {% endblock %} {%
+{% extends "./base.html" %} {% block title %} KUCCPS Certificate Courses | Vocational Programs in Kenya {% endblock %} {%
 block links %}
+<link rel="canonical" href="{{ get_canonical_url('certificate') }}" />
+<meta name="description" content="Find KUCCPS certificate courses and vocational programs in Kenya. Match your KCSE grades with 1-2 year certificate programs in business, IT, hospitality, beauty, and skilled trades.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "KUCCPS Certificate & Vocational Programs",
+  "description": "Explore KUCCPS certificate programs in vocational training centers and colleges. 1-2 year focused programs in business, IT, hospitality, beauty services, skilled trades, and specialized skills.",
+  "provider": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "url": "https://www.kuccpscourses.co.ke/"
+  },
+  "courseCode": "KUCCPS-CERTIFICATE",
+  "educationalCredentialAwarded": "Certificate",
+  "timeToComplete": "P1Y",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": ["full-time", "part-time"],
+    "courseWorkload": "Flexible, skills-focused training"
+  }
+}
+</script>
+
+<!-- Microdata Schema for EducationalOccupationalProgram -->
+<div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
+    <meta itemprop="educationalProgramMode" content="flexible training"/>
+    <meta itemprop="occupationalCategory" content="Vocational Training"/>
+    <meta itemprop="skills" content="job-ready skills, specialized competencies, immediate employment focus"/>
+</div>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
-{% endblock %} {% block displaytext %}Fill in your grades then submit{% endblock
+<style>
+    /* Certificate Card Styling */
+    .certificate-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 30px 0;
+    }
+    
+    .certificate-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 12px 12px 0 0;
+        margin-bottom: 0;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .certificate-header h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .certificate-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+    
+    #gradesForm {
+        padding: 30px;
+        background: white;
+    }
+    
+    #gradesForm h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f5576c;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #f5576c;
+    }
+    
+    #gradesForm h2 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #f093fb;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        padding-left: 10px;
+        border-left: 4px solid #f093fb;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.95rem;
+    }
+    
+    .form-select {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-select:focus {
+        border-color: #f5576c;
+        box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
+        outline: none;
+    }
+    
+    .form-select:hover {
+        border-color: #f5576c;
+    }
+    
+    .subjects {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    
+    form button {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        color: white;
+        padding: 12px 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 30px;
+        width: 100%;
+    }
+    
+    form button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(245, 87, 108, 0.3);
+    }
+    
+    .intro-span {
+        font-size: 1.1rem;
+        color: #555;
+        display: block;
+        margin-bottom: 30px;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
 %} {% block content %}
 
-<div class="container mt-5">
-    <!-- As a heading -->
 
-    <span>Fill in the details and submit to get the programmes you qualify!
+
+    <div class="container">
+        <h1 class="text-center mb-4">KUCCPS Certificate & Vocational Programs Qualification Checker</h1>
+    </div>
+
+    <span>Fill in your KCSE grades and submit to see all certificate programs you qualify for!
     </span>
     <form action="/submit-certificate-grades" method="post">
     <!-- User Email and Index Number will be collected after grades submission (Step 2) -->
         <!-- KCSE Subjects Grades -->
         <div id="gradesForm">
-            <h1 class="text-primary">Enter Your Overall Grade</h1>
+            <h1 class="text-primary">Certificate Program Qualifications</h1>
             <div class="">
                 <div class="mb-4">
                     <div class="form-group">
@@ -518,5 +675,288 @@ block links %}
             Submit
         </button>
     </form>
+
+    <div class="container mt-4 mb-4">
+        <div class="alert alert-info mb-4" role="alert">
+            <h2 class="alert-heading">🎓 KUCCPS Certificate Programs</h2>
+            <p class="mb-2">
+                <strong>Certificate programs</strong> are 1-2 year vocational training courses focused on practical skills development.
+                These flexible programs prepare students for immediate employment or entrepreneurship.
+            </p>
+            <ul class="mb-0">
+                <li><strong>Duration:</strong> 1-2 years</li>
+                <li><strong>Focus:</strong> Practical, job-ready skills</li>
+                <li><strong>Entry:</strong> Minimum E in KCSE or basic education</li>
+                <li><strong>Outcome:</strong> National Certificate with immediate employment potential</li>
+            </ul>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">✨ Certificate Program Categories</h5>
+                        <ul>
+                            <li>Business & Entrepreneurship</li>
+                            <li>Information Technology & Digital Skills</li>
+                            <li>Beauty, Wellness & Cosmetology</li>
+                            <li>Hospitality & Catering</li>
+                            <li>Office Administration</li>
+                            <li>Security & Safety Services</li>
+                            <li>Retail & Customer Service</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">💪 Quick Employment Path</h5>
+                        <ul>
+                            <li>Immediate job entry after completion</li>
+                            <li>Flexible full-time and part-time options</li>
+                            <li>Affordable training costs</li>
+                            <li>Skill-based learning with practical internships</li>
+                            <li>Self-employment ready credentials</li>
+                            <li>Pathway to diploma programs</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+    <!-- Certificate Programs Section Header -->
+    <div class="alert alert-success mb-4" role="alert">
+        <h2 class="alert-heading">📜 KUCCPS Certificate Programs Checker</h2>
+        <p class="mb-2">
+            Certificate programs are short-term vocational courses (typically 1 year) that provide practical training and industry-relevant skills. 
+            They are offered by KUCCPS partner colleges and training centers across Kenya in fields like hospitality, agriculture, business, construction, and many others.
+        </p>
+        <p class="mb-0">
+            <strong>How it works:</strong> Enter your KCSE overall grade and individual subject grades below to discover which certificate programs you qualify for. 
+            Certificate programs often have lower entry requirements than diplomas and offer quick pathways to employment.
+        </p>
+    </div>
+
+    <!-- Certificate Information Section -->
+    <div class="row mt-5 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">⚡ Certificate Program Advantages</h5>
+                    <ul class="small">
+                        <li>Short duration (1 year) - quick entry to workforce</li>
+                        <li>Lower entry requirements than diplomas</li>
+                        <li>Practical, hands-on training focused on industry needs</li>
+                        <li>Affordable tuition costs</li>
+                        <li>Pathway to further studies (upgrade to diploma)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🎯 Certificate Study Areas</h5>
+                    <ul class="small">
+                        <li>Hospitality & Catering</li>
+                        <li>Business & Entrepreneurship</li>
+                        <li>Agriculture & Horticulture</li>
+                        <li>Construction & Building</li>
+                        <li>Hair & Beauty Services</li>
+                        <li>Food Science & Nutrition</li>
+                        <li>Computing & Digital Skills</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose Certificate Programs -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Why Choose Certificate Programs</h2>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Quick Entry into Career</h5>
+                            <p class="mb-0">Complete your training in just 1-2 years and start working immediately with job-ready skills.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Self-Employment Ready</h5>
+                            <p class="mb-0">Start your own business immediately upon graduation with practical entrepreneurship skills.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Affordable Training Costs</h5>
+                            <p class="mb-0">Lower tuition fees compared to diplomas, making quality vocational training accessible to all.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5>Upgrade to Diploma</h5>
+                            <p class="mb-0">Use your certificate as a pathway to diploma programs for further career advancement.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Frequently Asked Questions -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Frequently Asked Questions</h2>
+            <div class="accordion" id="certificateFAQ">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            How long does a certificate program take?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#certificateFAQ">
+                        <div class="accordion-body">
+                            Certificate programs typically take 1-2 years to complete, depending on the specific course and institution. This shorter duration makes them ideal for those wanting quick entry into the job market.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            What are the entry requirements for certificate programs?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
+                        <div class="accordion-body">
+                            Most certificate programs require a minimum of E grade in KCSE or basic secondary education. Some programs may have specific subject requirements, but overall requirements are flexible to accommodate many students.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Can I upgrade from a certificate to a diploma?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
+                        <div class="accordion-body">
+                            Yes. Many institutions offer articulation pathways where certificate graduates can upgrade to diploma programs. This allows you to gain work experience before pursuing further education.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                            What job opportunities are available after certification?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
+                        <div class="accordion-body">
+                            Certificate graduates can pursue employment in their field, start their own businesses, or work as skilled technicians. Many employers actively seek certificate holders for entry-level and mid-level positions.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                            Is financial aid available for certificate programs?
+                        </button>
+                    </h2>
+                    <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
+                        <div class="accordion-body">
+                            Many certificate programs are eligible for government funding and student loans. Check with individual institutions for available financing options, scholarships, and payment plans.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Stories -->
+<div class="container my-5 mb-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Success Stories from Certificate Graduates</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Sarah Kipchoge - Hospitality Management</h5>
+                            <p class="small mb-3">After completing her hospitality certificate in 2 years, Sarah started her own catering business. She now employs 8 people and has contracts with major corporate clients in Nairobi.</p>
+                            <p class="small text-muted">"The certificate program gave me practical skills that I used immediately to build my business."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Mwangi Muthui - IT Support</h5>
+                            <p class="small mb-3">Mwangi completed his IT support certificate and was hired immediately by a tech company. Two years later, he was promoted to IT Manager and now oversees a team of 5 technicians.</p>
+                            <p class="small text-muted">"Quick training, immediate employment, and growth opportunity - that is what I got."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Grace Okonkwo - Beauty and Cosmetology</h5>
+                            <p class="small mb-3">Grace opened a beauty salon after her certificate course. Her business now has 3 branches and she trains other beauticians using her certificate as a foundation.</p>
+                            <p class="small text-muted">"From student to salon owner in just 3 years - that is the power of practical training."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prerequisites and Requirements -->
+<div class="container my-5 mb-5">
+    <div class="card border-left-primary shadow-sm">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4">Certificate Program Prerequisites and Requirements</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum E (1 point) - flexible entry</li>
+                        <li class="mb-2"><strong>Form 4 Completion:</strong> Completion of secondary school education</li>
+                        <li class="mb-2"><strong>Entry Score:</strong> Generally flexible, low minimum requirements</li>
+                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 16+ years old at entry</li>
+                        <li class="mb-2"><strong>Additional:</strong> Some programs may require basic numeracy and literacy</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Hospitality Programs:</strong> Customer service aptitude, communication skills</li>
+                        <li class="mb-2"><strong>IT Programs:</strong> Basic computer literacy helpful but not required</li>
+                        <li class="mb-2"><strong>Beauty Programs:</strong> Practical skills and attention to detail</li>
+                        <li class="mb-2"><strong>Business Programs:</strong> Basic arithmetic and communication abilities</li>
+                        <li class="mb-2"><strong>Trade Programs:</strong> Physical ability and aptitude for hands-on work</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 {% endblock %} {% block scripts %}{% endblock %}

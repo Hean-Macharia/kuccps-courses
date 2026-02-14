@@ -1,0 +1,714 @@
+/* Guides CSS - Using primary colors from styles.css */
+:root {
+    --guides-primary: #3498db;
+    --guides-secondary: #2c3e50;
+    --guides-light: #ecf0f1;
+    --guides-dark: #34495e;
+    --guides-gray: #95a5a6;
+}
+
+.guide-container {
+    padding: 2rem 0;
+    background: #f5f7fa;
+}
+
+.breadcrumb {
+    background: #e9ecef;
+    padding: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb span {
+    color: #6c757d;
+}
+
+.guide-header {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.guide-header h1 {
+    color: var(--guides-secondary);
+    margin-bottom: 1rem;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.guide-meta {
+    display: flex;
+    gap: 2rem;
+    color: var(--guides-gray);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.guide-meta i {
+    margin-right: 0.5rem;
+    color: var(--guides-primary);
+}
+
+.guide-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.guide-content h1 {
+    color: var(--guides-secondary);
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.guide-section {
+    margin-bottom: 3rem;
+}
+
+.guide-section h2 {
+    color: var(--guides-secondary);
+    border-bottom: 3px solid var(--guides-primary);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.guide-section h3 {
+    color: var(--guides-dark);
+    margin: 1.5rem 0 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.guide-section p {
+    margin-bottom: 1rem;
+    color: #333;
+    font-size: 1rem;
+}
+
+.guide-section ul, .guide-section ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.guide-section li {
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+/* Info boxes */
+.info-box, .benefits-box, .highlight-box, .note-box, .requirements-box {
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 6px;
+    border-left: 4px solid var(--guides-primary);
+    background: #e8f4fc;
+}
+
+.info-box h3, .benefits-box h3, .highlight-box h3, .requirements-box h3 {
+    margin-top: 0;
+    color: var(--guides-secondary);
+}
+
+.info-box ul, .benefits-box ul {
+    margin-left: 1.5rem;
+}
+
+.highlight-box {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.note-box {
+    background: #f8f9fa;
+    border-left-color: var(--guides-gray);
+}
+
+.requirements-box {
+    background: #e8f4fc;
+    border-left-color: var(--guides-primary);
+}
+
+/* Tables */
+.points-table, .subject-table, .requirements-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.points-table th, .subject-table th, .requirements-table th {
+    background: var(--guides-primary);
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.points-table td, .subject-table td, .requirements-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.points-table tr:nth-child(even), .subject-table tr:nth-child(even), .requirements-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+/* Grid layouts */
+.cluster-grid, .tips-grid, .pathway-chart, .course-grid, .requirements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.cluster-card, .tip, .pathway, .course-category, .requirement-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.cluster-card:hover, .tip:hover, .pathway:hover, .course-category:hover, .requirement-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.tip h4, .pathway h3, .course-category h3, .requirement-card h3 {
+    color: var(--guides-secondary);
+    margin-top: 0;
+    font-weight: 600;
+}
+
+.requirement-card {
+    text-align: center;
+}
+
+.requirement-grade {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--guides-primary);
+    margin-bottom: 0.5rem;
+}
+
+.grade-level {
+    display: inline-block;
+    background: var(--guides-primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* FAQ */
+.faq, .faq-item {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid var(--guides-primary);
+}
+
+.faq h3, .faq-item h3 {
+    margin-top: 0;
+    color: var(--guides-secondary);
+    font-weight: 600;
+}
+
+.faq-item p {
+    margin-bottom: 0;
+    color: #333;
+}
+
+/* Process steps */
+.process-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.step {
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    position: relative;
+}
+
+.step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 40px;
+    left: 60%;
+    width: 30%;
+    height: 2px;
+    background: var(--guides-primary);
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: var(--guides-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.step h4 {
+    color: var(--guides-secondary);
+    margin: 0.5rem 0 0.5rem;
+    font-weight: 600;
+}
+
+.step p {
+    font-size: 0.9rem;
+    color: var(--guides-gray);
+}
+
+/* Related guides */
+.related-guides {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e9ecef;
+}
+
+.related-guides h2 {
+    color: var(--guides-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.related-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-left: 4px solid var(--guides-primary);
+}
+
+.related-card h3 {
+    color: var(--guides-secondary);
+    margin-top: 0;
+}
+
+.related-card p {
+    color: var(--guides-gray);
+}
+
+.related-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* CTA Section */
+.cta-section {
+    text-align: center;
+    padding: 3rem;
+    background: linear-gradient(135deg, var(--guides-primary), #2980b9);
+    color: white;
+    border-radius: 8px;
+    margin: 3rem 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.cta-section h2 {
+    color: white;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+.cta-section p {
+    color: rgba(255,255,255,0.95);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.cta-buttons {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.cta-buttons .btn {
+    margin: 0 0.5rem;
+    padding: 0.75rem 2rem;
+}
+
+.btn-primary {
+    background: white;
+    color: var(--guides-primary);
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: #f0f0f0;
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid white;
+    font-weight: 600;
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Category tabs */
+.category-tabs {
+    margin: 1.5rem 0;
+}
+
+.tab-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--guides-primary);
+}
+
+.tab-content h3 {
+    color: var(--guides-secondary);
+    margin-top: 0;
+}
+
+.tab-content ul {
+    margin-left: 1.5rem;
+}
+
+/* Guides Index Page */
+.guides-index-page {
+    background: #f5f7fa;
+    padding: 2rem 0;
+}
+
+.guides-hero {
+    text-align: center;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+}
+
+.guides-hero h1 {
+    color: var(--guides-secondary);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.hero-subtitle {
+    color: var(--guides-gray);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.guides-search {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.search-box {
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 2px solid var(--guides-primary);
+    border-radius: 25px;
+    font-size: 1rem;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--guides-primary);
+}
+
+.guides-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.guide-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-top: 4px solid var(--guides-primary);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.guide-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.guide-icon {
+    font-size: 2.5rem;
+    color: var(--guides-primary);
+    flex-shrink: 0;
+}
+
+.guide-content h3 {
+    color: var(--guides-secondary);
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.guide-content p {
+    color: var(--guides-gray);
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+}
+
+.guide-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--guides-gray);
+}
+
+.categories-section {
+    margin: 3rem 0;
+}
+
+.categories-section h2 {
+    color: var(--guides-secondary);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.category-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    border-color: var(--guides-primary);
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.category-icon {
+    font-size: 3rem;
+    color: var(--guides-primary);
+    margin-bottom: 1rem;
+}
+
+.category-card h3 {
+    color: var(--guides-secondary);
+    margin: 1rem 0 0.5rem 0;
+}
+
+.category-card p {
+    color: var(--guides-gray);
+    font-size: 0.95rem;
+}
+
+.featured-guide {
+    margin: 3rem 0;
+}
+
+.featured-guide h2 {
+    color: var(--guides-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+.featured-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.featured-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.featured-badge {
+    display: inline-block;
+    background: var(--guides-primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    width: fit-content;
+    margin-bottom: 1rem;
+}
+
+.featured-content h3 {
+    color: var(--guides-secondary);
+    font-size: 1.5rem;
+    margin: 1rem 0;
+}
+
+.featured-content p {
+    color: var(--guides-gray);
+    margin-bottom: 1rem;
+}
+
+.featured-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    color: var(--guides-gray);
+    font-size: 0.9rem;
+}
+
+.featured-image {
+    overflow: hidden;
+}
+
+.featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.faq-section {
+    margin: 3rem 0;
+}
+
+.faq-section h2 {
+    color: var(--guides-secondary);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.faq-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .guide-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .guide-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .process-steps {
+        flex-direction: column;
+    }
+    
+    .step {
+        margin-bottom: 1.5rem;
+    }
+    
+    .step:not(:last-child)::after {
+        display: none;
+    }
+    
+    .cluster-grid, .course-grid, .requirements-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .featured-card {
+        grid-template-columns: 1fr;
+    }
+    
+    .featured-image {
+        min-height: 300px;
+    }
+    
+    .guides-hero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .guide-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+    }
+    
+    .cta-buttons .btn {
+        width: 100%;
+    }
+    
+    .pathway-chart .step:not(:last-child)::after {
+        display: none;
+    }
+}

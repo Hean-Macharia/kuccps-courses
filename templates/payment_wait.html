@@ -8,47 +8,97 @@
     <div class="modal fade show" id="paymentProcessingModal" tabindex="-1" aria-labelledby="paymentProcessingModalLabel"
         aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false" style="display: block;">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content border-0 shadow-lg">
                 <div class="modal-body text-center p-5">
-                    <!-- Processing Spinner -->
-                    <div class="mb-4">
-                        <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
-                            <span class="visually-hidden">Processing...</span>
+                    <!-- Enhanced Processing Spinner -->
+                    <div class="position-relative mb-5">
+                        <div class="spinner-border text-primary" style="width: 5rem; height: 5rem;" role="status">
+                            <span class="visually-hidden">Processing payment...</span>
+                        </div>
+                        <div class="position-absolute top-50 start-50 translate-middle">
+                            <i class="fas fa-mobile-alt fa-2x text-primary opacity-75"></i>
                         </div>
                     </div>
 
-                    <!-- Processing Text -->
-                    <h4 class="fw-bold mb-3">Waiting for Payment</h4>
-                    <p class="text-muted mb-4" id="statusMessage">STK Push sent to your phone. Please check and enter
-                        your M-Pesa PIN to complete payment.</p>
+                    <!-- Enhanced Processing Text -->
+                    <h3 class="fw-bold mb-3 text-gradient text-primary">Processing Payment</h3>
+                    <p class="lead mb-4" id="statusMessage">
+                        <i class="fas fa-paper-plane me-2 text-primary"></i>
+                        STK Push sent to your phone. Please check and enter your M-Pesa PIN.
+                    </p>
 
-                    <div class="alert alert-warning mb-4">
-                        <small>
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>DO NOT REFRESH THIS PAGE</strong> after entering your PIN. The page will update
-                            automatically.
-                        </small>
+                    <!-- Enhanced Warning Card -->
+                    <div class="card border-warning bg-warning bg-opacity-10 mb-4">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-circle fa-lg text-warning"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <p class="mb-0 fw-medium">
+                                        <strong class="text-danger">⚠️ DO NOT REFRESH</strong> after entering PIN
+                                    </p>
+                                    <small class="text-muted">The page will update automatically</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Progress Bar -->
-                    <div class="progress mb-4" style="height: 6px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                            style="width: 0%" id="progressBar"></div>
-                    </div>
-
-                    <!-- Status Timeline -->
-                    <div id="statusTimeline" class="small text-muted mb-4">
+                    <!-- Enhanced Progress Bar -->
+                    <div class="mb-5">
                         <div class="d-flex justify-content-between mb-2">
-                            <span id="step1">⏳ STK Push Sent</span>
-                            <span id="step2">⏳ Waiting for PIN</span>
-                            <span id="step3">⏳ Processing</span>
+                            <small class="text-muted fw-medium">Payment Progress</small>
+                            <small class="text-primary fw-bold" id="progressText">0%</small>
+                        </div>
+                        <div class="progress" style="height: 10px; border-radius: 10px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                role="progressbar" style="width: 0%; border-radius: 10px;" 
+                                id="progressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="d-grid gap-2 col-8 mx-auto mt-4">
-                        <button type="button" class="btn btn-outline-danger" id="cancelProcessing">
-                            <i class="fas fa-times me-2"></i>Cancel Payment
+                    <!-- Enhanced Status Timeline -->
+                    <div class="row g-3 mb-4" id="statusTimeline">
+                        <div class="col-4">
+                            <div class="text-center p-2">
+                                <div class="mb-2">
+                                    <div class="badge bg-primary bg-opacity-10 text-primary p-2 rounded-circle" 
+                                         style="width: 40px; height: 40px; line-height: 26px;">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </div>
+                                </div>
+                                <small class="d-block fw-medium" id="step1">Push Sent</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-2">
+                                <div class="mb-2">
+                                    <div class="badge bg-secondary bg-opacity-10 text-secondary p-2 rounded-circle" 
+                                         style="width: 40px; height: 40px; line-height: 26px;">
+                                        <i class="fas fa-fingerprint"></i>
+                                    </div>
+                                </div>
+                                <small class="d-block fw-medium text-muted" id="step2">Enter PIN</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-2">
+                                <div class="mb-2">
+                                    <div class="badge bg-secondary bg-opacity-10 text-secondary p-2 rounded-circle" 
+                                         style="width: 40px; height: 40px; line-height: 26px;">
+                                        <i class="fas fa-cogs"></i>
+                                    </div>
+                                </div>
+                                <small class="d-block fw-medium text-muted" id="step3">Processing</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Action Buttons -->
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" class="btn btn-outline-danger btn-lg py-2" id="cancelProcessing">
+                            <i class="fas fa-times-circle me-2"></i>Cancel Payment
                         </button>
                     </div>
                 </div>
@@ -56,74 +106,113 @@
         </div>
     </div>
 
-    <!-- Course Processing Modal (Hidden Initially) -->
+    <!-- Enhanced Course Processing Modal (Hidden Initially) -->
     <div class="modal fade" id="courseProcessingModal" tabindex="-1" aria-labelledby="courseProcessingModalLabel"
         data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center p-5">
-                    <!-- Success Icon -->
-                    <div class="mb-4">
-                        <div class="text-success mb-3">
-                            <i class="fas fa-check-circle" style="font-size: 4rem;"></i>
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body p-5">
+                    <!-- Success Header -->
+                    <div class="text-center mb-5">
+                        <div class="mb-4">
+                            <div class="icon-success-check">
+                                <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                                <div class="pulse-ring"></div>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-2 text-success">Payment Confirmed! 🎉</h3>
+                        <p class="lead text-muted mb-4">
+                            <i class="fas fa-brain me-2"></i>
+                            Now generating your personalized course recommendations...
+                        </p>
+                    </div>
+
+                    <!-- Critical Warning Section -->
+                    <div class="alert alert-danger border-start border-5 border-danger bg-danger bg-opacity-10 mb-4" role="alert">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="alert-heading mb-2">⚠️ IMPORTANT: DO NOT REFRESH OR CLOSE</h5>
+                                <p class="mb-2">Your courses are being generated. Interrupting this process may result in incomplete results.</p>
+                                <div class="d-flex align-items-center mt-2">
+                                    <i class="fas fa-clock text-muted me-2"></i>
+                                    <small class="text-muted">This typically takes 30-60 seconds. Please remain patient.</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Success Text -->
-                    <h4 class="fw-bold mb-3 text-success">Payment Confirmed!</h4>
-                    <p class="text-muted mb-4">Your payment has been successfully processed. Now generating your
-                        personalized course recommendations...</p>
-
-                    <!-- Course Processing Section -->
-                    <div class="card border-0 bg-light mb-4">
+                    <!-- Enhanced Course Processing Section -->
+                    <div class="card border-0 bg-gradient-light mb-4">
+                        <div class="card-header bg-transparent border-0 py-3">
+                            <h5 class="card-title mb-0 fw-bold text-dark">
+                                <i class="fas fa-tasks me-2"></i>Processing Your Courses
+                            </h5>
+                        </div>
                         <div class="card-body">
-                            <h6 class="card-title mb-3">Processing Your Courses</h6>
-
-                            <!-- Processing Steps -->
+                            <!-- Enhanced Processing Steps -->
                             <div class="processing-steps">
-                                <div class="step-item mb-3">
+                                <div class="step-item mb-4">
                                     <div class="d-flex align-items-center">
-                                        <button class="btn btn-primary me-3" type="button" disabled
-                                            style="width: 40px; height: 40px;">
-                                            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                                            <span class="visually-hidden" role="status">Loading...</span>
-                                        </button>
-                                        <div class="text-start">
-                                            <div class="fw-medium" id="stepAnalyzing">Analyzing your grades</div>
-                                            <small class="text-muted" id="stepAnalyzingDesc">Checking subject
-                                                requirements...</small>
+                                        <div class="step-icon-wrapper me-3">
+                                            <button class="btn btn-primary btn-lg rounded-circle p-0 d-flex align-items-center justify-content-center" 
+                                                    type="button" disabled style="width: 50px; height: 50px;">
+                                                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                                                <span class="visually-hidden" role="status">Loading...</span>
+                                            </button>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="fw-bold mb-1" id="stepAnalyzing">Analyzing Your Grades</h6>
+                                                <span class="badge bg-primary bg-opacity-10 text-primary">In Progress</span>
+                                            </div>
+                                            <p class="text-muted mb-0 small" id="stepAnalyzingDesc">
+                                                Checking subject requirements and performance patterns...
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="step-item mb-3">
+                                <div class="step-item mb-4">
                                     <div class="d-flex align-items-center">
-                                        <button class="btn btn-secondary me-3" type="button" disabled
-                                            style="width: 40px; height: 40px;">
-                                            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                                            <span class="visually-hidden" role="status">Loading...</span>
-                                        </button>
-                                        <div class="text-start">
-                                            <div class="fw-medium text-muted" id="stepQualifying">Finding qualifying
-                                                courses</div>
-                                            <small class="text-muted" id="stepQualifyingDesc">Matching with university
-                                                programs...</small>
+                                        <div class="step-icon-wrapper me-3">
+                                            <button class="btn btn-secondary btn-lg rounded-circle p-0 d-flex align-items-center justify-content-center" 
+                                                    type="button" disabled style="width: 50px; height: 50px;">
+                                                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                                                <span class="visually-hidden" role="status">Loading...</span>
+                                            </button>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="fw-bold mb-1 text-muted" id="stepQualifying">Finding Qualifying Courses</h6>
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary">Pending</span>
+                                            </div>
+                                            <p class="text-muted mb-0 small" id="stepQualifyingDesc">
+                                                Matching your profile with university programs and requirements...
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="step-item">
                                     <div class="d-flex align-items-center">
-                                        <button class="btn btn-secondary me-3" type="button" disabled
-                                            style="width: 40px; height: 40px;">
-                                            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                                            <span class="visually-hidden" role="status">Loading...</span>
-                                        </button>
-                                        <div class="text-start">
-                                            <div class="fw-medium text-muted" id="stepFinalizing">Finalizing results
+                                        <div class="step-icon-wrapper me-3">
+                                            <button class="btn btn-secondary btn-lg rounded-circle p-0 d-flex align-items-center justify-content-center" 
+                                                    type="button" disabled style="width: 50px; height: 50px;">
+                                                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                                                <span class="visually-hidden" role="status">Loading...</span>
+                                            </button>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="fw-bold mb-1 text-muted" id="stepFinalizing">Finalizing Recommendations</h6>
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary">Pending</span>
                                             </div>
-                                            <small class="text-muted" id="stepFinalizingDesc">Preparing your course
-                                                list...</small>
+                                            <p class="text-muted mb-0 small" id="stepFinalizingDesc">
+                                                Preparing your personalized course list and insights...
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -131,26 +220,39 @@
                         </div>
                     </div>
 
-                    <!-- Progress Bar for Course Processing -->
+                    <!-- Enhanced Progress Bar -->
                     <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <small>Course Processing</small>
-                            <small id="courseProgressText">0%</small>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0 fw-bold">
+                                <i class="fas fa-chart-line me-2 text-success"></i>Overall Progress
+                            </h6>
+                            <h5 class="mb-0 text-success fw-bold" id="courseProgressText">0%</h5>
                         </div>
-                        <div class="progress" style="height: 8px;">
+                        <div class="progress" style="height: 12px; border-radius: 10px;">
                             <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
-                                role="progressbar" style="width: 0%" id="courseProgressBar">
+                                role="progressbar" style="width: 0%; border-radius: 10px;" 
+                                id="courseProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
                             </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-muted">Started</small>
+                            <small class="text-muted" id="estimatedTime">Estimated: 45s remaining</small>
+                            <small class="text-muted">Complete</small>
                         </div>
                     </div>
 
-                    <!-- Loading Message -->
-                    <div class="alert alert-info mb-0">
-                        <small>
-                            <i class="fas fa-info-circle me-2"></i>
-                            This may take a few moments. Please wait while we generate your personalized course
-                            recommendations.
-                        </small>
+                    <!-- Enhanced Loading Message -->
+                    <div class="alert alert-info border-0 bg-info bg-opacity-10 mt-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle fa-lg text-info me-3"></i>
+                            <div>
+                                <p class="mb-1 fw-medium">Please wait patiently</p>
+                                <small class="text-muted">
+                                    We're analyzing thousands of course combinations to find your best matches. 
+                                    This ensures you get the most accurate and personalized recommendations.
+                                </small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -162,12 +264,13 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        console.log('🚀 ULTRA-FAST Payment wait page loaded');
+        console.log('🚀 Enhanced Payment Processing Page Loaded');
 
         const flow = "{{ flow }}";
         let checkCount = 0;
         const maxChecks = 60;
         let isProcessing = false;
+        let startTime = Date.now();
 
         // Bootstrap modal instances
         const paymentModal = new bootstrap.Modal(document.getElementById('paymentProcessingModal'));
@@ -176,21 +279,24 @@
         // Progress animation for payment modal
         let progress = 0;
         const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
         const progressInterval = setInterval(() => {
             if (progress < 40 && !isProcessing) {
                 progress += 0.8;
                 progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressText.textContent = Math.round(progress) + '%';
             }
         }, 800);
 
-        // Start ULTRA-FAST payment status checking
+        // Start ULTRA-FAST payment status checking (EXACT SAME LOGIC)
         checkPaymentStatus();
 
         function checkPaymentStatus() {
             if (isProcessing) return;
 
             checkCount++;
-            console.log(`⚡ ULTRA-FAST Payment check ${checkCount}/${maxChecks}`);
+            console.log(`⚡ Payment check ${checkCount}/${maxChecks}`);
 
             // Use fetch with aggressive timeout
             const controller = new AbortController();
@@ -203,10 +309,10 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('⚡ ULTRA-FAST Payment status:', data);
+                    console.log('Payment status:', data);
 
                     if (data.paid === true) {
-                        console.log('✅ ULTRA-FAST: Payment confirmed via method:', data.method);
+                        console.log('✅ Payment confirmed via method:', data.method);
                         handlePaymentConfirmed();
                     } else {
                         // Payment still pending - continue checking
@@ -224,7 +330,7 @@
                 })
                 .catch(error => {
                     clearTimeout(timeoutId);
-                    console.error('⚡ ULTRA-FAST Error checking payment:', error);
+                    console.error('Error checking payment:', error);
 
                     // Continue checking even on network errors
                     if (checkCount < maxChecks) {
@@ -240,34 +346,45 @@
             const step1 = document.getElementById('step1');
             const step2 = document.getElementById('step2');
             const step3 = document.getElementById('step3');
+            const step1Badge = step1.parentElement.previousElementSibling.querySelector('.badge');
+            const step2Badge = step2.parentElement.previousElementSibling.querySelector('.badge');
+            const step3Badge = step3.parentElement.previousElementSibling.querySelector('.badge');
 
             // Update progress bar
             if (progressBar && progress < 80) {
                 progress += 0.3;
                 progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressText.textContent = Math.round(progress) + '%';
             }
 
-            // Update status messages
+            // Update status messages and badges
             if (checkCount < 5) {
-                statusMessage.textContent = 'STK Push sent. Please check your phone...';
-                step1.innerHTML = '✅ STK Push Sent';
-                step2.innerHTML = '⏳ Waiting for PIN';
+                statusMessage.innerHTML = '<i class="fas fa-paper-plane me-2 text-primary"></i>STK Push sent. Please check your phone...';
+                step1.innerHTML = '<span class="text-success">✓ Push Sent</span>';
+                step1Badge.className = 'badge bg-success bg-opacity-10 text-success p-2 rounded-circle';
+                step1Badge.innerHTML = '<i class="fas fa-check"></i>';
             } else if (checkCount < 15) {
-                statusMessage.textContent = 'Waiting for you to enter M-Pesa PIN...';
+                statusMessage.innerHTML = '<i class="fas fa-fingerprint me-2 text-primary"></i>Waiting for you to enter M-Pesa PIN...';
+                step2.innerHTML = '<span class="text-primary">Enter PIN</span>';
+                step2Badge.className = 'badge bg-primary bg-opacity-10 text-primary p-2 rounded-circle';
             } else if (checkCount < 30) {
-                statusMessage.textContent = 'Processing your payment...';
-                step2.innerHTML = '✅ PIN Entered';
-                step3.innerHTML = '⏳ Processing Payment';
+                statusMessage.innerHTML = '<i class="fas fa-cogs me-2 text-primary"></i>Processing your payment...';
+                step2.innerHTML = '<span class="text-success">✓ PIN Entered</span>';
+                step2Badge.className = 'badge bg-success bg-opacity-10 text-success p-2 rounded-circle';
+                step2Badge.innerHTML = '<i class="fas fa-check"></i>';
+                step3.innerHTML = '<span class="text-primary">Processing</span>';
+                step3Badge.className = 'badge bg-primary bg-opacity-10 text-primary p-2 rounded-circle';
             } else if (checkCount < 50) {
-                statusMessage.textContent = 'Finalizing payment confirmation...';
+                statusMessage.innerHTML = '<i class="fas fa-spinner fa-spin me-2 text-primary"></i>Finalizing payment confirmation...';
             } else {
-                statusMessage.textContent = 'Almost there! Completing payment verification...';
+                statusMessage.innerHTML = '<i class="fas fa-hourglass-half me-2 text-primary"></i>Almost there! Completing payment verification...';
             }
         }
 
         function handlePaymentConfirmed() {
             isProcessing = true;
-            console.log('✅ ULTRA-FAST: Handling confirmed payment');
+            console.log('✅ Handling confirmed payment');
 
             // Stop initial progress animation
             clearInterval(progressInterval);
@@ -275,13 +392,35 @@
             // Complete payment progress bar
             progress = 100;
             progressBar.style.width = progress + '%';
+            progressBar.setAttribute('aria-valuenow', progress);
+            progressText.textContent = '100%';
             progressBar.classList.remove('progress-bar-animated');
+            progressBar.classList.add('bg-success');
 
-            // Show success in payment modal briefly
+            // Update all steps to success
+            document.querySelectorAll('#statusTimeline .badge').forEach(badge => {
+                badge.className = 'badge bg-success bg-opacity-10 text-success p-2 rounded-circle';
+                badge.innerHTML = '<i class="fas fa-check"></i>';
+            });
+            
+            document.querySelectorAll('#statusTimeline small').forEach(step => {
+                step.innerHTML = step.textContent.replace(/[^✓]/g, '').trim() + ' ✓';
+                step.className = 'd-block fw-medium text-success';
+            });
+
+            // Show success in payment modal briefly with enhanced message
             const statusMessage = document.getElementById('statusMessage');
-            const step3 = document.getElementById('step3');
-            statusMessage.innerHTML = '<strong class="text-success">✅ Payment Confirmed!</strong>';
-            step3.innerHTML = '✅ Payment Verified';
+            statusMessage.innerHTML = `
+                <div class="alert alert-success border-0 bg-success bg-opacity-10 mb-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                        <div>
+                            <h5 class="mb-1 fw-bold text-success">Payment Confirmed Successfully!</h5>
+                            <p class="mb-0">Redirecting to course processing...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
 
             // Switch to course processing modal after a brief delay
             setTimeout(() => {
@@ -294,18 +433,22 @@
                     startCourseProcessing();
                 }, 500);
 
-            }, 1000);
+            }, 1500);
         }
 
         function startCourseProcessing() {
-            console.log('🔄 Starting FAST course processing animation');
+            console.log('🔄 Starting enhanced course processing animation');
 
             let courseProgress = 0;
             const courseProgressInterval = setInterval(() => {
                 if (courseProgress < 100) {
-                    courseProgress += 2; // Faster animation
+                    courseProgress += 2;
                     courseProgressBar.style.width = courseProgress + '%';
+                    courseProgressBar.setAttribute('aria-valuenow', courseProgress);
                     courseProgressText.textContent = Math.min(100, Math.round(courseProgress)) + '%';
+                    
+                    // Update estimated time
+                    updateEstimatedTime(courseProgress);
 
                     // Update steps based on progress
                     updateCourseSteps(courseProgress);
@@ -320,65 +463,76 @@
             checkCoursesReady();
         }
 
+        function updateEstimatedTime(progress) {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const totalEstimated = 45; // Estimated 45 seconds total
+            const remaining = Math.max(0, totalEstimated - elapsed);
+            const estimatedTime = document.getElementById('estimatedTime');
+            
+            if (progress < 100) {
+                estimatedTime.textContent = `Estimated: ${Math.round(remaining)}s remaining`;
+            } else {
+                estimatedTime.textContent = 'Completed successfully!';
+            }
+        }
+
         function updateCourseSteps(progress) {
             // Update steps based on progress
             if (progress >= 0 && progress < 30) {
                 // Step 1: Analyzing grades (active)
-                activateStep(stepAnalyzing, stepAnalyzingDesc, 'Analyzing your grades', 'Checking subject requirements...', 'primary');
+                activateStep(stepAnalyzing, stepAnalyzingDesc, 'Analyzing Your Grades', 'Checking subject requirements and performance patterns...', 'primary');
                 deactivateStep(stepQualifying, stepQualifyingDesc);
                 deactivateStep(stepFinalizing, stepFinalizingDesc);
             } else if (progress >= 30 && progress < 70) {
                 // Step 2: Finding qualifying courses (active)
                 completeStep(stepAnalyzing, stepAnalyzingDesc);
-                activateStep(stepQualifying, stepQualifyingDesc, 'Finding qualifying courses', 'Matching with university programs...', 'primary');
+                activateStep(stepQualifying, stepQualifyingDesc, 'Finding Qualifying Courses', 'Matching your profile with university programs...', 'primary');
                 deactivateStep(stepFinalizing, stepFinalizingDesc);
             } else if (progress >= 70 && progress < 100) {
                 // Step 3: Finalizing results (active)
                 completeStep(stepAnalyzing, stepAnalyzingDesc);
                 completeStep(stepQualifying, stepQualifyingDesc);
-                activateStep(stepFinalizing, stepFinalizingDesc, 'Finalizing results', 'Preparing your course list...', 'primary');
+                activateStep(stepFinalizing, stepFinalizingDesc, 'Finalizing Recommendations', 'Preparing personalized insights...', 'primary');
             }
         }
 
         function activateStep(stepElement, descElement, title, description, color) {
             stepElement.textContent = title;
-            stepElement.className = 'fw-medium text-' + color;
+            stepElement.className = 'fw-bold mb-1 text-' + color;
             descElement.textContent = description;
 
-            // Update the button spinner color
-            const button = stepElement.parentElement.parentElement.querySelector('button');
-            button.className = `btn btn-${color} me-3`;
-            button.style.width = '40px';
-            button.style.height = '40px';
-            button.disabled = true;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span class="visually-hidden" role="status">Loading...</span>';
+            // Update the button spinner
+            const button = stepElement.parentElement.parentElement.parentElement.querySelector('button');
+            const badge = stepElement.parentElement.querySelector('.badge');
+            button.className = `btn btn-${color} btn-lg rounded-circle p-0 d-flex align-items-center justify-content-center`;
+            badge.className = `badge bg-${color} bg-opacity-10 text-${color}`;
+            badge.textContent = 'In Progress';
         }
 
         function deactivateStep(stepElement, descElement) {
-            stepElement.className = 'fw-medium text-muted';
-
-            const button = stepElement.parentElement.parentElement.querySelector('button');
-            button.className = 'btn btn-secondary me-3';
-            button.style.width = '40px';
-            button.style.height = '40px';
-            button.disabled = true;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span class="visually-hidden" role="status">Loading...</span>';
+            stepElement.className = 'fw-bold mb-1 text-muted';
+            
+            const button = stepElement.parentElement.parentElement.parentElement.querySelector('button');
+            const badge = stepElement.parentElement.querySelector('.badge');
+            button.className = 'btn btn-secondary btn-lg rounded-circle p-0 d-flex align-items-center justify-content-center';
+            badge.className = 'badge bg-secondary bg-opacity-10 text-secondary';
+            badge.textContent = 'Pending';
         }
 
         function completeStep(stepElement, descElement) {
-            stepElement.className = 'fw-medium text-success';
-            stepElement.innerHTML = '✅ ' + stepElement.textContent;
+            stepElement.className = 'fw-bold mb-1 text-success';
+            stepElement.innerHTML = '✓ ' + stepElement.textContent.replace('✓ ', '');
 
-            const button = stepElement.parentElement.parentElement.querySelector('button');
-            button.className = 'btn btn-success me-3';
-            button.style.width = '40px';
-            button.style.height = '40px';
-            button.disabled = true;
+            const button = stepElement.parentElement.parentElement.parentElement.querySelector('button');
+            const badge = stepElement.parentElement.querySelector('.badge');
+            button.className = 'btn btn-success btn-lg rounded-circle p-0 d-flex align-items-center justify-content-center';
             button.innerHTML = '<i class="fas fa-check"></i>';
+            badge.className = 'badge bg-success bg-opacity-10 text-success';
+            badge.textContent = 'Completed';
         }
 
         function checkCoursesReady() {
-            console.log('⚡ FAST: Checking if courses are ready...');
+            console.log('⚡ Checking if courses are ready...');
 
             fetch(`/check-courses-ready/${flow}`)
                 .then(response => {
@@ -386,24 +540,23 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('⚡ FAST Courses ready check:', data);
+                    console.log('Courses ready check:', data);
 
                     if (data.ready) {
                         completeCourseProcessing(data.redirect_url);
                     } else {
                         // Continue checking
-                        setTimeout(checkCoursesReady, 1000); // Faster checking
+                        setTimeout(checkCoursesReady, 1000);
                     }
                 })
                 .catch(error => {
-                    console.error('⚡ FAST Error checking courses:', error);
-                    // Continue checking even on error
+                    console.error('Error checking courses:', error);
                     setTimeout(checkCoursesReady, 1500);
                 });
         }
 
         function completeCourseProcessing(redirectUrl) {
-            console.log('✅ FAST: Course processing complete');
+            console.log('✅ Course processing complete');
 
             // Complete all steps
             completeStep(stepAnalyzing, stepAnalyzingDesc);
@@ -414,33 +567,66 @@
             courseProgressBar.style.width = '100%';
             courseProgressText.textContent = '100%';
             courseProgressBar.classList.remove('progress-bar-animated');
+            document.getElementById('estimatedTime').textContent = 'Completed! ✓';
 
-            // Update final message
+            // Update final message with enhanced success display
             const alertElement = document.querySelector('#courseProcessingModal .alert');
-            alertElement.className = 'alert alert-success mb-0';
-            alertElement.innerHTML = '<small><i class="fas fa-check-circle me-2"></i>Your courses are ready! Redirecting to results...</small>';
+            alertElement.className = 'alert alert-success border-0 bg-success bg-opacity-10';
+            alertElement.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-rocket fa-2x text-success me-3"></i>
+                    <div>
+                        <h5 class="mb-1 fw-bold text-success">All Set! Your Courses Are Ready</h5>
+                        <small class="text-muted">Redirecting to your personalized results...</small>
+                    </div>
+                </div>
+            `;
 
             // Redirect after short delay
             const finalUrl = redirectUrl || `/results/${flow}`;
-            console.log('🚀 FAST: Redirecting to:', finalUrl);
+            console.log('🚀 Redirecting to:', finalUrl);
 
             setTimeout(() => {
-                window.location.href = finalUrl;
-            }, 1500);
+                // Show final success animation
+                alertElement.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-trophy fa-2x text-warning me-3"></i>
+                        <div>
+                            <h5 class="mb-1 fw-bold text-success">Excellent Matches Found!</h5>
+                            <small class="text-muted">Taking you to your personalized course recommendations...</small>
+                        </div>
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    window.location.href = finalUrl;
+                }, 1000);
+            }, 1000);
         }
 
         function handleTimeout(message) {
-            console.log('🕒 ULTRA-FAST: Handling timeout');
+            console.log('🕒 Handling timeout');
             isProcessing = true;
 
             const statusMessage = document.getElementById('statusMessage');
-            statusMessage.innerHTML = `<span class="text-warning">${message}</span>`;
+            statusMessage.innerHTML = `
+                <div class="alert alert-warning border-0 bg-warning bg-opacity-10">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clock fa-2x text-warning me-3"></i>
+                        <div>
+                            <h5 class="mb-1 fw-bold text-warning">Processing Delay</h5>
+                            <p class="mb-0">${message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
 
             if (progressBar) {
                 progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.add('bg-warning');
             }
 
-            // Update cancel button to allow manual checking
+            // Update cancel button
             const cancelBtn = document.getElementById('cancelProcessing');
             cancelBtn.innerHTML = '<i class="fas fa-external-link-alt me-2"></i>Check Results Later';
             cancelBtn.classList.remove('btn-outline-danger');
@@ -469,59 +655,139 @@
 
 <style>
     .modal-content {
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
         border: none;
+        overflow: hidden;
     }
 
     .modal-body {
         padding: 3rem !important;
     }
 
-    .spinner-border {
-        border-width: 4px;
+    .text-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
-    .progress {
-        border-radius: 10px;
-        background-color: #f0f0f0;
+    .icon-success-check {
+        position: relative;
+        display: inline-block;
     }
 
-    .progress-bar {
-        border-radius: 10px;
+    .pulse-ring {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 4px solid rgba(40, 167, 69, 0.3);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
     }
 
-    .alert-warning {
-        background-color: #fff3cd;
-        border-color: #ffc107;
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.8;
+        }
+        70% {
+            transform: scale(1.2);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 0;
+        }
     }
 
-    #statusTimeline {
-        font-size: 0.85em;
+    .bg-gradient-light {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     }
 
-    .modal-backdrop {
-        opacity: 0.5 !important;
-    }
-
-    .processing-steps .step-item {
+    .step-item {
+        padding: 1rem;
+        border-radius: 12px;
+        background: white;
+        border: 1px solid rgba(0,0,0,0.05);
         transition: all 0.3s ease;
     }
 
-    .processing-steps .btn {
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
+    .step-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
     }
 
-    .processing-steps .btn i {
-        font-size: 0.9rem;
+    .step-icon-wrapper button {
+        width: 50px !important;
+        height: 50px !important;
+        transition: all 0.3s ease;
+    }
+
+    .progress {
+        overflow: visible;
+    }
+
+    .progress-bar {
+        position: relative;
+        overflow: visible;
+    }
+
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        right: -8px;
+        top: -3px;
+        width: 18px;
+        height: 18px;
+        background: white;
+        border: 3px solid currentColor;
+        border-radius: 50%;
+    }
+
+    .alert {
+        border-radius: 12px;
+    }
+
+    .modal-backdrop {
+        opacity: 0.7 !important;
+        backdrop-filter: blur(4px);
     }
 
     .card {
-        border-radius: 12px;
+        border-radius: 16px;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+    }
+
+    .lead {
+        font-size: 1.1rem;
+        font-weight: 400;
+        color: #6c757d;
+    }
+
+    .fw-bold {
+        font-weight: 700 !important;
+    }
+
+    .small {
+        font-size: 0.875rem;
+    }
+
+    .bg-opacity-10 {
+        --bs-bg-opacity: 0.1;
     }
 </style>
 {% endblock %}

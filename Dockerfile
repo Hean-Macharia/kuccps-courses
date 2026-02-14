@@ -4,15 +4,17 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy requirements
 COPY requirements.txt .
+
+# Install production dependencies only
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app code
 COPY . .
 
-# Expose port
+# Expose port (Fly expects 8080)
 EXPOSE 8080
 
-# Run Flask app (adjust if your entrypoint is different)
+# Start Gunicorn (adjust "app:app" to your Flask entrypoint)
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]

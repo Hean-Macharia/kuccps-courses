@@ -2,6 +2,29 @@
 
 {% block title %}My Course Basket{% endblock %}
 
+{% block links %}
+<link rel="canonical" href="{{ get_canonical_url('view_basket') }}" />
+<meta name="description" content="Manage your KUCCPS course selection basket. Compare and organize your selected courses before submission.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "My Course Basket",
+  "description": "User's personalized course basket for managing selected KUCCPS courses",
+  "publisher": {
+    "@type": "Organization",
+    "name": "KUCCPS Courses Checker",
+    "url": "https://www.kuccpscourses.co.ke/"
+  },
+  "mainEntity": {
+    "@type": "Thing",
+    "name": "Course Selection Basket",
+    "description": "A collection of courses selected by the user for KUCCPS application"
+  }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <!-- Header Section -->

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUCCPS Guides 2025 | Complete Resource Center</title>
+    <meta name="description" content="Complete collection of KUCCPS guides for 2025. Learn about cluster points, admission requirements, courses, and application process.">
+    <meta name="keywords" content="KUCCPS guides, university admission Kenya, course selection, KCSE grades, higher education Kenya">
+    
+    <!-- Schema.org markup -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "KUCCPS Guides 2025",
+        "description": "Complete resource center for KUCCPS admission, courses, and placement information",
+        "publisher": {
+            "@type": "Organization",
+            "name": "KUCCPS Courses Checker"
+        }
+    }
+    </script>
+    
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/guides.css">
+</head>
+<body>
+    <!-- Navigation (same as other pages) -->
+    
+    <main class="guides-index">
+        <div class="container">
+            <h1>KUCCPS Guides & Resources 2025</h1>
+            <p class="intro">Everything you need to know about KUCCPS admission, course selection, and placement process.</p>
+            
+            <div class="guides-grid">
+                
+                <a href="/guides/{{ guide.filename.replace('.html', '') }}" class="guide-card">
+                    <div class="guide-icon">
+                        <i class="{{ guide.icon }}"></i>
+                    </div>
+                    <h3>{{ guide.title }}</h3>
+                    <p>{{ guide.description }}</p>
+                    <div class="guide-meta">
+                        <span><i class="fas fa-clock"></i> {{ guide.read_time }} min</span>
+                        <span><i class="fas fa-calendar"></i> {{ guide.date }}</span>
+                    </div>
+                </a>
+                
+            </div>
+            
+            <!-- Categories -->
+            <div class="categories">
+                <h2>Browse by Category</h2>
+                <div class="category-grid">
+                    <a href="#admission" class="category">
+                        <h3>Admission</h3>
+                        <p>Requirements and process</p>
+                    </a>
+                    <a href="#courses" class="category">
+                        <h3>Courses</h3>
+                        <p>Degree, diploma, certificate</p>
+                    </a>
+                    <a href="#financial" class="category">
+                        <h3>Financial Aid</h3>
+                        <p>Scholarships and loans</p>
+                    </a>
+                    <a href="#career" class="category">
+                        <h3>Career Guidance</h3>
+                        <p>Job market and opportunities</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer (same as other pages) -->
+</body>
+</html>
