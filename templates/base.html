@@ -1452,7 +1452,7 @@
     {% block links %}{% endblock %}
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <!-- ============================================
         BACK TO TOP BUTTON
     ============================================= -->
@@ -2919,6 +2919,151 @@
                 }
             });
         }
+    </script>
+
+    <!-- ============================================
+        FLOATING CHAT BUTTON
+    ============================================= -->
+    <div class="floating-chat-btn" id="floatingChatBtn" title="Chat with AI Assistant" aria-label="Open AI Course Assistant">
+        <i class="fas fa-robot"></i>
+        <span class="chat-tooltip">Ask AI Assistant</span>
+    </div>
+
+    <style>
+        /* Floating Chat Button (now green) */
+        .floating-chat-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(32, 201, 151, 0.15);
+            transition: all var(--transition-base);
+            z-index: 1050;
+            border: 3px solid #19692c;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .floating-chat-btn:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 15px 35px rgba(25, 105, 44, 0.35);
+            background: linear-gradient(135deg, #19692c 0%, #1e7f4f 100%);
+        }
+
+        .floating-chat-btn:active {
+            transform: scale(0.95);
+        }
+
+        .chat-tooltip {
+            position: absolute;
+            right: 75px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--dark-grey);
+            color: var(--white);
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-fast);
+            pointer-events: none;
+        }
+
+        .chat-tooltip::after {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-left-color: var(--dark-grey);
+        }
+
+        .floating-chat-btn:hover .chat-tooltip {
+            opacity: 1;
+            visibility: visible;
+            right: 80px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Hide on chat page */
+        .chat-page .floating-chat-btn {
+            display: none !important;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .floating-chat-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 55px;
+                height: 55px;
+                font-size: 1.3rem;
+            }
+
+            .chat-tooltip {
+                display: none; /* Hide tooltip on mobile for cleaner look */
+            }
+        }
+
+        /* Pulse animation for attention */
+        .floating-chat-btn.pulse-attention {
+            animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(32, 201, 151, 0.65); }
+            70% { box-shadow: 0 0 0 10px rgba(32, 201, 151, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(32, 201, 151, 0); }
+        }
+    </style>
+
+    <script>
+        // Floating Chat Button Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const floatingChatBtn = document.getElementById('floatingChatBtn');
+
+            if (floatingChatBtn) {
+                // Add pulse animation after 5 seconds to draw attention
+                setTimeout(() => {
+                    floatingChatBtn.classList.add('pulse-attention');
+                }, 5000);
+
+                // Remove pulse after 10 seconds
+                setTimeout(() => {
+                    floatingChatBtn.classList.remove('pulse-attention');
+                }, 15000);
+
+                // Click handler
+                floatingChatBtn.addEventListener('click', function() {
+                    // Navigate to chat page
+                    window.location.href = '/chat';
+                });
+
+                // Add keyboard accessibility
+                floatingChatBtn.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        window.location.href = '/chat';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

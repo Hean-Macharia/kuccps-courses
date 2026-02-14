@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Cached Answers | KUCCPS Courses</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-8">
+                        <h1 class="text-xl font-semibold text-gray-800">Admin Panel</h1>
+                        <div class="flex space-x-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-gray-900">Dashboard</a>
+                            <a href="/admin/cached-answers" class="text-blue-600 font-semibold">Cached Answers</a>
+                            <a href="/admin/payments" class="text-gray-600 hover:text-gray-900">Payments</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-gray-900">Users</a>
+                        </div>
+                    </div>
+                    <a href="/admin/logout" class="text-red-600 hover:text-red-800">Logout</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto py-6 px-4">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Cached Answers Management</h2>
+                <div class="flex space-x-2">
+                    <button onclick="clearCache('old')" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+                        Clear Old (>30 days)
+                    </button>
+                    <button onclick="clearCache('low_hits')" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">
+                        Clear Low Hits (<3)
+                    </button>
+                    <button onclick="clearCache('all')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-gray-600">Total Cached Answers</div>
+                    <div class="text-3xl font-bold">{{ stats.total }}</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-gray-600">Total Hits</div>
+                    <div class="text-3xl font-bold">{{ stats.total_hits }}</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-gray-600">Average Hits</div>
+                    <div class="text-3xl font-bold">{{ "%.1f"|format(stats.avg_hits) }}</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-gray-600">Unique Keywords</div>
+                    <div class="text-3xl font-bold">{{ stats.unique_keywords }}</div>
+                </div>
+            </div>
+
+            <!-- Cached Answers Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Query</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Normalized</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keywords</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hits</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Accessed</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preview</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for answer in cached_answers %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                                    {{ answer.original_query }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ answer.normalized_query }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-wrap gap-1">
+                                        {% for kw in answer.keywords[:3] %}
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">{{ kw }}</span>
+                                        {% endfor %}
+                                        {% if answer.keywords|length > 3 %}
+                                        <span class="text-xs text-gray-500">+{{ answer.keywords|length - 3 }}</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                                        {{ answer.hit_count }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ answer.created_at.strftime('%Y-%m-%d') if answer.created_at else 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ answer.last_accessed.strftime('%Y-%m-%d %H:%M') if answer.last_accessed else 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <button onclick="showPreview('{{ answer._id }}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                                        Preview
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                    No cached answers found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Answer Preview</h3>
+                    <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700">✕</button>
+                </div>
+                <div id="previewContent" class="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function clearCache(type) {
+            if (!confirm(`Are you sure you want to clear ${type} cached answers?`)) {
+                return;
+            }
+            
+            fetch('/admin/clear-answer-cache', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ type: type })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+        
+        function showPreview(id) {
+            // Find the answer in the cached_answers list
+            const answers = {{ cached_answers|tojson }};
+            const answer = answers.find(a => a._id === id);
+            
+            if (answer) {
+                document.getElementById('previewContent').textContent = answer.answer;
+                document.getElementById('previewModal').classList.remove('hidden');
+                document.getElementById('previewModal').classList.add('flex');
+            }
+        }
+        
+        function closePreview() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('previewModal').classList.remove('flex');
+        }
+        
+        // Close modal on outside click
+        document.getElementById('previewModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePreview();
+            }
+        });
+    </script>
+</body>
+</html>

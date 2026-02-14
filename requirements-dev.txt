@@ -11,3 +11,5 @@ mccabe==0.7.0
 # Type Support
 typing_extensions==4.13.2
 typing-inspection==0.4.0
+google-generativeai
+

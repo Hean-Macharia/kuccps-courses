@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>KUCCPS AI Assistant - Chat Support</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --user-message-bg: #e3f2fd;
+            --bot-message-bg: #f8f9fa;
+            --sidebar-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --hover-bg: #e9ecef;
+            --bg-color: #ffffff;
+            --text-color: #212529;
+            --header-bg: #ffffff;
+            --input-bg: #f8f9fa;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #0d6efd;
+            --secondary-color: #adb5bd;
+            --user-message-bg: #1e3a5f;
+            --bot-message-bg: #2d2d2d;
+            --sidebar-bg: #1e1e1e;
+            --border-color: #404040;
+            --hover-bg: #2d2d2d;
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --header-bg: #1e1e1e;
+            --input-bg: #2d2d2d;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            display: flex;
+            height: 100vh;
+            background: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+        }
+
+        /* Sidebar Styles */
+        .chat-sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            height: 100vh;
+            flex-shrink: 0;
+        }
+
+        /* Mobile Sidebar */
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 1050;
+                transform: translateX(-100%);
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                width: 280px;
+            }
+
+            .chat-sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--header-bg);
+        }
+
+        .sidebar-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .new-chat-btn {
+            margin: 15px;
+            padding: 10px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .new-chat-btn:hover {
+            background: #0b5ed7;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .history-item {
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .history-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .history-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .history-item i {
+            font-size: 1rem;
+            width: 20px;
+        }
+
+        .history-item .chat-title {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Sidebar overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-color);
+            width: 100%;
+            min-width: 0;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--header-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header h4 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+
+        .menu-toggle {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .menu-toggle:hover {
+            background: var(--hover-bg);
+        }
+
+        @media (min-width: 769px) {
+            .menu-toggle {
+                display: none;
+            }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Dark Mode Toggle */
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 12px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--hover-bg);
+        }
+
+        /* Messages Area */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg-color);
+        }
+
+        .message-wrapper {
+            display: flex;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-wrapper.user {
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .message-wrapper.user .message-avatar {
+            order: 2;
+            margin-right: 0;
+            margin-left: 10px;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message-wrapper.bot .message-avatar {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 85%;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .user .message-bubble {
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot .message-bubble {
+            background: var(--bot-message-bg);
+            color: var(--text-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--secondary-color);
+            margin-top: 4px;
+            padding: 0 5px;
+        }
+
+        .user .message-time {
+            text-align: right;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--bot-message-bg);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-color);
+        }
+
+        .input-group-custom {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            background: var(--input-bg);
+            border-radius: 24px;
+            padding: 4px 4px 4px 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .input-group-custom:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .message-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            font-size: 0.95rem;
+            resize: none;
+            max-height: 100px;
+            outline: none;
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .message-input::placeholder {
+            color: var(--secondary-color);
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 4px;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #0b5ed7;
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            background: var(--secondary-color);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Modals */
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 20px;
+            background: var(--header-bg);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 15px 20px;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            text-align: center;
+            padding: 30px 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .welcome-icon {
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .welcome-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .welcome-text {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .suggested-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .suggested-question {
+            padding: 8px 16px;
+            background: var(--bot-message-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .suggested-question:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bot-message-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="chat-container">
+        <!-- Sidebar Overlay (for mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <!-- Sidebar -->
+        <div class="chat-sidebar" id="chatSidebar">
+            <div class="sidebar-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-robot me-2"></i>AI Assistant</h5>
+                <button class="btn btn-link d-md-none p-0" onclick="closeSidebar()" style="color: var(--text-color); font-size: 1.2rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <button class="new-chat-btn" onclick="startNewChat()">
+                <i class="fas fa-plus me-2"></i>New Chat
+            </button>
+
+            <div class="chat-history" id="chatHistory">
+                <!-- Chat history will be loaded here -->
+                <div class="history-item active">
+                    <i class="fas fa-comment"></i>
+                    <span class="chat-title">Current Chat</span>
+                </div>
+                <div class="history-item">
+                    <i class="fas fa-comment"></i>
+                    <span class="chat-title">Previous conversation...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <div class="d-flex align-items-center">
+                    <button class="menu-toggle me-2" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                        <span class="d-none d-sm-inline">Menu</span>
+                    </button>
+                    <h4>KUCCPS AI Assistant</h4>
+                </div>
+                <div class="header-actions">
+                    <div class="status">
+                        <span class="status-dot"></span>
+                        <span class="d-none d-sm-inline">Online</span>
+                    </div>
+                    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                        <span class="d-none d-sm-inline ms-1">Dark</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="messages-area" id="messagesArea">
+                <!-- Welcome Screen -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h2 class="welcome-title">Hello! How can I help you today?</h2>
+                    <p class="welcome-text">
+                        Ask me anything about KUCCPS courses, admission requirements, 
+                        cluster points, or how to use our platform.
+                    </p>
+                    
+                    <div class="suggested-questions" id="suggestedQuestions">
+                        <div class="suggested-question" onclick="askQuestion('What courses can I do with C plain?')">
+                            What courses can I do with C plain?
+                        </div>
+                        <div class="suggested-question" onclick="askQuestion('How much does it cost to check courses?')">
+                            How much does it cost?
+                        </div>
+                        <div class="suggested-question" onclick="askQuestion('What are cluster points?')">
+                            What are cluster points?
+                        </div>
+                        <div class="suggested-question" onclick="askQuestion('KMTC nursing requirements')">
+                            KMTC nursing requirements
+                        </div>
+                        <div class="suggested-question" onclick="askQuestion('How to apply to KUCCPS?')">
+                            How to apply to KUCCPS?
+                        </div>
+                        <div class="suggested-question" onclick="askQuestion('Degree requirements with C+')">
+                            Degree requirements with C+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages will be appended here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-group-custom">
+                    <textarea 
+                        class="message-input" 
+                        id="messageInput" 
+                        placeholder="Ask me anything about KUCCPS courses..."
+                        rows="1"
+                        oninput="autoResize(this)"
+                        onkeydown="handleKeyPress(event)"
+                    ></textarea>
+                    <button class="send-btn" id="sendButton" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="clearChat()">
+                        <i class="fas fa-trash me-1"></i>Clear
+                    </button>
+                    <button class="quick-action-btn" onclick="exportChat()">
+                        <i class="fas fa-download me-1"></i>Export
+                    </button>
+                    <button class="quick-action-btn" data-bs-toggle="modal" data-bs-target="#helpModal">
+                        <i class="fas fa-question-circle me-1"></i>Help
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">AI Assistant Help</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>What can I ask about?</h6>
+                    <ul class="mb-3">
+                        <li>Course requirements for degree, diploma, certificate</li>
+                        <li>KMTC and TTC program requirements</li>
+                        <li>Cluster points and calculations</li>
+                        <li>Payment information (KES 200 first, KES 100 additional)</li>
+                        <li>KUCCPS application process</li>
+                        <li>How to use our platform</li>
+                        <li>Saving courses to basket</li>
+                    </ul>
+                    
+                    <h6 class="mt-3">Tips</h6>
+                    <ul>
+                        <li>Be specific about your grades for accurate answers</li>
+                        <li>Mention the course level (degree, diploma, etc.)</li>
+                        <li>Ask one question at a time for best results</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Store chat history
+        let chatMessages = [];
+        let isTyping = false;
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChatHistory();
+            loadThemePreference();
+            checkMobileViewport();
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                checkMobileViewport();
+            });
+        });
+
+        // Check if mobile and ensure sidebar is closed on desktop
+        function checkMobileViewport() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        }
+
+        // Toggle sidebar on mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('chatSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('open');
+            
+            if (sidebar.classList.contains('open')) {
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            } else {
+                overlay.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Close sidebar
+        function closeSidebar() {
+            const sidebar = document.getElementById('chatSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Theme management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            
+            // Update toggle button
+            const toggleBtn = document.getElementById('themeToggle');
+            const icon = toggleBtn.querySelector('i');
+            const text = toggleBtn.querySelector('span');
+            
+            if (newTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Light';
+            } else {
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark';
+            }
+            
+            // Save preference
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const toggleBtn = document.getElementById('themeToggle');
+            const icon = toggleBtn.querySelector('i');
+            const text = toggleBtn.querySelector('span');
+            
+            if (savedTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Light';
+            } else {
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark';
+            }
+        }
+
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        }
+
+        // Handle Enter key (Shift+Enter for new line, Enter to send)
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || isTyping) return;
+            
+            // Clear input and reset height
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Hide welcome screen
+            document.getElementById('welcomeScreen').style.display = 'none';
+            
+            // Add user message to UI
+            addMessage(message, 'user');
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                // Send to API
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                hideTypingIndicator();
+                
+                if (data.success) {
+                    // Add bot response
+                    addMessage(data.response, 'bot');
+                } else {
+                    // Add error message
+                    addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            }
+        }
+
+        // Add message to UI
+        function addMessage(text, sender) {
+            const messagesArea = document.getElementById('messagesArea');
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `message-wrapper ${sender}`;
+            
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Create avatar
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+            
+            // Create message content
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            // Format message with paragraphs and links
+            const formattedText = formatMessage(text);
+            bubble.innerHTML = formattedText;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = timeStr;
+            
+            content.appendChild(bubble);
+            content.appendChild(timeDiv);
+            
+            messageWrapper.appendChild(avatar);
+            messageWrapper.appendChild(content);
+            
+            messagesArea.appendChild(messageWrapper);
+            
+            // Scroll to bottom
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            
+            // Save to chat history
+            chatMessages.push({ text, sender, time: timeStr });
+        }
+
+        // Format message with line breaks and links
+        function formatMessage(text) {
+            // Replace URLs with clickable links
+            text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--primary-color); text-decoration: none;">$1</a>');
+            
+            // Replace line breaks with <br>
+            text = text.replace(/\n/g, '<br>');
+            
+            return text;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            if (isTyping) return;
+            
+            isTyping = true;
+            document.getElementById('sendButton').disabled = true;
+            
+            const messagesArea = document.getElementById('messagesArea');
+            const indicator = document.createElement('div');
+            indicator.className = 'message-wrapper bot';
+            indicator.id = 'typingIndicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = '<i class="fas fa-robot"></i>';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            `;
+            
+            content.appendChild(typingDiv);
+            indicator.appendChild(avatar);
+            indicator.appendChild(content);
+            
+            messagesArea.appendChild(indicator);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            isTyping = false;
+            document.getElementById('sendButton').disabled = false;
+            
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Ask suggested question
+        function askQuestion(question) {
+            document.getElementById('messageInput').value = question;
+            sendMessage();
+            
+            // Close mobile sidebar if open
+            closeSidebar();
+        }
+
+        // Clear chat
+        function clearChat() {
+            if (confirm('Clear all messages?')) {
+                const messagesArea = document.getElementById('messagesArea');
+                messagesArea.innerHTML = '';
+                document.getElementById('welcomeScreen').style.display = 'block';
+                chatMessages = [];
+                
+                // Close mobile sidebar if open
+                closeSidebar();
+            }
+        }
+
+        // Export chat
+        function exportChat() {
+            if (chatMessages.length === 0) {
+                alert('No messages to export');
+                return;
+            }
+            
+            let exportText = 'KUCCPS AI Assistant Chat\n';
+            exportText += '='.repeat(40) + '\n\n';
+            
+            chatMessages.forEach(msg => {
+                const sender = msg.sender === 'user' ? 'You' : 'Assistant';
+                exportText += `[${msg.time}] ${sender}:\n${msg.text}\n\n`;
+            });
+            
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kuccps-chat-${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            // Close mobile sidebar if open
+            closeSidebar();
+        }
+
+        // Start new chat
+        function startNewChat() {
+            if (chatMessages.length > 0) {
+                if (confirm('Start a new chat? Current chat will be cleared.')) {
+                    clearChat();
+                }
+            }
+            closeSidebar();
+        }
+
+        // Load chat history (from localStorage)
+        function loadChatHistory() {
+            // You can implement localStorage persistence here
+            // For now, just initialize empty
+        }
+
+        // Handle escape key to close sidebar
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeSidebar();
+            }
+        });
+
+        // Prevent body scroll when modal is open
+        const helpModal = document.getElementById('helpModal');
+        if (helpModal) {
+            helpModal.addEventListener('show.bs.modal', function() {
+                document.body.style.overflow = 'hidden';
+            });
+            
+            helpModal.addEventListener('hidden.bs.modal', function() {
+                document.body.style.overflow = '';
+            });
+        }
+    </script>
+</body>
+</html>
