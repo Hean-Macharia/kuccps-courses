@@ -14,7 +14,8 @@ from flask import send_from_directory
 from requests.auth import HTTPBasicAuth
 import json
 import re
-import google.genai as genai
+import google.generativeai as genai
+
 from google.genai import types
 import time
 import random
@@ -125,18 +126,46 @@ def get_cached_or_search(query):
     
     return result
 
-# Google Gemini Configuration
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyCobIL_Z8Jjfr4A2CEazVOefQA4a42kEhc')  # Your key
+# Go# ============================================
+# GOOGLE GEMINI CONFIGURATION - SECURE VERSION
+# ============================================
+
+# Load Gemini API key from environment variables ONLY
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
+# Validate Gemini API key at startup
+if not GEMINI_API_KEY:
+    print("⚠️ ⚠️ ⚠️ CRITICAL SECURITY WARNING ⚠️ ⚠️ ⚠️")
+    print("❌ GEMINI_API_KEY not found in environment variables!")
+    print("💡 Please add GEMINI_API_KEY to your .env file")
+    print("🔑 Example: GEMINI_API_KEY=AIzaSyCobIL_Z8Jjfr4A2CEazVOefQA4a42kEhc")
+    print("⚠️ AI features will be disabled until key is configured")
+    print("=" * 50)
+else:
+    print(f"✅ Gemini API key loaded successfully from environment")
+    print(f"🔑 Key preview: {GEMINI_API_KEY[:10]}... (first 10 chars only)")
+    print(f"📊 Daily limit: 1500 requests (free tier)")
+
+# Gemini model configuration
 GEMINI_MODEL = "gemini-1.5-flash"  # Fast, free, reliable
 
 # Cache for Gemini responses
 gemini_response_cache = {}
 gemini_cache_timestamps = {}
+SEARCH_CACHE_DURATION = 3600  # Cache search results for 1 hour
 
 # Rate limiting for Gemini
 gemini_calls_today = 0
 gemini_calls_today_reset = datetime.now().date()
 MAX_GEMINI_DAILY = 1500  # Google's free tier limit
+
+# Configure simple logging for AI calls
+logging.basicConfig(filename='ai_calls.log', level=logging.INFO, 
+                    format='%(asctime)s %(levelname)s: %(message)s')
+
+print(f"📅 Today's date: {gemini_calls_today_reset}")
+print(f"🔄 Gemini daily counter initialized at 0")
+print("=" * 50)
 
 # Configure simple logging for AI calls
 logging.basicConfig(filename='ai_calls.log', level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
@@ -2589,12 +2618,13 @@ Just let me know what you'd like to learn about!"
 def get_openrouter_fallback(user_message):
     """Enhanced OpenRouter fallback with CORRECT free models from your account"""
     try:
-        # Your API key
-        OPENROUTER_API_KEY = "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"
+        # Fetch API key from environment variables
+        OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
         
         if not OPENROUTER_API_KEY:
-            print("⚠️ No OpenRouter API key found")
-            return get_curated_response(user_message)
+            print("⚠️ No OpenRouter API key found in environment variables")
+            print("💡 Set OPENROUTER_API_KEY in your .env file")
+            return None
             
         print(f"🔑 OpenRouter API key found (starts with: {OPENROUTER_API_KEY[:10]}...)")
         print("🔄 Calling OpenRouter fallback with CORRECT free models...")
@@ -2699,14 +2729,17 @@ FAQ QUICK ANSWERS:
                     
                 elif response.status_code == 401:
                     print(f"❌ OpenRouter model {model} failed - UNAUTHORIZED (401)")
-                    print("🔑 Your API key might be invalid. Please check:")
+                    print("🔑 Your OpenRouter API key is invalid. Please check:")
                     print("   1. Go to https://openrouter.ai/keys")
-                    print("   2. Verify your key is active")
-                    break
+                    print("   2. Generate a new key")
+                    print("   3. Update OPENROUTER_API_KEY in your .env file")
+                    # Continue to next model instead of breaking
+                    continue
                     
                 else:
                     print(f"❌ OpenRouter model {model} failed with status {response.status_code}")
                     print(f"📄 Error response: {response.text[:200]}")
+                    continue
                     
             except requests.exceptions.Timeout:
                 print(f"⏱️ OpenRouter model {model} timed out")
@@ -2720,15 +2753,17 @@ FAQ QUICK ANSWERS:
                 print(f"❌ OpenRouter model {model} threw exception: {str(e)}")
                 continue
         
-        # If all OpenRouter models fail, return curated response
-        print("⚠️ All OpenRouter models failed, returning curated response")
-        return get_curated_response(user_message)
+        # If all OpenRouter models fail, return None to allow Gemini to try
+        print("⚠️ All OpenRouter models failed, will try Gemini")
+        return None  # ← CRITICAL: Return None, not curated response
         
     except Exception as e:
         print(f"❌ OpenRouter fallback critical error: {str(e)}")
         import traceback
         traceback.print_exc()
-        return get_curated_response(user_message)
+        return None  # ← Return None on error
+    
+    
 def get_curated_response(user_message):
     """Return curated responses based on common questions - UPDATED WITH CORRECT INFO"""
     user_message_lower = user_message.lower()
@@ -2923,22 +2958,23 @@ def get_available_models():
     except:
         return []
 def get_chatbot_response(user_message):
-    """Optimized: OpenRouter primary, Gemini secondary"""
+    """Optimized: OpenRouter primary, Gemini secondary with proper fallback"""
     
     print(f"🤖 Processing: '{user_message}'")
     
     # Try OpenRouter FIRST (unlimited, won't hit daily limits)
     openrouter_response = get_openrouter_fallback(user_message)
-    if openrouter_response:
+    if openrouter_response:  # Only use if OpenRouter returned something
         return openrouter_response
     
-    # If OpenRouter fails, try Gemini as backup
-    print("⚠️ OpenRouter failed, trying Gemini...")
+    # If OpenRouter fails or returns None, try Gemini as backup
+    print("⚠️ OpenRouter failed or returned None, trying Gemini...")
     gemini_response = get_gemini_response(user_message)
     if gemini_response:
         return gemini_response
     
-    # Ultimate fallback
+    # Ultimate fallback only if both AI services fail
+    print("⚠️ Both OpenRouter and Gemini failed, using curated response")
     return get_curated_response(user_message)
 def get_enhanced_chatbot_response(user_message):
     """
@@ -4079,7 +4115,31 @@ def get_user_payment(email, index_number, level):
     
     session_key = f'{level}_payment_{index_number}'
     return session.get(session_key)
-
+@app.route('/debug/openrouter-key')
+def debug_openrouter_key():
+    """Debug OpenRouter API key"""
+    OPENROUTER_API_KEY = "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"
+    
+    try:
+        response = requests.get(
+            "https://openrouter.ai/api/v1/auth/key",
+            headers={"Authorization": f"Bearer {OPENROUTER_API_KEY}"}
+        )
+        
+        return jsonify({
+            'key_exists': bool(OPENROUTER_API_KEY),
+            'key_preview': OPENROUTER_API_KEY[:15] + '...' if OPENROUTER_API_KEY else None,
+            'status_code': response.status_code,
+            'response': response.json() if response.status_code == 200 else response.text,
+            'is_valid': response.status_code == 200
+        })
+    except Exception as e:
+        return jsonify({
+            'key_exists': bool(OPENROUTER_API_KEY),
+            'key_preview': OPENROUTER_API_KEY[:15] + '...' if OPENROUTER_API_KEY else None,
+            'error': str(e),
+            'is_valid': False
+        })
 # --- Session Management Functions ---
 
 def initiate_stk_push(phone, amount=1, flow=None):
@@ -8532,7 +8592,91 @@ def get_latest_news():
             'error': str(e),
             'news': []
         })
+@app.route('/admin/ai-stats')
+def admin_ai_stats():
+    """Admin route to view AI/Chat Assistant statistics"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        # Get AI statistics
+        ai_stats = {
+            'gemini_calls_today': gemini_calls_today,
+            'gemini_daily_limit': MAX_GEMINI_DAILY,
+            'gemini_remaining': MAX_GEMINI_DAILY - gemini_calls_today,
+            'gemini_cache_size': len(gemini_response_cache),
+            'search_cache_size': len(search_cache),
+            'gemini_reset_date': str(gemini_calls_today_reset),
+            'openrouter_enabled': True,
+        }
+        
+        # Get sample cached responses
+        cached_samples = []
+        count = 0
+        for key, response in list(gemini_response_cache.items())[-10:]:
+            if count < 10:
+                timestamp = gemini_cache_timestamps.get(key, datetime.now())
+                cached_samples.append({
+                    'hash': key[:8] + '...',
+                    'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S') if isinstance(timestamp, datetime) else str(timestamp),
+                    'preview': response[:50] + '...' if len(response) > 50 else response
+                })
+                count += 1
+        
+        return render_template('admin_ai_stats.html', 
+                             ai_stats=ai_stats,
+                             cached_samples=cached_samples)
+    except Exception as e:
+        print(f"❌ Error in admin_ai_stats: {str(e)}")
+        flash(f"Error loading AI stats: {str(e)}", "error")
+        return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/cached-answers')
+def admin_cached_answers():
+    """View all cached AI answers"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        cached_answers = []
+        for key, response in list(gemini_response_cache.items())[-50:]:  # Last 50
+            timestamp = gemini_cache_timestamps.get(key, datetime.now())
+            cached_answers.append({
+                'hash': key,
+                'short_hash': key[:8] + '...',
+                'response': response,
+                'preview': response[:100] + '...' if len(response) > 100 else response,
+                'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S') if isinstance(timestamp, datetime) else str(timestamp),
+                'length': len(response)
+            })
+        
+        # Sort by timestamp (newest first)
+        cached_answers.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return render_template('admin_cached_answers.html', cached_answers=cached_answers)
+    except Exception as e:
+        print(f"❌ Error in admin_cached_answers: {str(e)}")
+        flash(f"Error loading cached answers: {str(e)}", "error")
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/clear-ai-cache', methods=['POST'])
+def admin_clear_ai_cache():
+    """Clear AI response cache"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        global gemini_response_cache, gemini_cache_timestamps
+        cache_size = len(gemini_response_cache)
+        gemini_response_cache.clear()
+        gemini_cache_timestamps.clear()
+        
+        flash(f"✅ AI cache cleared successfully. Removed {cache_size} entries.", "success")
+        return redirect(url_for('admin_ai_stats'))
+    except Exception as e:
+        print(f"❌ Error clearing AI cache: {str(e)}")
+        flash(f"Error clearing cache: {str(e)}", "error")
+        return redirect(url_for('admin_ai_stats'))
 @app.route('/api/news/increment-views/<news_id>', methods=['POST'])
 def increment_news_views(news_id):
     """Increment view count for a news article"""
