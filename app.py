@@ -44,6 +44,7 @@ app.config['JSON_SORT_KEYS'] = False  # Avoid sorting JSON keys
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static files
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['TRAP_EXCEPTIONS_ON_HANDLER_FAILURE'] = False
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB max upload size
 
 app.config.update(
     SESSION_TYPE='filesystem',
@@ -377,17 +378,19 @@ user_baskets_collection = None
 admin_activations_collection = None
 database_connected = False
 client = None
-
+payment_issues_collection = None
 
 def initialize_database():
     """Initialize database connections with robust error handling and fixed index creation"""
     global db, db_user_data, db_diploma, db_kmtc, db_certificate, db_artisan, db_Teachers
-    global user_payments_collection, user_courses_collection, user_baskets_collection, admin_activations_collection, database_connected
-    global client
+    global user_payments_collection, user_courses_collection, user_baskets_collection, admin_activations_collection, payment_issues_collection
+    global database_connected, client
+    
     max_retries = 3
+    
     for attempt in range(max_retries):
         try:
-            print(f"🔄 Attempting to connect to\\ MongoDB (attempt {attempt + 1}/{max_retries})...")
+            print(f"🔄 Attempting to connect to MongoDB (attempt {attempt + 1}/{max_retries})...")
             
             client = MongoClient(
                 MONGODB_URI,
@@ -414,185 +417,164 @@ def initialize_database():
             
             # Initialize collections
             collections_initialized = True
-
-            # Partial index filter used when creating partial unique indexes (ensure string-typed fields)
+            
+            # Define partial filter for indexes
             partial_filter = {
                 'email': {'$type': 'string'},
                 'index_number': {'$type': 'string'},
                 'level': {'$type': 'string'}
             }
             
+            # ===== USER COURSES COLLECTION =====
             try:
                 user_courses_collection = db_user_data['user_courses']
                 print("✅ User courses collection initialized")
-            except Exception as e:
-                print(f"❌ Error initializing user_courses collection: {str(e)}")
-                collections_initialized = False
-            
-            try:
-                user_payments_collection = db_user_data['user_payments']
-                print("✅ User payments collection initialized")
-            except Exception as e:
-                print(f"❌ Error initializing user_payments collection: {str(e)}")
-                collections_initialized = False
-            
-            try:
-                user_baskets_collection = db_user_data['user_baskets']
-                print("✅ User baskets collection initialized")
-            except Exception as e:
-                print(f"❌ Error initializing user_baskets collection: {str(e)}")
-                collections_initialized = False
-            
-            try:
-                admin_activations_collection = db_user_data['admin_activations']
-                print("✅ Admin activations collection initialized")
-            except Exception as e:
-                print(f"❌ Error initializing admin_activations collection: {str(e)}")
-                admin_activations_collection = None
-                collections_initialized = False
-            
-            # FIXED INDEX CREATION WITH CONFLICT RESOLUTION
-            if user_payments_collection is not None:
-                try:
-                    # Get all existing indexes
-                    existing_indexes = list(user_payments_collection.list_indexes())
-                    print(f"🔍 Found {len(existing_indexes)} existing indexes")
-
-                    # Desired key pattern for the compound index
-                    desired_key = {'email': 1, 'index_number': 1, 'level': 1}
-
-                    # Drop any existing index that uses the same key pattern but has different name or options
-                    for index in existing_indexes:
-                        index_name = index.get('name', '')
-                        index_keys = index.get('key', {})
-                        index_unique = index.get('unique', False)
-                        index_partial = index.get('partialFilterExpression', None)
-                        # If an index uses the same keys but differs from our desired spec, drop it
-                        if index_keys == desired_key:
-                            needs_drop = False
-                            if index_name != 'unique_email_index_level':
-                                needs_drop = True
-                            # If uniqueness doesn't match or partial filter expression differs, drop
-                            elif not index_unique or index_partial != partial_filter:
-                                needs_drop = True
-                            if needs_drop:
-                                try:
-                                    print(f"🔄 Dropping existing index '{index_name}' because it conflicts with desired spec")
-                                    user_payments_collection.drop_index(index_name)
-                                    print(f"✅ Dropped index '{index_name}'")
-                                except Exception as drop_err:
-                                    print(f"⚠️ Could not drop index '{index_name}': {drop_err}")
-
-                    # partial_filter already defined above
-
-                    # Try to create a unique partial index for non-null/string docs
-                    try:
-                        user_payments_collection.create_index(
-                            [("email", 1), ("index_number", 1), ("level", 1)],
-                            name='unique_email_index_level',
-                            unique=True,
-                            partialFilterExpression=partial_filter
-                        )
-                        print("✅ Unique partial user_payments index created (name=unique_email_index_level)")
-                    except Exception as create_err:
-                        print(f"❌ Error creating unique partial user_payments index: {create_err}")
-                        # Fallback: try non-unique index (safe) and continue
-                        try:
-                            user_payments_collection.create_index(
-                                [("email", 1), ("index_number", 1), ("level", 1)],
-                                name='non_unique_email_index_level',
-                                unique=False
-                            )
-                            print("✅ Created non-unique user_payments index as fallback")
-                        except Exception as fallback_error:
-                            print(f"⚠️ Fallback user_payments index creation also failed: {fallback_error}")
-
-                    # Other useful indexes (create with safe handling in case index with different name exists)
-                    try:
-                        # transaction_ref index
-                        existing = [i for i in existing_indexes if i.get('key', {}) == {'transaction_ref': 1}]
-                        if existing and existing[0].get('name') != 'transaction_ref_index':
+                
+                # Create indexes for user_courses
+                existing_indexes = list(user_courses_collection.list_indexes())
+                desired_key = {'email': 1, 'index_number': 1, 'level': 1}
+                
+                # Drop any conflicting indexes
+                for index in existing_indexes:
+                    index_name = index.get('name', '')
+                    index_keys = index.get('key', {})
+                    index_unique = index.get('unique', False)
+                    index_partial = index.get('partialFilterExpression', None)
+                    
+                    if index_keys == desired_key:
+                        needs_drop = False
+                        if index_name != 'unique_courses_email_index_level':
+                            needs_drop = True
+                        elif not index_unique or index_partial != partial_filter:
+                            needs_drop = True
+                        
+                        if needs_drop:
                             try:
-                                user_payments_collection.drop_index(existing[0].get('name'))
-                            except Exception:
-                                pass
-                        user_payments_collection.create_index([("transaction_ref", 1)], name='transaction_ref_index')
-                    except Exception as ie:
-                        print(f"❌ Failed to create/ensure transaction_ref index: {str(ie)}")
-
-                    try:
-                        existing = [i for i in existing_indexes if i.get('key', {}) == {'payment_confirmed': 1}]
-                        if existing and existing[0].get('name') != 'payment_confirmed_index':
-                            try:
-                                user_payments_collection.drop_index(existing[0].get('name'))
-                            except Exception:
-                                pass
-                        user_payments_collection.create_index([("payment_confirmed", 1)], name='payment_confirmed_index')
-                    except Exception as ie:
-                        print(f"❌ Failed to create/ensure payment_confirmed index: {str(ie)}")
-
-                except Exception as e:
-                    print(f"❌ Error creating user_payments indexes: {str(e)}")
-            
-            if user_courses_collection is not None:
+                                print(f"🔄 Dropping existing courses index '{index_name}' due to conflict")
+                                user_courses_collection.drop_index(index_name)
+                                print(f"✅ Dropped courses index '{index_name}'")
+                            except Exception as drop_err:
+                                print(f"⚠️ Could not drop courses index '{index_name}': {drop_err}")
+                
+                # Create unique partial index
                 try:
-                    existing_indexes = list(user_courses_collection.list_indexes())
-                    desired_key = {'email': 1, 'index_number': 1, 'level': 1}
-
-                    # Drop any existing index that uses the same key pattern but has different name or options
-                    for index in existing_indexes:
-                        index_name = index.get('name', '')
-                        index_keys = index.get('key', {})
-                        index_unique = index.get('unique', False)
-                        index_partial = index.get('partialFilterExpression', None)
-                        if index_keys == desired_key:
-                            needs_drop = False
-                            if index_name != 'unique_courses_email_index_level':
-                                needs_drop = True
-                            elif not index_unique or index_partial != partial_filter:
-                                needs_drop = True
-                            if needs_drop:
-                                try:
-                                    print(f"🔄 Dropping existing courses index '{index_name}' because it conflicts with desired spec")
-                                    user_courses_collection.drop_index(index_name)
-                                    print(f"✅ Dropped courses index '{index_name}'")
-                                except Exception as drop_err:
-                                    print(f"⚠️ Could not drop courses index '{index_name}': {drop_err}")
-
-                    partial_filter = {
-                        'email': {'$type': 'string'},
-                        'index_number': {'$type': 'string'},
-                        'level': {'$type': 'string'}
-                    }
-
+                    user_courses_collection.create_index(
+                        [("email", 1), ("index_number", 1), ("level", 1)],
+                        name='unique_courses_email_index_level',
+                        unique=True,
+                        partialFilterExpression=partial_filter
+                    )
+                    print("✅ Unique partial user_courses index created")
+                except Exception as create_err:
+                    print(f"❌ Error creating unique index: {create_err}")
+                    # Fallback to non-unique index
                     try:
                         user_courses_collection.create_index(
                             [("email", 1), ("index_number", 1), ("level", 1)],
-                            name='unique_courses_email_index_level',
-                            unique=True,
-                            partialFilterExpression=partial_filter
+                            name='non_unique_courses_email_index_level',
+                            unique=False
                         )
-                        print("✅ Unique partial user_courses index created (name=unique_courses_email_index_level)")
-                    except Exception as create_err:
-                        print(f"❌ Error creating unique partial user_courses index: {create_err}")
-                        try:
-                            user_courses_collection.create_index(
-                                [("email", 1), ("index_number", 1), ("level", 1)],
-                                name='non_unique_courses_email_index_level',
-                                unique=False
-                            )
-                            print("✅ Created non-unique courses index as fallback")
-                        except Exception as fallback_error:
-                            print(f"⚠️ Fallback courses index creation failed: {fallback_error}")
-
-                except Exception as e:
-                    print(f"❌ Error creating user_courses indexes: {str(e)}")
+                        print("✅ Created non-unique courses index as fallback")
+                    except Exception as fallback_error:
+                        print(f"⚠️ Fallback index creation failed: {fallback_error}")
+                        
+            except Exception as e:
+                print(f"❌ Error initializing user_courses collection: {str(e)}")
+                user_courses_collection = None
+                collections_initialized = False
             
-            # Other index creations remain the same...
-            if user_baskets_collection is not None:
+            # ===== USER PAYMENTS COLLECTION =====
+            try:
+                user_payments_collection = db_user_data['user_payments']
+                print("✅ User payments collection initialized")
+                
+                # Create indexes for user_payments
+                existing_indexes = list(user_payments_collection.list_indexes())
+                desired_key = {'email': 1, 'index_number': 1, 'level': 1}
+                
+                # Drop any conflicting indexes
+                for index in existing_indexes:
+                    index_name = index.get('name', '')
+                    index_keys = index.get('key', {})
+                    index_unique = index.get('unique', False)
+                    index_partial = index.get('partialFilterExpression', None)
+                    
+                    if index_keys == desired_key:
+                        needs_drop = False
+                        if index_name != 'unique_email_index_level':
+                            needs_drop = True
+                        elif not index_unique or index_partial != partial_filter:
+                            needs_drop = True
+                        
+                        if needs_drop:
+                            try:
+                                print(f"🔄 Dropping existing payments index '{index_name}' due to conflict")
+                                user_payments_collection.drop_index(index_name)
+                                print(f"✅ Dropped payments index '{index_name}'")
+                            except Exception as drop_err:
+                                print(f"⚠️ Could not drop payments index '{index_name}': {drop_err}")
+                
+                # Create unique partial index
                 try:
-                    existing_indexes = list(user_baskets_collection.list_indexes())
-                    # Ensure index for index_number exists; drop conflicting if necessary
+                    user_payments_collection.create_index(
+                        [("email", 1), ("index_number", 1), ("level", 1)],
+                        name='unique_email_index_level',
+                        unique=True,
+                        partialFilterExpression=partial_filter
+                    )
+                    print("✅ Unique partial user_payments index created")
+                except Exception as create_err:
+                    print(f"❌ Error creating unique index: {create_err}")
+                    try:
+                        user_payments_collection.create_index(
+                            [("email", 1), ("index_number", 1), ("level", 1)],
+                            name='non_unique_email_index_level',
+                            unique=False
+                        )
+                        print("✅ Created non-unique payments index as fallback")
+                    except Exception as fallback_error:
+                        print(f"⚠️ Fallback index creation failed: {fallback_error}")
+                
+                # Create transaction_ref index
+                try:
+                    existing = [i for i in existing_indexes if i.get('key', {}) == {'transaction_ref': 1}]
+                    if existing and existing[0].get('name') != 'transaction_ref_index':
+                        try:
+                            user_payments_collection.drop_index(existing[0].get('name'))
+                        except Exception:
+                            pass
+                    user_payments_collection.create_index([("transaction_ref", 1)], name='transaction_ref_index')
+                    print("✅ Transaction_ref index created")
+                except Exception as ie:
+                    print(f"❌ Failed to create transaction_ref index: {str(ie)}")
+                
+                # Create payment_confirmed index
+                try:
+                    existing = [i for i in existing_indexes if i.get('key', {}) == {'payment_confirmed': 1}]
+                    if existing and existing[0].get('name') != 'payment_confirmed_index':
+                        try:
+                            user_payments_collection.drop_index(existing[0].get('name'))
+                        except Exception:
+                            pass
+                    user_payments_collection.create_index([("payment_confirmed", 1)], name='payment_confirmed_index')
+                    print("✅ Payment_confirmed index created")
+                except Exception as ie:
+                    print(f"❌ Failed to create payment_confirmed index: {str(ie)}")
+                    
+            except Exception as e:
+                print(f"❌ Error initializing user_payments collection: {str(e)}")
+                user_payments_collection = None
+                collections_initialized = False
+            
+            # ===== USER BASKETS COLLECTION =====
+            try:
+                user_baskets_collection = db_user_data['user_baskets']
+                print("✅ User baskets collection initialized")
+                
+                existing_indexes = list(user_baskets_collection.list_indexes())
+                
+                # Index for index_number
+                try:
                     existing = [i for i in existing_indexes if i.get('key', {}) == {'index_number': 1}]
                     if existing and existing[0].get('name') != 'basket_index_number':
                         try:
@@ -600,7 +582,12 @@ def initialize_database():
                         except Exception:
                             pass
                     user_baskets_collection.create_index([("index_number", 1)], name='basket_index_number')
-
+                    print("✅ Basket index_number index created")
+                except Exception as e:
+                    print(f"❌ Failed to create basket index_number index: {str(e)}")
+                
+                # Index for email
+                try:
                     existing = [i for i in existing_indexes if i.get('key', {}) == {'email': 1}]
                     if existing and existing[0].get('name') != 'basket_email':
                         try:
@@ -608,7 +595,12 @@ def initialize_database():
                         except Exception:
                             pass
                     user_baskets_collection.create_index([("email", 1)], name='basket_email')
-
+                    print("✅ Basket email index created")
+                except Exception as e:
+                    print(f"❌ Failed to create basket email index: {str(e)}")
+                
+                # Index for created_at
+                try:
                     existing = [i for i in existing_indexes if i.get('key', {}) == {'created_at': 1}]
                     if existing and existing[0].get('name') != 'basket_created_at':
                         try:
@@ -616,13 +608,24 @@ def initialize_database():
                         except Exception:
                             pass
                     user_baskets_collection.create_index([("created_at", 1)], name='basket_created_at')
-                    print("✅ User baskets indexes created")
+                    print("✅ Basket created_at index created")
                 except Exception as e:
-                    print(f"❌ Error creating user_baskets indexes: {str(e)}")
+                    print(f"❌ Failed to create basket created_at index: {str(e)}")
+                    
+            except Exception as e:
+                print(f"❌ Error initializing user_baskets collection: {str(e)}")
+                user_baskets_collection = None
+                collections_initialized = False
             
-            if admin_activations_collection is not None:
+            # ===== ADMIN ACTIVATIONS COLLECTION =====
+            try:
+                admin_activations_collection = db_user_data['admin_activations']
+                print("✅ Admin activations collection initialized")
+                
+                existing_indexes = list(admin_activations_collection.list_indexes())
+                
+                # Index for index_number
                 try:
-                    existing_indexes = list(admin_activations_collection.list_indexes())
                     existing = [i for i in existing_indexes if i.get('key', {}) == {'index_number': 1}]
                     if existing and existing[0].get('name') != 'activation_index_number':
                         try:
@@ -630,7 +633,12 @@ def initialize_database():
                         except Exception:
                             pass
                     admin_activations_collection.create_index([("index_number", 1)], name='activation_index_number')
-
+                    print("✅ Activation index_number index created")
+                except Exception as e:
+                    print(f"❌ Failed to create activation index_number index: {str(e)}")
+                
+                # Index for mpesa_receipt
+                try:
                     existing = [i for i in existing_indexes if i.get('key', {}) == {'mpesa_receipt': 1}]
                     if existing and existing[0].get('name') != 'activation_mpesa_receipt':
                         try:
@@ -638,7 +646,12 @@ def initialize_database():
                         except Exception:
                             pass
                     admin_activations_collection.create_index([("mpesa_receipt", 1)], name='activation_mpesa_receipt')
-
+                    print("✅ Activation mpesa_receipt index created")
+                except Exception as e:
+                    print(f"❌ Failed to create activation mpesa_receipt index: {str(e)}")
+                
+                # Index for is_active
+                try:
                     existing = [i for i in existing_indexes if i.get('key', {}) == {'is_active': 1}]
                     if existing and existing[0].get('name') != 'activation_is_active':
                         try:
@@ -646,13 +659,65 @@ def initialize_database():
                         except Exception:
                             pass
                     admin_activations_collection.create_index([("is_active", 1)], name='activation_is_active')
-                    print("✅ Admin activations indexes created")
+                    print("✅ Activation is_active index created")
                 except Exception as e:
-                    print(f"❌ Error creating admin_activations indexes: {str(e)}")
-            else:
-                print("⚠️ Admin activations collection not available for indexing")
+                    print(f"❌ Failed to create activation is_active index: {str(e)}")
+                    
+            except Exception as e:
+                print(f"❌ Error initializing admin_activations collection: {str(e)}")
+                admin_activations_collection = None
+                collections_initialized = False
+            
+            # ===== PAYMENT ISSUES COLLECTION =====
+            try:
+                payment_issues_collection = db_user_data['payment_issues']
+                print("✅ Payment issues collection initialized")
+                
+                existing_indexes = list(payment_issues_collection.list_indexes())
+                
+                # Index for status
+                try:
+                    existing = [i for i in existing_indexes if i.get('key', {}) == {'status': 1}]
+                    if not existing:
+                        payment_issues_collection.create_index([("status", 1)], name='status_index')
+                        print("✅ Payment issues status index created")
+                except Exception as e:
+                    print(f"❌ Failed to create status index: {str(e)}")
+                
+                # Index for index_number
+                try:
+                    existing = [i for i in existing_indexes if i.get('key', {}) == {'index_number': 1}]
+                    if not existing:
+                        payment_issues_collection.create_index([("index_number", 1)], name='index_number_index')
+                        print("✅ Payment issues index_number index created")
+                except Exception as e:
+                    print(f"❌ Failed to create index_number index: {str(e)}")
+                
+                # Index for created_at (descending for recent first)
+                try:
+                    existing = [i for i in existing_indexes if i.get('key', {}) == {'created_at': -1}]
+                    if not existing:
+                        payment_issues_collection.create_index([("created_at", -1)], name='created_at_index')
+                        print("✅ Payment issues created_at index created")
+                except Exception as e:
+                    print(f"❌ Failed to create created_at index: {str(e)}")
+                
+                # Index for email
+                try:
+                    existing = [i for i in existing_indexes if i.get('key', {}) == {'email': 1}]
+                    if not existing:
+                        payment_issues_collection.create_index([("email", 1)], name='email_index')
+                        print("✅ Payment issues email index created")
+                except Exception as e:
+                    print(f"❌ Failed to create email index: {str(e)}")
+                    
+            except Exception as e:
+                print(f"❌ Error initializing payment_issues collection: {str(e)}")
+                payment_issues_collection = None
+                collections_initialized = False
             
             database_connected = collections_initialized
+            
             if collections_initialized:
                 print("🎉 All database collections initialized successfully!")
             else:
@@ -670,11 +735,310 @@ def initialize_database():
                 database_connected = False
                 print("❌ Failed to connect to MongoDB after multiple attempts")
                 return False
-database_connected = initialize_database()            
+
+# Initialize database
+database_connected = initialize_database()       
 
 course_processing_lock = threading.Lock()
 course_processing_cache = {}  
 register_guides(app) 
+
+def save_payment_issue(email, index_number, mpesa_receipt, screenshot_data=None):
+    """Save payment issue submitted by user"""
+    print(f"💾 Saving payment issue for {email}")
+    
+    issue_record = {
+        'email': email,
+        'index_number': index_number,
+        'mpesa_receipt': mpesa_receipt,
+        'screenshot': screenshot_data,  # Base64 encoded screenshot
+        'status': 'pending',  # pending, approved, deleted
+        'created_at': datetime.now(),
+        'updated_at': datetime.now(),
+        'processed_by': None,
+        'processed_at': None,
+        'notes': None
+    }
+    
+    if database_connected and payment_issues_collection is not None:
+        try:
+            result = payment_issues_collection.insert_one(issue_record)
+            print(f"✅ Payment issue saved with ID: {result.inserted_id}")
+            return result.inserted_id
+        except Exception as e:
+            print(f"❌ Error saving payment issue: {str(e)}")
+            return None
+    else:
+        # Session fallback
+        session_key = f'payment_issue_{int(datetime.now().timestamp())}'
+        session[session_key] = issue_record
+        print(f"✅ Payment issue saved to session: {session_key}")
+        return session_key
+
+def get_pending_payment_issues():
+    """Get all pending payment issues for admin"""
+    if not database_connected or payment_issues_collection is None:
+        return []
+    
+    try:
+        issues = list(payment_issues_collection.find({'status': 'pending'}).sort('created_at', -1))
+        
+        # Convert ObjectId to string for JSON
+        for issue in issues:
+            if '_id' in issue and isinstance(issue['_id'], ObjectId):
+                issue['_id'] = str(issue['_id'])
+        
+        return issues
+    except Exception as e:
+        print(f"❌ Error getting pending payment issues: {str(e)}")
+        return []
+
+def approve_payment_issue(issue_id, admin_username):
+    """Approve a payment issue and create manual activation"""
+    if not database_connected or payment_issues_collection is None:
+        return False
+    
+    try:
+        # Get the issue
+        issue = payment_issues_collection.find_one({'_id': ObjectId(issue_id), 'status': 'pending'})
+        
+        if not issue:
+            print(f"❌ Payment issue not found: {issue_id}")
+            return False
+        
+        # Update issue status
+        result = payment_issues_collection.update_one(
+            {'_id': ObjectId(issue_id)},
+            {'$set': {
+                'status': 'approved',
+                'processed_by': admin_username,
+                'processed_at': datetime.now(),
+                'updated_at': datetime.now()
+            }}
+        )
+        
+        if result.modified_count > 0:
+            print(f"✅ Payment issue approved: {issue_id}")
+            
+            # Create manual activation for the user
+            email = issue.get('email')
+            index_number = issue.get('index_number')
+            mpesa_receipt = issue.get('mpesa_receipt')
+            
+            if email and index_number and mpesa_receipt:
+                activation_record = {
+                    'email': email,
+                    'index_number': index_number,
+                    'mpesa_receipt': mpesa_receipt,
+                    'activation_type': 'payment_issue_approval',
+                    'activated_by': admin_username,
+                    'activated_at': datetime.now(),
+                    'is_active': True,
+                    'status': 'active',
+                    'used_for_flow': None,
+                    'used_at': None,
+                    'issue_id': issue_id
+                }
+                
+                if admin_activations_collection is not None:
+                    admin_activations_collection.insert_one(activation_record)
+                    print(f"✅ Manual activation created for {email}")
+                
+                return True
+        
+        return False
+        
+    except Exception as e:
+        print(f"❌ Error approving payment issue: {str(e)}")
+        return False
+
+def delete_payment_issue(issue_id, admin_username):
+    """Delete a payment issue (mark as deleted)"""
+    if not database_connected or payment_issues_collection is None:
+        return False
+    
+    try:
+        result = payment_issues_collection.update_one(
+            {'_id': ObjectId(issue_id)},
+            {'$set': {
+                'status': 'deleted',
+                'processed_by': admin_username,
+                'processed_at': datetime.now(),
+                'updated_at': datetime.now(),
+                'notes': 'Details not found - payment issue deleted'
+            }}
+        )
+        
+        if result.modified_count > 0:
+            print(f"✅ Payment issue deleted: {issue_id}")
+            return True
+        
+        return False
+        
+    except Exception as e:
+        print(f"❌ Error deleting payment issue: {str(e)}")
+        return False
+
+def get_all_payment_issues(status=None):
+    """Get all payment issues with optional status filter"""
+    if not database_connected or payment_issues_collection is None:
+        return []
+    
+    try:
+        query = {}
+        if status:
+            query['status'] = status
+        
+        issues = list(payment_issues_collection.find(query).sort('created_at', -1))
+        
+        # Convert ObjectId to string
+        for issue in issues:
+            if '_id' in issue and isinstance(issue['_id'], ObjectId):
+                issue['_id'] = str(issue['_id'])
+        
+        return issues
+    except Exception as e:
+        print(f"❌ Error getting payment issues: {str(e)}")
+        return []
+@app.route('/submit-payment-issue', methods=['POST'])
+def submit_payment_issue():
+    """Handle payment issue submission from users"""
+    try:
+        # Log the request size for debugging
+        print(f"📦 Request content length: {request.content_length} bytes")
+        
+        email = request.form.get('email', '').strip().lower()
+        index_number = request.form.get('index_number', '').strip()
+        mpesa_receipt = request.form.get('mpesa_receipt', '').strip().upper()
+        screenshot = request.form.get('screenshot', '')  # Base64 encoded screenshot
+        
+        # Validate inputs
+        if not email or not index_number or not mpesa_receipt:
+            return jsonify({
+                'success': False,
+                'error': 'Please fill in all required fields'
+            })
+        
+        # Validate email format
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            return jsonify({
+                'success': False,
+                'error': 'Please enter a valid email address'
+            })
+        
+        # Validate index number format
+        if not re.match(r'^\d{11}/\d{4}$', index_number):
+            return jsonify({
+                'success': False,
+                'error': 'Invalid index number format. Must be 11 digits, slash, 4 digits (e.g., 12345678901/2024)'
+            })
+        
+        # Validate M-Pesa receipt format
+        if len(mpesa_receipt) != 10 or not mpesa_receipt.isalnum():
+            return jsonify({
+                'success': False,
+                'error': 'Invalid M-Pesa receipt format. Must be 10 alphanumeric characters (e.g., RJ89A5LBQ2)'
+            })
+        
+        # Optional: Validate screenshot size (base64 string length)
+        if screenshot:
+            # Rough estimate: base64 string is about 1.33x original size
+            estimated_size = len(screenshot) * 0.75 / (1024 * 1024)  # Size in MB
+            if estimated_size > 5:  # Limit to 5MB
+                print(f"⚠️ Screenshot too large: {estimated_size:.2f}MB")
+                # Still proceed, but log it
+            print(f"📸 Screenshot size: {estimated_size:.2f}MB")
+        
+        # Save payment issue
+        issue_id = save_payment_issue(email, index_number, mpesa_receipt, screenshot)
+        
+        if issue_id:
+            # Show success message with 6-hour waiting period
+            return jsonify({
+                'success': True,
+                'message': 'Your payment issue has been submitted successfully. Please try again after 6 hours as your issue is being reviewed.',
+                'wait_time': 6,  # hours
+                'redirect_url': url_for('index')
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to submit payment issue. Please try again later.'
+            })
+        
+    except Exception as e:
+        print(f"❌ Error submitting payment issue: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': 'An error occurred. Please try again later.'
+        })
+@app.route('/admin/payment-issues')
+def admin_payment_issues():
+    """Admin page to manage payment issues"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    # Get all pending issues
+    pending_issues = get_pending_payment_issues()
+    
+    # Get statistics
+    all_issues = get_all_payment_issues()
+    stats = {
+        'total': len(all_issues),
+        'pending': len(pending_issues),
+        'approved': len([i for i in all_issues if i.get('status') == 'approved']),
+        'deleted': len([i for i in all_issues if i.get('status') == 'deleted'])
+    }
+    
+    return render_template('admin_payment_issues.html', 
+                         issues=pending_issues,
+                         stats=stats)
+
+@app.route('/admin/process-payment-issue/<issue_id>', methods=['POST'])
+def process_payment_issue(issue_id):
+    """Process a payment issue (approve or delete)"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    action = request.form.get('action')
+    admin_username = session.get('admin_username', 'admin')
+    
+    if action == 'approve':
+        success = approve_payment_issue(issue_id, admin_username)
+        if success:
+            flash("Payment issue approved and manual activation created", "success")
+        else:
+            flash("Failed to approve payment issue", "error")
+    
+    elif action == 'delete':
+        success = delete_payment_issue(issue_id, admin_username)
+        if success:
+            flash("Payment issue deleted", "success")
+        else:
+            flash("Failed to delete payment issue", "error")
+    
+    return redirect(url_for('admin_payment_issues'))
+
+@app.route('/admin/payment-issues/all')
+def admin_all_payment_issues():
+    """View all payment issues with filtering"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    status = request.args.get('status', 'all')
+    
+    if status == 'all':
+        issues = get_all_payment_issues()
+    else:
+        issues = get_all_payment_issues(status)
+    
+    return render_template('admin_all_payment_issues.html', 
+                         issues=issues,
+                         current_status=status)
 
 # --- News Model ---
 # --- News Model ---

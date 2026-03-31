@@ -7,156 +7,460 @@
     <title>Admin Dashboard - KUCCPS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .stat-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .quick-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .pending-count {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">KUCCPS Admin</a>
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-graduation-cap me-2"></i>KUCCPS Admin Panel
+            </a>
             <div class="navbar-nav ms-auto">
                 <span class="navbar-text me-3">
-                    <i class="fas fa-user-shield"></i> {{ session.get('admin_username', 'Admin') }}
+                    <i class="fas fa-user-shield me-1"></i> {{ session.get('admin_username', 'Admin') }}
                 </span>
-                <a class="nav-link" href="{{ url_for('admin_logout') }}">Logout</a>
+                <a class="nav-link" href="{{ url_for('admin_logout') }}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
             </div>
         </div>
     </nav>
 
     <div class="container mt-4">
-        <h2>Admin Dashboard</h2>
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h2>
+                    <p class="mb-0">Welcome back, {{ session.get('admin_username', 'Admin') }}! Here's what's happening today.</p>
+                </div>
+                <div>
+                    <i class="fas fa-chart-line fa-3x"></i>
+                </div>
+            </div>
+        </div>
 
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         {% for category, message in messages %}
-        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }} me-2"></i>
             {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% endfor %}
         {% endif %}
         {% endwith %}
 
+        <!-- Admin Cards Row 1 -->
         <div class="row mt-4">
+            <!-- Payments Card -->
             <div class="col-md-4 mb-4">
-                <div class="card text-white bg-primary">
+                <div class="card text-white bg-primary h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h4><i class="fas fa-money-bill-wave"></i></h4>
-                                <h5>Payments</h5>
+                                <h5 class="card-title mt-2">Payment Management</h5>
+                                <p class="card-text small">View and manage all user payments</p>
                             </div>
                             <h3><i class="fas fa-chart-bar"></i></h3>
                         </div>
-                        <a href="{{ url_for('admin_payments') }}" class="btn btn-light btn-sm mt-2">View Details</a>
+                        <a href="{{ url_for('admin_payments') }}" class="btn btn-light btn-sm mt-3">
+                            <i class="fas fa-eye me-1"></i>View Payments
+                        </a>
                     </div>
                 </div>
             </div>
 
+            <!-- Users Card -->
             <div class="col-md-4 mb-4">
-                <div class="card text-white bg-success">
+                <div class="card text-white bg-success h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h4><i class="fas fa-users"></i></h4>
-                                <h5>Users</h5>
+                                <h5 class="card-title mt-2">User Management</h5>
+                                <p class="card-text small">View registered users and their activity</p>
                             </div>
                             <h3><i class="fas fa-user-friends"></i></h3>
                         </div>
-                        <a href="{{ url_for('admin_users') }}" class="btn btn-light btn-sm mt-2">View Users</a>
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-light btn-sm mt-3">
+                            <i class="fas fa-eye me-1"></i>View Users
+                        </a>
                     </div>
                 </div>
             </div>
 
+            <!-- Manual Activation Card -->
             <div class="col-md-4 mb-4">
-                <div class="card text-white bg-warning">
+                <div class="card text-white bg-warning h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h4><i class="fas fa-tools"></i></h4>
-                                <h5>Manual Activation</h5>
+                                <h5 class="card-title mt-2">Manual Activation</h5>
+                                <p class="card-text small">Activate users who paid but didn't get access</p>
                             </div>
                             <h3><i class="fas fa-key"></i></h3>
                         </div>
-                        <a href="{{ url_for('admin_manual_activation') }}" class="btn btn-light btn-sm mt-2">Activate
-                            Users</a>
+                        <a href="{{ url_for('admin_manual_activation') }}" class="btn btn-light btn-sm mt-3">
+                            <i class="fas fa-user-plus me-1"></i>Activate Users
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-    <div class="card text-white bg-dark">
-        <div class="card-body">
-            <div class="d-flex justify-content-between">
-                <div>
-                    <h4><i class="fas fa-chart-line"></i></h4>
-                    <h5>Payment Analytics</h5>
-                </div>
-                <h3><i class="fas fa-analytics"></i></h3>
-            </div>
-            <a href="{{ url_for('admin_payment_management') }}" class="btn btn-light btn-sm mt-2">View Analytics</a>
         </div>
-    </div>
-</div>
-<!-- Add this card to the row in admin_dashboard.html -->
-<div class="col-md-4 mb-4">
-    <div class="card text-white" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
-        <div class="card-body">
-            <div class="d-flex justify-content-between">
-                <div>
-                    <h4><i class="fas fa-newspaper"></i></h4>
-                    <h5>News Management</h5>
-                </div>
-                <h3><i class="fas fa-bullhorn"></i></h3>
-            </div>
-            <a href="{{ url_for('admin_news') }}" class="btn btn-light btn-sm mt-2">Manage News</a>
-        </div>
-    </div>
-</div>
+
+        <!-- Admin Cards Row 2 -->
+        <div class="row">
+            <!-- Payment Issues Card - NEW -->
             <div class="col-md-4 mb-4">
-                <div class="card text-white bg-info">
+                <div class="card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <h4><i class="fas fa-heartbeat"></i></h4>
-                                <h5>System Health</h5>
+                                <h4><i class="fas fa-headset"></i></h4>
+                                <h5 class="card-title mt-2">Payment Issues</h5>
+                                <p class="card-text small">Manage user-reported payment problems</p>
                             </div>
-                            <h3><i class="fas fa-server"></i></h3>
+                            <div>
+                                <span class="badge bg-danger text-white stat-badge pending-count" id="pendingIssuesCount">Loading...</span>
+                                <h3><i class="fas fa-question-circle"></i></h3>
+                            </div>
                         </div>
-                        <a href="{{ url_for('admin_system_health') }}" class="btn btn-light btn-sm mt-2">Check
-                            Health</a>
+                        <div class="mt-3">
+                            <a href="{{ url_for('admin_payment_issues') }}" class="btn btn-light btn-sm">
+                                <i class="fas fa-list me-1"></i>View Pending Issues
+                            </a>
+                            <a href="{{ url_for('admin_all_payment_issues') }}" class="btn btn-outline-light btn-sm ms-2">
+                                <i class="fas fa-history me-1"></i>All Issues
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
-                        <div class="col-md-4 mb-4">
-                            <div class="card text-white bg-secondary">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <h4><i class="fas fa-robot"></i></h4>
-                                            <h5>AI / Chat Assistant</h5>
-                                        </div>
-                                        <h3><i class="fas fa-robot"></i></h3>
-                                    </div>
-                                    <a href="{{ url_for('admin_ai_stats') }}" class="btn btn-light btn-sm mt-2">AI Stats</a>
-                                </div>
-                            </div>
-                        </div>
-<a href="/admin/cached-answers" class="block px-4 py-2 hover:bg-gray-100">View Cached Answers</a>
+            <!-- Payment Analytics Card -->
             <div class="col-md-4 mb-4">
-                <div class="card text-white bg-danger">
+                <div class="card text-white bg-dark h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4><i class="fas fa-chart-line"></i></h4>
+                                <h5 class="card-title mt-2">Payment Analytics</h5>
+                                <p class="card-text small">Revenue reports and statistics</p>
+                            </div>
+                            <h3><i class="fas fa-chart-pie"></i></h3>
+                        </div>
+                        <a href="{{ url_for('admin_payment_management') }}" class="btn btn-light btn-sm mt-3">
+                            <i class="fas fa-chart-bar me-1"></i>View Analytics
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Management Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-white" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4><i class="fas fa-newspaper"></i></h4>
+                                <h5 class="card-title mt-2">News Management</h5>
+                                <p class="card-text small">Create and manage news articles</p>
+                            </div>
+                            <h3><i class="fas fa-bullhorn"></i></h3>
+                        </div>
+                        <a href="{{ url_for('admin_news') }}" class="btn btn-light btn-sm mt-3">
+                            <i class="fas fa-edit me-1"></i>Manage News
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Cards Row 3 -->
+        <div class="row">
+            <!-- System Health Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-white bg-info h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4><i class="fas fa-heartbeat"></i></h4>
+                                <h5 class="card-title mt-2">System Health</h5>
+                                <p class="card-text small">Monitor system performance</p>
+                            </div>
+                            <h3><i class="fas fa-server"></i></h3>
+                        </div>
+                        <a href="{{ url_for('admin_system_health') }}" class="btn btn-light btn-sm mt-3">
+                            <i class="fas fa-stethoscope me-1"></i>Check Health
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI / Chat Assistant Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-white bg-secondary h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4><i class="fas fa-robot"></i></h4>
+                                <h5 class="card-title mt-2">AI / Chat Assistant</h5>
+                                <p class="card-text small">Monitor AI usage and cached responses</p>
+                            </div>
+                            <h3><i class="fas fa-brain"></i></h3>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ url_for('admin_ai_stats') }}" class="btn btn-light btn-sm">
+                                <i class="fas fa-chart-line me-1"></i>AI Stats
+                            </a>
+                            <a href="{{ url_for('admin_cached_answers') }}" class="btn btn-outline-light btn-sm ms-2">
+                                <i class="fas fa-database me-1"></i>Cached Answers
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clear Cache Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-white bg-danger h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h4><i class="fas fa-trash-alt"></i></h4>
-                                <h5>Clear Cache</h5>
+                                <h5 class="card-title mt-2">Cache Management</h5>
+                                <p class="card-text small">Clear system and CDN cache</p>
                             </div>
                             <h3><i class="fas fa-broom"></i></h3>
                         </div>
-                        <a href="{{ url_for('admin_clear_cache') }}" class="btn btn-light btn-sm mt-2">Manage Cache</a>
+                        <a href="{{ url_for('admin_clear_cache') }}" class="btn btn-light btn-sm mt-3">
+                            <i class="fas fa-eraser me-1"></i>Clear Cache
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <i class="fas fa-history me-2"></i>Recent System Activity
+                    </div>
+                    <div class="card-body">
+                        <div id="recentActivity">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Loading recent activity...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fetch pending issues count
+        async function fetchPendingIssuesCount() {
+            try {
+                const response = await fetch('/api/pending-issues-count');
+                const data = await response.json();
+                const badge = document.getElementById('pendingIssuesCount');
+                if (badge) {
+                    const count = data.count || 0;
+                    badge.textContent = count;
+                    if (count > 0) {
+                        badge.classList.add('bg-danger', 'text-white', 'pending-count');
+                        badge.classList.remove('bg-success', 'bg-light', 'text-dark');
+                    } else {
+                        badge.classList.remove('bg-danger', 'pending-count');
+                        badge.classList.add('bg-success', 'text-white');
+                        badge.textContent = '0';
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching pending issues:', error);
+                const badge = document.getElementById('pendingIssuesCount');
+                if (badge) {
+                    badge.textContent = 'Error';
+                    badge.classList.add('bg-danger', 'text-white');
+                }
+            }
+        }
+
+        // Fetch recent activity
+        async function fetchRecentActivity() {
+            try {
+                const response = await fetch('/api/recent-activity');
+                const data = await response.json();
+                const activityDiv = document.getElementById('recentActivity');
+                
+                if (data.activities && data.activities.length > 0) {
+                    let html = '<ul class="list-group list-group-flush">';
+                    data.activities.forEach(activity => {
+                        const iconClass = activity.icon || 'circle';
+                        const colorClass = activity.color || 'primary';
+                        html += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-${iconClass} me-2 text-${colorClass}"></i>
+                                    <strong>${escapeHtml(activity.title)}</strong>
+                                    <br>
+                                    <small class="text-muted">${escapeHtml(activity.description)}</small>
+                                </div>
+                                <span class="badge bg-secondary">${escapeHtml(activity.time)}</span>
+                            </li>
+                        `;
+                    });
+                    html += '</ul>';
+                    activityDiv.innerHTML = html;
+                } else {
+                    activityDiv.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent activity to display</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error fetching recent activity:', error);
+                document.getElementById('recentActivity').innerHTML = `
+                    <div class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                        <p>Failed to load recent activity</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Add click handlers for cards
+        function addCardClickHandlers() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on a link or button
+                    if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || 
+                        e.target.closest('a') || e.target.closest('button')) {
+                        return;
+                    }
+                    // Find the first link in the card and navigate to it
+                    const link = this.querySelector('a');
+                    if (link && link.href) {
+                        window.location.href = link.href;
+                    }
+                });
+            });
+        }
+
+        // Auto-refresh pending issues count every 30 seconds
+        let refreshInterval;
+        
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                fetchPendingIssuesCount();
+                fetchRecentActivity();
+            }, 30000); // Refresh every 30 seconds
+        }
+        
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchPendingIssuesCount();
+            fetchRecentActivity();
+            addCardClickHandlers();
+            startAutoRefresh();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
+    </script>
 </body>
 
 </html>

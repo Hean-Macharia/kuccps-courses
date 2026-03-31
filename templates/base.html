@@ -61,9 +61,9 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
     
-    <!-- Google Fonts -->
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -209,8 +209,6 @@
             --dark-grey: #424242;
             --black: #000000;
             --white: #FFFFFF;
-            --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
             
             /* Semantic Colors */
             --red-light: #EF5350;
@@ -253,9 +251,10 @@
             --transition-base: 300ms ease;
             --transition-slow: 500ms ease;
             
-                       /* Typography - System Fonts (No Google Fonts) */
+            /* Typography - System Fonts */
             --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
             --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            
             /* Z-index Layers */
             --z-dropdown: 1000;
             --z-sticky: 1020;
@@ -283,7 +282,7 @@
             font-family: var(--font-body);
             background: var(--white);
             color: var(--black);
-            line-height: 1.7;
+            line-height: 1.6;
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
@@ -307,7 +306,6 @@
         /* ============================================
             LAYOUT COMPONENTS
         ============================================= */
-        /* Main Wrapper */
         .main-wrapper {
             min-height: 100vh;
             display: flex;
@@ -322,7 +320,6 @@
             width: 100%;
         }
         
-        /* Container Adjustments */
         .container {
             max-width: 1320px;
         }
@@ -330,7 +327,6 @@
         /* ============================================
             NAVIGATION
         ============================================= */
-        /* Navbar */
         .navbar-custom {
             background: var(--white);
             padding: var(--space-md) 0;
@@ -361,7 +357,6 @@
             color: var(--primary-yellow);
         }
         
-        /* Nav Links */
         .nav-link {
             color: var(--dark-grey) !important;
             font-weight: 600;
@@ -390,7 +385,6 @@
             font-size: 1rem;
         }
         
-        /* Navigation Badges */
         .badge-notification {
             position: absolute;
             top: -5px;
@@ -447,6 +441,7 @@
         }
         
         .sidebar-header {
+            position: relative;
             padding: var(--space-xl);
             text-align: center;
             background: var(--gradient-red);
@@ -458,6 +453,34 @@
             font-weight: 700;
             margin: 0;
             font-size: 1.4rem;
+        }
+        
+        .sidebar-close-btn {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: var(--radius-full);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .sidebar-close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .sidebar-close-btn i {
+            font-size: 1.2rem;
         }
         
         .sidebar-link {
@@ -496,7 +519,6 @@
             color: var(--white);
         }
         
-        /* Sidebar Sections */
         .sidebar-section {
             padding: var(--space-lg) var(--space-xl);
             border-top: 1px solid var(--light-grey);
@@ -512,7 +534,6 @@
         /* ============================================
             UI COMPONENTS
         ============================================= */
-        /* Menu Toggle Button */
         .menu-toggle {
             position: fixed;
             top: var(--space-md);
@@ -539,7 +560,6 @@
             box-shadow: var(--shadow-lg);
         }
         
-        /* Overlay */
         .overlay {
             position: fixed;
             top: 0;
@@ -559,7 +579,6 @@
             visibility: visible;
         }
         
-        /* Back to Top Button */
         .back-to-top {
             position: fixed;
             bottom: var(--space-xl);
@@ -593,7 +612,6 @@
             box-shadow: var(--shadow-lg);
         }
         
-        /* News Notification Badge */
         .news-badge-container {
             position: fixed;
             top: 120px;
@@ -657,6 +675,160 @@
             border: 2px solid var(--white);
             min-width: 22px;
             text-align: center;
+        }
+        
+        /* ============================================
+            FLOATING BUTTONS - SMALL RAISED DESIGN
+        ============================================= */
+        /* Floating Buttons Container */
+        .floating-btn-container {
+            position: fixed;
+            bottom: 30px;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .floating-btn-container.left {
+            left: 20px;
+        }
+        
+        .floating-btn-container.right {
+            right: 20px;
+        }
+        
+        /* Base button styles - Small Raised */
+        .floating-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border: none;
+            white-space: nowrap;
+            backdrop-filter: blur(4px);
+        }
+        
+        .floating-btn i {
+            font-size: 0.9rem;
+        }
+        
+        /* Help Button - Payment Support (Red gradient with pulse) */
+        .payment-help-btn {
+            background: var(--gradient-red);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: soft-pulse 2s infinite;
+        }
+        
+        .payment-help-btn:hover {
+            transform: scale(1.03) translateY(-2px);
+            background: var(--primary-red);
+            box-shadow: 0 6px 16px rgba(198, 40, 40, 0.4);
+            animation: none;
+        }
+        
+        .payment-help-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* AI Chat Button (Green gradient) */
+        .ai-chat-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+        
+        .ai-chat-btn:hover {
+            transform: scale(1.03) translateY(-2px);
+            background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+            box-shadow: 0 6px 16px rgba(32, 201, 151, 0.4);
+        }
+        
+        .ai-chat-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* AI Info Badge - Smaller */
+        .ai-info-badge {
+            position: absolute;
+            top: -10px;
+            right: -12px;
+            background: var(--primary-yellow);
+            color: var(--black);
+            font-size: 0.55rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 30px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--primary-red);
+            animation: badge-pulse 1.5s infinite;
+        }
+        
+        .ai-info-badge i {
+            font-size: 0.6rem;
+            margin-right: 3px;
+        }
+        
+        /* Tooltip for buttons - Smaller */
+        .floating-btn-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1060;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .floating-btn-container.left .floating-btn-tooltip {
+            left: 100%;
+            margin-left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .floating-btn-container.right .floating-btn-tooltip {
+            right: 100%;
+            margin-right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .floating-btn:hover .floating-btn-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Animations */
+        @keyframes soft-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(198, 40, 40, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0); }
+        }
+        
+        @keyframes badge-pulse {
+            0% { transform: scale(1); background: var(--primary-yellow); }
+            50% { transform: scale(1.05); background: #ffd54f; }
+            100% { transform: scale(1); background: var(--primary-yellow); }
         }
         
         /* ============================================
@@ -749,7 +921,7 @@
             padding: var(--space-md) var(--space-xl);
             border-radius: var(--radius-md);
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: all var(--transition-base);
             border: none;
             position: relative;
@@ -818,7 +990,7 @@
         }
         
         /* ============================================
-            CARDS
+            CARDS - IMPROVED STYLES (Smaller fonts)
         ============================================= */
         .card-custom {
             border: none;
@@ -830,19 +1002,212 @@
         }
         
         .card-custom:hover {
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
         
         .card-header-custom {
             background: var(--gradient-red);
             color: var(--white);
-            padding: var(--space-lg) var(--space-xl);
+            padding: var(--space-md) var(--space-lg);
             border-bottom: none;
             font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 600;
         }
         
         .card-body-custom {
-            padding: var(--space-xl);
+            padding: var(--space-lg);
+        }
+        
+        /* Category Cards - Improved sizing */
+        .category-card {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 20px 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            border-top: 4px solid;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .category-card:nth-child(1) { border-top-color: var(--primary-red); }
+        .category-card:nth-child(2) { border-top-color: var(--primary-yellow); }
+        .category-card:nth-child(3) { border-top-color: var(--info-blue); }
+        .category-card:nth-child(4) { border-top-color: var(--warning-orange); }
+        .category-card:nth-child(5) { border-top-color: var(--success-green); }
+        .category-card:nth-child(6) { border-top-color: #795548; }
+        .category-card:nth-child(7) { border-top-color: #9C27B0; }
+        
+        .category-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        
+        .category-icon i {
+            color: var(--primary-red);
+        }
+        
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--dark-grey);
+        }
+        
+        .category-description {
+            color: var(--medium-grey);
+            margin-bottom: 16px;
+            line-height: 1.5;
+            font-size: 0.85rem;
+        }
+        
+        .category-btn {
+            background: var(--gradient-red);
+            color: var(--white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .category-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+            background: var(--primary-red);
+        }
+        
+        .estimate-btn {
+            background: var(--gradient-yellow);
+            color: var(--black);
+            border: none;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .estimate-btn:hover {
+            transform: translateY(-1px);
+            background: var(--primary-yellow);
+        }
+        
+        /* Degree Card Coming Soon Badge - Smaller */
+        .degree-card {
+            position: relative;
+        }
+        
+        .degree-card::before {
+            content: 'COMING SOON';
+            position: absolute;
+            top: 12px;
+            right: -30px;
+            background: var(--primary-red);
+            color: var(--white);
+            padding: 4px 35px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transform: rotate(45deg);
+            box-shadow: var(--shadow-sm);
+            z-index: 2;
+        }
+        
+        /* Stat Cards - Smaller */
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 20px 12px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            height: 100%;
+            border-top: 3px solid var(--primary-red);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: var(--primary-red);
+            line-height: 1.2;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--medium-grey);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Process Cards - Smaller */
+        .process-card {
+            text-align: center;
+            padding: 20px 16px;
+            background: var(--white);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .process-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .process-number {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-red);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin: 0 auto 12px;
+        }
+        
+        .process-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark-grey);
+            margin-bottom: 8px;
+        }
+        
+        .process-description {
+            color: var(--medium-grey);
+            line-height: 1.5;
+            font-size: 0.85rem;
         }
         
         /* ============================================
@@ -888,19 +1253,19 @@
         
         .modal-custom .modal-title {
             font-weight: 700;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
             gap: var(--space-sm);
         }
         
         .modal-custom .modal-body {
-            padding: var(--space-xl);
+            padding: var(--space-lg);
         }
         
         .modal-custom .modal-footer {
             border-top: 1px solid var(--light-grey);
-            padding: var(--space-lg) var(--space-xl);
+            padding: var(--space-md) var(--space-lg);
         }
         
         .modal-custom .btn-close {
@@ -916,7 +1281,6 @@
         /* ============================================
             PWA COMPONENTS
         ============================================= */
-        /* PWA Installation Prompt */
         .pwa-install-prompt {
             position: fixed;
             bottom: var(--space-xl);
@@ -972,11 +1336,12 @@
             color: var(--primary-red);
             margin-bottom: var(--space-xs);
             font-weight: 700;
+            font-size: 1rem;
         }
         
         .pwa-title small {
             color: var(--medium-grey);
-            font-size: 0.85rem;
+            font-size: 0.75rem;
         }
         
         .pwa-buttons {
@@ -1043,6 +1408,17 @@
             align-items: flex-start;
         }
         
+        /* Visual feedback for screenshot field */
+        #issue_screenshot:valid {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+        
+        #issue_screenshot:invalid {
+            border-color: #dc3545;
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+        
         .ios-step-number {
             background: var(--primary-red);
             color: white;
@@ -1055,7 +1431,7 @@
             margin-right: var(--space-sm);
             flex-shrink: 0;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         
         /* ============================================
@@ -1080,7 +1456,7 @@
         
         .footer-logo {
             font-family: var(--font-heading);
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: var(--primary-yellow);
             margin-bottom: var(--space-lg);
@@ -1104,7 +1480,7 @@
             font-weight: 500;
             padding: var(--space-xs) 0;
             position: relative;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         
         .footer-links a::after {
@@ -1133,8 +1509,8 @@
         }
         
         .social-icons a {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: var(--radius-full);
             display: flex;
@@ -1143,23 +1519,23 @@
             color: var(--white);
             text-decoration: none;
             transition: all var(--transition-base);
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         
         .social-icons a:hover {
             background: var(--primary-yellow);
             color: var(--black);
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-sm);
         }
         
         .copyright {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             padding-top: var(--space-lg);
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             width: 100%;
-            line-height: 1.6;
+            line-height: 1.5;
         }
         
         .copyright p {
@@ -1167,57 +1543,104 @@
         }
         
         /* ============================================
-            UTILITY CLASSES
+            STICKY BOTTOM NAVIGATION - FIXED MOBILE VIEW (NO HELP BUTTON)
         ============================================= */
-        .hover-lift {
-            transition: transform var(--transition-base), box-shadow var(--transition-base);
+        .sticky-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 8px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            z-index: var(--z-fixed);
+            border-top: 3px solid var(--primary-red);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.98);
         }
         
-        .hover-lift:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
+        .nav-item-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 0.65rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            padding: 5px 6px;
+            border-radius: var(--radius-md);
+            min-width: 50px;
+            text-align: center;
+            cursor: pointer;
+            background: transparent;
+            border: none;
         }
         
-        .spinner-custom {
-            width: 3rem;
-            height: 3rem;
-            color: var(--primary-red);
-            animation: rotate 1s linear infinite;
+        /* Individual icon colors */
+        .nav-item-bottom[data-nav="home"] i { color: var(--primary-red); }
+        .nav-item-bottom[data-nav="degree"] i { color: #9C27B0; }
+        .nav-item-bottom[data-nav="diploma"] i { color: #FF9800; }
+        .nav-item-bottom[data-nav="certificate"] i { color: #4CAF50; }
+        .nav-item-bottom[data-nav="kmtc"] i { color: #00BCD4; }
+        .nav-item-bottom[data-nav="artisan"] i { color: #795548; }
+        .nav-item-bottom[data-nav="ttc"] i { color: #E91E63; }
+        
+        .nav-item-bottom span {
+            font-size: 0.6rem;
+            font-weight: 500;
+            color: var(--dark-grey);
+            margin-top: 3px;
         }
         
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .nav-item-bottom:hover {
+            transform: translateY(-2px);
         }
         
-        .progress-bar-animated {
-            animation: progress-bar-stripes 1s linear infinite;
+        .nav-item-bottom:hover i {
+            transform: scale(1.05);
         }
         
-        @keyframes progress-bar-stripes {
-            from { background-position: 1rem 0; }
-            to { background-position: 0 0; }
+        .nav-item-bottom.active {
+            position: relative;
         }
         
-        /* ============================================
-            CUSTOM SCROLLBAR
-        ============================================= */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--light-grey);
-            border-radius: var(--radius-sm);
-        }
-        
-        ::-webkit-scrollbar-thumb {
+        .nav-item-bottom.active::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 3px;
             background: var(--primary-red);
-            border-radius: var(--radius-sm);
+            border-radius: 3px;
         }
         
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--red-dark);
+        .nav-item-bottom.active span {
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+        
+        /* Hide sticky nav on larger screens */
+        @media (min-width: 993px) {
+            .sticky-bottom-nav {
+                display: none;
+            }
+        }
+        
+        /* Show sticky nav only on mobile */
+        @media (max-width: 992px) {
+            .sticky-bottom-nav {
+                display: flex;
+            }
+            
+            .main-content {
+                padding-bottom: calc(var(--space-xl) + 70px);
+            }
         }
         
         /* ============================================
@@ -1232,7 +1655,7 @@
         @media (max-width: 992px) {
             .navbar-brand {
                 margin-left: 60px;
-                font-size: 1.4rem;
+                font-size: 1.3rem;
             }
             
             .navbar-nav {
@@ -1264,11 +1687,11 @@
             }
             
             .footer-logo {
-                font-size: 1.6rem;
+                font-size: 1.3rem;
             }
             
             .navbar-brand {
-                font-size: 1.3rem;
+                font-size: 1.2rem;
                 margin-left: 55px;
             }
             
@@ -1280,6 +1703,38 @@
             .news-badge-container {
                 top: 90px;
                 right: var(--space-sm);
+            }
+            
+            /* Floating buttons - Increased bottom spacing for mobile */
+            .floating-btn-container.left {
+                left: 12px;
+                bottom: 85px;
+            }
+            
+            .floating-btn-container.right {
+                right: 12px;
+                bottom: 85px;
+            }
+            
+            .floating-btn {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+                gap: 6px;
+            }
+            
+            .floating-btn i {
+                font-size: 0.8rem;
+            }
+            
+            .ai-info-badge {
+                font-size: 0.5rem;
+                padding: 2px 6px;
+                top: -8px;
+                right: -10px;
+            }
+            
+            .ai-info-badge i {
+                font-size: 0.5rem;
             }
         }
         
@@ -1296,23 +1751,23 @@
             .modal-custom .modal-header,
             .modal-custom .modal-body,
             .modal-custom .modal-footer {
-                padding: var(--space-lg);
+                padding: var(--space-md);
             }
             
             .btn-custom {
                 padding: var(--space-sm) var(--space-lg);
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
             
             .navbar-brand {
-                font-size: 1.2rem;
+                font-size: 1rem;
                 margin-left: 50px;
             }
             
             .menu-toggle {
-                width: 42px;
-                height: 42px;
-                font-size: 1.2rem;
+                width: 38px;
+                height: 38px;
+                font-size: 1.1rem;
                 top: var(--space-sm);
                 left: var(--space-sm);
             }
@@ -1326,33 +1781,76 @@
             }
             
             .news-badge-container {
-                top: 80px;
+                top: 75px;
                 right: var(--space-sm);
             }
             
             .news-bell-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 1.1rem;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
             }
             
             .news-badge-count {
-                font-size: 0.6rem;
+                font-size: 0.55rem;
                 padding: 2px 5px;
-                min-width: 18px;
+                min-width: 16px;
+            }
+            
+            /* Floating buttons - Increased bottom spacing for small mobile */
+            .floating-btn-container.left,
+            .floating-btn-container.right {
+                bottom: 85px;
+            }
+            
+            .floating-btn {
+                padding: 5px 10px;
+                font-size: 0.65rem;
+                gap: 5px;
+                border-radius: 30px;
+            }
+            
+            .floating-btn i {
+                font-size: 0.75rem;
+            }
+            
+            .ai-info-badge {
+                display: none;
+            }
+            
+            /* Sticky bottom nav small screen */
+            .sticky-bottom-nav {
+                padding: 6px 4px;
+            }
+            
+            .nav-item-bottom {
+                min-width: 42px;
+                padding: 3px 3px;
+            }
+            
+            .nav-item-bottom i {
+                font-size: 1rem;
+            }
+            
+            .nav-item-bottom span {
+                font-size: 0.55rem;
+            }
+            
+            .main-content {
+                padding-bottom: calc(var(--space-md) + 65px);
             }
         }
         
         @media (max-width: 400px) {
             .navbar-brand {
-                font-size: 1.1rem;
+                font-size: 0.9rem;
                 margin-left: 45px;
             }
             
             .menu-toggle {
-                width: 38px;
-                height: 38px;
-                font-size: 1.1rem;
+                width: 34px;
+                height: 34px;
+                font-size: 1rem;
             }
             
             .ios-guide-content {
@@ -1362,6 +1860,22 @@
             .news-badge-container {
                 top: 70px;
                 right: var(--space-xs);
+            }
+            
+            /* Floating buttons - Keep increased bottom spacing for very small screens */
+            .floating-btn-container.left,
+            .floating-btn-container.right {
+                bottom: 85px;
+            }
+            
+            .floating-btn {
+                padding: 4px 8px;
+                font-size: 0.6rem;
+                gap: 4px;
+            }
+            
+            .floating-btn i {
+                font-size: 0.7rem;
             }
         }
         
@@ -1376,6 +1890,29 @@
             padding-top: calc(var(--space-xl) + env(safe-area-inset-top));
         }
         
+        .standalone-mode .floating-btn-container {
+            bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+        
+        .standalone-mode .sticky-bottom-nav {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        /* Override for standalone mode on mobile to maintain proper spacing */
+        @media (max-width: 768px) {
+            .standalone-mode .floating-btn-container.left,
+            .standalone-mode .floating-btn-container.right {
+                bottom: calc(85px + env(safe-area-inset-bottom));
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .standalone-mode .floating-btn-container.left,
+            .standalone-mode .floating-btn-container.right {
+                bottom: calc(85px + env(safe-area-inset-bottom));
+            }
+        }
+        
         /* ============================================
             PRINT STYLES
         ============================================= */
@@ -1385,7 +1922,9 @@
             .menu-toggle,
             .back-to-top,
             .news-badge-container,
-            .pwa-install-prompt {
+            .pwa-install-prompt,
+            .floating-btn-container,
+            .sticky-bottom-nav {
                 display: none !important;
             }
             
@@ -1397,6 +1936,27 @@
                 text-decoration: none !important;
                 color: var(--black) !important;
             }
+        }
+        
+        /* ============================================
+            CUSTOM SCROLLBAR
+        ============================================= */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--light-grey);
+            border-radius: var(--radius-sm);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: var(--radius-sm);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--red-dark);
         }
     </style>
     
@@ -1536,7 +2096,7 @@
             <!-- Desktop Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                                    <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link active" href="/">
                             <i class="fas fa-home"></i> Home
                         </a>
@@ -1546,8 +2106,6 @@
                             <i class="fas fa-check-circle"></i> My Paid Courses
                         </a>
                     </li>
-                                      
-                   
                     <li class="nav-item">
                         <a class="nav-link" href="https://students.kuccps.net/login" target="_blank" rel="noopener noreferrer">
                             <i class="fas fa-external-link-alt"></i> KUCCPS Portal
@@ -1590,13 +2148,16 @@
     <div class="sidebar" id="sidebarMenu">
         <div class="sidebar-header">
             <h3><i class="fas fa-graduation-cap me-2"></i>KUCCPS Course Checker</h3>
+            <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close sidebar">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         
         <!-- Mobile Navigation Links -->
         <a href="/" class="sidebar-link active">
             <i class="fas fa-home"></i> Home
         </a>
-        <a href="https://web-development-6fdl.onrender.com" target="_blank" class="sidebar-link" onclick="toggleSidebar();" rel="noopener noreferrer">
+        <a href="https://short-courses.onrender.com" target="_blank" class="sidebar-link" onclick="toggleSidebar();" rel="noopener noreferrer">
             <i class="fas fa-crown"></i> Premium Programs
         </a>
         <a href="/news" class="sidebar-link">
@@ -1676,9 +2237,9 @@
                                     'info': 'info-circle',
                                     'danger': 'exclamation-circle'
                                 }[category] or 'info-circle' %}
-                                <i class="fas fa-{{ icon }} me-3" style="font-size: 1.3rem;"></i>
+                                <i class="fas fa-{{ icon }} me-3" style="font-size: 1.2rem;"></i>
                                 <div>
-                                    <h5 class="alert-heading mb-1">{{ message }}</h5>
+                                    <h5 class="alert-heading mb-1" style="font-size: 0.95rem;">{{ message }}</h5>
                                     {% if category == 'warning' %}
                                         <div class="mt-2">
                                             <button class="btn btn-yellow-custom btn-sm" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
@@ -1697,13 +2258,13 @@
             <!-- KUCCPS Logo -->
             <div class="text-center mb-4 animate__animated animate__fadeIn">
                <picture>
-  <source srcset="{{ url_for('static', filename='images/kuccps.png') }}" type="image/webp">
-  <img src="{{ url_for('static', filename='images/kuccps.png') }}" 
-       alt="KUCCPS Logo" 
-       class="kuccps-logo img-fluid"
-       width="1000" height="200" loading="lazy">
-       
-</picture>
+                    <source srcset="{{ url_for('static', filename='images/kuccps.png') }}" type="image/webp">
+                    <img src="{{ url_for('static', filename='images/kuccps.png') }}" 
+                         alt="KUCCPS Logo" 
+                         class="kuccps-logo img-fluid"
+                         width="1000" height="200" loading="lazy"
+                         style="max-width: 100%; height: auto;">
+                </picture>
             </div>
 
             <!-- Page Content Blocks -->
@@ -1714,18 +2275,18 @@
             <!-- PWA Installation CTA -->
             <div class="card-custom mt-5 hover-lift" id="pwaCtaCard">
                 <div class="card-body-custom text-center">
-                    <div class="pwa-icon mb-3" style="width: 80px; height: 80px; margin: 0 auto;">
-                        <i class="fas fa-graduation-cap" style="font-size: 2.5rem;"></i>
+                    <div class="pwa-icon mb-3" style="width: 60px; height: 60px; margin: 0 auto;">
+                        <i class="fas fa-graduation-cap" style="font-size: 2rem;"></i>
                     </div>
-                    <h4 class="mb-3" style="color: var(--primary-red);">
+                    <h4 class="mb-2" style="color: var(--primary-red); font-size: 1.2rem;">
                         <i class="fas fa-mobile-alt me-2"></i>Get the KUCCPS App
                     </h4>
-                    <p class="text-muted mb-4">Install our app for faster access, offline viewing, and notifications about new courses.</p>
+                    <p class="text-muted mb-3" style="font-size: 0.85rem;">Install our app for faster access, offline viewing, and notifications about new courses.</p>
                     <div class="d-flex flex-wrap gap-2 justify-content-center">
-                        <button class="btn btn-primary-custom" onclick="showPwaInstallPrompt()">
+                        <button class="btn btn-primary-custom" onclick="showPwaInstallPrompt()" style="padding: 8px 20px; font-size: 0.85rem;">
                             <i class="fas fa-download me-2"></i>Install Now
                         </button>
-                        <a href="/install-app" class="btn btn-outline-custom">
+                        <a href="/install-app" class="btn btn-outline-custom" style="padding: 8px 20px; font-size: 0.85rem;">
                             <i class="fas fa-info-circle me-2"></i>Learn More
                         </a>
                     </div>
@@ -1797,42 +2358,42 @@
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-4">
-                        <div class="icon-circle mb-3" style="width: 70px; height: 70px; background: var(--gradient-red); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-hands-helping" style="font-size: 2rem; color: white;"></i>
+                        <div class="icon-circle mb-3" style="width: 60px; height: 60px; background: var(--gradient-red); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-hands-helping" style="font-size: 1.6rem; color: white;"></i>
                         </div>
-                        <h6 class="text-muted">We're here to help you succeed</h6>
+                        <h6 class="text-muted" style="font-size: 0.9rem;">We're here to help you succeed</h6>
                     </div>
                     <div class="contact-options">
                         <div class="contact-option mb-3">
-                            <h6 class="mb-2"><i class="fab fa-whatsapp me-2" style="color: #25D366;"></i>WhatsApp Support</h6>
-                            <a href="https://chat.whatsapp.com/GjntLnCi5XO8odojJLWJqw" target="_blank" rel="noopener noreferrer" class="btn btn-yellow-custom w-100">
+                            <h6 class="mb-2" style="font-size: 0.9rem;"><i class="fab fa-whatsapp me-2" style="color: #25D366;"></i>WhatsApp Support</h6>
+                            <a href="https://chat.whatsapp.com/GjntLnCi5XO8odojJLWJqw" target="_blank" rel="noopener noreferrer" class="btn btn-yellow-custom w-100" style="font-size: 0.85rem; padding: 10px;">
                                 <i class="fab fa-whatsapp me-2"></i>Join WhatsApp Group
                             </a>
-                            <small class="text-muted mt-2 d-block">Get instant responses from our support team</small>
+                            <small class="text-muted mt-2 d-block" style="font-size: 0.7rem;">Get instant responses from our support team</small>
                         </div>
                         <div class="contact-option mb-3">
-                            <h6 class="mb-2"><i class="fas fa-phone me-2" style="color: var(--primary-red);"></i>Phone Support</h6>
-                            <a href="tel:+254791196121" class="btn btn-primary-custom w-100">
+                            <h6 class="mb-2" style="font-size: 0.9rem;"><i class="fas fa-phone me-2" style="color: var(--primary-red);"></i>Phone Support</h6>
+                            <a href="tel:+254791196121" class="btn btn-primary-custom w-100" style="font-size: 0.85rem; padding: 10px;">
                                 <i class="fas fa-phone me-2"></i>Call: 0791 196 121
                             </a>
-                            <small class="text-muted mt-2 d-block">Available Monday to Friday, 8 AM - 6 PM</small>
+                            <small class="text-muted mt-2 d-block" style="font-size: 0.7rem;">Available Monday to Friday, 8 AM - 6 PM</small>
                         </div>
                         <div class="contact-option">
-                            <h6 class="mb-2"><i class="fas fa-envelope me-2" style="color: var(--primary-yellow);"></i>Email Support</h6>
-                            <a href="mailto:courseschecker@gmail.com" class="btn btn-yellow-custom w-100">
+                            <h6 class="mb-2" style="font-size: 0.9rem;"><i class="fas fa-envelope me-2" style="color: var(--primary-yellow);"></i>Email Support</h6>
+                            <a href="mailto:courseschecker@gmail.com" class="btn btn-yellow-custom w-100" style="font-size: 0.85rem; padding: 10px;">
                                 <i class="fas fa-envelope me-2"></i>Email: courseschecker@gmail.com
                             </a>
-                            <small class="text-muted mt-2 d-block">We respond within 24 hours</small>
+                            <small class="text-muted mt-2 d-block" style="font-size: 0.7rem;">We respond within 24 hours</small>
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-top">
-                        <p class="text-center mb-0 text-muted">
+                        <p class="text-center mb-0 text-muted" style="font-size: 0.75rem;">
                             <i class="fas fa-clock me-1"></i>24/7 Online Support Available
                         </p>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="font-size: 0.85rem;">Close</button>
                 </div>
             </div>
         </div>
@@ -1849,12 +2410,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info alert-custom mb-4">
+                    <div class="alert alert-info alert-custom mb-4" style="padding: 15px;">
                         <div class="d-flex align-items-start">
-                            <i class="fas fa-info-circle me-3 mt-1" style="font-size: 1.1rem;"></i>
+                            <i class="fas fa-info-circle me-3 mt-1" style="font-size: 1rem;"></i>
                             <div>
-                                <h6 class="alert-heading">How to Verify</h6>
-                                <p class="mb-0">Enter your M-Pesa receipt number and KCSE index number to view all your qualified courses instantly.</p>
+                                <h6 class="alert-heading" style="font-size: 0.9rem;">How to Verify</h6>
+                                <p class="mb-0" style="font-size: 0.85rem;">Enter your M-Pesa receipt number and KCSE index number to view all your qualified courses instantly.</p>
                             </div>
                         </div>
                     </div>
@@ -1862,49 +2423,49 @@
                     <form id="verifyPaymentForm" class="needs-validation" novalidate>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="mpesa_receipt" class="form-label-custom">
+                                <label for="mpesa_receipt" class="form-label-custom" style="font-size: 0.85rem;">
                                     <i class="fas fa-receipt me-2"></i>M-Pesa Receipt Number *
                                 </label>
                                 <div class="input-group input-group-custom">
-                                    <span class="input-group-text">
+                                    <span class="input-group-text" style="font-size: 0.85rem;">
                                         <i class="fas fa-mobile-alt"></i>
                                     </span>
                                     <input type="text" class="form-control form-control-custom" id="mpesa_receipt" 
                                            name="mpesa_receipt" placeholder="RJ89A5LBQ2" required maxlength="10"
-                                           pattern="[A-Z0-9]{10}">
+                                           pattern="[A-Z0-9]{10}" style="font-size: 0.85rem;">
                                 </div>
-                                <div class="form-text text-muted mt-1">
+                                <div class="form-text text-muted mt-1" style="font-size: 0.7rem;">
                                     <i class="fas fa-lightbulb me-1"></i>10-character code from your M-Pesa confirmation message
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="index_number_verify" class="form-label-custom">
+                                <label for="index_number_verify" class="form-label-custom" style="font-size: 0.85rem;">
                                     <i class="fas fa-id-card me-2"></i>KCSE Index Number *
                                 </label>
                                 <div class="input-group input-group-custom">
-                                    <span class="input-group-text">
+                                    <span class="input-group-text" style="font-size: 0.85rem;">
                                         <i class="fas fa-graduation-cap"></i>
                                     </span>
                                     <input type="text" class="form-control form-control-custom" id="index_number_verify"
                                            name="index_number" placeholder="12345678902/2025" required
-                                           pattern="\d{11}/\d{4}">
+                                           pattern="\d{11}/\d{4}" style="font-size: 0.85rem;">
                                 </div>
-                                <div class="form-text text-muted mt-1">
+                                <div class="form-text text-muted mt-1" style="font-size: 0.7rem;">
                                     <i class="fas fa-lightbulb me-1"></i>Format: 12345678902/2025 (11 digits/year)
                                 </div>
                             </div>
                         </div>
 
                         <!-- Error Message -->
-                        <div id="verifyError" class="alert alert-danger alert-custom mt-3" role="alert" style="display:none;"></div>
+                        <div id="verifyError" class="alert alert-danger alert-custom mt-3" role="alert" style="display:none; padding: 12px; font-size: 0.85rem;"></div>
 
                         <!-- Loading State -->
                         <div id="verifyLoading" class="text-center mt-4" style="display: none;">
-                            <div class="spinner-border spinner-custom" role="status">
+                            <div class="spinner-border spinner-custom" role="status" style="width: 2rem; height: 2rem;">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
-                            <p class="mt-3 fw-semibold">Verifying your payment credentials...</p>
-                            <div class="progress mt-3" style="height: 6px; border-radius: 10px; overflow: hidden;">
+                            <p class="mt-3 fw-semibold" style="font-size: 0.85rem;">Verifying your payment credentials...</p>
+                            <div class="progress mt-3" style="height: 4px; border-radius: 10px; overflow: hidden;">
                                 <div class="progress-bar progress-bar-striped progress-bar-animated" 
                                      style="width: 100%; background: var(--gradient-red);"></div>
                             </div>
@@ -1913,31 +2474,31 @@
                         <!-- Results Preview -->
                         <div id="verifyPreview" class="mt-4" style="display: none;">
                             <div class="card-custom hover-lift">
-                                <div class="card-header-custom">
-                                    <h6 class="mb-0">
+                                <div class="card-header-custom" style="padding: 12px 16px;">
+                                    <h6 class="mb-0" style="font-size: 0.9rem;">
                                         <i class="fas fa-check-circle me-2"></i>Payment Verified Successfully!
                                     </h6>
                                 </div>
-                                <div class="card-body-custom">
-                                    <div id="previewInfo" class="mb-4"></div>
+                                <div class="card-body-custom" style="padding: 16px;">
+                                    <div id="previewInfo" class="mb-3" style="font-size: 0.85rem;"></div>
                                     
-                                    <div class="mb-4">
-                                        <h6 class="fw-semibold mb-3" style="color: var(--dark-grey);">
+                                    <div class="mb-3">
+                                        <h6 class="fw-semibold mb-2" style="color: var(--dark-grey); font-size: 0.85rem;">
                                             <i class="fas fa-layer-group me-2"></i>Available Course Levels:
                                         </h6>
                                         <div id="courseLevels" class="d-flex flex-wrap gap-2"></div>
                                     </div>
                                     
-                                    <div class="alert alert-info alert-custom">
+                                    <div class="alert alert-info alert-custom" style="padding: 12px; font-size: 0.8rem;">
                                         <i class="fas fa-lightbulb me-2"></i>
                                         You can now explore all courses available for your KCSE results.
                                     </div>
                                     
-                                    <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
-                                        <button type="button" id="showResultsBtn" class="btn btn-yellow-custom">
+                                    <div class="d-flex flex-wrap gap-2 justify-content-end mt-3">
+                                        <button type="button" id="showResultsBtn" class="btn btn-yellow-custom" style="font-size: 0.8rem; padding: 6px 16px;">
                                             <i class="fas fa-graduation-cap me-2"></i>View All Courses
                                         </button>
-                                        <button type="button" id="cancelPreviewBtn" class="btn btn-outline-secondary">
+                                        <button type="button" id="cancelPreviewBtn" class="btn btn-outline-secondary" style="font-size: 0.8rem; padding: 6px 16px;">
                                             Close Preview
                                         </button>
                                     </div>
@@ -1947,10 +2508,10 @@
 
                         <!-- Form Actions -->
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary-custom py-2" id="verifySubmitBtn">
+                            <button type="submit" class="btn btn-primary-custom py-2" id="verifySubmitBtn" style="font-size: 0.85rem;">
                                 <i class="fas fa-search me-2"></i>Verify & View Courses
                             </button>
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="font-size: 0.85rem;">
                                 Cancel
                             </button>
                         </div>
@@ -1970,23 +2531,23 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <h6 class="fw-bold mb-3">Your Privacy Matters</h6>
+                <div class="modal-body" style="font-size: 0.85rem;">
+                    <h6 class="fw-bold mb-3" style="font-size: 0.95rem;">Your Privacy Matters</h6>
                     <p>We are committed to protecting your personal information and ensuring your data security. Our privacy policy outlines how we collect, use, and protect your information when you use our services.</p>
                     
-                    <h6 class="fw-bold mt-4 mb-3">Information We Collect</h6>
-                    <ul class="list-unstyled">
+                    <h6 class="fw-bold mt-4 mb-3" style="font-size: 0.9rem;">Information We Collect</h6>
+                    <ul class="list-unstyled" style="font-size: 0.85rem;">
                         <li><i class="fas fa-check-circle text-success me-2"></i>KCSE index numbers for course matching</li>
                         <li><i class="fas fa-check-circle text-success me-2"></i>Payment verification details</li>
                         <li><i class="fas fa-check-circle text-success me-2"></i>Course preferences and selections</li>
                         <li><i class="fas fa-check-circle text-success me-2"></i>Anonymous usage statistics</li>
                     </ul>
                     
-                    <h6 class="fw-bold mt-4 mb-3">Data Protection</h6>
+                    <h6 class="fw-bold mt-4 mb-3" style="font-size: 0.9rem;">Data Protection</h6>
                     <p>All sensitive data is encrypted and stored securely. We never share your personal information with third parties without your explicit consent.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal" style="font-size: 0.85rem;">Close</button>
                 </div>
             </div>
         </div>
@@ -2002,26 +2563,26 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <h6 class="fw-bold mb-3">Terms of Service Agreement</h6>
+                <div class="modal-body" style="font-size: 0.85rem;">
+                    <h6 class="fw-bold mb-3" style="font-size: 0.95rem;">Terms of Service Agreement</h6>
                     <p>By using KUCCPS Course Checker, you agree to these terms of service. Please read them carefully.</p>
                     
-                    <h6 class="fw-bold mt-4 mb-3">Service Description</h6>
+                    <h6 class="fw-bold mt-4 mb-3" style="font-size: 0.9rem;">Service Description</h6>
                     <p>KUCCPS Course Checker is a platform that helps students find suitable courses based on their KCSE results. We provide course recommendations, institution information, and application guidance.</p>
                     
-                    <h6 class="fw-bold mt-4 mb-3">User Responsibilities</h6>
-                    <ul class="list-unstyled">
+                    <h6 class="fw-bold mt-4 mb-3" style="font-size: 0.9rem;">User Responsibilities</h6>
+                    <ul class="list-unstyled" style="font-size: 0.85rem;">
                         <li><i class="fas fa-check-circle text-primary me-2"></i>Provide accurate KCSE information</li>
                         <li><i class="fas fa-check-circle text-primary me-2"></i>Use the service for legitimate educational purposes</li>
                         <li><i class="fas fa-check-circle text-primary me-2"></i>Respect the intellectual property rights</li>
                         <li><i class="fas fa-check-circle text-primary me-2"></i>Comply with all applicable laws and regulations</li>
                     </ul>
                     
-                    <h6 class="fw-bold mt-4 mb-3">Disclaimer</h6>
+                    <h6 class="fw-bold mt-4 mb-3" style="font-size: 0.9rem;">Disclaimer</h6>
                     <p>While we strive to provide accurate information, course availability and requirements may change. Always verify information with the respective institutions before making decisions.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal" style="font-size: 0.85rem;">Close</button>
                 </div>
             </div>
         </div>
@@ -2040,18 +2601,18 @@
                 <div class="modal-body">
                     <div id="newsContent">
                         <div class="text-center py-5">
-                            <div class="spinner-border spinner-custom" role="status">
+                            <div class="spinner-border spinner-custom" role="status" style="width: 2rem; height: 2rem;">
                                 <span class="visually-hidden">Loading news...</span>
                             </div>
-                            <p class="mt-3">Loading latest news...</p>
+                            <p class="mt-3" style="font-size: 0.85rem;">Loading latest news...</p>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary-custom" onclick="redirectToHome()">
+                    <button type="button" class="btn btn-primary-custom" onclick="redirectToHome()" style="font-size: 0.85rem;">
                         <i class="fas fa-home me-2"></i>Go to Home
                     </button>
-                    <a href="/news" class="btn btn-outline-secondary">View All News</a>
+                    <a href="/news" class="btn btn-outline-secondary" style="font-size: 0.85rem;">View All News</a>
                 </div>
             </div>
         </div>
@@ -2073,11 +2634,144 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal" style="font-size: 0.85rem;">Close</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Payment Issue Help Modal -->
+    <div class="modal fade modal-custom" id="paymentIssueModal" tabindex="-1" aria-labelledby="paymentIssueModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentIssueModalLabel">
+                        <i class="fas fa-headset me-2"></i>Experienced Payment Issues?
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info alert-custom mb-4" style="padding: 15px;">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-info-circle me-3 mt-1" style="font-size: 1rem;"></i>
+                            <div>
+                                <h6 class="alert-heading" style="font-size: 0.9rem;">Having trouble with your payment?</h6>
+                                <p class="mb-0" style="font-size: 0.85rem;">Submit your details below and we'll help you resolve the issue within 24 hours.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="paymentIssueForm">
+                        <div class="mb-3">
+                            <label for="issue_email" class="form-label-custom" style="font-size: 0.85rem;">
+                                <i class="fas fa-envelope me-2"></i>Email Address *
+                            </label>
+                            <input type="email" class="form-control form-control-custom" id="issue_email" 
+                                   name="email" required placeholder="yourname@gmail.com" style="font-size: 0.85rem;">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="issue_index" class="form-label-custom" style="font-size: 0.85rem;">
+                                <i class="fas fa-id-card me-2"></i>KCSE Index Number *
+                            </label>
+                            <input type="text" class="form-control form-control-custom" id="issue_index" 
+                                   name="index_number" required placeholder="12345678901/2024"
+                                   pattern="\d{11}/\d{4}" style="font-size: 0.85rem;">
+                            <div class="form-text text-muted" style="font-size: 0.7rem;">Format: 12345678901/2024 (11 digits/year)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="issue_receipt" class="form-label-custom" style="font-size: 0.85rem;">
+                                <i class="fas fa-receipt me-2"></i>M-Pesa Receipt Number *
+                            </label>
+                            <input type="text" class="form-control form-control-custom" id="issue_receipt" 
+                                   name="mpesa_receipt" required placeholder="RJ89A5LBQ2" maxlength="10"
+                                   pattern="[A-Z0-9]{10}" style="font-size: 0.85rem;">
+                            <div class="form-text text-muted" style="font-size: 0.7rem;">10-character code from your M-Pesa message</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="issue_screenshot" class="form-label-custom" style="font-size: 0.85rem;">
+                                <i class="fas fa-camera me-2"></i>Screenshot of M-Pesa Message *
+                            </label>
+                            <input type="file" class="form-control form-control-custom" id="issue_screenshot" 
+                                   accept="image/*" required style="font-size: 0.85rem;">
+                            <div class="form-text text-muted" style="font-size: 0.7rem;">Upload a screenshot of the M-Pesa confirmation message</div>
+                        </div>
+                        
+                        <div id="issueError" class="alert alert-danger" style="display: none; font-size: 0.85rem;"></div>
+                        <div id="issueSuccess" class="alert alert-success" style="display: none; font-size: 0.85rem;"></div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary-custom" id="submitIssueBtn" style="font-size: 0.85rem;">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Issue
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="font-size: 0.85rem;">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+        FLOATING BUTTONS - SMALL RAISED DESIGN
+    ============================================= -->
+    <!-- Left Side - Payment Help Button (Red gradient with pulse) -->
+    <div class="floating-btn-container left">
+        <button class="floating-btn payment-help-btn" id="paymentHelpBtn" data-bs-toggle="modal" data-bs-target="#paymentIssueModal" aria-label="Payment Support">
+            <i class="fas fa-question-circle"></i>
+            <span>Payment Issues? Get Help</span>
+            <span class="floating-btn-tooltip">Having trouble with payment? Click here!</span>
+        </button>
+    </div>
+
+    <!-- Right Side - AI Chat Button (Green gradient with info badge) -->
+    <div class="floating-btn-container right">
+        <button class="floating-btn ai-chat-btn" id="aiChatBtn" aria-label="AI Course Assistant">
+            <i class="fas fa-robot"></i>
+            <span>AI Assistant</span>
+            <span class="ai-info-badge"><i class="fas fa-info-circle"></i> Powered by AI</span>
+            <span class="floating-btn-tooltip">Ask me anything about courses!</span>
+        </button>
+    </div>
+
+    <!-- ============================================
+        STICKY BOTTOM NAVIGATION - FIXED MOBILE VIEW (NO HELP BUTTON)
+        Buttons: Home, Degree, Diploma, Certificate, KMTC, Artisan, TTC
+    ============================================= -->
+    <nav class="sticky-bottom-nav" id="stickyBottomNav">
+        <a href="/" class="nav-item-bottom" data-nav="home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <button class="nav-item-bottom" data-nav="degree" onclick="showDegreeModal()">
+            <i class="fas fa-university"></i>
+            <span>Degree</span>
+        </button>
+        <a href="/diploma" class="nav-item-bottom" data-nav="diploma">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Diploma</span>
+        </a>
+        <a href="/certificate" class="nav-item-bottom" data-nav="certificate">
+            <i class="fas fa-certificate"></i>
+            <span>Certificate</span>
+        </a>
+        <a href="/kmtc" class="nav-item-bottom" data-nav="kmtc">
+            <i class="fas fa-hospital"></i>
+            <span>KMTC</span>
+        </a>
+        <a href="/artisan" class="nav-item-bottom" data-nav="artisan">
+            <i class="fas fa-tools"></i>
+            <span>Artisan</span>
+        </a>
+        <a href="/ttc" class="nav-item-bottom" data-nav="ttc">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>TTC</span>
+        </a>
+    </nav>
 
     <!-- ============================================
         JAVASCRIPT LIBRARIES
@@ -2106,17 +2800,29 @@
             const overlay = document.getElementById('overlay');
             const menuToggle = document.querySelector('.menu-toggle');
             
-            const isShowing = sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
+            if (!sidebar || !overlay) return;
             
-            menuToggle.innerHTML = isShowing ? 
-                '<i class="fas fa-times"></i>' : 
-                '<i class="fas fa-bars"></i>';
-            menuToggle.setAttribute('aria-expanded', isShowing);
-            menuToggle.setAttribute('aria-label', 
-                isShowing ? 'Close navigation menu' : 'Open navigation menu');
+            const isShowing = sidebar.classList.contains('show');
             
-            document.body.style.overflow = isShowing ? 'hidden' : '';
+            if (isShowing) {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+                if (menuToggle) {
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                    menuToggle.setAttribute('aria-expanded', 'false');
+                    menuToggle.setAttribute('aria-label', 'Open navigation menu');
+                }
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('show');
+                overlay.classList.add('show');
+                if (menuToggle) {
+                    menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+                    menuToggle.setAttribute('aria-expanded', 'true');
+                    menuToggle.setAttribute('aria-label', 'Close navigation menu');
+                }
+                document.body.style.overflow = 'hidden';
+            }
         }
         
         /**
@@ -2132,6 +2838,14 @@
             }, 300);
         }
         
+        /**
+         * Show Degree Modal (Cluster Points Warning)
+         */
+        function showDegreeModal() {
+            const clusterWarningModal = new bootstrap.Modal(document.getElementById('clusterWarningModal'));
+            clusterWarningModal.show();
+        }
+        
         // ============================================
         // DOM CONTENT LOADED
         // ============================================
@@ -2144,14 +2858,92 @@
             initNewsSystem();
             initScrollEffects();
             initModals();
+            initFloatingButtons();
+            initStickyBottomNav();
+            
+            // Add Escape key handler
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const sidebar = document.getElementById('sidebarMenu');
+                    if (sidebar && sidebar.classList.contains('show')) {
+                        toggleSidebar();
+                    }
+                }
+            });
         });
+        
+        // ============================================
+        // FLOATING BUTTONS FUNCTIONALITY
+        // ============================================
+        function initFloatingButtons() {
+            const aiChatBtn = document.getElementById('aiChatBtn');
+            
+            if (aiChatBtn) {
+                // Click handler for AI chat
+                aiChatBtn.addEventListener('click', function() {
+                    window.location.href = '/chat';
+                });
+                
+                // Add keyboard accessibility
+                aiChatBtn.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        window.location.href = '/chat';
+                    }
+                });
+            }
+            
+            const paymentHelpBtn = document.getElementById('paymentHelpBtn');
+            if (paymentHelpBtn) {
+                // Payment help button already has modal trigger via data-bs-toggle
+                paymentHelpBtn.addEventListener('click', function(e) {
+                    console.log('Payment help button clicked');
+                });
+            }
+        }
+        
+        // ============================================
+        // STICKY BOTTOM NAVIGATION FUNCTIONALITY
+        // ============================================
+        function initStickyBottomNav() {
+            // Set active state based on current page
+            function setActiveNavItem() {
+                const currentPath = window.location.pathname;
+                const navItems = document.querySelectorAll('.nav-item-bottom');
+                
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    const navType = item.getAttribute('data-nav');
+                    
+                    if (navType === 'home' && currentPath === '/') {
+                        item.classList.add('active');
+                    } else if (navType === 'diploma' && currentPath === '/diploma') {
+                        item.classList.add('active');
+                    } else if (navType === 'certificate' && currentPath === '/certificate') {
+                        item.classList.add('active');
+                    } else if (navType === 'kmtc' && currentPath === '/kmtc') {
+                        item.classList.add('active');
+                    } else if (navType === 'artisan' && currentPath === '/artisan') {
+                        item.classList.add('active');
+                    } else if (navType === 'ttc' && currentPath === '/ttc') {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            
+            // Set initial active state
+            setActiveNavItem();
+        }
         
         // ============================================
         // NAVIGATION FUNCTIONS
         // ============================================
         function initNavigation() {
             // Close sidebar when clicking on overlay
-            document.getElementById('overlay').addEventListener('click', toggleSidebar);
+            const overlay = document.getElementById('overlay');
+            if (overlay) {
+                overlay.addEventListener('click', toggleSidebar);
+            }
             
             // Auto-close sidebar when clicking on sidebar links on mobile
             document.querySelectorAll('.sidebar-link').forEach(link => {
@@ -2286,7 +3078,6 @@
                     submitBtn.disabled = false;
                     
                     if (data.success) {
-                        // Payment verified successfully
                         handleVerificationSuccess(data, mpesaReceipt, indexNumber);
                     } else {
                         showError(data.error || 'Verification failed. Please check your details and try again.');
@@ -2325,12 +3116,9 @@
         }
         
         function handleVerificationSuccess(data, mpesaReceipt, indexNumber) {
-            // Store verification in sessionStorage
             sessionStorage.setItem('userVerified', 'true');
             sessionStorage.setItem('userIndex', indexNumber);
             sessionStorage.setItem('userReceipt', mpesaReceipt);
-            
-            // Show preview with course information
             showPreview(data, indexNumber, mpesaReceipt);
         }
         
@@ -2341,7 +3129,6 @@
             const showResultsBtn = document.getElementById('showResultsBtn');
             const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
             
-            // Update preview information
             previewInfo.innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
@@ -2358,19 +3145,14 @@
                 </div>
             `;
             
-            // Update course levels
             updateCourseLevels(data.levels);
-            
-            // Update show results button
             setupResultsButton(data, indexNumber, mpesaReceipt);
             
-            // Cancel preview button
             cancelPreviewBtn.onclick = function() {
                 previewDiv.style.display = 'none';
                 document.getElementById('verifyPaymentForm').reset();
             };
             
-            // Show preview
             previewDiv.style.display = 'block';
             previewDiv.scrollIntoView({ behavior: 'smooth' });
         }
@@ -2383,12 +3165,12 @@
                 levels.forEach(level => {
                     const badge = document.createElement('span');
                     badge.className = 'badge px-3 py-2 me-2 mb-2';
-                    badge.style.cssText = 'background: var(--gradient-red)!important; font-size: 0.9rem; color: white;';
+                    badge.style.cssText = 'background: var(--gradient-red)!important; font-size: 0.75rem; color: white; border-radius: 20px;';
                     badge.innerHTML = `<i class="fas fa-university me-1"></i>${level.toUpperCase()}`;
                     courseLevels.appendChild(badge);
                 });
             } else {
-                courseLevels.innerHTML = '<p class="text-muted">No course levels found</p>';
+                courseLevels.innerHTML = '<p class="text-muted" style="font-size: 0.8rem;">No course levels found</p>';
             }
         }
         
@@ -2434,26 +3216,22 @@
             const sidebarInstallLink = document.getElementById('sidebarInstallLink');
             const navInstallBtn = document.getElementById('navInstallBtn');
             
-            // Check if app is already installed
             function isAppInstalled() {
                 return window.matchMedia('(display-mode: standalone)').matches || 
                        window.navigator.standalone === true ||
                        document.referrer.includes('android-app://');
             }
             
-            // Detect iOS
             function isIOS() {
                 return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             }
             
-            // Detect Android Chrome
             function isAndroidChrome() {
                 return /Android/.test(navigator.userAgent) && 
                        /Chrome/.test(navigator.userAgent) && 
                        !/Edge/.test(navigator.userAgent);
             }
             
-            // Show PWA installation prompt
             window.showPwaInstallPrompt = function() {
                 if (isAppInstalled()) {
                     alert('App is already installed!');
@@ -2469,26 +3247,21 @@
                 }
             };
             
-            // Handle beforeinstallprompt event
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
                 
-                // Show install buttons
                 if (navInstallItem) navInstallItem.style.display = 'block';
                 if (sidebarInstallLink) sidebarInstallLink.style.display = 'block';
                 
-                // Clear deferredPrompt after 30 seconds
                 setTimeout(() => {
                     deferredPrompt = null;
                 }, 30000);
             });
             
-            // Install button click handler
             if (installBtn) {
                 installBtn.addEventListener('click', async () => {
                     if (deferredPrompt) {
-                        // Android Chrome
                         try {
                             deferredPrompt.prompt();
                             const { outcome } = await deferredPrompt.userChoice;
@@ -2496,8 +3269,6 @@
                             if (outcome === 'accepted') {
                                 console.log('User accepted the install prompt');
                                 hideInstallButtons();
-                            } else {
-                                console.log('User dismissed the install prompt');
                             }
                         } catch (error) {
                             console.error('Installation error:', error);
@@ -2506,11 +3277,9 @@
                         deferredPrompt = null;
                         installPrompt.style.display = 'none';
                     } else if (isIOS()) {
-                        // iOS - show guide
                         installPrompt.style.display = 'none';
                         iosGuide.style.display = 'flex';
                     } else {
-                        // Fallback
                         alert('To install the app:\n1. Open your browser menu\n2. Tap "Add to Home Screen"\n3. Follow the prompts');
                         installPrompt.style.display = 'none';
                     }
@@ -2519,7 +3288,6 @@
                 });
             }
             
-            // Dismiss button handlers
             if (dismissBtn) {
                 dismissBtn.addEventListener('click', () => {
                     installPrompt.style.display = 'none';
@@ -2541,7 +3309,6 @@
                 });
             }
             
-            // Close iOS guide when clicking outside
             if (iosGuide) {
                 iosGuide.addEventListener('click', (e) => {
                     if (e.target === iosGuide) {
@@ -2551,7 +3318,6 @@
                 });
             }
             
-            // Nav install button handler
             if (navInstallBtn) {
                 navInstallBtn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -2559,7 +3325,6 @@
                 });
             }
             
-            // Hide install buttons if app is installed
             function hideInstallButtons() {
                 if (navInstallItem) navInstallItem.style.display = 'none';
                 if (sidebarInstallLink) sidebarInstallLink.style.display = 'none';
@@ -2567,13 +3332,11 @@
                 if (pwaCtaCard) pwaCtaCard.style.display = 'none';
             }
             
-            // Save dismissal to localStorage
             function savePwaDismissal() {
                 localStorage.setItem('pwaPromptDismissed', 'true');
                 localStorage.setItem('pwaPromptDismissedTime', Date.now().toString());
             }
             
-            // Show install prompt after delay
             function showInstallPromptAfterDelay() {
                 if (isAppInstalled()) {
                     document.body.classList.add('standalone-mode');
@@ -2599,17 +3362,14 @@
                 }, 5000);
             }
             
-            // Show prompt
             setTimeout(showInstallPromptAfterDelay, 1000);
             
-            // Register service worker
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('/service-worker.js')
                         .then(registration => {
                             console.log('ServiceWorker registered with scope:', registration.scope);
                             
-                            // Check for updates
                             registration.onupdatefound = () => {
                                 const newWorker = registration.installing;
                                 newWorker.onstatechange = () => {
@@ -2633,8 +3393,10 @@
             loadLatestNews();
             setInterval(checkForNewNews, 10 * 60 * 1000);
             
-            // News modal close handler
-            document.getElementById('closeNewsModalBtn').addEventListener('click', redirectToHome);
+            const closeNewsModalBtn = document.getElementById('closeNewsModalBtn');
+            if (closeNewsModalBtn) {
+                closeNewsModalBtn.addEventListener('click', redirectToHome);
+            }
         }
         
         async function loadLatestNews() {
@@ -2683,26 +3445,24 @@
                                     ${article.image_url ? `
                                     <div class="flex-shrink-0 me-3">
                                         <img src="${article.image_url}" alt="${article.title}" 
-     width="400" height="300"
-     class="img-fluid rounded" style="max-height: 300px; object-fit: cover;"
-     loading="lazy">
-                                             onerror="this.src='https://via.placeholder.com/80x60?text=News'">
+                                             class="img-fluid rounded" style="max-width: 70px; max-height: 55px; object-fit: cover;"
+                                             onerror="this.src='https://via.placeholder.com/70x55?text=News'">
                                     </div>
                                     ` : ''}
                                     
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-1">
+                                        <h6 class="mb-1" style="font-size: 0.9rem;">
                                             ${article.is_featured ? '<i class="fas fa-star text-warning me-1"></i>' : ''}
                                             ${article.title}
                                         </h6>
-                                        <p class="text-muted mb-2 small">
-                                            ${article.excerpt || article.content.substring(0, 80) + '...'}
+                                        <p class="text-muted mb-2 small" style="font-size: 0.75rem;">
+                                            ${article.excerpt || article.content.substring(0, 70) + '...'}
                                         </p>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
+                                            <small class="text-muted" style="font-size: 0.7rem;">
                                                 <i class="fas fa-calendar-alt me-1"></i>${formattedDate}
                                             </small>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="viewNewsArticle('${article._id}')">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewNewsArticle('${article._id}')" style="font-size: 0.7rem; padding: 4px 8px;">
                                                 Read <i class="fas fa-arrow-right ms-1"></i>
                                             </button>
                                         </div>
@@ -2717,8 +3477,8 @@
                     newsContent.innerHTML = `
                         <div class="text-center py-4">
                             <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
-                            <h5>No News Available</h5>
-                            <p class="text-muted">Check back later for updates.</p>
+                            <h5 style="font-size: 1rem;">No News Available</h5>
+                            <p class="text-muted" style="font-size: 0.85rem;">Check back later for updates.</p>
                         </div>
                     `;
                 }
@@ -2727,8 +3487,8 @@
                 document.getElementById('newsContent').innerHTML = `
                     <div class="text-center py-4">
                         <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-                        <h5>Error Loading News</h5>
-                        <p class="text-muted">Please try again later.</p>
+                        <h5 style="font-size: 1rem;">Error Loading News</h5>
+                        <p class="text-muted" style="font-size: 0.85rem;">Please try again later.</p>
                     </div>
                 `;
             }
@@ -2795,14 +3555,11 @@
                 if (data.success) {
                     const article = data.news.find(a => a._id === articleId);
                     if (article) {
-                        // Increment view count
                         await fetch(`/api/news/increment-views/${articleId}`, { method: 'POST' });
                         
-                        // Mark as read
                         localStorage.setItem('lastSeenNewsId', articleId);
                         decreaseUnreadCount();
                         
-                        // Show article
                         showArticleModal(article);
                     }
                 }
@@ -2841,30 +3598,30 @@
                     ${article.image_url ? `
                     <div class="text-center mb-4">
                         <img src="${article.image_url}" alt="${article.title}" 
-                             class="img-fluid rounded" style="max-height: 300px; object-fit: cover;"
-                             onerror="this.src='https://via.placeholder.com/800x300?text=KUCCPS+News'">
+                             class="img-fluid rounded" style="max-height: 250px; object-fit: cover;"
+                             onerror="this.src='https://via.placeholder.com/800x250?text=KUCCPS+News'">
                     </div>
                     ` : ''}
                     
-                    <h4 class="mb-3">${article.title}</h4>
+                    <h4 class="mb-3" style="font-size: 1.2rem;">${article.title}</h4>
                     
                     <div class="d-flex align-items-center mb-4">
-                        <span class="badge bg-light text-dark me-3">
+                        <span class="badge bg-light text-dark me-3" style="font-size: 0.7rem;">
                             <i class="fas fa-calendar-alt me-1"></i>${formattedDate}
                         </span>
                         ${article.is_featured ? `
-                        <span class="badge bg-warning">
+                        <span class="badge bg-warning" style="font-size: 0.7rem;">
                             <i class="fas fa-star me-1"></i>Featured
                         </span>
                         ` : ''}
                     </div>
                     
-                    <div class="article-content mb-4" style="line-height: 1.7;">
+                    <div class="article-content mb-4" style="line-height: 1.6; font-size: 0.9rem;">
                         ${article.content.replace(/\n/g, '<br>')}
                     </div>
                     
                     ${article.external_link ? `
-                    <div class="alert alert-info">
+                    <div class="alert alert-info" style="font-size: 0.85rem;">
                         <i class="fas fa-link me-2"></i>
                         <strong>Source:</strong>
                         <a href="${article.external_link}" target="_blank" class="alert-link ms-2" rel="noopener noreferrer">
@@ -2881,7 +3638,6 @@
                 <i class="fas fa-newspaper me-2"></i>${article.title.substring(0, 30)}...
             `;
             
-            // Close news modal if open
             const newsModal = bootstrap.Modal.getInstance(document.getElementById('newsModal'));
             if (newsModal) {
                 newsModal.hide();
@@ -2894,176 +3650,185 @@
         // MODAL INITIALIZATION
         // ============================================
         function initModals() {
-            // Initialize tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
             
-            // Mark all news as read when news modal is opened
-            document.getElementById('newsModal').addEventListener('shown.bs.modal', function() {
-                const latestNewsId = localStorage.getItem('latestNewsId');
-                if (latestNewsId) {
-                    localStorage.setItem('lastSeenNewsId', latestNewsId);
-                    localStorage.setItem('unreadNewsCount', '0');
-                    
-                    const newsBadgeCount = document.getElementById('newsBadgeCount');
-                    if (newsBadgeCount) {
-                        newsBadgeCount.textContent = '0';
+            const newsModal = document.getElementById('newsModal');
+            if (newsModal) {
+                newsModal.addEventListener('shown.bs.modal', function() {
+                    const latestNewsId = localStorage.getItem('latestNewsId');
+                    if (latestNewsId) {
+                        localStorage.setItem('lastSeenNewsId', latestNewsId);
+                        localStorage.setItem('unreadNewsCount', '0');
+                        
+                        const newsBadgeCount = document.getElementById('newsBadgeCount');
+                        if (newsBadgeCount) {
+                            newsBadgeCount.textContent = '0';
+                        }
+                        
+                        const newsBellBtn = document.getElementById('newsBellBtn');
+                        if (newsBellBtn) {
+                            newsBellBtn.classList.remove('pulse');
+                        }
                     }
-                    
-                    const newsBellBtn = document.getElementById('newsBellBtn');
-                    if (newsBellBtn) {
-                        newsBellBtn.classList.remove('pulse');
-                    }
-                }
-            });
-        }
-    </script>
-
-    <!-- ============================================
-        FLOATING CHAT BUTTON
-    ============================================= -->
-    <div class="floating-chat-btn" id="floatingChatBtn" title="Chat with AI Assistant" aria-label="Open AI Course Assistant">
-        <i class="fas fa-robot"></i>
-        <span class="chat-tooltip">Ask AI Assistant</span>
-    </div>
-
-    <style>
-        /* Floating Chat Button (now green) */
-        .floating-chat-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(32, 201, 151, 0.15);
-            transition: all var(--transition-base);
-            z-index: 1050;
-            border: 3px solid #19692c;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .floating-chat-btn:hover {
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 15px 35px rgba(25, 105, 44, 0.35);
-            background: linear-gradient(135deg, #19692c 0%, #1e7f4f 100%);
-        }
-
-        .floating-chat-btn:active {
-            transform: scale(0.95);
-        }
-
-        .chat-tooltip {
-            position: absolute;
-            right: 75px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--dark-grey);
-            color: var(--white);
-            padding: 8px 12px;
-            border-radius: var(--radius-md);
-            font-size: 0.85rem;
-            font-weight: 500;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all var(--transition-fast);
-            pointer-events: none;
-        }
-
-        .chat-tooltip::after {
-            content: '';
-            position: absolute;
-            left: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            border: 6px solid transparent;
-            border-left-color: var(--dark-grey);
-        }
-
-        .floating-chat-btn:hover .chat-tooltip {
-            opacity: 1;
-            visibility: visible;
-            right: 80px;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* Hide on chat page */
-        .chat-page .floating-chat-btn {
-            display: none !important;
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            .floating-chat-btn {
-                bottom: 20px;
-                right: 20px;
-                width: 55px;
-                height: 55px;
-                font-size: 1.3rem;
-            }
-
-            .chat-tooltip {
-                display: none; /* Hide tooltip on mobile for cleaner look */
-            }
-        }
-
-        /* Pulse animation for attention */
-        .floating-chat-btn.pulse-attention {
-            animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(32, 201, 151, 0.65); }
-            70% { box-shadow: 0 0 0 10px rgba(32, 201, 151, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(32, 201, 151, 0); }
-        }
-    </style>
-
-    <script>
-        // Floating Chat Button Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const floatingChatBtn = document.getElementById('floatingChatBtn');
-
-            if (floatingChatBtn) {
-                // Add pulse animation after 5 seconds to draw attention
-                setTimeout(() => {
-                    floatingChatBtn.classList.add('pulse-attention');
-                }, 5000);
-
-                // Remove pulse after 10 seconds
-                setTimeout(() => {
-                    floatingChatBtn.classList.remove('pulse-attention');
-                }, 15000);
-
-                // Click handler
-                floatingChatBtn.addEventListener('click', function() {
-                    // Navigate to chat page
-                    window.location.href = '/chat';
                 });
-
-                // Add keyboard accessibility
-                floatingChatBtn.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        window.location.href = '/chat';
+            }
+        }
+        
+        // ============================================
+        // PAYMENT ISSUE FORM HANDLER
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentIssueForm = document.getElementById('paymentIssueForm');
+            
+            if (paymentIssueForm) {
+                paymentIssueForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const email = document.getElementById('issue_email').value.trim();
+                    const indexNumber = document.getElementById('issue_index').value.trim();
+                    const receipt = document.getElementById('issue_receipt').value.trim().toUpperCase();
+                    const screenshotFile = document.getElementById('issue_screenshot').files[0];
+                    
+                    const errorDiv = document.getElementById('issueError');
+                    const successDiv = document.getElementById('issueSuccess');
+                    const submitBtn = document.getElementById('submitIssueBtn');
+                    
+                    // Reset displays
+                    errorDiv.style.display = 'none';
+                    successDiv.style.display = 'none';
+                    errorDiv.innerHTML = '';
+                    successDiv.innerHTML = '';
+                    
+                    // Validate email
+                    if (!email) {
+                        showIssueError('Please enter your email address');
+                        return;
                     }
+                    
+                    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                        showIssueError('Please enter a valid email address');
+                        return;
+                    }
+                    
+                    // Validate index number
+                    if (!indexNumber) {
+                        showIssueError('Please enter your KCSE index number');
+                        return;
+                    }
+                    
+                    if (!/^\d{11}\/\d{4}$/.test(indexNumber)) {
+                        showIssueError('Invalid index number format. Use: 12345678901/2024');
+                        return;
+                    }
+                    
+                    // Validate receipt
+                    if (!receipt) {
+                        showIssueError('Please enter your M-Pesa receipt number');
+                        return;
+                    }
+                    
+                    if (!/^[A-Z0-9]{10}$/.test(receipt)) {
+                        showIssueError('Invalid M-Pesa receipt format. Must be 10 characters (e.g., RJ89A5LBQ2)');
+                        return;
+                    }
+                    
+                    // Validate screenshot is selected
+                    if (!screenshotFile) {
+                        showIssueError('Please upload a screenshot of your M-Pesa confirmation message. This helps us verify your payment quickly.');
+                        const screenshotInput = document.getElementById('issue_screenshot');
+                        screenshotInput.style.borderColor = '#dc3545';
+                        screenshotInput.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+                        setTimeout(() => {
+                            screenshotInput.style.borderColor = '';
+                            screenshotInput.style.backgroundColor = '';
+                        }, 3000);
+                        return;
+                    }
+                    
+                    // Validate file size (max 5MB)
+                    const maxSize = 5 * 1024 * 1024;
+                    if (screenshotFile.size > maxSize) {
+                        showIssueError('Screenshot file is too large. Please upload an image smaller than 5MB.');
+                        return;
+                    }
+                    
+                    // Validate file type
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                    if (!allowedTypes.includes(screenshotFile.type)) {
+                        showIssueError('Please upload a valid image file (JPEG, PNG, or WebP)');
+                        return;
+                    }
+                    
+                    // Prepare form data
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    formData.append('index_number', indexNumber);
+                    formData.append('mpesa_receipt', receipt);
+                    
+                    // Convert screenshot to base64
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        formData.append('screenshot', e.target.result);
+                        await submitIssue(formData, submitBtn, errorDiv, successDiv);
+                    };
+                    reader.readAsDataURL(screenshotFile);
                 });
             }
         });
+        
+        async function submitIssue(formData, submitBtn, errorDiv, successDiv) {
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/submit-payment-issue', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    successDiv.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        ${data.message || 'Your issue has been submitted successfully!'}
+                        <div class="mt-2">
+                            <small>You can try again after ${data.wait_time || 6} hours.</small>
+                        </div>
+                    `;
+                    successDiv.style.display = 'block';
+                    
+                    document.getElementById('paymentIssueForm').reset();
+                    
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('paymentIssueModal'));
+                        if (modal) modal.hide();
+                    }, 3000);
+                } else {
+                    showIssueError(data.error || 'Failed to submit issue. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showIssueError('Network error. Please check your connection and try again.');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+        
+        function showIssueError(message) {
+            const errorDiv = document.getElementById('issueError');
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
     </script>
 </body>
 </html>
