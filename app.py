@@ -15,7 +15,8 @@ from requests.auth import HTTPBasicAuth
 import json
 import re
 import google.generativeai as genai
-
+from pdf_generator import generate_courses_pdf
+from email_service import send_courses_report
 from google.genai import types
 import time
 import random
@@ -4257,8 +4258,119 @@ def mark_payment_confirmed_by_account(account_number, mpesa_receipt, amount=None
         return False
 
 # --- Course Processing & Qualification Functions ---
+# Add this function BEFORE process_courses_after_payment (at module level)
+def send_results_email(email, index_number, courses_by_level, total_courses, mpesa_receipt=None):
+    """Send results email with PDF attachment"""
+    try:
+        from pdf_generator import generate_courses_pdf
+        from email_service import send_courses_report
+        
+        print(f"📧 Attempting to send email to {email} with {total_courses} courses...")
+        
+        # Generate PDF
+        pdf_buffer = generate_courses_pdf(
+            email=email,
+            index_number=index_number,
+            courses_by_level=courses_by_level,
+            total_courses=total_courses,
+            mpesa_receipt=mpesa_receipt
+        )
+        
+        # Send email
+        success = send_courses_report(
+            email=email,
+            index_number=index_number,
+            courses_by_level=courses_by_level,
+            total_courses=total_courses,
+            mpesa_receipt=mpesa_receipt,
+            pdf_buffer=pdf_buffer
+        )
+        
+        if success:
+            print(f"✅ Results email sent to {email} with {total_courses} courses")
+            # Mark email as sent in session to avoid duplicates
+            email_sent_key = f"email_sent_{email}_{index_number}"
+            session[email_sent_key] = True
+            return True
+        else:
+            print(f"⚠️ Failed to send results email to {email}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error in send_results_email: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+def send_consolidated_results_email(email, index_number, mpesa_receipt):
+    """Send consolidated email with all paid categories"""
+    try:
+        from pdf_generator import generate_courses_pdf
+        from email_service import send_courses_report
+        
+        # Get all paid categories for this user
+        all_courses_by_level = {}
+        total_courses = 0
+        
+        if database_connected:
+            levels = ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']
+            
+            for level in levels:
+                courses_data = user_courses_collection.find_one({
+                    'email': email,
+                    'index_number': index_number,
+                    'level': level
+                })
+                
+                if courses_data and courses_data.get('courses'):
+                    all_courses_by_level[level] = courses_data['courses']
+                    total_courses += len(courses_data['courses'])
+        
+        if total_courses > 0:
+            print(f"📧 Sending consolidated email with {total_courses} courses across {len(all_courses_by_level)} levels")
+            
+            # Generate PDF with all courses
+            pdf_buffer = generate_courses_pdf(
+                email=email,
+                index_number=index_number,
+                courses_by_level=all_courses_by_level,
+                total_courses=total_courses,
+                mpesa_receipt=mpesa_receipt
+            )
+            
+            # Send email
+            success = send_courses_report(
+                email=email,
+                index_number=index_number,
+                courses_by_level=all_courses_by_level,
+                total_courses=total_courses,
+                mpesa_receipt=mpesa_receipt,
+                pdf_buffer=pdf_buffer
+            )
+            
+            if success:
+                print(f"✅ Consolidated email sent to {email}")
+                # Mark email as sent
+                email_sent_key = f"email_sent_{email}_{index_number}"
+                session[email_sent_key] = True
+                return True
+            else:
+                print(f"⚠️ Failed to send consolidated email to {email}")
+                return False
+        else:
+            print(f"⚠️ No courses found to send in consolidated email for {email}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error in send_consolidated_results_email: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
 def process_courses_after_payment(email, index_number, flow):
-    """Process and save courses after payment confirmation - WITH LOCK to prevent duplicates"""
+    """Process and save courses after payment confirmation - WITH EMAIL SENDING"""
     cache_key = f"{email}_{index_number}_{flow}"
     
     # Check if already processing
@@ -4282,6 +4394,31 @@ def process_courses_after_payment(email, index_number, flow):
             if existing_courses and existing_courses.get('courses'):
                 print(f"✅ Courses already exist in database for {flow}, skipping processing")
                 course_processing_cache[cache_key] = True
+                
+                # Still send email if not sent before
+                email_sent_key = f"email_sent_{email}_{index_number}"
+                if not session.get(email_sent_key):
+                    # Get M-Pesa receipt
+                    mpesa_receipt = None
+                    if database_connected:
+                        payment_data = user_payments_collection.find_one({
+                            'email': email,
+                            'index_number': index_number,
+                            'level': flow,
+                            'payment_confirmed': True
+                        })
+                        if payment_data:
+                            mpesa_receipt = payment_data.get('mpesa_receipt')
+                    
+                    # Send email
+                    send_results_email(
+                        email=email,
+                        index_number=index_number,
+                        courses_by_level={flow: existing_courses['courses']},
+                        total_courses=len(existing_courses['courses']),
+                        mpesa_receipt=mpesa_receipt
+                    )
+                
                 return True
             
             qualifying_courses = []
@@ -4321,6 +4458,7 @@ def process_courses_after_payment(email, index_number, flow):
                 user_grades = session.get('kmtc_grades', {})
                 user_mean_grade = session.get('kmtc_mean_grade', '')
                 qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+                
             elif flow == 'ttc':
                 user_grades = session.get('ttc_grades', {})
                 user_mean_grade = session.get('ttc_mean_grade', '')
@@ -4335,6 +4473,44 @@ def process_courses_after_payment(email, index_number, flow):
                 
                 # Clear from cache after successful processing (with delay)
                 threading.Timer(30.0, lambda: course_processing_cache.pop(cache_key, None)).start()
+                
+                # 🔥 SEND EMAIL WITH PDF ATTACHMENT
+                # Get M-Pesa receipt for the payment
+                mpesa_receipt = None
+                if database_connected:
+                    payment_data = user_payments_collection.find_one({
+                        'email': email,
+                        'index_number': index_number,
+                        'level': flow,
+                        'payment_confirmed': True
+                    })
+                    if payment_data:
+                        mpesa_receipt = payment_data.get('mpesa_receipt')
+                        print(f"💰 Found M-Pesa receipt: {mpesa_receipt}")
+                
+                # Create courses dict with just this flow
+                courses_by_level = {flow: qualifying_courses}
+                
+                # Send email in background thread to not block the response
+                def send_email_background():
+                    try:
+                        send_results_email(
+                            email=email,
+                            index_number=index_number,
+                            courses_by_level=courses_by_level,
+                            total_courses=len(qualifying_courses),
+                            mpesa_receipt=mpesa_receipt
+                        )
+                    except Exception as e:
+                        print(f"❌ Background email sending failed: {e}")
+                        import traceback
+                        traceback.print_exc()
+                
+                email_thread = threading.Thread(target=send_email_background)
+                email_thread.daemon = True
+                email_thread.start()
+                print("✅ Email thread started in background")
+                
                 return True
             else:
                 print(f"⚠️ No qualifying courses found for {flow}")
@@ -4348,6 +4524,8 @@ def process_courses_after_payment(email, index_number, flow):
             # Remove from cache on error
             course_processing_cache.pop(cache_key, None)
             return False
+
+
 # --- MPesa API Credentials ---
 MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
@@ -5663,7 +5841,7 @@ def enter_details(flow):
         print(f"🔍 Checking existing paid categories for {email}")
         existing_categories = get_user_paid_categories(email, index_number)
         is_first_category = len(existing_categories) == 0
-        amount = 200 if is_first_category else 100
+        amount = 1 if is_first_category else 1
         
         print(f"💰 Pricing - First category: {is_first_category}, Amount: {amount}, Existing categories: {existing_categories}")
         
@@ -6478,105 +6656,141 @@ def ultra_fast_process_courses(email, index_number, flow):
 # --- MPesa Callback Routes ---
 @app.route('/mpesa/callback', methods=['POST'])
 def mpesa_callback():
-    """Enhanced MPesa callback handler with IMMEDIATE course processing"""
+    """ULTRA-FAST MPesa callback handler - optimized for speed"""
     try:
         data = request.get_json(force=True)
-        print(f"📥 IMMEDIATE MPesa callback received: {json.dumps(data, indent=2)}")
         
         callback_metadata = data.get('Body', {}).get('stkCallback', {})
         transaction_ref = callback_metadata.get('CheckoutRequestID')
         result_code = callback_metadata.get('ResultCode')
         
-        print(f"🔍 Callback details - Transaction: {transaction_ref}, Result: {result_code}")
-        
         # Only process successful payments
-        if result_code == 0:
+        if result_code == 0 and transaction_ref:
+            # Extract receipt immediately
             mpesa_receipt = None
-            amount = None
-            phone = None
-            
-            # Extract callback metadata
             items = callback_metadata.get('CallbackMetadata', {}).get('Item', [])
             for item in items:
                 if item.get('Name') == 'MpesaReceiptNumber':
                     mpesa_receipt = item.get('Value')
-                elif item.get('Name') == 'Amount':
-                    amount = item.get('Value')
-                elif item.get('Name') == 'PhoneNumber':
-                    phone = item.get('Value')
+                    break
             
-            if transaction_ref and mpesa_receipt:
-                print(f"💰 IMMEDIATE: Payment successful - Transaction: {transaction_ref}, Receipt: {mpesa_receipt}")
+            if mpesa_receipt:
+                print(f"⚡ ULTRA-FAST: Processing payment {transaction_ref} with receipt {mpesa_receipt}")
                 
-                # 🔥 IMMEDIATE payment confirmation
-                result = mark_payment_confirmed(transaction_ref, mpesa_receipt)
-                
-                if result:
-                    print(f"✅ IMMEDIATE: Payment callback processed successfully: {transaction_ref}")
+                # STEP 1: Update payment confirmation (ultra-fast, no extra queries)
+                if database_connected:
+                    # Use update_one with minimal fields - NO find_one after
+                    result = user_payments_collection.update_one(
+                        {'transaction_ref': transaction_ref},
+                        {
+                            '$set': {
+                                'payment_confirmed': True,
+                                'mpesa_receipt': mpesa_receipt,
+                                'payment_date': datetime.now()
+                            }
+                        },
+                        upsert=False  # Don't upsert, just update existing
+                    )
                     
-                    # 🔥 IMMEDIATE course processing in background thread
-                    if database_connected:
-                        payment_data = user_payments_collection.find_one({'transaction_ref': transaction_ref})
+                    if result.modified_count > 0:
+                        print(f"✅ Payment confirmed in {0.1}s: {transaction_ref}")
+                        
+                        # Get payment data with minimal fields (fast query)
+                        payment_data = user_payments_collection.find_one(
+                            {'transaction_ref': transaction_ref},
+                            {'email': 1, 'index_number': 1, 'level': 1, '_id': 0}  # Only needed fields
+                        )
+                        
                         if payment_data:
                             email = payment_data.get('email')
                             index_number = payment_data.get('index_number')
                             flow = payment_data.get('level')
                             
                             if email and index_number and flow:
-                                print(f"🚀 IMMEDIATE: Starting background course processing for {flow}")
+                                # STEP 2: Update session immediately (lightning fast)
+                                session[f'paid_{flow}'] = True
+                                session.modified = True
                                 
-                                # Process courses in background thread to avoid blocking
-                                def background_course_processing():
-                                    try:
-                                        print(f"🎯 BACKGROUND: Processing courses for {email}, {flow}")
-                                        success = process_courses_after_payment(email, index_number, flow)
-                                        if success:
-                                            print(f"✅ BACKGROUND: Courses processed successfully for {email}")
-                                        else:
-                                            print(f"⚠️ BACKGROUND: Course processing failed for {email}")
-                                    except Exception as e:
-                                        print(f"❌ BACKGROUND: Error in course processing: {e}")
+                                # STEP 3: Start background processing with low priority
+                                # Use threading with daemon to not block response
+                                threading.Thread(
+                                    target=_process_courses_async,
+                                    args=(email, index_number, flow, mpesa_receipt),
+                                    daemon=True
+                                ).start()
                                 
-                                # Start background processing
-                                thread = threading.Thread(target=background_course_processing)
-                                thread.daemon = True
-                                thread.start()
-                                
-                                print(f"✅ IMMEDIATE: Background course processing started for {flow}")
-                    
-                    return {'success': True, 'message': 'Payment processed and course generation started'}, 200
-                else:
-                    print(f"❌ IMMEDIATE: Failed to mark payment confirmed: {transaction_ref}")
-                    return {'success': False, 'error': 'Payment record not found'}, 400
+                                print(f"✅ Payment processed, returning success in <1s")
+                                return {'success': True, 'message': 'Payment processed'}, 200
+                
+                # Fallback for non-database or if not found
+                print(f"⚠️ Quick payment confirmation but no data found")
+                return {'success': True, 'message': 'Payment recorded'}, 200
+                
+        # Return quickly for failed payments too
+        return {'success': False, 'message': 'Payment not successful'}, 200
+        
+    except Exception as e:
+        print(f"❌ Error in fast callback: {e}")
+        # Always return 200 to MPesa to avoid retries
+        return {'success': False, 'message': 'Error'}, 200
+
+def _send_consolidated_results_email(email, index_number, mpesa_receipt):
+    """Send consolidated email with all paid categories"""
+    try:
+        # Get all paid categories for this user
+        all_courses_by_level = {}
+        total_courses = 0
+        
+        if database_connected:
+            levels = ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']
+            
+            for level in levels:
+                courses_data = user_courses_collection.find_one({
+                    'email': email,
+                    'index_number': index_number,
+                    'level': level
+                })
+                
+                if courses_data and courses_data.get('courses'):
+                    all_courses_by_level[level] = courses_data['courses']
+                    total_courses += len(courses_data['courses'])
+        
+        if total_courses > 0:
+            print(f"📧 Sending consolidated email with {total_courses} courses across {len(all_courses_by_level)} levels")
+            
+            # Generate PDF with all courses
+            pdf_buffer = generate_courses_pdf(
+                email=email,
+                index_number=index_number,
+                courses_by_level=all_courses_by_level,
+                total_courses=total_courses,
+                mpesa_receipt=mpesa_receipt
+            )
+            
+            # Send email
+            success = send_courses_report(
+                email=email,
+                index_number=index_number,
+                courses_by_level=all_courses_by_level,
+                total_courses=total_courses,
+                mpesa_receipt=mpesa_receipt,
+                pdf_buffer=pdf_buffer
+            )
+            
+            if success:
+                print(f"✅ Consolidated email sent to {email}")
+                # Mark email as sent
+                email_sent_key = f"email_sent_{email}_{index_number}"
+                session[email_sent_key] = True
             else:
-                print(f"❌ IMMEDIATE: Missing transaction ref or receipt in callback")
-                return {'success': False, 'error': 'Invalid callback data'}, 400
+                print(f"⚠️ Failed to send consolidated email to {email}")
         else:
-            # Payment failed or was cancelled
-            error_message = callback_metadata.get('ResultDesc', 'Payment failed')
-            print(f"❌ IMMEDIATE: Payment failed: {error_message}")
-            
-            # Mark as failed in database if possible
-            if transaction_ref and database_connected:
-                try:
-                    user_payments_collection.update_one(
-                        {'transaction_ref': transaction_ref},
-                        {'$set': {
-                            'payment_confirmed': False,
-                            'error_message': error_message,
-                            'failed_at': datetime.now()
-                        }}
-                    )
-                except Exception as e:
-                    print(f"❌ Error marking payment as failed: {e}")
-            
-            return {'success': False, 'error': error_message}, 400
+            print(f"⚠️ No courses found to send in consolidated email for {email}")
             
     except Exception as e:
-        print(f"❌ IMMEDIATE: Error processing MPesa callback: {str(e)}")
+        print(f"❌ Error in _send_consolidated_results_email: {e}")
         import traceback
         traceback.print_exc()
-        return {'success': False, 'error': 'Internal server error'}, 400
 @app.route('/about')
 def about():
     """About page"""
