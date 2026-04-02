@@ -1,0 +1,19 @@
+# koyeb.yaml
+name: kuccps-courses-checker
+region: fra  # Frankfurt (closest to Kenya)
+scale:
+  min: 1  # Keep at least one instance running
+  max: 3
+env:
+  - key: FLASK_ENV
+    value: production
+  - key: WEB_CONCURRENCY
+    value: "2"
+health_check:
+  path: /health
+  interval: 10s
+  timeout: 5s
+  initial_delay: 30s
+ports:
+  - port: 8080
+    protocol: http

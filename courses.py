@@ -1,14 +1,14 @@
 # --- Course Management Functions ---
-from flask import session
+from flask import session, has_request_context
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 from bson import ObjectId
 import os
 from dotenv import load_dotenv
 import logging
-import os
 import json
 import traceback
+import atexit
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -62,7 +62,11 @@ def verify_courses_consistency(email, index_number, level):
     logger.info(f"Verifying course consistency for {email}, {index_number}, {level}")
     
     session_key = f'{level}_courses_{index_number}'
-    session_data = session.get(session_key)
+    
+    # Only access session if we're in a request context
+    session_data = None
+    if has_request_context():
+        session_data = session.get(session_key)
     
     if not database_connected:
         logger.warning("Database not connected, cannot verify consistency")
@@ -82,26 +86,21 @@ def verify_courses_consistency(email, index_number, level):
         db_courses = db_data['courses']
         db_count = len(db_courses)
         
-        if session_data and 'courses' in session_data:
+        if session_data and 'courses' in session_data and has_request_context():
             session_courses = session_data['courses']
             session_count = len(session_courses)
             
             if session_count != db_count:
                 logger.warning(f"⚠️ Course count mismatch - Session: {session_count}, DB: {db_count}")
-                # Force session update from database
-                # NOTE: Overwriting the per-level session key here to restore DB state into session.
-                # This intentionally writes the '{level}_courses_{index_number}' key used across
-                # the app. Be aware that session values can later be read and used as inputs to
-                # regenerate courses; if session-derived values are incomplete, that may cause
-                # smaller course lists to be computed and (if saved) overwrite DB records.
-                # We update session here deliberately to keep UI in sync with DB.
-                session[session_key] = {
-                    'courses': db_courses,
-                    'courses_count': db_count,
-                    'last_db_fetch': datetime.now().isoformat(),
-                    'from_db': True
-                }
-                logger.info("✅ Session updated from database")
+                # Only update session if we're in request context
+                if has_request_context():
+                    session[session_key] = {
+                        'courses': db_courses,
+                        'courses_count': db_count,
+                        'last_db_fetch': datetime.now().isoformat(),
+                        'from_db': True
+                    }
+                    logger.info("✅ Session updated from database")
                 return True
         
         return True
@@ -120,7 +119,6 @@ def cleanup_database():
 initialize_database()
 
 # Register cleanup on program exit
-import atexit
 atexit.register(cleanup_database)
 
 def get_user_courses(email, index_number, level, force_refresh=False):
@@ -204,24 +202,22 @@ def get_user_courses(email, index_number, level, force_refresh=False):
                     except Exception as me:
                         logger.error(f"❌ Failed to mark DB record for review: {me}", exc_info=True)
                 
-                # Only update session with verified database data
-                # NOTE: Writing verified DB courses into session cache.
-                # This writes the '{level}_courses_{index_number}' session key.
-                # This is safe because data here is validated/verified from DB.
-                session[session_key] = {
-                    'courses': valid_courses,
-                    'courses_count': len(valid_courses),
-                    'last_db_fetch': datetime.now().isoformat(),
-                    'from_db': True
-                }
+                # Only update session if we're in a request context
+                if has_request_context():
+                    session[session_key] = {
+                        'courses': valid_courses,
+                        'courses_count': len(valid_courses),
+                        'last_db_fetch': datetime.now().isoformat(),
+                        'from_db': True
+                    }
                 
                 return valid_courses
                 
         except Exception as e:
             logger.error(f"❌ Error getting courses from database: {str(e)}", exc_info=True)
     
-    # Only use session data if database is unavailable AND not forcing refresh
-    if not force_refresh:
+    # Only use session data if we're in a request context and database is unavailable
+    if has_request_context() and not force_refresh:
         session_data = session.get(session_key)
         if session_data and session_data.get('courses'):
             courses = session_data['courses']
@@ -292,7 +288,6 @@ def save_user_courses(email, index_number, level, courses, update_session=True):
                 'last_validated': datetime.now()
             }
             
-            # Use update_one with upsert to prevent duplicates
             # Instrumentation: log caller and sizes before updating DB
             try:
                 stack = ''.join(traceback.format_stack(limit=6))
@@ -322,8 +317,8 @@ def save_user_courses(email, index_number, level, courses, update_session=True):
             if saved_data and len(saved_data.get('courses', [])) == len(valid_courses):
                 logger.info("✅ Database save verified")
                 
-                if update_session:
-                    # Update session with verified database data
+                # Only update session if we're in a request context AND update_session is True
+                if update_session and has_request_context():
                     session[f'{level}_courses_{index_number}'] = {
                         'courses': valid_courses,
                         'courses_count': len(valid_courses),
@@ -339,11 +334,8 @@ def save_user_courses(email, index_number, level, courses, update_session=True):
         except Exception as e:
             logger.error(f"❌ Error saving courses to database: {str(e)}", exc_info=True)
             
-            # Only fallback to session if database save completely fails
-            if update_session:
-                # NOTE: Error fallback - saving validated courses to session when DB save fails.
-                # This is a last-resort cache; prefer to surface/handle DB errors instead of
-                # relying on session persistence.
+            # Only fallback to session if we're in a request context AND database save fails
+            if update_session and has_request_context():
                 session[f'{level}_courses_{index_number}'] = {
                     'courses': valid_courses,
                     'courses_count': len(valid_courses),
@@ -351,13 +343,13 @@ def save_user_courses(email, index_number, level, courses, update_session=True):
                     'from_db': False,
                     'error': str(e)
                 }
+                logger.warning(f"⚠️ Saved to session as fallback (database error)")
+            else:
+                logger.error(f"❌ Database save failed and no request context - courses not saved anywhere!")
             return False
     
-    # If no database connection, save to session as last resort
-    if update_session:
-        # NOTE: No-database case: persist courses to session as a last-resort cache.
-        # This writes the '{level}_courses_{index_number}' key. Keep this transient
-        # and prefer DB writes when connectivity is restored.
+    # If no database connection, save to session as last resort (only in request context)
+    if update_session and has_request_context():
         session[f'{level}_courses_{index_number}'] = {
             'courses': valid_courses,
             'courses_count': len(valid_courses),
@@ -365,5 +357,19 @@ def save_user_courses(email, index_number, level, courses, update_session=True):
             'from_db': False
         }
         logger.warning(f"⚠️ Saved {len(valid_courses)} courses to session (database unavailable)")
+        return True
+    else:
+        logger.error(f"❌ No database connection and no request context - cannot save courses!")
+        return False
+
+def clear_user_courses_session(email, index_number, level):
+    """Clear user courses from session (does not affect database)"""
+    session_key = f'{level}_courses_{index_number}'
     
-    return True
+    if has_request_context() and session_key in session:
+        session.pop(session_key, None)
+        logger.info(f"✅ Cleared session courses for {level}")
+        return True
+    
+    logger.warning(f"⚠️ Could not clear session courses for {level} - no request context or key not found")
+    return False

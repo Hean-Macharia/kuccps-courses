@@ -1,6 +1,6 @@
 import os
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_caching import Cache
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response, Response
 from pymongo import MongoClient
@@ -17,15 +17,17 @@ import re
 import google.generativeai as genai
 from pdf_generator import generate_courses_pdf
 from email_service import send_courses_report
+
 from google.genai import types
 import time
 import random
 import hashlib
 import logging
 import threading
-from datetime import timedelta
 import gzip
 from io import BytesIO
+from queue import Queue
+
 
 
 # --- Configuration and Setup ---
@@ -56,26 +58,49 @@ app.config.update(
     SESSION_REFRESH_EACH_REQUEST=True,
     PREFERRED_URL_SCHEME='https'
 )
-
+# Try to import redis, but don't fail if not available
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    print("⚠️ redis module not installed, using simple cache")
+# Configure cache - use Redis if available, fall back to simple for development
+# Configure cache - use Redis if available, fall back to simple for development
 # Configure cache - use Redis if available, fall back to simple for development
 REDIS_URL = os.getenv('REDIS_URL')
-if REDIS_URL:
+if REDIS_URL and REDIS_AVAILABLE:
+    try:
+        # Test Redis connection
+        test_redis = redis.from_url(REDIS_URL)
+        test_redis.ping()
+        
+        cache_config = {
+            'CACHE_TYPE': 'RedisCache',
+            'CACHE_REDIS_URL': REDIS_URL,
+            'CACHE_DEFAULT_TIMEOUT': 300,
+            'CACHE_KEY_PREFIX': 'kuccps_'
+        }
+        print("✅ Redis cache enabled and connected")
+    except Exception as e:
+        print(f"⚠️ Redis connection failed: {e}, falling back to simple cache")
+        cache_config = {
+            'CACHE_TYPE': 'simple',
+            'CACHE_DEFAULT_TIMEOUT': 300
+        }
+elif REDIS_URL and not REDIS_AVAILABLE:
+    print("⚠️ REDIS_URL set but redis module not installed. Install with: pip install redis")
     cache_config = {
-        'CACHE_TYPE': 'RedisCache',
-        'CACHE_REDIS_URL': REDIS_URL,
-        'CACHE_DEFAULT_TIMEOUT': 300,
-        'CACHE_KEY_PREFIX': 'kuccps_'
+        'CACHE_TYPE': 'simple',
+        'CACHE_DEFAULT_TIMEOUT': 300
     }
-    print("✅ Redis cache enabled")
 else:
     cache_config = {
         'CACHE_TYPE': 'simple',
         'CACHE_DEFAULT_TIMEOUT': 300
     }
     print("⚠️ Redis not available, using in-memory cache (not recommended for production)")
-
 cache = Cache(app, config=cache_config)
-
 # ============================================
 # CACHE CLEARING FUNCTIONS
 # ============================================
@@ -744,6 +769,156 @@ course_processing_lock = threading.Lock()
 course_processing_cache = {}  
 register_guides(app) 
 
+course_processing_queue = Queue()
+course_processing_status = {}
+def background_course_processor():
+    """Background thread that processes courses without blocking the response"""
+    while True:
+        try:
+            # Get next job from queue with timeout
+            try:
+                job = course_processing_queue.get(timeout=1)
+            except Exception as queue_error:
+                # This is normal when queue is empty - just continue
+                time.sleep(0.5)
+                continue
+            
+            # Skip if job is None
+            if job is None:
+                course_processing_queue.task_done()
+                continue
+            
+            # Extract job data with safe defaults
+            email = job.get('email')
+            index_number = job.get('index_number')
+            flow = job.get('flow')
+            mpesa_receipt = job.get('mpesa_receipt')
+            
+            # Validate required fields
+            if not email or not index_number or not flow:
+                print(f"⚠️ Invalid job data received: missing required fields")
+                course_processing_queue.task_done()
+                continue
+            
+            cache_key = f"{email}_{index_number}_{flow}"
+            course_processing_status[cache_key] = {'status': 'processing', 'started_at': datetime.now()}
+            
+            print(f"🔄 Background processor starting for {flow}: {email}")
+            start_time = time.time()
+            
+            # Process courses
+            qualifying_courses = []
+            
+            try:
+                # Get user data from job or fetch from database
+                user_grades = job.get('user_grades', {})
+                user_mean_grade = job.get('user_mean_grade')
+                user_cluster_points = job.get('user_cluster_points', {})
+                
+                # If not in job, try database
+                if not user_grades:
+                    user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(email, index_number, flow)
+                
+                # Skip processing if no grades found
+                if not user_grades:
+                    print(f"⚠️ No grades found for {flow}: {email}, marking as failed")
+                    course_processing_status[cache_key] = {
+                        'status': 'failed',
+                        'error': 'No grades available',
+                        'failed_at': datetime.now()
+                    }
+                    course_processing_queue.task_done()
+                    continue
+                
+                if flow == 'degree':
+                    if user_grades and user_cluster_points:
+                        qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
+                        print(f"📚 Found {len(qualifying_courses)} degree courses")
+                
+                elif flow == 'diploma':
+                    if user_grades and user_mean_grade:
+                        qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
+                        print(f"📚 Found {len(qualifying_courses)} diploma courses")
+                
+                elif flow == 'certificate':
+                    if user_grades and user_mean_grade:
+                        qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
+                        print(f"📚 Found {len(qualifying_courses)} certificate courses")
+                
+                elif flow == 'artisan':
+                    if user_grades and user_mean_grade:
+                        qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
+                        print(f"📚 Found {len(qualifying_courses)} artisan courses")
+                
+                elif flow == 'kmtc':
+                    if user_grades and user_mean_grade:
+                        qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+                        print(f"📚 Found {len(qualifying_courses)} KMTC courses")
+                
+                elif flow == 'ttc':
+                    if user_grades and user_mean_grade:
+                        qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+                        print(f"📚 Found {len(qualifying_courses)} TTC courses")
+                
+                # Save to database
+                if qualifying_courses and database_connected:
+                    save_user_courses(email, index_number, flow, qualifying_courses)
+                    print(f"✅ Saved {len(qualifying_courses)} courses for {flow} to database")
+                elif not qualifying_courses:
+                    # Save empty list to indicate processing completed
+                    save_user_courses(email, index_number, flow, [])
+                    print(f"⚠️ No qualifying courses found for {flow}")
+                
+                elapsed = time.time() - start_time
+                print(f"✅ Background processing completed for {flow} in {elapsed:.2f}s")
+                
+                # Update status
+                course_processing_status[cache_key] = {
+                    'status': 'completed',
+                    'courses_count': len(qualifying_courses),
+                    'completed_at': datetime.now(),
+                    'elapsed_seconds': elapsed
+                }
+                
+                # Send email in separate background thread (non-blocking)
+                if qualifying_courses and email and mpesa_receipt:
+                    threading.Thread(
+                        target=send_results_email_background,
+                        args=(email, index_number, flow, qualifying_courses, mpesa_receipt),
+                        daemon=True
+                    ).start()
+                elif qualifying_courses and email:
+                    # Still try to send email without receipt
+                    threading.Thread(
+                        target=send_results_email_background,
+                        args=(email, index_number, flow, qualifying_courses, "MANUAL_ACTIVATION"),
+                        daemon=True
+                    ).start()
+                
+            except Exception as e:
+                print(f"❌ Background processing failed for {flow}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                course_processing_status[cache_key] = {
+                    'status': 'failed',
+                    'error': str(e),
+                    'failed_at': datetime.now()
+                }
+            
+            course_processing_queue.task_done()
+            
+        except Exception as e:
+            # Don't print "Empty" errors as they're normal
+            error_msg = str(e)
+            if "Empty" not in error_msg and "timeout" not in error_msg.lower():
+                print(f"❌ Background processor error: {error_msg}")
+            time.sleep(0.5)
+# Start background processor thread
+background_thread = threading.Thread(target=background_course_processor, daemon=True)
+background_thread.start()
+print("✅ Background course processor started")
+
+
 def save_payment_issue(email, index_number, mpesa_receipt, screenshot_data=None):
     """Save payment issue submitted by user"""
     print(f"💾 Saving payment issue for {email}")
@@ -1379,6 +1554,93 @@ def check_diploma_course_qualification(course, user_grades, user_mean_grade):
 def check_certificate_course_qualification(course, user_grades, user_mean_grade):
     """Check if user qualifies for a specific certificate course based on mean grade and subject requirements"""
     return check_diploma_course_qualification(course, user_grades, user_mean_grade)
+
+def check_artisan_course_qualification(course, user_grades, user_mean_grade):
+    """Check if user qualifies for a specific artisan course"""
+    mean_grade_qualified = True
+    min_mean_grade = course.get('minimum_grade', {}).get('mean_grade')
+    
+    if min_mean_grade:
+        # Artisan courses accept D plain, D-, or E
+        allowed_grades = ['D', 'D-', 'E']
+        if user_mean_grade not in allowed_grades:
+            user_value = GRADE_VALUES.get(user_mean_grade, 0)
+            required_value = GRADE_VALUES.get(min_mean_grade, 0)
+            if user_value < required_value:
+                mean_grade_qualified = False
+    
+    subject_qualified = True
+    requirements = course.get('minimum_subject_requirements', {})
+    
+    if requirements:
+        for subject_key, required_grade in requirements.items():
+            if not meets_requirement(subject_key, required_grade, user_grades):
+                subject_qualified = False
+                break
+    
+    return mean_grade_qualified and subject_qualified
+
+def save_user_grades(email, index_number, level, grades_data, mean_grade=None, cluster_points=None):
+    """Save user grades to database for later processing by background threads"""
+    if not database_connected:
+        return False
+    
+    try:
+        # Create or get grades collection
+        if 'user_grades' not in db_user_data.list_collection_names():
+            grades_collection = db_user_data.create_collection('user_grades')
+        else:
+            grades_collection = db_user_data['user_grades']
+        
+        record = {
+            'email': email,
+            'index_number': index_number,
+            'level': level,
+            'grades': grades_data,
+            'mean_grade': mean_grade,
+            'cluster_points': cluster_points or {},
+            'created_at': datetime.now(),
+            'updated_at': datetime.now()
+        }
+        
+        result = grades_collection.update_one(
+            {'email': email, 'index_number': index_number, 'level': level},
+            {'$set': record},
+            upsert=True
+        )
+        print(f"✅ Grades saved to database for {level}: {email}")
+        return True
+    except Exception as e:
+        print(f"❌ Error saving grades: {str(e)}")
+        return False
+
+
+def get_user_grades_from_db(email, index_number, level):
+    """Retrieve user grades from database for background processing"""
+    if not database_connected:
+        return None, None, None
+    
+    try:
+        if 'user_grades' not in db_user_data.list_collection_names():
+            return None, None, None
+        
+        grades_collection = db_user_data['user_grades']
+        grade_data = grades_collection.find_one({
+            'email': email,
+            'index_number': index_number,
+            'level': level
+        })
+        
+        if grade_data:
+            return (
+                grade_data.get('grades', {}),
+                grade_data.get('mean_grade'),
+                grade_data.get('cluster_points', {})
+            )
+        return None, None, None
+    except Exception as e:
+        print(f"❌ Error retrieving grades: {str(e)}")
+        return None, None
 
 def get_gemini_response(user_message):
     """
@@ -4258,6 +4520,95 @@ def mark_payment_confirmed_by_account(account_number, mpesa_receipt, amount=None
         return False
 
 # --- Course Processing & Qualification Functions ---
+
+
+def send_results_email_background(email, index_number, flow, qualifying_courses, mpesa_receipt):
+    """Send email in background without blocking"""
+    try:
+        from pdf_generator import generate_courses_pdf
+        from email_service import send_courses_report
+        
+        courses_by_level = {flow: qualifying_courses}
+        
+        pdf_buffer = generate_courses_pdf(
+            email=email,
+            index_number=index_number,
+            courses_by_level=courses_by_level,
+            total_courses=len(qualifying_courses),
+            mpesa_receipt=mpesa_receipt
+        )
+        
+        send_courses_report(
+            email=email,
+            index_number=index_number,
+            courses_by_level=courses_by_level,
+            total_courses=len(qualifying_courses),
+            mpesa_receipt=mpesa_receipt,
+            pdf_buffer=pdf_buffer
+        )
+        print(f"📧 Email sent to {email} for {flow}")
+    except Exception as e:
+        print(f"❌ Background email failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+
+def process_courses_async(email, index_number, flow, mpesa_receipt):
+    """Background async course processing (called from callback)"""
+    try:
+        print(f"🔄 Async processing started for {flow}: {email}")
+        
+        # Get grades from database (since session may not be available in background thread)
+        user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(email, index_number, flow)
+        
+        if not user_grades:
+            print(f"⚠️ No grades found in database for {flow}, checking session fallback")
+            # Try to get from session if this is running in request context
+            try:
+                if flow == 'degree':
+                    user_grades = session.get('degree_grades', {})
+                    user_cluster_points = session.get('degree_cluster_points', {})
+                elif flow == 'diploma':
+                    user_grades = session.get('diploma_grades', {})
+                    user_mean_grade = session.get('diploma_mean_grade', '')
+                elif flow == 'certificate':
+                    user_grades = session.get('certificate_grades', {})
+                    user_mean_grade = session.get('certificate_mean_grade', '')
+                elif flow == 'artisan':
+                    user_grades = session.get('artisan_grades', {})
+                    user_mean_grade = session.get('artisan_mean_grade', '')
+                elif flow == 'kmtc':
+                    user_grades = session.get('kmtc_grades', {})
+                    user_mean_grade = session.get('kmtc_mean_grade', '')
+                elif flow == 'ttc':
+                    user_grades = session.get('ttc_grades', {})
+                    user_mean_grade = session.get('ttc_mean_grade', '')
+            except:
+                pass
+        
+        if not user_grades:
+            print(f"❌ No grades available for {flow}, cannot process")
+            return
+        
+        # Queue the job with the retrieved data
+        job_data = {
+            'email': email,
+            'index_number': index_number,
+            'flow': flow,
+            'mpesa_receipt': mpesa_receipt,
+            'user_grades': user_grades,
+            'user_mean_grade': user_mean_grade,
+            'user_cluster_points': user_cluster_points
+        }
+        
+        course_processing_queue.put(job_data)
+        print(f"✅ {flow} queued from async callback")
+        
+    except Exception as e:
+        print(f"❌ Async processing error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
 # Add this function BEFORE process_courses_after_payment (at module level)
 def send_results_email(email, index_number, courses_by_level, total_courses, mpesa_receipt=None):
     """Send results email with PDF attachment"""
@@ -4370,162 +4721,99 @@ def send_consolidated_results_email(email, index_number, mpesa_receipt):
 
 
 def process_courses_after_payment(email, index_number, flow):
-    """Process and save courses after payment confirmation - WITH EMAIL SENDING"""
+    """ULTRA-FAST: Queue courses for background processing and return immediately"""
     cache_key = f"{email}_{index_number}_{flow}"
     
-    # Check if already processing
-    if cache_key in course_processing_cache:
-        print(f"🔄 Course processing already in progress for {cache_key}")
-        return course_processing_cache[cache_key]
+    # Check if already processing or completed
+    if cache_key in course_processing_status:
+        status = course_processing_status[cache_key].get('status') if isinstance(course_processing_status.get(cache_key), dict) else None
+        if status == 'completed':
+            print(f"✅ Courses already processed for {flow}")
+            return True
+        elif status == 'processing':
+            print(f"🔄 Courses already being processed for {flow}")
+            return True
     
-    print(f"🎯 PROCESSING COURSES for {flow} after payment confirmation")
-    
-    with course_processing_lock:
+    # Check if courses already exist in database
+    if database_connected and user_courses_collection is not None:
         try:
-            # Double-check we're not already processing
-            if cache_key in course_processing_cache:
-                return course_processing_cache[cache_key]
-            
-            # Mark as processing
-            course_processing_cache[cache_key] = False
-            
-            # Check if courses already exist in database (prevent re-processing)
-            existing_courses = get_user_courses_data(email, index_number, flow)
+            existing_courses = user_courses_collection.find_one({
+                'email': email,
+                'index_number': index_number,
+                'level': flow
+            })
             if existing_courses and existing_courses.get('courses'):
-                print(f"✅ Courses already exist in database for {flow}, skipping processing")
-                course_processing_cache[cache_key] = True
-                
-                # Still send email if not sent before
-                email_sent_key = f"email_sent_{email}_{index_number}"
-                if not session.get(email_sent_key):
-                    # Get M-Pesa receipt
-                    mpesa_receipt = None
-                    if database_connected:
-                        payment_data = user_payments_collection.find_one({
-                            'email': email,
-                            'index_number': index_number,
-                            'level': flow,
-                            'payment_confirmed': True
-                        })
-                        if payment_data:
-                            mpesa_receipt = payment_data.get('mpesa_receipt')
-                    
-                    # Send email
-                    send_results_email(
-                        email=email,
-                        index_number=index_number,
-                        courses_by_level={flow: existing_courses['courses']},
-                        total_courses=len(existing_courses['courses']),
-                        mpesa_receipt=mpesa_receipt
-                    )
-                
+                print(f"✅ Courses already in database for {flow}")
+                course_processing_status[cache_key] = {
+                    'status': 'completed',
+                    'courses_count': len(existing_courses['courses']),
+                    'completed_at': datetime.now()
+                }
                 return True
-            
-            qualifying_courses = []
-            user_grades = {}
-            user_mean_grade = None
-            user_cluster_points = {}
-            
-            # Get the appropriate data based on flow
-            if flow == 'degree':
-                user_grades = session.get('degree_grades', {})
-                user_cluster_points = session.get('degree_cluster_points', {})
-                
-                if not user_grades or not user_cluster_points:
-                    print(f"⚠️ Missing required grade data for degree")
-                    course_processing_cache[cache_key] = False
-                    return False
-                    
-                print(f"📊 Processing degree with {len(user_grades)} grades and {len(user_cluster_points)} cluster points")
-                qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
-                
-            elif flow == 'diploma':
-                user_grades = session.get('diploma_grades', {})
-                user_mean_grade = session.get('diploma_mean_grade', '')
-                qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'certificate':
-                user_grades = session.get('certificate_grades', {})
-                user_mean_grade = session.get('certificate_mean_grade', '')
-                qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'artisan':
-                user_grades = session.get('artisan_grades', {})
-                user_mean_grade = session.get('artisan_mean_grade', '')
-                qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'kmtc':
-                user_grades = session.get('kmtc_grades', {})
-                user_mean_grade = session.get('kmtc_mean_grade', '')
-                qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'ttc':
-                user_grades = session.get('ttc_grades', {})
-                user_mean_grade = session.get('ttc_mean_grade', '')
-                qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
-            
-            # Save courses to database
-            if qualifying_courses:
-                print(f"💾 Saving {len(qualifying_courses)} courses to database for {flow}")
-                save_user_courses(email, index_number, flow, qualifying_courses)
-                print(f"✅ Processed and saved {len(qualifying_courses)} {flow} courses")
-                course_processing_cache[cache_key] = True
-                
-                # Clear from cache after successful processing (with delay)
-                threading.Timer(30.0, lambda: course_processing_cache.pop(cache_key, None)).start()
-                
-                # 🔥 SEND EMAIL WITH PDF ATTACHMENT
-                # Get M-Pesa receipt for the payment
-                mpesa_receipt = None
-                if database_connected:
-                    payment_data = user_payments_collection.find_one({
-                        'email': email,
-                        'index_number': index_number,
-                        'level': flow,
-                        'payment_confirmed': True
-                    })
-                    if payment_data:
-                        mpesa_receipt = payment_data.get('mpesa_receipt')
-                        print(f"💰 Found M-Pesa receipt: {mpesa_receipt}")
-                
-                # Create courses dict with just this flow
-                courses_by_level = {flow: qualifying_courses}
-                
-                # Send email in background thread to not block the response
-                def send_email_background():
-                    try:
-                        send_results_email(
-                            email=email,
-                            index_number=index_number,
-                            courses_by_level=courses_by_level,
-                            total_courses=len(qualifying_courses),
-                            mpesa_receipt=mpesa_receipt
-                        )
-                    except Exception as e:
-                        print(f"❌ Background email sending failed: {e}")
-                        import traceback
-                        traceback.print_exc()
-                
-                email_thread = threading.Thread(target=send_email_background)
-                email_thread.daemon = True
-                email_thread.start()
-                print("✅ Email thread started in background")
-                
-                return True
-            else:
-                print(f"⚠️ No qualifying courses found for {flow}")
-                course_processing_cache[cache_key] = False
-                return False
-                
         except Exception as e:
-            print(f"❌ Error processing courses after payment: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            # Remove from cache on error
-            course_processing_cache.pop(cache_key, None)
-            return False
-
-
+            print(f"⚠️ Error checking existing courses: {e}")
+    
+    # Get user data for processing
+    job_data = {
+        'email': email,
+        'index_number': index_number,
+        'flow': flow,
+        'mpesa_receipt': None,
+        'user_grades': {},
+        'user_mean_grade': None,
+        'user_cluster_points': {}
+    }
+    
+    # Get grades from database first
+    user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(email, index_number, flow)
+    
+    if user_grades:
+        job_data['user_grades'] = user_grades
+        job_data['user_mean_grade'] = user_mean_grade
+        job_data['user_cluster_points'] = user_cluster_points
+        print(f"📚 Retrieved grades from database for {flow}")
+    else:
+        # Fallback to session data
+        if flow == 'degree':
+            job_data['user_grades'] = session.get('degree_grades', {})
+            job_data['user_cluster_points'] = session.get('degree_cluster_points', {})
+        elif flow == 'diploma':
+            job_data['user_grades'] = session.get('diploma_grades', {})
+            job_data['user_mean_grade'] = session.get('diploma_mean_grade', '')
+        elif flow == 'certificate':
+            job_data['user_grades'] = session.get('certificate_grades', {})
+            job_data['user_mean_grade'] = session.get('certificate_mean_grade', '')
+        elif flow == 'artisan':
+            job_data['user_grades'] = session.get('artisan_grades', {})
+            job_data['user_mean_grade'] = session.get('artisan_mean_grade', '')
+        elif flow == 'kmtc':
+            job_data['user_grades'] = session.get('kmtc_grades', {})
+            job_data['user_mean_grade'] = session.get('kmtc_mean_grade', '')
+        elif flow == 'ttc':
+            job_data['user_grades'] = session.get('ttc_grades', {})
+            job_data['user_mean_grade'] = session.get('ttc_mean_grade', '')
+        print(f"📚 Retrieved grades from session for {flow}")
+    
+    # Get M-Pesa receipt from payment record
+    if database_connected and user_payments_collection is not None:
+        try:
+            payment_data = user_payments_collection.find_one({
+                'email': email,
+                'index_number': index_number,
+                'level': flow,
+                'payment_confirmed': True
+            })
+            if payment_data:
+                job_data['mpesa_receipt'] = payment_data.get('mpesa_receipt')
+        except Exception as e:
+            print(f"⚠️ Error getting receipt: {e}")
+    
+    # Add to processing queue
+    course_processing_queue.put(job_data)
+    course_processing_status[cache_key] = {'status': 'pending', 'queued_at': datetime.now()}
+    
+    print(f"🚀 Queued {flow} for background processing")
+    return True
 # --- MPesa API Credentials ---
 MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
@@ -5876,6 +6164,7 @@ def enter_details(flow):
         traceback.print_exc()
         flash("An error occurred while processing your request", "error")
         return redirect(url_for('enter_details', flow=flow))
+    
 
 @app.route('/debug/session')
 def debug_session():
@@ -5927,13 +6216,6 @@ def admin_activations():
         flash("Error loading activation data", "error")
         return render_template('admin_activations.html', activations=[])
     
-@app.route('/check-payment/<flow>')
-def check_payment(flow):
-    email = session.get('email')
-    index_number = session.get('index_number')
-    user_payment = get_user_payment(email, index_number, flow)
-    paid = bool(user_payment and user_payment.get('payment_confirmed'))
-    return {'paid': paid}
 
 @app.route('/payment/<flow>', methods=['GET', 'POST'])
 def payment(flow):
@@ -6026,7 +6308,7 @@ def payment_wait(flow):
 
 @app.route('/check-courses-ready/<flow>')
 def check_courses_ready(flow):
-    """Check if courses have been processed and are ready to display - SIMPLIFIED"""
+    """Check if courses are ready - ULTRA-FAST with status tracking"""
     email = session.get('email')
     index_number = session.get('index_number')
     
@@ -6038,135 +6320,92 @@ def check_courses_ready(flow):
             'redirect_url': url_for('index')
         })
     
-    print(f"🎯 CHECKING COURSES READY: {flow} for {email}")
-    
-    # 🔥 FIRST: Check database for courses
-    if database_connected:
-        try:
-            courses_data = user_courses_collection.find_one({
-                'email': email,
-                'index_number': index_number,
-                'level': flow
-            })
-            
-            if courses_data and courses_data.get('courses'):
-                course_count = len(courses_data['courses'])
-                print(f"✅ COURSES READY IN DATABASE: Found {course_count} courses for {flow}")
-                
-                # Mark as paid in session
-                session[f'paid_{flow}'] = True
-                session.modified = True
-                
-                return jsonify({
-                    'ready': True,
-                    'courses_count': course_count,
-                    'redirect_url': url_for('show_results', flow=flow),
-                    'message': f'Found {course_count} courses matching your grades!',
-                    'status': 'courses_ready'
-                })
-                
-        except Exception as e:
-            print(f"❌ Error checking database for courses: {str(e)}")
-    
-    # 🔥 SECOND: Check processing status
     cache_key = f"{email}_{index_number}_{flow}"
     
-    if cache_key in course_processing_cache:
-        cache_data = course_processing_cache[cache_key]
-        if isinstance(cache_data, dict):
-            status = cache_data.get('status', 'processing')
+    # Check if courses exist in database (fastest check)
+    if database_connected:
+        try:
+            courses_data = user_courses_collection.find_one(
+                {
+                    'email': email,
+                    'index_number': index_number,
+                    'level': flow
+                },
+                {'courses': 1}  # Only get courses field
+            )
             
-            if status == 'completed':
-                # Courses should now be in database, check again
-                if database_connected:
-                    try:
-                        courses_data = user_courses_collection.find_one({
-                            'email': email,
-                            'index_number': index_number,
-                            'level': flow
-                        })
-                        
-                        if courses_data and courses_data.get('courses'):
-                            course_count = len(courses_data['courses'])
-                            print(f"✅ PROCESSING COMPLETED: {course_count} courses ready for {flow}")
-                            
-                            session[f'paid_{flow}'] = True
-                            session.modified = True
-                            
-                            return jsonify({
-                                'ready': True,
-                                'courses_count': course_count,
-                                'redirect_url': url_for('show_results', flow=flow),
-                                'message': f'Processing complete! Found {course_count} courses.',
-                                'status': 'processing_completed'
-                            })
-                    except Exception as e:
-                        print(f"❌ Error checking database after processing: {e}")
-                
-                # Even if no courses found, processing is complete
-                session[f'paid_{flow}'] = True
-                session.modified = True
-                
-                return jsonify({
-                    'ready': True,
-                    'courses_count': 0,
-                    'redirect_url': url_for('show_results', flow=flow),
-                    'message': 'Processing complete. No qualifying courses found.',
-                    'status': 'processing_completed_no_courses'
-                })
-            
-            elif status == 'processing':
-                print(f"🔄 PROCESSING IN PROGRESS: Courses being generated for {flow}")
-                return jsonify({
-                    'ready': False,
-                    'message': 'Courses are being generated... Please wait a moment.',
-                    'processing': True,
-                    'estimated_time': '30 seconds',
-                    'status': 'processing_in_progress'
-                })
-            
-            elif status == 'failed':
-                error_msg = cache_data.get('error', 'Unknown error')
-                print(f"❌ PROCESSING FAILED: Could not generate courses for {flow}: {error_msg}")
-                return jsonify({
-                    'ready': False,
-                    'message': f'Error generating courses: {error_msg}',
-                    'error': True,
-                    'status': 'processing_failed'
-                })
+            if courses_data and courses_data.get('courses') is not None:
+                course_count = len(courses_data['courses'])
+                if course_count > 0:
+                    print(f"✅ Courses ready in DB: {course_count} for {flow}")
+                    
+                    # Update session
+                    session[f'paid_{flow}'] = True
+                    session.modified = True
+                    
+                    return jsonify({
+                        'ready': True,
+                        'courses_count': course_count,
+                        'redirect_url': url_for('show_results', flow=flow),
+                        'status': 'database_ready'
+                    })
+        except Exception as e:
+            print(f"⚠️ DB check error: {e}")
     
-    # 🔥 THIRD: No processing in cache, check if payment is confirmed
-    if not session.get(f'paid_{flow}'):
-        print(f"❌ PAYMENT NOT CONFIRMED: {flow} payment not confirmed yet")
+    # Check processing status
+    if cache_key in course_processing_status:
+        status_data = course_processing_status[cache_key]
+        status = status_data.get('status')
+        
+        if status == 'completed':
+            return jsonify({
+                'ready': True,
+                'courses_count': status_data.get('courses_count', 0),
+                'redirect_url': url_for('show_results', flow=flow),
+                'status': 'processing_completed'
+            })
+        elif status == 'processing':
+            elapsed = (datetime.now() - status_data.get('started_at', datetime.now())).total_seconds()
+            estimated = max(0, 10 - int(elapsed))
+            return jsonify({
+                'ready': False,
+                'message': f'Processing courses... ({int(elapsed)}s)',
+                'processing': True,
+                'estimated_remaining': estimated,
+                'status': 'processing'
+            })
+        elif status == 'pending':
+            return jsonify({
+                'ready': False,
+                'message': 'Courses queued for processing...',
+                'processing': True,
+                'status': 'queued'
+            })
+        elif status == 'failed':
+            return jsonify({
+                'ready': False,
+                'message': f'Processing failed: {status_data.get("error", "Unknown error")}',
+                'error': True,
+                'status': 'failed'
+            })
+    
+    # Check if payment is confirmed but no courses yet
+    if session.get(f'paid_{flow}'):
+        # Queue processing if not already
+        process_courses_after_payment(email, index_number, flow)
         return jsonify({
             'ready': False,
-            'message': 'Payment not confirmed yet',
-            'should_check_payment': True,
-            'payment_check_url': url_for('check_payment_status', flow=flow),
-            'status': 'waiting_for_payment'
-        })
-    
-    # 🔥 FOURTH: Payment confirmed but no courses yet
-    print(f"⚠️ Payment confirmed but courses not found. Triggering processing...")
-    
-    success = process_courses_after_payment(email, index_number, flow)
-    
-    if success:
-        return jsonify({
-            'ready': False,
-            'message': 'Course processing started... Please wait.',
+            'message': 'Starting course processing...',
             'processing': True,
-            'check_again': True,
-            'check_delay': 2000,
-            'status': 'processing_started'
+            'status': 'starting'
         })
-    else:
-        return jsonify({
-            'ready': False,
-            'message': 'Failed to start course processing.',
-            'error': True,
-            'status': 'processing_start_failed'
-        })
+    
+    # Not ready yet
+    return jsonify({
+        'ready': False,
+        'message': 'Waiting for payment confirmation...',
+        'status': 'waiting_for_payment'
+    })
     
 @app.route('/test-gemini')
 def test_gemini():
@@ -6290,73 +6529,8 @@ def debug_gemini_key():
             'error_type': type(e).__name__,
             'suggestion': 'Check your API key and ensure the new google-genai package is installed'
         }), 500
+
 @app.route('/check-payment-status/<flow>')
-def check_payment_status(flow):
-    """ULTRA-FAST payment status check optimized for frontend polling"""
-    email = session.get('email')
-    index_number = session.get('index_number')
-    
-    if not email or not index_number:
-        return {'paid': False, 'error': 'Session data missing'}
-    
-    # ULTRA-FAST: Check session first (lightning fast)
-    if session.get(f'paid_{flow}'):
-        print(f"⚡ ULTRA-FAST: Payment confirmed via session cache for {flow}")
-        return {
-            'paid': True,
-            'redirect_url': url_for('show_results', flow=flow),
-            'status': 'confirmed',
-            'method': 'session_cache'
-        }
-    
-    # FAST: Quick database check
-    if database_connected:
-        try:
-            # Ultra-fast query with projection
-            payment_data = user_payments_collection.find_one(
-                {
-                    'email': email, 
-                    'index_number': index_number, 
-                    'level': flow,
-                    'payment_confirmed': True
-                },
-                {'_id': 1}  # Only get _id for fastest possible query
-            )
-            
-            if payment_data:
-                print(f"✅ ULTRA-FAST: Payment confirmed in database for {flow}")
-                
-                # Update session for future ultra-fast checks
-                session[f'paid_{flow}'] = True
-                session.modified = True
-                
-                return {
-                    'paid': True,
-                    'redirect_url': url_for('show_results', flow=flow),
-                    'status': 'confirmed',
-                    'method': 'ultra_fast_db'
-                }
-        except Exception as e:
-            print(f"❌ ULTRA-FAST: Database error: {e}")
-    
-    # Also check manual activation as fallback
-    if check_manual_activation(email, index_number, flow):
-        print(f"✅ ULTRA-FAST: Manual activation found for {flow}")
-        session[f'paid_{flow}'] = True
-        session.modified = True
-        return {
-            'paid': True,
-            'redirect_url': url_for('show_results', flow=flow),
-            'status': 'manual_activation',
-            'method': 'manual'
-        }
-    
-    # Payment not confirmed yet
-    return {
-        'paid': False, 
-        'status': 'pending',
-        'message': 'Waiting for payment confirmation...'
-    }
 def check_payment_status(flow):
     """ULTRA-FAST payment status check - optimized for 1-second response"""
     email = session.get('email')
@@ -6626,7 +6800,29 @@ def ultra_fast_process_courses(email, index_number, flow):
             if user_grades and user_mean_grade:
                 qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
         
-        # [Add other flows similarly...]
+        elif flow == 'certificate':
+            user_grades = session.get('certificate_grades', {})
+            user_mean_grade = session.get('certificate_mean_grade', '')
+            if user_grades and user_mean_grade:
+                qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
+        
+        elif flow == 'artisan':
+            user_grades = session.get('artisan_grades', {})
+            user_mean_grade = session.get('artisan_mean_grade', '')
+            if user_grades and user_mean_grade:
+                qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
+        
+        elif flow == 'kmtc':
+            user_grades = session.get('kmtc_grades', {})
+            user_mean_grade = session.get('kmtc_mean_grade', '')
+            if user_grades and user_mean_grade:
+                qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+        
+        elif flow == 'ttc':
+            user_grades = session.get('ttc_grades', {})
+            user_mean_grade = session.get('ttc_mean_grade', '')
+            if user_grades and user_mean_grade:
+                qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
         
         # Save to database if we have courses
         if qualifying_courses:
@@ -6664,6 +6860,8 @@ def mpesa_callback():
         transaction_ref = callback_metadata.get('CheckoutRequestID')
         result_code = callback_metadata.get('ResultCode')
         
+        print(f"📞 M-Pesa callback received: {transaction_ref}, result_code: {result_code}")
+        
         # Only process successful payments
         if result_code == 0 and transaction_ref:
             # Extract receipt immediately
@@ -6674,66 +6872,58 @@ def mpesa_callback():
                     mpesa_receipt = item.get('Value')
                     break
             
-            if mpesa_receipt:
-                print(f"⚡ ULTRA-FAST: Processing payment {transaction_ref} with receipt {mpesa_receipt}")
+            if mpesa_receipt and database_connected:
+                print(f"⚡ Processing payment {transaction_ref} with receipt {mpesa_receipt}")
                 
-                # STEP 1: Update payment confirmation (ultra-fast, no extra queries)
-                if database_connected:
-                    # Use update_one with minimal fields - NO find_one after
-                    result = user_payments_collection.update_one(
+                # Update payment confirmation
+                result = user_payments_collection.update_one(
+                    {'transaction_ref': transaction_ref},
+                    {'$set': {
+                        'payment_confirmed': True,
+                        'mpesa_receipt': mpesa_receipt,
+                        'payment_date': datetime.now()
+                    }}
+                )
+                
+                if result.modified_count > 0:
+                    print(f"✅ Payment confirmed for {transaction_ref}")
+                    
+                    # Get payment data
+                    payment_data = user_payments_collection.find_one(
                         {'transaction_ref': transaction_ref},
-                        {
-                            '$set': {
-                                'payment_confirmed': True,
-                                'mpesa_receipt': mpesa_receipt,
-                                'payment_date': datetime.now()
-                            }
-                        },
-                        upsert=False  # Don't upsert, just update existing
+                        {'email': 1, 'index_number': 1, 'level': 1, '_id': 0}
                     )
                     
-                    if result.modified_count > 0:
-                        print(f"✅ Payment confirmed in {0.1}s: {transaction_ref}")
+                    if payment_data:
+                        email = payment_data.get('email')
+                        index_number = payment_data.get('index_number')
+                        flow = payment_data.get('level')
                         
-                        # Get payment data with minimal fields (fast query)
-                        payment_data = user_payments_collection.find_one(
-                            {'transaction_ref': transaction_ref},
-                            {'email': 1, 'index_number': 1, 'level': 1, '_id': 0}  # Only needed fields
-                        )
-                        
-                        if payment_data:
-                            email = payment_data.get('email')
-                            index_number = payment_data.get('index_number')
-                            flow = payment_data.get('level')
+                        if email and index_number and flow:
+                            print(f"🎯 Processing for {flow}: {email}")
                             
-                            if email and index_number and flow:
-                                # STEP 2: Update session immediately (lightning fast)
+                            # Update session (if available in this thread)
+                            try:
                                 session[f'paid_{flow}'] = True
                                 session.modified = True
-                                
-                                # STEP 3: Start background processing with low priority
-                                # Use threading with daemon to not block response
-                                threading.Thread(
-                                    target=_process_courses_async,
-                                    args=(email, index_number, flow, mpesa_receipt),
-                                    daemon=True
-                                ).start()
-                                
-                                print(f"✅ Payment processed, returning success in <1s")
-                                return {'success': True, 'message': 'Payment processed'}, 200
-                
-                # Fallback for non-database or if not found
-                print(f"⚠️ Quick payment confirmation but no data found")
-                return {'success': True, 'message': 'Payment recorded'}, 200
-                
-        # Return quickly for failed payments too
-        return {'success': False, 'message': 'Payment not successful'}, 200
+                            except Exception as e:
+                                print(f"⚠️ Could not update session: {e}")
+                            
+                            # Queue for background processing
+                            process_courses_after_payment(email, index_number, flow)
+                            
+                            print(f"✅ Payment confirmed and queued for {flow}")
+                else:
+                    print(f"⚠️ No payment record found for {transaction_ref}")
+        
+        # Always return success to M-Pesa
+        return {'ResultCode': 0, 'ResultDesc': 'Accepted'}, 200
         
     except Exception as e:
-        print(f"❌ Error in fast callback: {e}")
-        # Always return 200 to MPesa to avoid retries
-        return {'success': False, 'message': 'Error'}, 200
-
+        print(f"❌ Callback error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {'ResultCode': 0, 'ResultDesc': 'Accepted'}, 200
 def _send_consolidated_results_email(email, index_number, mpesa_receipt):
     """Send consolidated email with all paid categories"""
     try:
@@ -7339,6 +7529,8 @@ def remove_from_basket():
     except Exception as e:
         print(f"❌ Error removing from basket: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
+    
+
 @app.route('/clear-basket', methods=['POST'])
 def clear_basket():
     try:
