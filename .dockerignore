@@ -1,55 +1,29 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+# Ignore dev-only requirements
+requirements-dev.txt
+
+# Ignore virtual environments
 venv/
-env/
-ENV/
-.venv
+.env/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
 
-# Git
+# Ignore logs
+*.log
+
+# Ignore local config
+*.env
+.env.local
+
+# Ignore Git and editor files
 .git/
 .gitignore
-
-# Logs
-*.log
-logs/
-
-# Local database
-*.db
-*.sqlite
-
-# Environment files
-.env
-.env.local
-.env.production
-
-# Testing
-tests/
-.pytest_cache/
-.coverage
-
-# Documentation
-docs/
-README.md
-
-# OS
 .DS_Store
-Thumbs.db
+.vscode/
+.idea/
 
-# Backups
-backups/
-
-# Virtual environment
-lib/
-bin/
-include/
-pyvenv.cfg
+# Ignore test files
+tests/
+*.coverage
