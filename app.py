@@ -778,8 +778,7 @@ def background_course_processor():
             # Get next job from queue with timeout
             try:
                 job = course_processing_queue.get(timeout=1)
-            except Exception as queue_error:
-                # This is normal when queue is empty - just continue
+            except Exception:
                 time.sleep(0.5)
                 continue
             
@@ -810,25 +809,28 @@ def background_course_processor():
             qualifying_courses = []
             
             try:
-                # Get user data from job or fetch from database
-                user_grades = job.get('user_grades', {})
-                user_mean_grade = job.get('user_mean_grade')
-                user_cluster_points = job.get('user_cluster_points', {})
+                # 🔥 CRITICAL FIX: ALWAYS fetch from database first (grades were stored before payment)
+                user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(email, index_number, flow)
                 
-                # If not in job, try database
+                # If not in database, try job data as fallback
                 if not user_grades:
-                    user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(email, index_number, flow)
+                    print(f"⚠️ No grades found in DB for {flow}, checking job data")
+                    user_grades = job.get('user_grades', {})
+                    user_mean_grade = job.get('user_mean_grade')
+                    user_cluster_points = job.get('user_cluster_points', {})
                 
                 # Skip processing if no grades found
                 if not user_grades:
-                    print(f"⚠️ No grades found for {flow}: {email}, marking as failed")
+                    print(f"❌ No grades found for {flow}: {email}, marking as failed")
                     course_processing_status[cache_key] = {
                         'status': 'failed',
-                        'error': 'No grades available',
+                        'error': 'No grades available in database',
                         'failed_at': datetime.now()
                     }
                     course_processing_queue.task_done()
                     continue
+                
+                print(f"✅ Found grades for {flow}: {len(user_grades)} subjects")
                 
                 if flow == 'degree':
                     if user_grades and user_cluster_points:
@@ -868,6 +870,11 @@ def background_course_processor():
                     # Save empty list to indicate processing completed
                     save_user_courses(email, index_number, flow, [])
                     print(f"⚠️ No qualifying courses found for {flow}")
+                else:
+                    # Save to session as fallback
+                    session_key = f'{flow}_courses_{index_number}'
+                    session[session_key] = {'courses': qualifying_courses, 'courses_count': len(qualifying_courses)}
+                    print(f"💾 Saved {len(qualifying_courses)} courses to session for {flow}")
                 
                 elapsed = time.time() - start_time
                 print(f"✅ Background processing completed for {flow} in {elapsed:.2f}s")
@@ -1580,13 +1587,13 @@ def check_artisan_course_qualification(course, user_grades, user_mean_grade):
     
     return mean_grade_qualified and subject_qualified
 
-def save_user_grades(email, index_number, level, grades_data, mean_grade=None, cluster_points=None):
-    """Save user grades to database for later processing by background threads"""
+def save_user_grades_before_payment(email, index_number, flow, grades_data, mean_grade=None, cluster_points=None):
+    """Store grades in database BEFORE payment to ensure background processor can access them"""
     if not database_connected:
         return False
     
     try:
-        # Create or get grades collection
+        # Create grades collection if it doesn't exist
         if 'user_grades' not in db_user_data.list_collection_names():
             grades_collection = db_user_data.create_collection('user_grades')
         else:
@@ -1595,7 +1602,7 @@ def save_user_grades(email, index_number, level, grades_data, mean_grade=None, c
         record = {
             'email': email,
             'index_number': index_number,
-            'level': level,
+            'level': flow,
             'grades': grades_data,
             'mean_grade': mean_grade,
             'cluster_points': cluster_points or {},
@@ -1604,16 +1611,15 @@ def save_user_grades(email, index_number, level, grades_data, mean_grade=None, c
         }
         
         result = grades_collection.update_one(
-            {'email': email, 'index_number': index_number, 'level': level},
+            {'email': email, 'index_number': index_number, 'level': flow},
             {'$set': record},
             upsert=True
         )
-        print(f"✅ Grades saved to database for {level}: {email}")
+        print(f"✅ Grades stored in database BEFORE payment for {flow}: {email}")
         return True
     except Exception as e:
-        print(f"❌ Error saving grades: {str(e)}")
+        print(f"❌ Error storing grades before payment: {str(e)}")
         return False
-
 
 def get_user_grades_from_db(email, index_number, level):
     """Retrieve user grades from database for background processing"""
@@ -1622,6 +1628,7 @@ def get_user_grades_from_db(email, index_number, level):
     
     try:
         if 'user_grades' not in db_user_data.list_collection_names():
+            print(f"⚠️ user_grades collection doesn't exist yet")
             return None, None, None
         
         grades_collection = db_user_data['user_grades']
@@ -1632,15 +1639,18 @@ def get_user_grades_from_db(email, index_number, level):
         })
         
         if grade_data:
+            print(f"✅ Found grades in database for {level}: {email}")
             return (
                 grade_data.get('grades', {}),
                 grade_data.get('mean_grade'),
                 grade_data.get('cluster_points', {})
             )
-        return None, None, None
+        else:
+            print(f"⚠️ No grades found in database for {level}: {email}")
+            return None, None, None
     except Exception as e:
         print(f"❌ Error retrieving grades: {str(e)}")
-        return None, None
+        return None, None, None
 
 def get_gemini_response(user_message):
     """
@@ -6004,6 +6014,33 @@ def enter_details(flow):
             flash("Please enter a valid email address.", "error")
             return redirect(url_for('enter_details', flow=flow))
         
+        # 🔥 CRITICAL: Save grades to database BEFORE payment
+        print(f"💾 Saving grades to database BEFORE payment for {flow}")
+        if flow == 'degree':
+            user_grades = session.get('degree_grades', {})
+            user_cluster_points = session.get('degree_cluster_points', {})
+            save_user_grades_before_payment(email, index_number, flow, user_grades, cluster_points=user_cluster_points)
+        elif flow == 'diploma':
+            user_grades = session.get('diploma_grades', {})
+            user_mean_grade = session.get('diploma_mean_grade', '')
+            save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+        elif flow == 'certificate':
+            user_grades = session.get('certificate_grades', {})
+            user_mean_grade = session.get('certificate_mean_grade', '')
+            save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+        elif flow == 'artisan':
+            user_grades = session.get('artisan_grades', {})
+            user_mean_grade = session.get('artisan_mean_grade', '')
+            save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+        elif flow == 'kmtc':
+            user_grades = session.get('kmtc_grades', {})
+            user_mean_grade = session.get('kmtc_mean_grade', '')
+            save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+        elif flow == 'ttc':
+            user_grades = session.get('ttc_grades', {})
+            user_mean_grade = session.get('ttc_mean_grade', '')
+            save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+        
         # 🔥 Check for manual activation first
         print(f"🔍 Checking manual activation for {email}/{index_number}")
         if check_manual_activation(email, index_number, flow):
@@ -6049,37 +6086,26 @@ def enter_details(flow):
                 if flow == 'degree':
                     user_grades = session.get('degree_grades', {})
                     user_cluster_points = session.get('degree_cluster_points', {})
-                    print(f"📊 Degree grades: {user_grades}, Cluster points: {user_cluster_points}")
                     qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
-                    
                 elif flow == 'diploma':
                     user_grades = session.get('diploma_grades', {})
                     user_mean_grade = session.get('diploma_mean_grade', '')
-                    print(f"📊 Diploma grades: {user_grades}, Mean grade: {user_mean_grade}")
                     qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
-                    
                 elif flow == 'certificate':
                     user_grades = session.get('certificate_grades', {})
                     user_mean_grade = session.get('certificate_mean_grade', '')
-                    print(f"📊 Certificate grades: {user_grades}, Mean grade: {user_mean_grade}")
                     qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
-                    
                 elif flow == 'artisan':
                     user_grades = session.get('artisan_grades', {})
                     user_mean_grade = session.get('artisan_mean_grade', '')
-                    print(f"📊 Artisan grades: {user_grades}, Mean grade: {user_mean_grade}")
                     qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
-
                 elif flow == 'ttc':
                     user_grades = session.get('ttc_grades', {})
                     user_mean_grade = session.get('ttc_mean_grade', '')
-                    print(f"📊 TTC grades: {user_grades}, Mean grade: {user_mean_grade}")
                     qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
-
                 elif flow == 'kmtc':
                     user_grades = session.get('kmtc_grades', {})
                     user_mean_grade = session.get('kmtc_mean_grade', '')
-                    print(f"📊 KMTC grades: {user_grades}, Mean grade: {user_mean_grade}")
                     qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
                 
                 print(f"📚 Found {len(qualifying_courses)} qualifying courses for {flow}")
@@ -6164,8 +6190,6 @@ def enter_details(flow):
         traceback.print_exc()
         flash("An error occurred while processing your request", "error")
         return redirect(url_for('enter_details', flow=flow))
-    
-
 @app.route('/debug/session')
 def debug_session():
     """Debug route to check session status"""
@@ -6255,16 +6279,48 @@ def payment(flow):
 
         # Get the dynamic amount from session
         amount = session.get('payment_amount', 1)
+        email = session.get('email')
+        index_number = session.get('index_number')
         
         print(f"💳 Processing payment for {flow}, amount: {amount}, phone: {phone}")
+        
+        # 🔥 CRITICAL: Force session save and re-save grades before payment
+        session.modified = True
+        session.permanent = True
+        
+        # Re-save grades to ensure they're in database (in case session expires)
+        if email and index_number:
+            print(f"💾 Re-saving grades to database before payment for {flow}")
+            if flow == 'degree':
+                user_grades = session.get('degree_grades', {})
+                user_cluster_points = session.get('degree_cluster_points', {})
+                save_user_grades_before_payment(email, index_number, flow, user_grades, cluster_points=user_cluster_points)
+            elif flow == 'diploma':
+                user_grades = session.get('diploma_grades', {})
+                user_mean_grade = session.get('diploma_mean_grade', '')
+                save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+            elif flow == 'certificate':
+                user_grades = session.get('certificate_grades', {})
+                user_mean_grade = session.get('certificate_mean_grade', '')
+                save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+            elif flow == 'artisan':
+                user_grades = session.get('artisan_grades', {})
+                user_mean_grade = session.get('artisan_mean_grade', '')
+                save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+            elif flow == 'kmtc':
+                user_grades = session.get('kmtc_grades', {})
+                user_mean_grade = session.get('kmtc_mean_grade', '')
+                save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
+            elif flow == 'ttc':
+                user_grades = session.get('ttc_grades', {})
+                user_mean_grade = session.get('ttc_mean_grade', '')
+                save_user_grades_before_payment(email, index_number, flow, user_grades, user_mean_grade)
         
         # 🔥 PASS THE FLOW PARAMETER to initiate_stk_push
         result = initiate_stk_push(phone, amount=amount, flow=flow)
         
         if result.get('ResponseCode') == '0':
             transaction_ref = result.get('CheckoutRequestID')
-            email = session.get('email')
-            index_number = session.get('index_number')
             
             # Note: Payment confirmation is now handled in initiate_stk_push
             # No need to call update_transaction_ref again here
@@ -6279,7 +6335,6 @@ def payment(flow):
 
         error_message = result.get('errorDescription') or result.get('errorMessage') or 'Failed to initiate payment. Try again.'
         return {'success': False, 'error': error_message}, 400
-    
 @app.route('/payment-wait/<flow>')
 def payment_wait(flow):
     """Payment waiting page"""
