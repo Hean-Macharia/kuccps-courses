@@ -6510,7 +6510,7 @@ def enter_details(flow):
         
         existing_categories = get_user_paid_categories_strict(email, index_number)
         is_first_category = len(existing_categories) == 0
-        amount = 1 if is_first_category else 1
+        amount = 200 if is_first_category else 100
         
         # Store ONLY minimal data in session
         session['email'] = email
@@ -7558,6 +7558,7 @@ def mpesa_validation():
 # --- Results Display Routes ---
 @app.route('/results/<flow>')
 def show_results(flow):
+    from bson import ObjectId
     """Display results - SESSION SAFE - courses always from database only"""
     
     print(f"🎯 show_results called for flow: {flow}")
