@@ -94,3 +94,4 @@ zope.interface==8.2
 brevo-python==1.0.0
 reportlab==4.0.9
 PyPDF2==3.0.0
+flask-session

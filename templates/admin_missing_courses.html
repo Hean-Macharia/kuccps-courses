@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missing Courses Report - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .stats-card { border: none; border-radius: 12px; transition: transform 0.2s; }
+        .stats-card:hover { transform: translateY(-3px); }
+        .stats-icon { font-size: 2rem; opacity: 0.5; }
+        .stats-number { font-size: 1.8rem; font-weight: bold; }
+        .level-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .level-degree { background: #3498db; color: white; }
+        .level-diploma { background: #2ecc71; color: white; }
+        .level-certificate { background: #f39c12; color: white; }
+        .level-artisan { background: #9b59b6; color: white; }
+        .level-kmtc { background: #e74c3c; color: white; }
+        .level-ttc { background: #1abc9c; color: white; }
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .status-notified { background: #17a2b8; color: white; }
+        .status-activated { background: #28a745; color: white; }
+        .status-pending { background: #ffc107; color: #333; }
+        .status-sent { background: #6c757d; color: white; }
+        .receipt-code { font-family: monospace; background: #f8f9fa; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .table thead th { background: #f8f9fa; border-bottom: 2px solid #dee2e6; font-size: 0.8rem; text-transform: uppercase; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        .loading-spinner { background: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .toast-notification { position: fixed; bottom: 20px; right: 20px; z-index: 10000; min-width: 300px; }
+        .row-activated { background-color: #d4edda !important; }
+        .row-notified { background-color: #fff3cd !important; }
+        .btn-sm { margin: 2px; }
+        .filter-section { background: white; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        @media (max-width: 768px) { .stats-number { font-size: 1.2rem; } .table-container { overflow-x: auto; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-graduation-cap me-2"></i>KUCCPS Admin
+            </a>
+            <div>
+                <span class="text-white me-3"><i class="fas fa-user-shield me-1"></i>{{ session.get('admin_username', 'Admin') }}</span>
+                <a href="{{ url_for('admin_logout') }}" class="btn btn-sm btn-outline-light">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirmed Payments Without Courses</h2>
+                <p class="text-muted">Payments that were confirmed (M-Pesa receipt captured) but no courses were generated</p>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                </button>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="fas fa-redo-alt me-1"></i>Reload Page
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="stats-number" id="totalCount">---</div>
+                                <small>Total Missing</small>
+                            </div>
+                            <i class="fas fa-database stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="stats-number" id="withGradesCount">---</div>
+                                <small>With Grades</small>
+                            </div>
+                            <i class="fas fa-graduation-cap stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="stats-number" id="notifiedCount">---</div>
+                                <small>Already Notified</small>
+                            </div>
+                            <i class="fas fa-envelope stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card bg-warning text-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="stats-number" id="activatedCount">---</div>
+                                <small>Already Activated</small>
+                            </div>
+                            <i class="fas fa-check-circle stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filter by Status:</label>
+                    <select id="statusFilter" class="form-select form-select-sm" onchange="applyFilters()">
+                        <option value="all">All Records</option>
+                        <option value="pending">Pending Action</option>
+                        <option value="notified">Already Notified</option>
+                        <option value="activated">Already Activated</option>
+                        <option value="with_grades">Has Grades</option>
+                        <option value="without_grades">No Grades</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filter by Level:</label>
+                    <select id="levelFilter" class="form-select form-select-sm" onchange="applyFilters()">
+                        <option value="all">All Levels</option>
+                        <option value="degree">Degree</option>
+                        <option value="diploma">Diploma</option>
+                        <option value="certificate">Certificate</option>
+                        <option value="artisan">Artisan</option>
+                        <option value="kmtc">KMTC</option>
+                        <option value="ttc">TTC</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Search:</label>
+                    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Email or Index..." onkeyup="applyFilters()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">&nbsp;</label>
+                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="clearFilters()">Clear Filters</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch Actions -->
+        <div class="mb-3">
+            <button class="btn btn-success" onclick="batchRegenerateWithGrades()" id="batchRegenerateBtn">
+                <i class="fas fa-sync-alt me-1"></i>Regenerate All (With Grades)
+            </button>
+            <button class="btn btn-info" onclick="notifyAllUsers()" id="batchNotifyBtn">
+                <i class="fas fa-envelope me-1"></i>Notify All Pending
+            </button>
+            <button class="btn btn-warning" onclick="batchActivateAndNotify()" id="batchActivateBtn">
+                <i class="fas fa-magic me-1"></i>Activate & Notify All Pending
+            </button>
+            <button class="btn btn-danger" onclick="batchDeleteAll()" id="batchDeleteBtn">
+                <i class="fas fa-trash me-1"></i>Delete All Processed
+            </button>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Index Number</th>
+                            <th>Email</th>
+                            <th>Level</th>
+                            <th>Receipt</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Grades</th>
+                            <th>Notification</th>
+                            <th>Activation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTable">
+                        <tr><td colspan="10" class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2">Loading...</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="mt-4"></div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2">Processing...</p>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-notification"></div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let allPaymentsData = [];
+        let filteredPaymentsData = [];
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const bgClass = type === 'success' ? 'bg-success' : (type === 'error' ? 'bg-danger' : 'bg-info');
+            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-circle' : 'info-circle');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white ${bgClass} border-0 mb-2`;
+            toast.setAttribute('role', 'alert');
+            toast.style.display = 'block';
+            toast.style.minWidth = '300px';
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-${icon} me-2"></i>${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        function showLoading() { document.getElementById('loadingOverlay').style.display = 'flex'; }
+        function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const levelFilter = document.getElementById('levelFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredPaymentsData = allPaymentsData.filter(p => {
+                // Status filter
+                if (statusFilter === 'pending' && (p.already_notified || p.already_activated)) return false;
+                if (statusFilter === 'notified' && !p.already_notified) return false;
+                if (statusFilter === 'activated' && !p.already_activated) return false;
+                if (statusFilter === 'with_grades' && !p.grades_exist) return false;
+                if (statusFilter === 'without_grades' && p.grades_exist) return false;
+                
+                // Level filter
+                if (levelFilter !== 'all' && p.level !== levelFilter) return false;
+                
+                // Search filter
+                if (searchTerm && !p.email.toLowerCase().includes(searchTerm) && !p.index_number.includes(searchTerm)) return false;
+                
+                return true;
+            });
+            
+            renderTablePage(1);
+        }
+
+        function clearFilters() {
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('levelFilter').value = 'all';
+            document.getElementById('searchInput').value = '';
+            applyFilters();
+        }
+
+        function renderTablePage(page) {
+            currentPage = page;
+            const perPage = 50;
+            const start = (page - 1) * perPage;
+            const paginatedData = filteredPaymentsData.slice(start, start + perPage);
+            const totalFiltered = filteredPaymentsData.length;
+            totalPages = Math.ceil(totalFiltered / perPage);
+            
+            if (paginatedData.length === 0) {
+                document.getElementById('paymentsTable').innerHTML = '<tr><td colspan="10" class="text-center py-5"><i class="fas fa-check-circle fa-3x text-success mb-3"></i><h5>No matching records found!</h5></td></tr>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            paginatedData.forEach(p => {
+                const rowClass = p.already_activated ? 'table-success' : (p.already_notified ? 'table-warning' : '');
+                
+                const gradesBadge = p.grades_exist 
+                    ? '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Available</span>'
+                    : '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Missing</span>';
+                
+                const notifiedBadge = p.already_notified
+                    ? '<span class="badge status-notified"><i class="fas fa-check-circle me-1"></i>Notified</span>'
+                    : '<span class="badge status-pending"><i class="fas fa-clock me-1"></i>Pending</span>';
+                
+                const activatedBadge = p.already_activated
+                    ? '<span class="badge status-activated"><i class="fas fa-check-circle me-1"></i>Activated</span>'
+                    : '<span class="badge status-pending"><i class="fas fa-clock me-1"></i>Pending</span>';
+                
+                html += `<tr id="row-${p.id}" class="${rowClass}">
+                    <td><strong>${escapeHtml(p.index_number)}</strong><br><small class="text-muted">${escapeHtml(p.transaction_ref?.substring(0, 20))}...</small></td>
+                    <td style="max-width:200px;word-break:break-all;">${escapeHtml(p.email)}</td>
+                    <td><span class="level-badge level-${p.level}">${p.level.toUpperCase()}</span></td>
+                    <td><code class="receipt-code">${escapeHtml(p.mpesa_receipt)}</code></td>
+                    <td><small>${escapeHtml(p.created_at)}</small></td>
+                    <td><strong>KSh ${p.payment_amount}</strong></td>
+                    <td>${gradesBadge}</td>
+                    <td>${notifiedBadge}</td>
+                    <td>${activatedBadge}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            ${p.grades_exist && !p.already_activated ? 
+                                `<button class="btn btn-success" onclick="regenerateCourse('${p.id}')" title="Regenerate Courses">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>` : ''
+                            }
+                            ${!p.already_notified ? 
+                                `<button class="btn btn-warning" onclick="notifyUser('${escapeHtml(p.email)}', '${escapeHtml(p.mpesa_receipt)}', '${escapeHtml(p.index_number)}', '${p.level}')" title="Send Email">
+                                    <i class="fas fa-envelope"></i>
+                                </button>` : ''
+                            }
+                            ${!p.already_activated ? 
+                                `<button class="btn btn-info" onclick="activateAndNotify('${p.id}', '${escapeHtml(p.email)}', '${escapeHtml(p.mpesa_receipt)}', '${escapeHtml(p.index_number)}', '${p.level}')" title="Activate User">
+                                    <i class="fas fa-magic"></i>
+                                </button>` : ''
+                            }
+                            <button class="btn btn-danger" onclick="deletePayment('${p.id}')" title="Delete Record">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            
+            document.getElementById('paymentsTable').innerHTML = html;
+            renderPagination(currentPage, totalPages);
+        }
+
+        function renderPagination(page, total) {
+            const container = document.getElementById('pagination');
+            if (total <= 1) { container.innerHTML = ''; return; }
+            let html = '<nav><ul class="pagination justify-content-center">';
+            if (page > 1) html += `<li class="page-item"><a class="page-link" href="#" onclick="renderTablePage(${page-1}); return false;">« Prev</a></li>`;
+            for (let i = Math.max(1, page-2); i <= Math.min(total, page+2); i++) {
+                html += `<li class="page-item ${i === page ? 'active' : ''}"><a class="page-link" href="#" onclick="renderTablePage(${i}); return false;">${i}</a></li>`;
+            }
+            if (page < total) html += `<li class="page-item"><a class="page-link" href="#" onclick="renderTablePage(${page+1}); return false;">Next »</a></li>`;
+            html += '</ul></nav>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) { 
+            if (!text) return ''; 
+            const div = document.createElement('div'); 
+            div.textContent = text; 
+            return div.innerHTML; 
+        }
+
+        async function loadData(page = 1) {
+            showLoading();
+            try {
+                const res = await fetch(`/api/missing-courses/confirmed-only?page=${page}&per_page=200`);
+                const data = await res.json();
+                
+                if (data.payments && data.payments.length > 0) {
+                    allPaymentsData = data.payments;
+                    filteredPaymentsData = [...allPaymentsData];
+                    
+                    let withGrades = 0, withoutGrades = 0, notified = 0, activated = 0;
+                    allPaymentsData.forEach(p => {
+                        if (p.grades_exist) withGrades++;
+                        else withoutGrades++;
+                        if (p.already_notified) notified++;
+                        if (p.already_activated) activated++;
+                    });
+                    
+                    document.getElementById('totalCount').textContent = data.total;
+                    document.getElementById('withGradesCount').textContent = withGrades;
+                    document.getElementById('notifiedCount').textContent = notified;
+                    document.getElementById('activatedCount').textContent = activated;
+                    
+                    renderTablePage(1);
+                } else {
+                    document.getElementById('paymentsTable').innerHTML = '<tr><td colspan="10" class="text-center py-5"><i class="fas fa-check-circle fa-3x text-success mb-3"></i><h5>No issues found!</h5><p class="text-muted">All confirmed payments have courses generated.</p></td></tr>';
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('paymentsTable').innerHTML = '<tr><td colspan="10" class="text-center py-5 text-danger">Error loading data. Please refresh.</td></tr>';
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function refreshData() {
+            loadData(1);
+        }
+
+        async function regenerateCourse(id) {
+            if (!confirm('⚠️ Regenerate courses for this payment? This will use saved grades.')) return;
+            showLoading();
+            try {
+                const res = await fetch(`/api/missing-courses/regenerate/${id}`, { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message, data.success ? 'success' : 'error');
+                if (data.success) loadData(1);
+            } catch(e) { showToast(e.message, 'error'); }
+            finally { hideLoading(); }
+        }
+
+        async function notifyUser(email, receipt, indexNumber, level) {
+            if (!confirm(`📧 Send email notification to ${email}?`)) return;
+            showLoading();
+            try {
+                const res = await fetch('/api/missing-courses/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, receipt, index_number: indexNumber, level })
+                });
+                const data = await res.json();
+                showToast(data.message, data.success ? 'success' : 'error');
+                if (data.success) loadData(1);
+            } catch(e) { showToast(e.message, 'error'); }
+            finally { hideLoading(); }
+        }
+
+        async function activateAndNotify(paymentId, email, receipt, indexNumber, level) {
+            if (!confirm(`🔓 Activate ${email} and send notification?`)) return;
+            showLoading();
+            try {
+                const res = await fetch('/api/missing-courses/activate-and-notify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payment_id: paymentId, email, receipt, index_number: indexNumber, level })
+                });
+                const data = await res.json();
+                showToast(data.message, data.success ? 'success' : 'error');
+                if (data.success) loadData(1);
+            } catch(e) { showToast(e.message, 'error'); }
+            finally { hideLoading(); }
+        }
+
+        async function deletePayment(id) {
+            if (!confirm('⚠️ Delete this payment record? This action cannot be undone!')) return;
+            showLoading();
+            try {
+                const res = await fetch(`/api/missing-courses/delete/${id}`, { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message, data.success ? 'success' : 'error');
+                if (data.success) loadData(1);
+            } catch(e) { showToast(e.message, 'error'); }
+            finally { hideLoading(); }
+        }
+
+        async function batchRegenerateWithGrades() {
+            const pendingItems = allPaymentsData.filter(p => p.grades_exist && !p.already_activated);
+            if (pendingItems.length === 0) {
+                showToast('No pending items with grades to regenerate', 'info');
+                return;
+            }
+            if (!confirm(`Regenerate courses for ${pendingItems.length} payment(s) with grades?`)) return;
+            showLoading();
+            let success = 0, fail = 0;
+            for (const p of pendingItems) {
+                try {
+                    const res = await fetch(`/api/missing-courses/regenerate/${p.id}`, { method: 'POST' });
+                    const data = await res.json();
+                    if (data.success) success++; else fail++;
+                    await new Promise(r => setTimeout(r, 500));
+                } catch(e) { fail++; }
+            }
+            showToast(`Complete: ${success} regenerated, ${fail} failed`, success > 0 ? 'success' : 'error');
+            loadData(1);
+            hideLoading();
+        }
+
+        async function notifyAllUsers() {
+            const pendingItems = allPaymentsData.filter(p => !p.already_notified);
+            if (pendingItems.length === 0) {
+                showToast('No pending users to notify', 'info');
+                return;
+            }
+            if (!confirm(`Send email notifications to ${pendingItems.length} user(s)?`)) return;
+            showLoading();
+            let success = 0, fail = 0;
+            for (const p of pendingItems) {
+                try {
+                    const res = await fetch('/api/missing-courses/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: p.email, receipt: p.mpesa_receipt, index_number: p.index_number, level: p.level })
+                    });
+                    const data = await res.json();
+                    if (data.success) success++; else fail++;
+                    await new Promise(r => setTimeout(r, 500));
+                } catch(e) { fail++; }
+            }
+            showToast(`Notified: ${success} sent, ${fail} failed`, success > 0 ? 'success' : 'error');
+            loadData(1);
+            hideLoading();
+        }
+
+        async function batchActivateAndNotify() {
+            const pendingItems = allPaymentsData.filter(p => !p.already_activated);
+            if (pendingItems.length === 0) {
+                showToast('No pending users to activate', 'info');
+                return;
+            }
+            if (!confirm(`Activate and notify ${pendingItems.length} user(s)?`)) return;
+            showLoading();
+            let success = 0, fail = 0;
+            for (const p of pendingItems) {
+                try {
+                    const res = await fetch('/api/missing-courses/activate-and-notify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ payment_id: p.id, email: p.email, receipt: p.mpesa_receipt, index_number: p.index_number, level: p.level })
+                    });
+                    const data = await res.json();
+                    if (data.success) success++; else fail++;
+                    await new Promise(r => setTimeout(r, 500));
+                } catch(e) { fail++; }
+            }
+            showToast(`Activated: ${success} users, ${fail} failed`, success > 0 ? 'success' : 'error');
+            loadData(1);
+            hideLoading();
+        }
+
+        async function batchDeleteAll() {
+            const processedItems = allPaymentsData.filter(p => p.already_activated || p.already_notified);
+            if (processedItems.length === 0) {
+                showToast('No processed records to delete', 'info');
+                return;
+            }
+            if (!confirm(`⚠️ Delete ${processedItems.length} processed payment record(s)? This cannot be undone!`)) return;
+            showLoading();
+            let success = 0, fail = 0;
+            for (const p of processedItems) {
+                try {
+                    const res = await fetch(`/api/missing-courses/delete/${p.id}`, { method: 'POST' });
+                    const data = await res.json();
+                    if (data.success) success++; else fail++;
+                    await new Promise(r => setTimeout(r, 300));
+                } catch(e) { fail++; }
+            }
+            showToast(`Deleted: ${success} records, ${fail} failed`, success > 0 ? 'success' : 'error');
+            loadData(1);
+            hideLoading();
+        }
+
+        // Load data on page load
+        loadData(1);
+    </script>
+</body>
+</html>

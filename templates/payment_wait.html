@@ -49,8 +49,20 @@
                         </div>
                     </div>
 
+                    <!-- Manual fallback - hidden initially -->
+                    <div id="manualFallbackPayment" style="display:none;" class="mt-3">
+                        <div class="alert alert-info border-0 bg-info bg-opacity-10 mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>If you completed M-Pesa payment, click below</small>
+                        </div>
+                        <a href="/goto-results/{{ flow }}"
+                           class="btn btn-success btn-sm me-2">
+                            <i class="fas fa-check me-1"></i>I Paid — Show My Results
+                        </a>
+                    </div>
+
                     <!-- Cancel Button -->
-                    <button type="button" class="btn btn-outline-secondary" id="cancelProcessing">
+                    <button type="button" class="btn btn-outline-secondary mt-3" id="cancelProcessing">
                         <i class="fas fa-times me-2"></i>Cancel
                     </button>
                 </div>
@@ -58,8 +70,9 @@
         </div>
     </div>
 
-    <!-- Course Processing Modal (Shown after payment) -->
-    <div class="modal fade" id="courseProcessingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <!-- Course Processing Modal (Shown after payment confirmed) -->
+    <div class="modal fade" id="courseProcessingModal" tabindex="-1"
+         data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-body text-center p-5">
@@ -92,7 +105,8 @@
                     <div class="text-start mb-4">
                         <div class="d-flex align-items-center mb-3" id="step1Container">
                             <div class="me-3">
-                                <div class="rounded-circle bg-primary bg-opacity-10 p-2" style="width: 32px; height: 32px;">
+                                <div class="rounded-circle bg-primary bg-opacity-10 p-2"
+                                     style="width: 32px; height: 32px; display:inline-flex; align-items:center; justify-content:center;">
                                     <i class="fas fa-search text-primary fa-sm"></i>
                                 </div>
                             </div>
@@ -103,7 +117,8 @@
                         </div>
                         <div class="d-flex align-items-center mb-3 opacity-50" id="step2Container">
                             <div class="me-3">
-                                <div class="rounded-circle bg-secondary bg-opacity-10 p-2" style="width: 32px; height: 32px;">
+                                <div class="rounded-circle bg-secondary bg-opacity-10 p-2"
+                                     style="width: 32px; height: 32px; display:inline-flex; align-items:center; justify-content:center;">
                                     <i class="fas fa-graduation-cap text-secondary fa-sm"></i>
                                 </div>
                             </div>
@@ -114,7 +129,8 @@
                         </div>
                         <div class="d-flex align-items-center opacity-50" id="step3Container">
                             <div class="me-3">
-                                <div class="rounded-circle bg-secondary bg-opacity-10 p-2" style="width: 32px; height: 32px;">
+                                <div class="rounded-circle bg-secondary bg-opacity-10 p-2"
+                                     style="width: 32px; height: 32px; display:inline-flex; align-items:center; justify-content:center;">
                                     <i class="fas fa-chart-line text-secondary fa-sm"></i>
                                 </div>
                             </div>
@@ -126,9 +142,21 @@
                     </div>
 
                     <!-- Info Alert -->
-                    <div class="alert alert-info bg-info bg-opacity-10 border-0 small">
+                    <div class="alert alert-info bg-info bg-opacity-10 border-0 small mb-3">
                         <i class="fas fa-envelope me-2"></i>
                         Results will also be sent to your email
+                    </div>
+
+                    <!-- Manual fallback for courses - hidden initially -->
+                    <div id="manualFallbackCourses" style="display:none;">
+                        <div class="alert alert-warning border-0 bg-warning bg-opacity-10 mb-3">
+                            <i class="fas fa-clock me-2"></i>
+                            <small>Taking longer than usual. Click below to check your results.</small>
+                        </div>
+                        <a href="/goto-results/{{ flow }}"
+                           class="btn btn-success">
+                            <i class="fas fa-arrow-right me-2"></i>View My Results Now
+                        </a>
                     </div>
                 </div>
             </div>
@@ -139,381 +167,352 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const flow = "{{ flow }}";
-        let paymentCheckCount = 0;
-        let courseCheckCount = 0;
-        let paymentConfirmed = false;
-        let startTime = Date.now();
-        
-        // Elements
-        const paymentModal = new bootstrap.Modal(document.getElementById('paymentProcessingModal'));
-        const courseModal = new bootstrap.Modal(document.getElementById('courseProcessingModal'));
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
-        const statusMessage = document.getElementById('statusMessage');
-        const modalTitle = document.getElementById('modalTitle');
-        
-        let progressInterval = setInterval(updatePaymentProgress, 500);
-        let currentProgress = 0;
-        
-        function updatePaymentProgress() {
-            if (!paymentConfirmed && currentProgress < 90) {
-                currentProgress += Math.random() * 3;
-                if (currentProgress > 90) currentProgress = 90;
-                updateProgress(currentProgress);
-            }
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ─── CONFIG ──────────────────────────────────────────────────────────────
+    var flow             = "{{ flow }}";
+    var MAX_PAYMENT_POLLS = 90;   // ~3 min at 2 s intervals
+    var MAX_COURSE_POLLS  = 150;  // ~5 min at 3 s intervals
+    // ─────────────────────────────────────────────────────────────────────────
+
+    var paymentPollCount  = 0;
+    var coursePollCount   = 0;
+    var paymentConfirmed  = false;
+    var redirecting       = false;
+    var startTime         = Date.now();
+    var courseProgressVal = 0;
+    var courseProgressTimer = null;
+
+    // ─── Bootstrap modals ────────────────────────────────────────────────────
+    var paymentModalEl = document.getElementById('paymentProcessingModal');
+    var courseModalEl  = document.getElementById('courseProcessingModal');
+    var paymentModal   = new bootstrap.Modal(paymentModalEl, { backdrop: 'static', keyboard: false });
+    var courseModal    = new bootstrap.Modal(courseModalEl,  { backdrop: 'static', keyboard: false });
+
+    // ─── DOM refs ─────────────────────────────────────────────────────────────
+    var progressBar          = document.getElementById('progressBar');
+    var progressText         = document.getElementById('progressText');
+    var statusMessage        = document.getElementById('statusMessage');
+    var modalTitle           = document.getElementById('modalTitle');
+    var manualFallbackPayment = document.getElementById('manualFallbackPayment');
+    var manualFallbackCourses = document.getElementById('manualFallbackCourses');
+
+    // ─── Payment progress animation ──────────────────────────────────────────
+    var paymentProgress = 0;
+    var paymentProgressTimer = setInterval(function () {
+        if (!paymentConfirmed && paymentProgress < 88) {
+            paymentProgress += Math.random() * 2.5;
+            if (paymentProgress > 88) paymentProgress = 88;
+            setPaymentProgress(paymentProgress);
         }
-        
-        function updateProgress(percent) {
-            if (progressBar) {
-                progressBar.style.width = percent + '%';
-                progressText.textContent = Math.floor(percent) + '%';
-            }
+    }, 600);
+
+    function setPaymentProgress(pct) {
+        if (progressBar)   progressBar.style.width   = Math.floor(pct) + '%';
+        if (progressText)  progressText.textContent  = Math.floor(pct) + '%';
+    }
+
+    // ─── REDIRECT (always via server-side goto-results) ──────────────────────
+    function doRedirect() {
+        if (redirecting) return;
+        redirecting = true;
+
+        if (courseProgressTimer) clearInterval(courseProgressTimer);
+
+        var statusEl = document.getElementById('courseStatusMessage');
+        if (statusEl) statusEl.innerHTML =
+            '<i class="fas fa-rocket text-success me-2"></i>Your courses are ready! Redirecting...';
+
+        completeAllSteps();
+        setCourseProgress(100);
+
+        // Small delay so user sees 100% before redirect
+        setTimeout(function () {
+            window.location.href = '/goto-results/' + flow;
+        }, 800);
+    }
+
+    // ─── PAYMENT POLLING ─────────────────────────────────────────────────────
+    function pollPayment() {
+        if (redirecting) return;
+
+        paymentPollCount++;
+
+        // Give up and show manual link after max polls
+        if (paymentPollCount > MAX_PAYMENT_POLLS) {
+            clearInterval(paymentProgressTimer);
+            if (statusMessage) statusMessage.innerHTML =
+                '<i class="fas fa-clock text-warning me-2"></i>Payment is taking longer than expected.';
+            if (manualFallbackPayment) manualFallbackPayment.style.display = 'block';
+            return;
         }
-        
-        // Start checking payment status IMMEDIATELY
-        checkPaymentStatus();
-        
-        function checkPaymentStatus() {
-            paymentCheckCount++;
-            console.log(`🔍 Payment check #${paymentCheckCount}`);
-            
-            // Ultra-fast fetch with 3 second timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
-            
-            fetch(`/check-payment-status/${flow}`, { signal: controller.signal })
-                .then(response => {
-                    clearTimeout(timeoutId);
-                    if (!response.ok) throw new Error('Network error');
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.paid === true) {
-                        // Payment confirmed!
-                        clearInterval(progressInterval);
-                        updateProgress(100);
-                        paymentConfirmed = true;
-                        
-                        // Update success message
-                        statusMessage.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>Payment confirmed!';
-                        modalTitle.innerHTML = '<span class="text-success">Payment Successful! ✓</span>';
-                        
-                        // Show success briefly then switch to course modal
-                        setTimeout(() => {
-                            paymentModal.hide();
-                            setTimeout(() => {
-                                courseModal.show();
-                                startCourseProcessing();
-                            }, 300);
-                        }, 1000);
-                        
-                    } else if (data.pending === true) {
-                        // Payment pending - update status message
-                        updatePaymentStatusMessage(data);
-                        // Continue checking
-                        setTimeout(checkPaymentStatus, 1000);
-                    } else if (data.status === 'pending') {
-                        // Still waiting
-                        updateWaitingMessage();
-                        setTimeout(checkPaymentStatus, 1000);
-                    } else {
-                        // Default - keep checking
-                        setTimeout(checkPaymentStatus, 1000);
-                    }
-                })
-                .catch(error => {
-                    clearTimeout(timeoutId);
-                    console.log('⚠️ Payment check error:', error);
-                    // Retry after delay
-                    setTimeout(checkPaymentStatus, 1500);
-                });
-        }
-        
-        function updatePaymentStatusMessage(data) {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            
-            if (elapsed < 5) {
-                statusMessage.innerHTML = '<i class="fas fa-paper-plane me-2 text-primary"></i>STK Push sent. Check your phone...';
-            } else if (elapsed < 10) {
-                statusMessage.innerHTML = '<i class="fas fa-fingerprint me-2 text-primary"></i>Waiting for PIN entry...';
-            } else if (elapsed < 20) {
-                statusMessage.innerHTML = '<i class="fas fa-spinner fa-pulse me-2 text-primary"></i>Processing payment...';
+
+        fetch('/check-payment-status/' + flow, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function (data) {
+
+            if (data.paid === true) {
+                // ── PAYMENT CONFIRMED ──────────────────────────────────────
+                clearInterval(paymentProgressTimer);
+                setPaymentProgress(100);
+                paymentConfirmed = true;
+
+                if (statusMessage) statusMessage.innerHTML =
+                    '<i class="fas fa-check-circle text-success me-2"></i>Payment confirmed!';
+                if (modalTitle) modalTitle.innerHTML =
+                    '<span class="text-success">Payment Successful! ✓</span>';
+
+                // Switch to course modal after brief pause
+                setTimeout(function () {
+                    paymentModal.hide();
+                    setTimeout(function () {
+                        courseModal.show();
+                        startCoursePolling();
+                    }, 350);
+                }, 900);
+
             } else {
-                statusMessage.innerHTML = '<i class="fas fa-hourglass-half me-2 text-primary"></i>Still processing... Please wait';
+                // ── STILL WAITING ─────────────────────────────────────────
+                updatePaymentMessage();
+                var delay = (data.check_delay || data.retry_delay || 2000);
+                setTimeout(pollPayment, delay);
             }
-            
-            // Update progress based on elapsed time
-            let newProgress = Math.min(90, 30 + (elapsed * 3));
-            if (newProgress > currentProgress) {
-                currentProgress = newProgress;
-                updateProgress(currentProgress);
-            }
+        })
+        .catch(function (err) {
+            console.warn('payment poll error:', err);
+            setTimeout(pollPayment, 2500);
+        });
+    }
+
+    function updatePaymentMessage() {
+        if (!statusMessage) return;
+        var elapsed = Math.floor((Date.now() - startTime) / 1000);
+
+        if (elapsed < 6) {
+            statusMessage.innerHTML =
+                '<i class="fas fa-paper-plane me-2 text-primary"></i>STK Push sent. Check your phone...';
+        } else if (elapsed < 12) {
+            statusMessage.innerHTML =
+                '<i class="fas fa-fingerprint me-2 text-primary"></i>Waiting for M-Pesa PIN entry...';
+        } else if (elapsed < 30) {
+            statusMessage.innerHTML =
+                '<i class="fas fa-spinner fa-pulse me-2 text-primary"></i>Verifying payment...';
+        } else if (elapsed < 60) {
+            statusMessage.innerHTML =
+                '<i class="fas fa-hourglass-half me-2 text-primary"></i>Still processing... Please wait.';
+        } else {
+            statusMessage.innerHTML =
+                '<i class="fas fa-clock me-2 text-warning"></i>Taking longer than expected...';
+            if (manualFallbackPayment) manualFallbackPayment.style.display = 'block';
         }
-        
-        function updateWaitingMessage() {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            
-            if (elapsed < 5) {
-                statusMessage.innerHTML = '<i class="fas fa-paper-plane me-2 text-primary"></i>STK Push sent. Please check your phone...';
-            } else if (elapsed < 10) {
-                statusMessage.innerHTML = '<i class="fas fa-fingerprint me-2 text-primary"></i>Waiting for you to enter M-Pesa PIN...';
-            } else if (elapsed < 20) {
-                statusMessage.innerHTML = '<i class="fas fa-spinner fa-pulse me-2 text-primary"></i>Verifying payment...';
+    }
+
+    // ─── COURSE POLLING ──────────────────────────────────────────────────────
+    function startCoursePolling() {
+        // Animate course progress bar while waiting
+        courseProgressVal = 0;
+        courseProgressTimer = setInterval(function () {
+            if (!redirecting && courseProgressVal < 92) {
+                courseProgressVal += Math.random() * 5;
+                if (courseProgressVal > 92) courseProgressVal = 92;
+                setCourseProgress(courseProgressVal);
+                updateCourseSteps(courseProgressVal);
+            }
+        }, 400);
+
+        // Begin polling
+        pollCourses();
+    }
+
+    function pollCourses() {
+        if (redirecting) return;
+
+        coursePollCount++;
+
+        // Show manual link after max polls
+        if (coursePollCount > MAX_COURSE_POLLS) {
+            if (courseProgressTimer) clearInterval(courseProgressTimer);
+            var statusEl = document.getElementById('courseStatusMessage');
+            if (statusEl) statusEl.innerHTML =
+                '<i class="fas fa-clock text-warning me-2"></i>Taking longer than usual.';
+            if (manualFallbackCourses) manualFallbackCourses.style.display = 'block';
+            return;
+        }
+
+        fetch('/check-courses-ready/' + flow, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function (data) {
+
+            if (data.ready === true) {
+                // ── COURSES READY ─────────────────────────────────────────
+                doRedirect();
+
+            } else if (data.error === true) {
+                // ── PROCESSING ERROR ──────────────────────────────────────
+                if (courseProgressTimer) clearInterval(courseProgressTimer);
+                var statusEl = document.getElementById('courseStatusMessage');
+                if (statusEl) statusEl.innerHTML =
+                    '<i class="fas fa-exclamation-circle text-danger me-2"></i>An error occurred. Please contact support.';
+                if (manualFallbackCourses) manualFallbackCourses.style.display = 'block';
+
             } else {
-                statusMessage.innerHTML = '<i class="fas fa-clock me-2 text-warning"></i>Taking longer than expected. Please wait...';
+                // ── STILL PROCESSING ──────────────────────────────────────
+                updateCourseMessage(data);
+                setTimeout(pollCourses, 3000);
             }
+        })
+        .catch(function (err) {
+            console.warn('courses poll error:', err);
+            setTimeout(pollCourses, 4000);
+        });
+    }
+
+    function updateCourseMessage(data) {
+        var statusEl = document.getElementById('courseStatusMessage');
+        if (!statusEl) return;
+        var elapsed = Math.floor((Date.now() - startTime) / 1000);
+
+        if (data.message) {
+            statusEl.innerHTML =
+                '<i class="fas fa-spinner fa-pulse me-2 text-primary"></i>' + data.message;
+        } else if (elapsed < 10) {
+            statusEl.innerHTML =
+                '<i class="fas fa-search me-2 text-primary"></i>Analyzing your grades...';
+        } else if (elapsed < 25) {
+            statusEl.innerHTML =
+                '<i class="fas fa-graduation-cap me-2 text-primary"></i>Searching course database...';
+        } else if (elapsed < 50) {
+            statusEl.innerHTML =
+                '<i class="fas fa-chart-line me-2 text-primary"></i>Almost done! Preparing results...';
+        } else {
+            statusEl.innerHTML =
+                '<i class="fas fa-hourglass-half me-2 text-warning"></i>Still working... please wait.';
         }
-        
-        function startCourseProcessing() {
-            console.log('🚀 Starting ULTRA-FAST course processing');
-            let courseProgress = 0;
-            let stepProgress = 0;
-            
-            const courseProgressInterval = setInterval(() => {
-                if (courseProgress < 95) {
-                    // Animate progress while waiting for actual completion
-                    courseProgress += Math.random() * 8;
-                    if (courseProgress > 95) courseProgress = 95;
-                    updateCourseProgress(courseProgress);
-                    updateCourseSteps(courseProgress);
-                }
-            }, 200);
-            
-            // Start checking for courses (every 1 second for fast response)
-            checkCoursesReady();
-            
-            function checkCoursesReady() {
-                courseCheckCount++;
-                console.log(`🎯 Course check #${courseCheckCount}`);
-                
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
-                
-                fetch(`/check-courses-ready/${flow}`, { signal: controller.signal })
-                    .then(response => {
-                        clearTimeout(timeoutId);
-                        if (!response.ok) throw new Error('Network error');
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.ready) {
-                            // Courses are ready!
-                            clearInterval(courseProgressInterval);
-                            updateCourseProgress(100);
-                            
-                            // Update final message
-                            const statusEl = document.getElementById('courseStatusMessage');
-                            statusEl.innerHTML = '<i class="fas fa-rocket text-success me-2"></i>Your courses are ready!';
-                            
-                            // Complete all steps
-                            completeAllSteps();
-                            
-                            // Redirect to results
-                            setTimeout(() => {
-                                window.location.href = data.redirect_url || `/results/${flow}`;
-                            }, 800);
-                            
-                        } else if (data.processing) {
-                            // Still processing - update message
-                            updateProcessingMessage(data);
-                            // Check again in 1 second
-                            setTimeout(checkCoursesReady, 1000);
-                        } else if (data.status === 'queued') {
-                            document.getElementById('courseStatusMessage').innerHTML = 
-                                '<i class="fas fa-hourglass-half me-2 text-primary"></i>Queued for processing...';
-                            setTimeout(checkCoursesReady, 1000);
-                        } else {
-                            // Default - keep checking
-                            setTimeout(checkCoursesReady, 1000);
-                        }
-                    })
-                    .catch(error => {
-                        clearTimeout(timeoutId);
-                        console.log('⚠️ Course check error:', error);
-                        setTimeout(checkCoursesReady, 1500);
-                    });
-            }
-            
-            function updateProcessingMessage(data) {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const statusEl = document.getElementById('courseStatusMessage');
-                
-                if (data.estimated_remaining) {
-                    statusEl.innerHTML = `<i class="fas fa-spinner fa-pulse me-2 text-primary"></i>Processing... ${data.estimated_remaining}s remaining`;
-                } else if (elapsed < 5) {
-                    statusEl.innerHTML = '<i class="fas fa-search me-2 text-primary"></i>Analyzing your grades...';
-                } else if (elapsed < 10) {
-                    statusEl.innerHTML = '<i class="fas fa-graduation-cap me-2 text-primary"></i>Finding matching courses...';
-                } else {
-                    statusEl.innerHTML = '<i class="fas fa-chart-line me-2 text-primary"></i>Almost there! Preparing results...';
-                }
-            }
-            
-            function updateCourseProgress(percent) {
-                const progressBarEl = document.getElementById('courseProgressBar');
-                const progressTextEl = document.getElementById('courseProgressText');
-                if (progressBarEl) progressBarEl.style.width = percent + '%';
-                if (progressTextEl) progressTextEl.textContent = Math.floor(percent) + '%';
-            }
-            
-            function updateCourseSteps(progress) {
-                const step1Container = document.getElementById('step1Container');
-                const step2Container = document.getElementById('step2Container');
-                const step3Container = document.getElementById('step3Container');
-                const step1Text = document.getElementById('step1Text');
-                const step2Text = document.getElementById('step2Text');
-                const step3Text = document.getElementById('step3Text');
-                const step1Desc = document.getElementById('step1Desc');
-                const step2Desc = document.getElementById('step2Desc');
-                const step3Desc = document.getElementById('step3Desc');
-                
-                if (progress < 30) {
-                    // Step 1 active
-                    step1Container.classList.remove('opacity-50');
-                    step1Text.classList.remove('text-muted');
-                    step1Text.classList.add('text-primary');
-                    step1Desc.innerHTML = '✓ Analyzing your subject combinations';
-                    
-                    step2Container.classList.add('opacity-50');
-                    step3Container.classList.add('opacity-50');
-                    
-                } else if (progress < 70) {
-                    // Step 1 complete, Step 2 active
-                    step1Container.classList.remove('opacity-50');
-                    step1Text.classList.remove('text-muted', 'text-primary');
-                    step1Text.classList.add('text-success');
-                    step1Text.innerHTML = '✓ Grades analyzed';
-                    step1Desc.innerHTML = 'Complete';
-                    
-                    step2Container.classList.remove('opacity-50');
-                    step2Text.classList.remove('text-muted');
-                    step2Text.classList.add('text-primary');
-                    step2Desc.innerHTML = '✓ Scanning course database';
-                    
-                    step3Container.classList.add('opacity-50');
-                    
-                } else if (progress < 100) {
-                    // Steps 1 & 2 complete, Step 3 active
-                    step1Container.classList.remove('opacity-50');
-                    step1Text.classList.add('text-success');
-                    step1Text.innerHTML = '✓ Grades analyzed';
-                    
-                    step2Container.classList.remove('opacity-50');
-                    step2Text.classList.add('text-success');
-                    step2Text.innerHTML = '✓ Courses found';
-                    step2Desc.innerHTML = 'Complete';
-                    
-                    step3Container.classList.remove('opacity-50');
-                    step3Text.classList.remove('text-muted');
-                    step3Text.classList.add('text-primary');
-                    step3Desc.innerHTML = '✓ Organizing your results';
-                }
-            }
-            
-            function completeAllSteps() {
-                const containers = ['step1Container', 'step2Container', 'step3Container'];
-                containers.forEach(id => {
-                    const container = document.getElementById(id);
-                    if (container) container.classList.remove('opacity-50');
-                });
-                
-                const texts = ['step1Text', 'step2Text', 'step3Text'];
-                texts.forEach(id => {
-                    const text = document.getElementById(id);
-                    if (text) {
-                        text.classList.remove('text-muted', 'text-primary');
-                        text.classList.add('text-success');
-                        if (!text.innerHTML.startsWith('✓')) {
-                            if (id === 'step1Text') text.innerHTML = '✓ Grades analyzed';
-                            if (id === 'step2Text') text.innerHTML = '✓ Courses found';
-                            if (id === 'step3Text') text.innerHTML = '✓ Results ready';
-                        }
-                    }
-                });
-            }
+    }
+
+    // ─── COURSE PROGRESS BAR ─────────────────────────────────────────────────
+    function setCourseProgress(pct) {
+        var bar  = document.getElementById('courseProgressBar');
+        var text = document.getElementById('courseProgressText');
+        if (bar)  bar.style.width    = Math.floor(pct) + '%';
+        if (text) text.textContent   = Math.floor(pct) + '%';
+    }
+
+    // ─── STEP INDICATORS ─────────────────────────────────────────────────────
+    function updateCourseSteps(pct) {
+        var s1c = document.getElementById('step1Container');
+        var s2c = document.getElementById('step2Container');
+        var s3c = document.getElementById('step3Container');
+        var s1t = document.getElementById('step1Text');
+        var s2t = document.getElementById('step2Text');
+        var s3t = document.getElementById('step3Text');
+        var s1d = document.getElementById('step1Desc');
+        var s2d = document.getElementById('step2Desc');
+        var s3d = document.getElementById('step3Desc');
+
+        if (!s1c) return;
+
+        if (pct < 30) {
+            // Step 1 active
+            s1c.classList.remove('opacity-50');
+            if (s1t) { s1t.classList.remove('text-muted'); s1t.classList.add('text-primary'); }
+            if (s1d) s1d.textContent = 'Checking subject combinations...';
+            s2c.classList.add('opacity-50');
+            s3c.classList.add('opacity-50');
+
+        } else if (pct < 70) {
+            // Step 1 done, Step 2 active
+            s1c.classList.remove('opacity-50');
+            if (s1t) { s1t.classList.remove('text-muted', 'text-primary'); s1t.classList.add('text-success'); s1t.textContent = '✓ Grades analyzed'; }
+            if (s1d) s1d.textContent = 'Complete';
+
+            s2c.classList.remove('opacity-50');
+            if (s2t) { s2t.classList.remove('text-muted'); s2t.classList.add('text-primary'); }
+            if (s2d) s2d.textContent = 'Scanning course database...';
+            s3c.classList.add('opacity-50');
+
+        } else {
+            // Steps 1 & 2 done, Step 3 active
+            s1c.classList.remove('opacity-50');
+            if (s1t) { s1t.classList.add('text-success'); s1t.textContent = '✓ Grades analyzed'; }
+
+            s2c.classList.remove('opacity-50');
+            if (s2t) { s2t.classList.add('text-success'); s2t.textContent = '✓ Courses found'; }
+            if (s2d) s2d.textContent = 'Complete';
+
+            s3c.classList.remove('opacity-50');
+            if (s3t) { s3t.classList.remove('text-muted'); s3t.classList.add('text-primary'); }
+            if (s3d) s3d.textContent = 'Organizing your results...';
         }
-        
-        // Cancel button handler
-        document.getElementById('cancelProcessing')?.addEventListener('click', function() {
-            if (confirm('Cancel payment? You can check results later using "Already Made Payment".')) {
+    }
+
+    function completeAllSteps() {
+        [['step1Container','step1Text','✓ Grades analyzed'],
+         ['step2Container','step2Text','✓ Courses found'],
+         ['step3Container','step3Text','✓ Results ready']
+        ].forEach(function (row) {
+            var c = document.getElementById(row[0]);
+            var t = document.getElementById(row[1]);
+            if (c) c.classList.remove('opacity-50');
+            if (t) {
+                t.classList.remove('text-muted', 'text-primary');
+                t.classList.add('text-success');
+                t.textContent = row[2];
+            }
+        });
+        ['step1Desc','step2Desc','step3Desc'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = 'Complete';
+        });
+    }
+
+    // ─── CANCEL BUTTON ───────────────────────────────────────────────────────
+    var cancelBtn = document.getElementById('cancelProcessing');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+            if (confirm('Cancel? You can check results later using "Already Made Payment".')) {
                 window.location.href = '/';
             }
         });
-        
-        // Prevent modal closing
-        document.getElementById('paymentProcessingModal').addEventListener('hide.bs.modal', function(e) {
-            if (!paymentConfirmed) e.preventDefault();
-        });
-        
-        document.getElementById('courseProcessingModal').addEventListener('hide.bs.modal', function(e) {
-            e.preventDefault();
-        });
+    }
+
+    // ─── PREVENT ACCIDENTAL MODAL CLOSE ─────────────────────────────────────
+    paymentModalEl.addEventListener('hide.bs.modal', function (e) {
+        if (!paymentConfirmed) e.preventDefault();
     });
+    courseModalEl.addEventListener('hide.bs.modal', function (e) {
+        e.preventDefault();
+    });
+
+    // ─── KICK OFF ────────────────────────────────────────────────────────────
+    // Small initial delay so the page renders before first fetch
+    setTimeout(pollPayment, 1500);
+
+});
 </script>
 
 <style>
-    .modal-content {
-        border-radius: 20px;
-        border: none;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    }
-    
-    .modal-body {
-        padding: 2rem !important;
-    }
-    
-    .progress {
-        background-color: #e9ecef;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    
-    .progress-bar {
-        transition: width 0.3s ease;
-    }
-    
-    .rounded-circle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .alert {
-        border-radius: 12px;
-    }
-    
-    @keyframes pulse {
-        0% { opacity: 0.6; transform: scale(0.95); }
-        50% { opacity: 1; transform: scale(1); }
-        100% { opacity: 0.6; transform: scale(0.95); }
-    }
-    
-    .spinner-grow {
-        animation: pulse 1s ease-in-out infinite;
-    }
-    
-    .modal-backdrop {
-        backdrop-filter: blur(4px);
-        background-color: rgba(0,0,0,0.5);
-    }
-    
-    .lead {
-        font-size: 1rem;
-        font-weight: 400;
-    }
-    
-    .fw-bold {
-        font-weight: 600 !important;
-    }
-    
-    .opacity-50 {
-        opacity: 0.5;
-    }
-    
-    .transition-all {
-        transition: all 0.3s ease;
-    }
+    .modal-content   { border-radius: 20px; }
+    .progress        { background-color: #e9ecef; border-radius: 10px; overflow: hidden; }
+    .progress-bar    { transition: width 0.4s ease; }
+    .alert           { border-radius: 12px; }
+    .opacity-50      { opacity: 0.5; }
+    .modal-backdrop  { backdrop-filter: blur(4px); background-color: rgba(0,0,0,0.5); }
+    .lead            { font-size: 1rem; font-weight: 400; }
+    .fw-bold         { font-weight: 600 !important; }
 </style>
 {% endblock %}
