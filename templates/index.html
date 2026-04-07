@@ -252,26 +252,9 @@
         box-shadow: var(--shadow-medium);
     }
     
-    /* Degree Card Specific Styles - Coming Soon */
+    /* Degree Card Specific Styles */
     .degree-card {
         position: relative;
-    }
-    
-    .degree-card::before {
-        content: 'COMING SOON';
-        position: absolute;
-        top: 15px;
-        right: -35px;
-        background: var(--primary-red);
-        color: var(--white);
-        padding: 8px 40px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        transform: rotate(45deg);
-        box-shadow: var(--shadow-medium);
-        z-index: 2;
     }
     
     /* Different border colors for each category */
@@ -328,6 +311,8 @@
         position: relative;
         overflow: hidden;
         box-shadow: var(--shadow-light);
+        text-decoration: none;
+        display: inline-block;
     }
     
     .category-btn:hover {
@@ -469,6 +454,8 @@
         box-shadow: var(--shadow-medium);
         position: relative;
         overflow: hidden;
+        text-decoration: none;
+        display: inline-block;
     }
     
     .cta-btn:hover {
@@ -567,13 +554,6 @@
             font-size: 1.3rem;
         }
         
-        .degree-card::before {
-            top: 10px;
-            right: -30px;
-            font-size: 0.7rem;
-            padding: 6px 30px;
-        }
-        
         .benefit-list li {
             font-size: 1rem;
             padding: 12px 0;
@@ -622,13 +602,6 @@
         
         .category-title {
             font-size: 1.2rem;
-        }
-        
-        .degree-card::before {
-            top: 8px;
-            right: -25px;
-            font-size: 0.6rem;
-            padding: 5px 25px;
         }
         
         .benefit-list li {
@@ -790,15 +763,13 @@
                     <h3 class="category-title">Degree Courses</h3>
                     <p class="category-description">For students with C+ and above. Pursue bachelor's degrees in Engineering, Medicine, ICT, Business, Law, and more.</p>
                     
-                    <!-- Button to open modal instead of direct link -->
-                    <button class="btn category-btn" data-bs-toggle="modal" data-bs-target="#degreeModal">
+                    <!-- Direct link to degree.html - No modal, no cluster points check -->
+                    <a href="/degree" class="btn category-btn">
                         <i class="fas fa-graduation-cap me-2"></i>Explore Degrees
-                    </button>
+                    </a>
                     
                     <!-- Additional Estimate Button in Card -->
-                    <button class="btn estimate-btn" onclick="showClusterPointWarning()">
-                        <i class="fas fa-calculator me-2"></i>Estimate Cluster Points
-                    </button>
+                    
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
@@ -909,57 +880,7 @@
     </div>
 </section>
 
-<!-- Degree Courses Modal -->
-<div class="modal fade modal-custom" id="degreeModal" tabindex="-1" aria-labelledby="degreeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header" style="background: var(--gradient-red);">
-                <h5 class="modal-title text-white" id="degreeModalLabel">
-                    <i class="fas fa-graduation-cap me-2"></i>Degree Courses Information
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <div class="mb-3" style="font-size: 4rem; color: var(--primary-yellow);">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h4 class="fw-bold text-danger">Course Checking Temporarily Unavailable</h4>
-                </div>
-                
-                <div class="alert alert-warning alert-custom">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-exclamation-triangle me-3 mt-1" style="color: var(--primary-yellow);"></i>
-                        <div>
-                            <h6 class="alert-heading">Official Cluster Points Not Yet Released</h6>
-                            <p class="mb-0">Degree course checking will open once the real cluster points are officially calculated and uploaded to the KUCCPS portal.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4">
-                    <p class="text-muted mb-3">Meanwhile, you can estimate your cluster points:</p>
-                    <div class="p-3 mb-3" style="background: var(--light-grey); border-radius: var(--border-radius-md);">
-                        <h6 class="fw-bold mb-2">Estimate Your Cluster Points</h6>
-                        <p class="small text-muted mb-2">Approximate calculation for all 20 clusters (Error margin ±5)</p>
-                        <button class="btn btn-yellow-custom w-100" onclick="showClusterPointWarning()">
-                            <i class="fas fa-calculator me-2"></i>Estimate Cluster Points (KES 100)
-                        </button>
-                        <small class="text-muted mt-2 d-block">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Official and accurate cut-off points are only calculated and provided by KUCCPS.
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Cluster Points Warning Modal -->
+<!-- Cluster Points Warning Modal (Keep for estimate button only) -->
 <div class="modal fade modal-custom" id="clusterWarningModal" tabindex="-1" aria-labelledby="clusterWarningModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -1080,14 +1001,8 @@
         cardObserver.observe(card);
     });
     
-    // Show cluster points warning modal
+    // Show cluster points warning modal (only for estimate button)
     function showClusterPointWarning() {
-        // Close degree modal if open
-        const degreeModal = bootstrap.Modal.getInstance(document.getElementById('degreeModal'));
-        if (degreeModal) {
-            degreeModal.hide();
-        }
-        
         // Show warning modal
         const clusterWarningModal = new bootstrap.Modal(document.getElementById('clusterWarningModal'));
         clusterWarningModal.show();
@@ -1118,18 +1033,6 @@
         if (copyrightElement && copyrightElement.textContent.includes('2025')) {
             copyrightElement.textContent = copyrightElement.textContent.replace('2025', new Date().getFullYear());
         }
-        
-        // Prevent degree card link navigation
-        document.querySelectorAll('.degree-card .category-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                // The button now opens a modal via data-bs-toggle
-                // This is just an additional safety measure
-                const href = this.getAttribute('href');
-                if (href && href !== '#') {
-                    e.preventDefault();
-                }
-            });
-        });
     });
 </script>
 {% endblock %}
