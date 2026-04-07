@@ -282,11 +282,9 @@ CLUSTER_NAMES = {
     'cluster_13': 'Medicine, Health, Veterinary Medicine & Related',
     'cluster_14': 'History, Archeology & Related',
     'cluster_15': 'Agriculture, Animal Health, Food Science, Nutrition Dietetics, Environmental Sciences, Natural Resources & Related',
-    'cluster_16': 'Geography & Related',
-    'cluster_17': 'French & German',
-    'cluster_18': 'Music & Related',
-    'cluster_19': 'Education & Related',
-    'cluster_20': 'Religious Studies, Theology, Islamic Studies & Related'
+    'cluster_16': 'Music & Related',
+    'cluster_17': 'Education & Related',
+    'cluster_18': 'Religious Studies, Theology, Islamic Studies & Related'
 }
 
 CLUSTERS = [f"cluster_{i}" for i in range(1, 21)]
@@ -937,52 +935,55 @@ COURSE_PROJECTION = {
 }
 def _handle_manual_activation(activation_record, email, index_number, flow, original_mpesa_receipt):
     """
-    Called from within enter_details POST when a manual activation is found.
-    Queues course generation and redirects to the waiting page.
+    Handle manual activation flow - bypass payment and go directly to course generation.
     Returns a Flask response object.
     """
-    print(f"✅ Manual activation: queueing {flow} for {email}")
+    print(f"✅ Manual activation: processing {flow} for {email}")
+    print(f"💰 Original receipt: {original_mpesa_receipt}")
  
-    # ── Reset session to minimal safe state (prevents cookie overflow) ──
+    # ── Reset session to minimal safe state ──
     session.clear()
-    session['email']         = email
-    session['index_number']  = index_number
-    session['current_flow']  = flow
+    session['email'] = email
+    session['index_number'] = index_number
+    session['current_flow'] = flow
     session['current_level'] = flow
-    session[f'paid_{flow}']  = True
-    session['initialized']   = True
+    session[f'paid_{flow}'] = True
+    session['initialized'] = True
     session['last_activity'] = datetime.now().isoformat()
-    session['_permanent']    = True
+    session['_permanent'] = True
  
-    receipt = original_mpesa_receipt or f"MANUAL_{index_number}"
-    session['mpesa_receipt']    = receipt
-    session['verified_receipt'] = receipt
+    # Store manual activation info
+    session['manual_activation_active'] = True
+    session['manual_activation_receipt'] = original_mpesa_receipt
+    session['manual_activation_id'] = str(activation_record.get('_id'))
+    session['mpesa_receipt'] = original_mpesa_receipt
+    session['verified_receipt'] = original_mpesa_receipt
     session.modified = True
  
-    # ── Create payment record (single DB write) ──
-    create_manual_activation_payment(email, index_number, flow, receipt)
+    # ── Create payment record with original receipt ──
+    create_manual_activation_payment(email, index_number, flow, original_mpesa_receipt)
  
-    # ── Mark activation as used (single DB write) ──
+    # ── Mark activation as used ──
     if database_connected and admin_activations_collection is not None:
         try:
             admin_activations_collection.update_one(
                 {'_id': activation_record['_id']},
                 {'$set': {
-                    'is_active':    False,
+                    'is_active': False,
                     'used_for_flow': flow,
-                    'used_at':      datetime.now(),
-                    'status':       'used'
+                    'used_at': datetime.now(),
+                    'status': 'used'
                 }}
             )
+            print(f"✅ Manual activation marked as used for {flow}")
         except Exception as e:
-            print(f"⚠️  Could not mark activation used: {e}")
+            print(f"⚠️ Could not mark activation used: {e}")
  
-    # ── Queue course generation — returns instantly ──
-    process_courses_after_payment(email, index_number, flow, receipt)
+    # ── Queue course generation ──
+    process_courses_after_payment(email, index_number, flow, original_mpesa_receipt)
  
     flash("✅ Access verified! Generating your courses…", "success")
     return redirect(url_for('payment_wait', flow=flow, transaction_ref='manual'))
- 
  
 def validate_user_uniqueness(email, index_number, flow):
     """Validate that email and index_number are uniquely paired"""
@@ -5573,41 +5574,56 @@ def create_manual_activation_payment(email, index_number, flow, mpesa_receipt):
     print(f"💰 Creating payment record for manual activation: {email}, {index_number}, {flow}")
     print(f"💰 Using original receipt: {mpesa_receipt}")
     
+    # Check if payment record already exists
+    existing_payment = None
+    if database_connected and user_payments_collection is not None:
+        try:
+            existing_payment = user_payments_collection.find_one({
+                'email': email,
+                'index_number': index_number,
+                'level': flow
+            })
+            
+            if existing_payment:
+                print(f"⚠️ Payment record already exists for {email}, updating instead of creating new")
+        except Exception as e:
+            print(f"⚠️ Error checking existing payment: {e}")
+    
     payment_record = {
         'email': email,
         'index_number': index_number,
         'level': flow,
         'transaction_ref': f"MANUAL_{mpesa_receipt}",
         'mpesa_receipt': mpesa_receipt,  # Store the ORIGINAL receipt
-        'payment_amount': 0,
+        'payment_amount': existing_payment.get('payment_amount', 100) if existing_payment else 100,
         'payment_confirmed': True,
         'payment_method': 'manual_activation',
         'activated_by': 'admin',
-        'created_at': datetime.now(),
-        'payment_date': datetime.now()
+        'created_at': existing_payment.get('created_at', datetime.now()) if existing_payment else datetime.now(),
+        'payment_date': datetime.now(),
+        'is_manual_activation': True,
+        'original_receipt': mpesa_receipt
     }
     
     if database_connected and user_payments_collection is not None:
         try:
-            # Check if payment record already exists
-            existing = user_payments_collection.find_one({
-                'email': email,
-                'index_number': index_number,
-                'level': flow
-            })
-            
-            if existing:
+            if existing_payment:
                 # Update existing record
                 result = user_payments_collection.update_one(
-                    {'_id': existing['_id']},
+                    {'_id': existing_payment['_id']},
                     {'$set': payment_record}
                 )
-                print(f"✅ Updated existing payment record with receipt: {mpesa_receipt}")
+                if result.modified_count > 0:
+                    print(f"✅ Updated existing payment record with receipt: {mpesa_receipt}")
+                else:
+                    print(f"⚠️ No changes made to existing payment record")
             else:
                 # Insert new record
                 result = user_payments_collection.insert_one(payment_record)
-                print(f"✅ Created new payment record with receipt: {mpesa_receipt}")
-            
+                if result.inserted_id:
+                    print(f"✅ Created new payment record with receipt: {mpesa_receipt}")
+                else:
+                    print(f"❌ Failed to create payment record")
             return True
         except Exception as e:
             print(f"❌ Error saving manual activation payment: {str(e)}")
@@ -6293,7 +6309,7 @@ def submit_kmtc_grades():
 # --- User Details and Payment Routes ---
 @app.route('/enter-details/<flow>', methods=['GET', 'POST'])
 def enter_details(flow):
-    """Handle user details entry with strict validation."""
+    """Handle user details entry with strict validation and manual activation support."""
  
     # ── GET: show the form ──
     if request.method == 'GET':
@@ -6326,17 +6342,7 @@ def enter_details(flow):
             flash(msg, "error")
             return redirect(url_for('enter_details', flow=flow))
  
-        # ── Already paid for this category? ──
-        if has_user_paid_for_category_strict(email, index_number, flow):
-            paid = get_user_paid_categories_strict(email, index_number)
-            flash(
-                f"You have already paid for {flow.upper()} courses. "
-                f"Paid categories: {', '.join(paid)}",
-                "error"
-            )
-            return redirect(url_for('index'))
- 
-        # ── Save grades to DB BEFORE payment ──
+        # ── Save grades to DB BEFORE anything else ──
         if flow == 'degree':
             save_user_grades_before_payment(
                 email, index_number, flow,
@@ -6374,30 +6380,76 @@ def enter_details(flow):
                 session.get('ttc_mean_grade', '')
             )
  
-        # ── Check for manual activation ──
-        activation_record     = None
+        # ============================================
+        # STEP 1: CHECK MANUAL ACTIVATION FIRST
+        # This overrides any payment checks
+        # ============================================
+        activation_record = None
         original_mpesa_receipt = None
  
         if database_connected and admin_activations_collection is not None:
             try:
                 activation_record = admin_activations_collection.find_one({
-                    '$or': [{'email': email}, {'index_number': index_number}],
+                    '$or': [
+                        {'email': email},
+                        {'index_number': index_number}
+                    ],
                     'is_active': True,
-                    'status':    'active'
+                    'status': 'active'
                 })
                 if activation_record:
                     original_mpesa_receipt = activation_record.get('mpesa_receipt')
                     print(f"✅ Manual activation found in DB for {email}: receipt={original_mpesa_receipt}")
+                    print(f"   Activation ID: {activation_record.get('_id')}")
+                    print(f"   Flow: {flow}")
             except Exception as e:
-                print(f"⚠️  Activation DB check error: {e}")
+                print(f"⚠️ Activation DB check error: {e}")
  
-        if activation_record:
-            return _handle_manual_activation(
-                activation_record, email, index_number, flow, original_mpesa_receipt
-            )
+        # ============================================
+        # STEP 2: IF MANUAL ACTIVATION EXISTS - BYPASS PAYMENT
+        # ============================================
+        if activation_record and original_mpesa_receipt:
+            print(f"🎯 Manual activation detected - bypassing payment for {flow}")
+            
+            # Store manual activation info in session
+            session['manual_activation_active'] = True
+            session['manual_activation_receipt'] = original_mpesa_receipt
+            session['manual_activation_id'] = str(activation_record['_id'])
+            session['email'] = email
+            session['index_number'] = index_number
+            session['current_flow'] = flow
+            session['current_level'] = flow
+            session[f'paid_{flow}'] = True
+            session['mpesa_receipt'] = original_mpesa_receipt
+            session['verified_receipt'] = original_mpesa_receipt
+            session.modified = True
+            
+            # Create/update payment record with original receipt
+            create_manual_activation_payment(email, index_number, flow, original_mpesa_receipt)
+            
+            # Queue course generation immediately
+            process_courses_after_payment(email, index_number, flow, original_mpesa_receipt)
+            
+            # Mark activation as used (so it can't be reused for another flow)
+            try:
+                admin_activations_collection.update_one(
+                    {'_id': activation_record['_id']},
+                    {'$set': {
+                        'used_for_flow': flow,
+                        'used_at': datetime.now(),
+                        'status': 'used'
+                    }}
+                )
+                print(f"✅ Manual activation marked as used for {flow}")
+            except Exception as e:
+                print(f"⚠️ Could not mark activation as used: {e}")
+            
+            flash("✅ Access granted via manual activation! Generating your courses...", "success")
+            return redirect(url_for('payment_wait', flow=flow, transaction_ref='manual'))
  
-        # ── Normal payment flow ──
-        # Double-check paid status
+        # ============================================
+        # STEP 3: CHECK IF ALREADY PAID (Normal flow)
+        # ============================================
         if has_user_paid_for_category_strict(email, index_number, flow):
             paid = get_user_paid_categories_strict(email, index_number)
             flash(
@@ -6407,18 +6459,21 @@ def enter_details(flow):
             )
             return redirect(url_for('index'))
  
-        existing   = get_user_paid_categories_strict(email, index_number)
-        is_first   = len(existing) == 0
-        amount     = 200 if is_first else 100
+        # ============================================
+        # STEP 4: NORMAL PAYMENT FLOW
+        # ============================================
+        existing = get_user_paid_categories_strict(email, index_number)
+        is_first = len(existing) == 0
+        amount = 200 if is_first else 100
  
         # Store minimal data in session
-        session['email']            = email
-        session['index_number']     = index_number
-        session['current_flow']     = flow
-        session['current_level']    = flow
-        session['payment_amount']   = amount
+        session['email'] = email
+        session['index_number'] = index_number
+        session['current_flow'] = flow
+        session['current_level'] = flow
+        session['payment_amount'] = amount
         session['is_first_category'] = is_first
-        session[f'paid_{flow}']     = False
+        session[f'paid_{flow}'] = False
         session.modified = True
  
         save_user_payment(email, index_number, flow, amount=amount)
@@ -6431,7 +6486,8 @@ def enter_details(flow):
  
     except Exception as e:
         print(f"❌ enter_details POST error: {e}")
-        import traceback; traceback.print_exc()
+        import traceback
+        traceback.print_exc()
         flash("An error occurred while processing your request", "error")
         return redirect(url_for('enter_details', flow=flow))
  
@@ -10054,7 +10110,157 @@ def admin_missing_courses():
     
     return render_template('admin_missing_courses.html')
 
-
+@app.route('/api/missing-courses/fix-notified-user', methods=['POST'])
+def api_fix_notified_user():
+    """Fix previously notified users by cleaning up their records and creating proper manual activation"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        data = request.get_json()
+        payment_id = data.get('payment_id')
+        email = data.get('email')
+        receipt = data.get('receipt')
+        index_number = data.get('index_number')
+        level = data.get('level')
+        
+        if not email or not index_number or not receipt:
+            return jsonify({'success': False, 'error': 'Missing required data'})
+        
+        print(f"🔧 FIXING previously notified user: {email} for {level} courses")
+        print(f"💰 Original receipt: {receipt}")
+        
+        # ============================================
+        # STEP 1: DELETE the bad payment record
+        # ============================================
+        if database_connected and user_payments_collection is not None:
+            result = user_payments_collection.delete_one({
+                'index_number': index_number,
+                'level': level
+            })
+            if result.deleted_count > 0:
+                print(f"✅ Deleted bad payment record for {index_number}")
+        
+        # ============================================
+        # STEP 2: Delete any existing courses
+        # ============================================
+        if database_connected and user_courses_collection is not None:
+            user_courses_collection.delete_one({
+                'index_number': index_number,
+                'level': level
+            })
+            print(f"✅ Deleted existing courses for {index_number}")
+        
+        # ============================================
+        # STEP 3: Create/Update manual activation
+        # ============================================
+        if database_connected and admin_activations_collection is not None:
+            # Check if activation already exists
+            existing = admin_activations_collection.find_one({
+                'index_number': index_number
+            })
+            
+            activation_record = {
+                'email': email,
+                'index_number': index_number,
+                'mpesa_receipt': receipt,
+                'activation_type': 'fixed_notified_user',
+                'activated_by': session.get('admin_username', 'admin'),
+                'activated_at': datetime.now(),
+                'is_active': True,
+                'status': 'active',
+                'used_for_flow': None,
+                'used_at': None,
+                'fixed_from_notified': True,
+                'original_payment_deleted': True
+            }
+            
+            if existing:
+                admin_activations_collection.update_one(
+                    {'_id': existing['_id']},
+                    {'$set': activation_record}
+                )
+                print(f"✅ Updated activation for {email}")
+            else:
+                admin_activations_collection.insert_one(activation_record)
+                print(f"✅ Created new activation for {email}")
+        
+        # ============================================
+        # STEP 4: Send new email with instructions
+        # ============================================
+        subject = "Your KUCCPS Access Has Been Fixed - Please Try Again"
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Your Access Has Been Fixed</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0;">Access Fixed!</h1>
+                <p style="color: white; margin: 5px 0 0;">Your account has been repaired</p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
+                <p>Dear Student,</p>
+                
+                <p>We apologize for the inconvenience. The technical issue preventing you from accessing your courses has been <strong>fixed</strong>.</p>
+                
+                <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0 0 10px 0;"><strong>✅ Your Details:</strong></p>
+                    <p style="margin: 5px 0;">📧 Email: <strong>{email}</strong></p>
+                    <p style="margin: 5px 0;">📝 KCSE Index Number: <strong>{index_number}</strong></p>
+                    <p style="margin: 5px 0;">💰 M-Pesa Receipt: <strong>{receipt}</strong></p>
+                    <p style="margin: 5px 0;">📚 Course Level: <strong>{level.upper()}</strong></p>
+                </div>
+                
+                <p><strong>To get your course results NOW:</strong></p>
+                <ol>
+                    <li>Go to <a href="https://www.kuccpscourses.co.ke/{level}">https://www.kuccpscourses.co.ke/{level}</a></li>
+                    <li>Enter your KCSE grades for {level.upper()} courses</li>
+                    <li>Enter your email: <strong>{email}</strong></li>
+                    <li>Enter your KCSE Index Number: <strong>{index_number}</strong></li>
+                    <li>Click <strong>"Continue"</strong> - Your courses will be generated instantly!</li>
+                </ol>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: #856404;">
+                        <strong>📌 You will NOT be charged again.</strong> Your payment has been verified and your access is free.
+                    </p>
+                </div>
+                
+                <p>Need help? Contact us: courseschecker@gmail.com | +254791196121</p>
+                
+                <hr style="margin: 20px 0;">
+                
+                <p style="font-size: 12px; color: #666; text-align: center;">
+                    © 2025 KUCCPS Courses Checker. All rights reserved.
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        email_sent = send_brevo_email(email, "Student", subject, html_content)
+        
+        if email_sent:
+            print(f"✅ Fix email sent to {email}")
+        else:
+            print(f"⚠️ Fix email failed for {email}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'User {email} fixed and notified',
+            'email_sent': email_sent
+        })
+        
+    except Exception as e:
+        print(f"❌ Error fixing notified user: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)})
 @app.route('/api/missing-courses/confirmed-only')
 def api_confirmed_missing_courses():
     """API: Get ONLY confirmed payments with receipt but NO courses"""
@@ -10492,7 +10698,7 @@ def api_send_missing_courses_email():
 
 @app.route('/api/missing-courses/activate-and-notify', methods=['POST'])
 def api_activate_and_notify():
-    """Activate user (create manual activation) and send notification - with duplicate check"""
+    """Activate user - CAPTURE receipt first, then delete bad payment record"""
     if not session.get('admin_logged_in'):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     
@@ -10500,93 +10706,133 @@ def api_activate_and_notify():
         data = request.get_json()
         payment_id = data.get('payment_id')
         email = data.get('email')
-        receipt = data.get('receipt')
+        receipt = data.get('receipt')  # Original M-Pesa receipt from payment
         index_number = data.get('index_number')
         level = data.get('level')
         
         if not email or not index_number or not receipt:
             return jsonify({'success': False, 'error': 'Missing required data'})
         
-        # Check if already activated
-        if check_if_activated(email, index_number, level):
-            return jsonify({
-                'success': False, 
-                'error': f'User {email} has already been activated for {level}.'
-            })
-        
         print(f"🔧 Activating user {email} for {level} courses")
+        print(f"💰 Captured original receipt: {receipt}")
         
-        # Create manual activation record
+        # ============================================
+        # STEP 1: Get the full payment record before deletion
+        # ============================================
+        original_payment = None
+        if database_connected and user_payments_collection is not None:
+            original_payment = user_payments_collection.find_one({
+                'index_number': index_number,
+                'level': level
+            })
+            
+            if original_payment:
+                print(f"📋 Found original payment record for {index_number}")
+                print(f"   - Receipt: {original_payment.get('mpesa_receipt')}")
+                print(f"   - Amount: {original_payment.get('payment_amount')}")
+                print(f"   - Date: {original_payment.get('created_at')}")
+        
+        # ============================================
+        # STEP 2: Create manual activation with ORIGINAL receipt
+        # ============================================
+        activation_record = {
+            'email': email,
+            'index_number': index_number,
+            'mpesa_receipt': receipt,  # Store original receipt
+            'original_amount': original_payment.get('payment_amount', 100) if original_payment else 100,
+            'original_date': original_payment.get('created_at') if original_payment else datetime.now(),
+            'activation_type': 'admin_activated_missing_course',
+            'activated_by': session.get('admin_username', 'admin'),
+            'activated_at': datetime.now(),
+            'is_active': True,
+            'status': 'active',
+            'used_for_flow': None,
+            'used_at': None,
+            'notes': f'Original receipt: {receipt} - Payment record will be recreated when user accesses courses'
+        }
+        
+        activation_saved = False
         if database_connected and admin_activations_collection is not None:
             # Check if activation already exists
             existing = admin_activations_collection.find_one({
-                'index_number': index_number,
-                'mpesa_receipt': receipt
+                'index_number': index_number
             })
             
             if existing:
-                if existing.get('is_active'):
-                    return jsonify({
-                        'success': False, 
-                        'error': f'User {email} already has an active manual activation.'
-                    })
-                else:
-                    # Update existing expired activation
-                    admin_activations_collection.update_one(
-                        {'_id': existing['_id']},
-                        {'$set': {
-                            'is_active': True,
-                            'status': 'active',
-                            'activated_at': datetime.now(),
-                            'activated_by': session.get('admin_username', 'admin')
-                        }}
-                    )
-                    print(f"✅ Updated existing activation for {email}")
+                # Update existing activation
+                admin_activations_collection.update_one(
+                    {'_id': existing['_id']},
+                    {'$set': {
+                        'is_active': True,
+                        'status': 'active',
+                        'mpesa_receipt': receipt,
+                        'activated_at': datetime.now(),
+                        'activated_by': session.get('admin_username', 'admin'),
+                        'used_for_flow': None,
+                        'used_at': None
+                    }}
+                )
+                print(f"✅ Updated existing activation for {email} with receipt {receipt}")
+                activation_saved = True
             else:
                 # Create new activation
-                activation_record = {
-                    'email': email,
+                result = admin_activations_collection.insert_one(activation_record)
+                if result.inserted_id:
+                    print(f"✅ Created new activation for {email} with receipt {receipt}")
+                    activation_saved = True
+        
+        # ============================================
+        # STEP 3: NOW delete the bad payment record (after capturing receipt)
+        # ============================================
+        payment_deleted = False
+        if database_connected and user_payments_collection is not None:
+            try:
+                result = user_payments_collection.delete_one({
                     'index_number': index_number,
-                    'mpesa_receipt': receipt,
-                    'activation_type': 'admin_activated_missing_course',
-                    'activated_by': session.get('admin_username', 'admin'),
-                    'activated_at': datetime.now(),
-                    'is_active': True,
-                    'status': 'active',
-                    'used_for_flow': None,
-                    'used_at': None,
-                    'notes': f'Activated from missing courses page - Payment ID: {payment_id}'
-                }
-                admin_activations_collection.insert_one(activation_record)
-                print(f"✅ Created new activation for {email}")
-            
-            # Mark as activated in tracking
+                    'level': level
+                })
+                if result.deleted_count > 0:
+                    payment_deleted = True
+                    print(f"✅ Deleted bad payment record for {index_number} (receipt captured)")
+                else:
+                    print(f"⚠️ No payment record found to delete for {index_number}")
+            except Exception as e:
+                print(f"⚠️ Error deleting payment record: {e}")
+        
+        # ============================================
+        # STEP 4: Delete any existing courses (to start fresh)
+        # ============================================
+        if database_connected and user_courses_collection is not None:
+            try:
+                result = user_courses_collection.delete_one({
+                    'index_number': index_number,
+                    'level': level
+                })
+                if result.deleted_count > 0:
+                    print(f"✅ Deleted existing courses for {index_number}")
+            except Exception as e:
+                print(f"⚠️ Error deleting courses: {e}")
+        
+        # ============================================
+        # STEP 5: Mark as activated in tracking
+        # ============================================
+        if activation_saved:
             mark_user_activated(email, index_number, level, 'admin_manual')
         
-        # Also update payment record to confirmed if not already
-        if payment_id and user_payments_collection is not None:
-            user_payments_collection.update_one(
-                {'_id': ObjectId(payment_id)},
-                {'$set': {
-                    'payment_confirmed': True,
-                    'manual_activation_created': True,
-                    'activated_at': datetime.now()
-                }}
-            )
-        
-        # Check if already notified before sending email
+        # ============================================
+        # STEP 6: Send email with original receipt information
+        # ============================================
         already_notified = check_if_notified(email, index_number, level)
         
-        if not already_notified:
-            # Send email notification
-            subject = "Your KUCCPS Account Has Been Activated - Complete Your Course Selection"
+        if not already_notified and activation_saved:
+            subject = "Your KUCCPS Account Has Been Activated - Use Your Original M-Pesa Receipt"
             
             html_content = f"""
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
-                <title>Account Activated - Complete Your Course Selection</title>
+                <title>Account Activated - Use Your Original M-Pesa Receipt</title>
             </head>
             <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -10597,40 +10843,47 @@ def api_activate_and_notify():
                 <div style="background: white; padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
                     <p>Dear Student,</p>
                     
-                    <p>Good news! Your account has been <strong>manually activated</strong> by our support team. You can now access your course results at no additional cost.</p>
+                    <p>Good news! Your account has been <strong>manually activated</strong> by our support team. You can now access your course results using your <strong>original M-Pesa receipt</strong>.</p>
                     
                     <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                        <p style="margin: 0 0 10px 0;"><strong>✅ Your Activation Details:</strong></p>
-                        <p style="margin: 5px 0;">📧 Email: {email}</p>
-                        <p style="margin: 5px 0;">📝 Index Number: {index_number}</p>
-                        <p style="margin: 5px 0;">💰 M-Pesa Receipt: <strong>{receipt}</strong></p>
-                        <p style="margin: 5px 0;">📚 Course Level: {level.upper()}</p>
+                        <p style="margin: 0 0 10px 0;"><strong>✅ Your Original Payment Details:</strong></p>
+                        <p style="margin: 5px 0;">📧 Email: <strong>{email}</strong></p>
+                        <p style="margin: 5px 0;">📝 KCSE Index Number: <strong>{index_number}</strong></p>
+                        <p style="margin: 5px 0;">💰 M-Pesa Receipt Number: <strong style="font-size: 1.1em;">{receipt}</strong></p>
+                        <p style="margin: 5px 0;">📚 Course Level: <strong>{level.upper()}</strong></p>
+                        <p style="margin: 5px 0;">💵 Amount Paid: <strong>KES {original_payment.get('payment_amount', 100) if original_payment else 100}</strong></p>
                     </div>
                     
-                    <p><strong>To get your course results now:</strong></p>
+                    <p><strong>To get your course results NOW (No additional payment needed):</strong></p>
                     <ol>
-                        <li>Visit <a href="https://www.kuccpscourses.co.ke">www.kuccpscourses.co.ke</a></li>
-                        <li>Click on the <strong>{level.upper()}</strong> course category</li>
-                        <li>Re-enter your KCSE grades for that category</li>
-                        <li>When prompted for payment, use the <strong>"Already Made Payment"</strong> option</li>
-                        <li>Enter your M-Pesa receipt number: <strong>{receipt}</strong></li>
-                        <li>Enter your KCSE index number: <strong>{index_number}</strong></li>
-                        <li>Your course results will be generated instantly!</li>
+                        <li>Go to <a href="https://www.kuccpscourses.co.ke/{level}">https://www.kuccpscourses.co.ke/{level}</a></li>
+                        <li>Enter your KCSE grades for {level.upper()} courses</li>
+                        <li>Enter your email: <strong>{email}</strong></li>
+                        <li>Enter your KCSE Index Number: <strong>{index_number}</strong></li>
+                        <li>Click <strong>"Continue"</strong> - The system will automatically detect your manual activation</li>
+                        <li>Your courses will be generated instantly and sent to this email as a PDF!</li>
                     </ol>
                     
-                    <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                        <p style="margin: 0; color: #0056b3;">
-                            <strong>🎉 You will NOT be charged again.</strong> The manual activation gives you free access to complete your course qualification process.
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <p style="margin: 0; color: #856404;">
+                            <strong>📌 IMPORTANT:</strong> Keep your M-Pesa receipt number <strong>{receipt}</strong> safe. 
+                            You will NOT be charged again. The system will use this receipt to verify your payment.
                         </p>
                     </div>
                     
-                    <p>If you need any assistance, please contact our support team at courseschecker@gmail.com or +254791196121.</p>
+                    <p><strong>What to expect after submitting:</strong></p>
+                    <ul>
+                        <li>✅ Your results will appear immediately on screen</li>
+                        <li>✅ You'll receive an email with your results as a PDF attachment</li>
+                        <li>✅ You can save courses to your basket for later reference</li>
+                        <li>✅ Your results will be available for 30 minutes of active browsing</li>
+                    </ul>
                     
                     <hr style="margin: 20px 0;">
                     
                     <p style="font-size: 12px; color: #666; text-align: center;">
-                        © 2025 KUCCPS Courses Checker. All rights reserved.<br>
-                        This is an automated message, please do not reply directly to this email.
+                        Need help? Contact us: courseschecker@gmail.com | +254791196121<br>
+                        © 2025 KUCCPS Courses Checker. All rights reserved.
                     </p>
                 </div>
             </body>
@@ -10640,19 +10893,25 @@ def api_activate_and_notify():
             email_sent = send_brevo_email(email, "Student", subject, html_content)
             
             if email_sent:
-                # Mark as notified
                 mark_user_notified(email, index_number, level)
-                print(f"✅ Activation email sent to {email}")
+                print(f"✅ Activation email sent to {email} with receipt {receipt}")
+                message = f'User {email} activated with receipt {receipt} - Email sent'
             else:
                 print(f"⚠️ Activation created but email failed for {email}")
-            
-            message = f'User {email} activated and notified successfully'
+                message = f'User {email} activated with receipt {receipt} (email failed)'
         else:
-            message = f'User {email} activated successfully (already notified previously)'
+            message = f'User {email} activated with receipt {receipt}'
+        
+        # Clear cache
+        global _missing_courses_cache
+        _missing_courses_cache['last_updated'] = None
         
         return jsonify({
             'success': True,
-            'message': message
+            'message': message,
+            'receipt_used': receipt,
+            'payment_deleted': payment_deleted,
+            'activation_created': activation_saved
         })
         
     except Exception as e:
@@ -10660,8 +10919,6 @@ def api_activate_and_notify():
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
-
-
 
 
 @app.route('/api/missing-courses/delete/<payment_id>', methods=['POST'])
