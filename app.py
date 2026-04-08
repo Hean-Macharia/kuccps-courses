@@ -12151,20 +12151,29 @@ def admin_manual_activation():
                          today_count=stats['today_count'],
                          recent_activations=recent_activations)
 if __name__ == "__main__":
-    print("🚀 Starting KUCCPS Application...")
-    print(f"📊 Database Connection Status: {'✅ Connected' if database_connected else '❌ Disconnected'}")
+    # Check if running on Render
+    is_render = os.environ.get('RENDER') == 'true'
     
-   
-    
-    # Start Flask application
-    port = int(os.environ.get('PORT', 8080))
-    debug_mode = os.environ.get('FLASK_ENV') != 'production'
-    
-    print(f"🌐 Starting Flask server on port {port} (debug={debug_mode})...")
-    
-    app.run(
-        host='0.0.0.0', 
-        port=port, 
-        debug=debug_mode,  
-        threaded=True
-    )
+    if is_render:
+        # On Render, let gunicorn handle the server
+        print("🚀 Running on Render - starting with gunicorn...")
+        # Don't start Flask server here - gunicorn will do it
+        pass
+    else:
+        # Local development only
+        print("🚀 Starting KUCCPS Application (Development)...")
+        print(f"📊 Database Connection Status: {'✅ Connected' if database_connected else '❌ Disconnected'}")
+        
+        port = int(os.environ.get('PORT', 8080))
+        debug_mode = True  # Local development
+        use_reloader = True
+        
+        print(f"🌐 Starting Flask server on port {port} (debug={debug_mode}, reloader={use_reloader})...")
+        
+        app.run(
+            host='0.0.0.0', 
+            port=port, 
+            debug=debug_mode,
+            use_reloader=use_reloader, 
+            threaded=True
+        )
