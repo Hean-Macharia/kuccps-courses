@@ -1,9 +1,6 @@
 {% extends "./base.html" %}
 {% block title %} KUCCPS Degree Courses | University Programs in Kenya {% endblock %}
 
-
-
-
 {% block links %}
 <link rel="canonical" href="{{ get_canonical_url('degree') }}" />
 <meta name="description" content="Find KUCCPS university degree programs in Kenya. Match your KCSE grades and cluster points with bachelor degree courses in engineering, medicine, business, education, and more.">
@@ -37,6 +34,125 @@
     <meta itemprop="skills" content="research, critical thinking, specialized knowledge, professional expertise"/>
 </div>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
+<style>
+    /* Enhanced UI/UX Styles */
+    .cluster-btn-container {
+        text-align: center;
+        margin: 2rem 0;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .btn-cluster-redirect {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border: none;
+        padding: 14px 32px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        color: white;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .btn-cluster-redirect:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+        color: white;
+    }
+    .btn-cluster-redirect i {
+        font-size: 1.4rem;
+    }
+    .cluster-points-card {
+        background: white;
+        border-radius: 24px;
+        padding: 1.8rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-top: 1rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    .cluster-points-card h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        border-left: 5px solid #0d6efd;
+        padding-left: 1rem;
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    .form-group-modern {
+        margin-bottom: 1rem;
+    }
+    .form-group-modern label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .form-group-modern input {
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+        padding: 0.7rem 1rem;
+        transition: all 0.2s ease;
+    }
+    .form-group-modern input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13,110,253,0.1);
+        outline: none;
+    }
+    .submit-btn {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        border: none;
+        padding: 12px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+    }
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(40,167,69,0.3);
+        background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    }
+    .video-tutorial-section {
+        background: #f8f9fa;
+        border-radius: 24px;
+        padding: 2rem;
+        margin: 2rem 0;
+    }
+    .video-container {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .instructions {
+        background: white;
+        padding: 1.2rem;
+        border-radius: 16px;
+        border-left: 4px solid #0d6efd;
+    }
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        .btn-cluster-redirect {
+            padding: 10px 20px;
+            font-size: 1rem;
+        }
+        .cluster-points-card {
+            padding: 1.2rem;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block displaytext %}Fill in your grades then submit{% endblock %}
@@ -49,621 +165,168 @@
 
 <div class="container mt-5">
     <!-- As a heading -->
-    <span>Fill in the details and submit to get the programmes you qualify!</span>
+    <span class="d-block mb-4 fs-5 text-muted">Fill in the details and submit to get the programmes you qualify!</span>
 
     <form action="/submit-grades" method="post">
         <!-- KCSE Subjects Grades (Email and Index will be collected after grades submission) -->
         <div id="gradesForm">
-            <h1 class="text-primary">University Degree Requirements</h1>
-            <div class="subjects">
-                <!-- Core Subjects -->
-                <div class="mb-4">
-                    <h2>Core Subjects</h2>
-                    <div class="form-group">
-                        <label for="mathematics">Mathematics:</label>
-                        <select id="mathematics" name="mathematics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="english">English:</label>
-                        <select id="english" name="english" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kiswahili">Kiswahili:</label>
-                        <select id="kiswahili" name="kiswahili" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- Sciences -->
-                <div class="mb-4">
-                    <h2>Sciences</h2>
-                    <div class="form-group">
-                        <label for="chemistry">Chemistry:</label>
-                        <select id="chemistry" name="chemistry" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="biology">Biology:</label>
-                        <select id="biology" name="biology" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="physics">Physics:</label>
-                        <select id="physics" name="physics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- Humanities -->
-                <div class="mb-4">
-                    <h2>Humanities</h2>
-                    <div class="form-group">
-                        <label for="geography">Geography:</label>
-                        <select id="geography" name="geography" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="history">History:</label>
-                        <select id="history" name="history" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="cre">Christian Religious Education (CRE):</label>
-                        <select id="cre" name="cre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ire">Islamic Religious Education (CRE):</label>
-                        <select id="ire" name="ire" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="hre">Hindu Religious Education (CRE):</label>
-                        <select id="hre" name="hre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- Technical Subjects -->
-                <div class="mb-4">
-                    <h2>Technical Subjects</h2>
-                    <div class="form-group">
-                        <label for="agriculture">Agriculture:</label>
-                        <select id="agriculture" name="agriculture" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="computer">Computer Studies:</label>
-                        <select id="computer" name="computer" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="arts">Art and Design:</label>
-                        <select id="arts" name="arts" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="woodwork">Woodwork:</label>
-                        <select id="woodwork" name="woodwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="homescience">HomeScience:</label>
-                        <select id="homescience" name="homescience" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="business">Business Studies:</label>
-                        <select id="business" name="business" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="music">Music:</label>
-                        <select id="music" name="music" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- Other Subjects -->
-                <div class="mb-4">
-                    <h2>Other Subjects</h2>
-                    <div class="form-group">
-                        <label for="building">Building and Construction:</label>
-                        <select id="building" name="building" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="electronics">Electricity and Electronics:</label>
-                        <select id="electronics" name="electronics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="metalwork">Metalwork:</label>
-                        <select id="metalwork" name="metalwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="french">French:</label>
-                        <select id="french" name="french" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                   
-                    <div class="form-group">
-                        <label for="kenya Sign Language">Kenya Sign Language:</label>
-                        <select id="kenya Sign Language" name="kenya Sign Language" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="german">German:</label>
-                        <select id="german" name="german" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-
-
-                    <div class="form-group">
-                        <label for="aviation">Aviation:</label>
-                        <select id="aviation" name="aviation" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+            <div class="card shadow-sm border-0 mb-5">
+                <div class="card-body p-4">
+                    <h1 class="text-primary mb-4">📚 University Degree Requirements</h1>
+                    <div class="subjects">
+                        <!-- Core Subjects -->
+                        <div class="mb-5">
+                            <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">⭐ Core Subjects</h2>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="mathematics" class="fw-semibold">Mathematics:</label>
+                                        <select id="mathematics" name="mathematics" class="form-select" required>
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option>
+                                            <option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="english" class="fw-semibold">English:</label>
+                                        <select id="english" name="english" class="form-select" required>
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option>
+                                            <option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="kiswahili" class="fw-semibold">Kiswahili:</label>
+                                        <select id="kiswahili" name="kiswahili" class="form-select" required>
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option>
+                                            <option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Sciences -->
+                        <div class="mb-5">
+                            <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">🔬 Sciences</h2>
+                            <div class="row g-3">
+                                <div class="col-md-4"><div class="form-group"><label for="chemistry" class="fw-semibold">Chemistry:</label><select id="chemistry" name="chemistry" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="biology" class="fw-semibold">Biology:</label><select id="biology" name="biology" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="physics" class="fw-semibold">Physics:</label><select id="physics" name="physics" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                            </div>
+                        </div>
+                        <!-- Humanities -->
+                        <div class="mb-5">
+                            <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">📖 Humanities</h2>
+                            <div class="row g-3">
+                                <div class="col-md-4"><div class="form-group"><label for="geography" class="fw-semibold">Geography:</label><select id="geography" name="geography" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="history" class="fw-semibold">History:</label><select id="history" name="history" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="cre" class="fw-semibold">Christian Religious Education (CRE):</label><select id="cre" name="cre" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="ire" class="fw-semibold">Islamic Religious Education (IRE):</label><select id="ire" name="ire" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="hre" class="fw-semibold">Hindu Religious Education (HRE):</label><select id="hre" name="hre" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                            </div>
+                        </div>
+                        <!-- Technical Subjects -->
+                        <div class="mb-5">
+                            <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">⚙️ Technical Subjects</h2>
+                            <div class="row g-3">
+                                <div class="col-md-4"><div class="form-group"><label for="agriculture" class="fw-semibold">Agriculture:</label><select id="agriculture" name="agriculture" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="computer" class="fw-semibold">Computer Studies:</label><select id="computer" name="computer" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="arts" class="fw-semibold">Art and Design:</label><select id="arts" name="arts" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="woodwork" class="fw-semibold">Woodwork:</label><select id="woodwork" name="woodwork" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="homescience" class="fw-semibold">Home Science:</label><select id="homescience" name="homescience" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="business" class="fw-semibold">Business Studies:</label><select id="business" name="business" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="music" class="fw-semibold">Music:</label><select id="music" name="music" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                            </div>
+                        </div>
+                        <!-- Other Subjects -->
+                        <div class="mb-4">
+                            <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">➕ Other Subjects</h2>
+                            <div class="row g-3">
+                                <div class="col-md-4"><div class="form-group"><label for="building" class="fw-semibold">Building and Construction:</label><select id="building" name="building" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="electronics" class="fw-semibold">Electricity and Electronics:</label><select id="electronics" name="electronics" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="metalwork" class="fw-semibold">Metalwork:</label><select id="metalwork" name="metalwork" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="french" class="fw-semibold">French:</label><select id="french" name="french" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="kenya Sign Language" class="fw-semibold">Kenya Sign Language:</label><select id="kenya Sign Language" name="kenya Sign Language" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="german" class="fw-semibold">German:</label><select id="german" name="german" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4"><div class="form-group"><label for="aviation" class="fw-semibold">Aviation:</label><select id="aviation" name="aviation" class="form-select" required><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Video Tutorial Section -->
-        <div class="video-tutorial-section mt-5 mb-5">
-            <h1 class="text-primary">How to View Your Cluster Points</h1>
+        <div class="video-tutorial-section">
+            <h1 class="text-primary mb-4 text-center">🎬 How to View Your Cluster Points</h1>
             <div class="video-container">
                 <video controls class="w-100">
                     <source src="{{ url_for('static', filename='videos/cluster-points.mp4') }}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             </div>
-            <div class="instructions mt-3">
-                <p class="lead">
-                    You'll see something written "Degree Cluster Weights" - those are your cluster points ranging from
-                    Cluster 1-20.
+            <div class="instructions mt-4">
+                <p class="lead mb-2">
+                    📌 You'll see something written "Degree Cluster Weights" - those are your cluster points ranging from Cluster 1-18.
                 </p>
                 <p class="mb-0">
-                    <strong>If using a mobile phone:</strong> Swipe to the left or use auto-rotate to view all cluster
-                    points clearly.
+                    📱 <strong>If using a mobile phone:</strong> Swipe to the left or use auto-rotate to view all cluster points clearly.
                 </p>
             </div>
         </div>
 
-        <!-- Cluster Cutoff Points -->
-        <div id="clusterPointsForm">
-            <h1 class="text-primary">Enter Your Cluster Cut-off-points</h1>
-            <div class="subjects">
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 1</label>
-                    <input type="number" step="0.0001" name="cl1" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 2</label>
-                    <input type="number" step="0.0001" name="cl2" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 3</label>
-                    <input type="number" step="0.0001" name="cl3" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 4</label>
-                    <input type="number" step="0.0001" name="cl4" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 5</label>
-                    <input type="number" step="0.0001" name="cl5" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 6</label>
-                    <input type="number" step="0.0001" name="cl6" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 7</label>
-                    <input type="number" step="0.0001" name="cl7" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 8</label>
-                    <input type="number" step="0.0001" name="cl8" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 9</label>
-                    <input type="number" step="0.0001" name="cl9" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 10</label>
-                    <input type="number" step="0.0001" name="cl10" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 11</label>
-                    <input type="number" step="0.0001" name="cl11" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 12</label>
-                    <input type="number" step="0.0001" name="cl12" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 13</label>
-                    <input type="number" step="0.0001" name="cl13" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 14</label>
-                    <input type="number" step="0.0001" name="cl14" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 15</label>
-                    <input type="number" step="0.0001" name="cl15" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 16</label>
-                    <input type="number" step="0.0001" name="cl16" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 17</label>
-                    <input type="number" step="0.0001" name="cl17" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                <div class="mb-3">
-                    <label for="exampleInput" class="form-label">Cluster 18</label>
-                    <input type="number" step="0.0001" name="cl18" class="form-control" id="exampleInput"
-                        placeholder="Enter cluster point here" required />
-                </div>
-                
-            </div>
+        <!-- NEW BUTTON: View My Cluster Points - Redirects to KUCCPS Portal -->
+        <div class="cluster-btn-container">
+            <a href="https://students.kuccps.net/login" target="_blank" class="btn-cluster-redirect" rel="noopener noreferrer">
+                <i>🔍</i> View My Cluster Points on KUCCPS Portal
+            </a>
+            <p class="text-muted mt-3 mb-0 small">Click to securely access your official cluster points from KUCCPS student portal</p>
         </div>
-        <button type="submit" class="btn btn-primary w-50" styles="width=100px">
-            Submit
-        </button>
+
+        <!-- Cluster Cutoff Points - Updated to Cluster 1-18 -->
+        <div id="clusterPointsForm" class="cluster-points-card">
+            <h1 class="text-primary">📊 Enter Your Cluster Cut-off-points</h1>
+            <div class="subjects">
+                <div class="form-grid">
+                    <div class="form-group-modern"><label>🎯 Cluster 1</label><input type="number" step="0.0001" name="cl1" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 2</label><input type="number" step="0.0001" name="cl2" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 3</label><input type="number" step="0.0001" name="cl3" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 4</label><input type="number" step="0.0001" name="cl4" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 5</label><input type="number" step="0.0001" name="cl5" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 6</label><input type="number" step="0.0001" name="cl6" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 7</label><input type="number" step="0.0001" name="cl7" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 8</label><input type="number" step="0.0001" name="cl8" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 9</label><input type="number" step="0.0001" name="cl9" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 10</label><input type="number" step="0.0001" name="cl10" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 11</label><input type="number" step="0.0001" name="cl11" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 12</label><input type="number" step="0.0001" name="cl12" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 13</label><input type="number" step="0.0001" name="cl13" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 14</label><input type="number" step="0.0001" name="cl14" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 15</label><input type="number" step="0.0001" name="cl15" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 16</label><input type="number" step="0.0001" name="cl16" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 17</label><input type="number" step="0.0001" name="cl17" class="form-control" placeholder="Enter cluster point here" required /></div>
+                    <div class="form-group-modern"><label>🎯 Cluster 18</label><input type="number" step="0.0001" name="cl18" class="form-control" placeholder="Enter cluster point here" required /></div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary submit-btn">
+                ✅ Submit & Check Qualification
+            </button>
+        </div>
     </form>
 </div>
 
-<div class="container mt-4 mb-4">
-    <div class="alert alert-info mb-4" role="alert">
+<div class="container mt-5 mb-5">
+    <div class="alert alert-info border-0 shadow-sm rounded-4" role="alert">
         <h2 class="alert-heading">🎓 KUCCPS University Degree Programs</h2>
-        <p class="mb-2">
-            <strong>University degree programs</strong> are 4-year bachelor's degree courses offered by accredited Kenyan universities.
-            These programs provide comprehensive tertiary education in various fields including science, engineering, business, medicine, and humanities.
-        </p>
+        <p class="mb-2"><strong>University degree programs</strong> are 4-year bachelor's degree courses offered by accredited Kenyan universities. These programs provide comprehensive tertiary education in various fields including science, engineering, business, medicine, and humanities.</p>
         <ul class="mb-0">
             <li><strong>Duration:</strong> 4 years (standard bachelor's program)</li>
             <li><strong>Focus:</strong> Comprehensive academic and professional training</li>
@@ -672,34 +335,34 @@
         </ul>
     </div>
     
-    <div class="row">
+    <div class="row g-4">
         <div class="col-md-6">
-            <div class="card mb-3">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">📚 Popular Degree Fields</h5>
-                    <ul>
-                        <li>Engineering (Civil, Electrical, Mechanical, Software)</li>
-                        <li>Medicine & Health Sciences</li>
-                        <li>Business & Commerce</li>
-                        <li>Computer Science & IT</li>
-                        <li>Education & Teaching</li>
-                        <li>Science (Physics, Chemistry, Biology)</li>
-                        <li>Law & Governance</li>
+                    <h5 class="card-title fs-4">📚 Popular Degree Fields</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">🔹 Engineering (Civil, Electrical, Mechanical, Software)</li>
+                        <li class="mb-2">🔹 Medicine & Health Sciences</li>
+                        <li class="mb-2">🔹 Business & Commerce</li>
+                        <li class="mb-2">🔹 Computer Science & IT</li>
+                        <li class="mb-2">🔹 Education & Teaching</li>
+                        <li class="mb-2">🔹 Science (Physics, Chemistry, Biology)</li>
+                        <li class="mb-2">🔹 Law & Governance</li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card mb-3">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">🎯 Career Opportunities</h5>
-                    <ul>
-                        <li>Professional careers in specialized fields</li>
-                        <li>Government and public service positions</li>
-                        <li>Corporate management roles</li>
-                        <li>Entrepreneurship & business ownership</li>
-                        <li>Further postgraduate study opportunities</li>
-                        <li>International career prospects</li>
+                    <h5 class="card-title fs-4">🎯 Career Opportunities</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">✨ Professional careers in specialized fields</li>
+                        <li class="mb-2">✨ Government and public service positions</li>
+                        <li class="mb-2">✨ Corporate management roles</li>
+                        <li class="mb-2">✨ Entrepreneurship & business ownership</li>
+                        <li class="mb-2">✨ Further postgraduate study opportunities</li>
+                        <li class="mb-2">✨ International career prospects</li>
                     </ul>
                 </div>
             </div>
@@ -709,27 +372,23 @@
 
 <!-- Why Choose University Degree Programs -->
 <div class="container my-5">
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">🎓 Why Choose University Degree Programs?</h2>
-            <div class="row g-3">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-body p-5">
+            <h2 class="card-title mb-4 text-center">🎓 Why Choose University Degree Programs?</h2>
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <h5>Comprehensive Education</h5>
+                    <div class="p-3 rounded-3 bg-light h-100">
+                        <h5 class="text-primary">📖 Comprehensive Education</h5>
                         <p class="text-muted">4-year curriculum covering theory, research, and practical application in your field of study.</p>
-                    </div>
-                    <div class="mb-3">
-                        <h5>Career Advancement</h5>
+                        <h5 class="text-primary mt-3">🚀 Career Advancement</h5>
                         <p class="text-muted">Bachelor's degree is minimum requirement for many professional careers and leadership positions.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <h5>Research Opportunities</h5>
+                    <div class="p-3 rounded-3 bg-light h-100">
+                        <h5 class="text-primary">🔬 Research Opportunities</h5>
                         <p class="text-muted">Access to laboratories, research projects, and mentorship from experienced faculty members.</p>
-                    </div>
-                    <div class="mb-3">
-                        <h5>International Recognition</h5>
+                        <h5 class="text-primary mt-3">🌍 International Recognition</h5>
                         <p class="text-muted">Kenyan university degrees are recognized globally, opening doors for international opportunities.</p>
                     </div>
                 </div>
@@ -740,34 +399,34 @@
 
 <!-- Degree Program FAQs -->
 <div class="container my-5">
-    <h2 class="mb-4">❓ Frequently Asked Questions About Degree Programs</h2>
+    <h2 class="mb-4 text-center">❓ Frequently Asked Questions About Degree Programs</h2>
     <div class="accordion" id="degreeFAQ">
-        <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">What are cluster points and how are they calculated?</button></h2>
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+            <h2 class="accordion-header"><button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">What are cluster points and how are they calculated?</button></h2>
             <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">Cluster points are weighted grades that reflect your academic performance. They are calculated from your KCSE results, with each subject weighted differently based on university requirements. Higher points indicate stronger academic performance.</div>
             </div>
         </div>
-        <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">Can I change my course choice after admission?</button></h2>
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+            <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">Can I change my course choice after admission?</button></h2>
             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">Yes, most universities allow course changes within the first semester or during admission appeals process. However, this depends on subject requirements and university policies. Contact your university directly for specific procedures.</div>
             </div>
         </div>
-        <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">What career prospects does a degree offer?</button></h2>
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+            <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">What career prospects does a degree offer?</button></h2>
             <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">University degrees prepare you for diverse career paths in: engineering, medicine, law, business, education, IT, architecture, and more. Graduates typically earn significantly higher salaries and have greater career mobility than diploma holders.</div>
             </div>
         </div>
-        <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">How much does a university degree cost?</button></h2>
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+            <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">How much does a university degree cost?</button></h2>
             <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">University fees vary by institution and program. Public universities cost KES 4,000-20,000 per semester, while private universities range from KES 50,000-200,000+. Government loans and scholarships are available to eligible students.</div>
             </div>
         </div>
-        <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">Can I pursue further studies after my degree?</button></h2>
+        <div class="accordion-item border-0 shadow-sm rounded-3 overflow-hidden">
+            <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">Can I pursue further studies after my degree?</button></h2>
             <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">Yes, Bachelor's degree holders can pursue Master's degrees, PhDs, professional qualifications (Law, Medicine), and postgraduate diplomas. Many employers offer professional development opportunities after hiring.</div>
             </div>
@@ -777,32 +436,32 @@
 
 <!-- Degree Success Stories -->
 <div class="container my-5">
-    <h2 class="mb-4">🌟 Success Stories: Degree Graduates</h2>
-    <div class="row g-3">
+    <h2 class="mb-4 text-center">🌟 Success Stories: Degree Graduates</h2>
+    <div class="row g-4">
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card h-100 border-0 shadow-sm text-center p-3">
                 <div class="card-body">
                     <h5 class="card-title">Dr. James Kipchoge - Engineer</h5>
                     <p class="card-text"><em>"My degree in Civil Engineering from University of Nairobi opened doors I never imagined. I now design infrastructure projects across East Africa. The knowledge and network from university were invaluable."</em></p>
-                    <small class="text-success">✓ Now earning KES 250,000+ monthly</small>
+                    <small class="text-success fw-bold">✓ Now earning KES 250,000+ monthly</small>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card h-100 border-0 shadow-sm text-center p-3">
                 <div class="card-body">
                     <h5 class="card-title">Dr. Sarah Mwangi - Pharmacist</h5>
                     <p class="card-text"><em>"My pharmacy degree allowed me to complete my Master's and now I'm leading pharmaceutical research. The degree wasn't just education—it was an investment in my future."</em></p>
-                    <small class="text-success">✓ Now pursuing International PhD</small>
+                    <small class="text-success fw-bold">✓ Now pursuing International PhD</small>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card h-100 border-0 shadow-sm text-center p-3">
                 <div class="card-body">
                     <h5 class="card-title">Peter Okonkwo - Business Manager</h5>
                     <p class="card-text"><em>"My business degree didn't just teach me commerce—it taught me how to think critically. I started my own business and now employ 50 people in tech industry."</em></p>
-                    <small class="text-success">✓ Successful Entrepreneur & Employer</small>
+                    <small class="text-success fw-bold">✓ Successful Entrepreneur & Employer</small>
                 </div>
             </div>
         </div>
@@ -811,12 +470,12 @@
 
 <!-- Degree Prerequisites & Requirements -->
 <div class="container my-5 mb-5">
-    <div class="card border-left-primary shadow-sm">
-        <div class="card-body p-4">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-body p-5">
             <h2 class="card-title mb-4">📋 Degree Program Prerequisites & Requirements</h2>
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <h5 class="mb-3 text-primary">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum C+ (8 points) across all subjects</li>
                         <li class="mb-2"><strong>Cluster Points:</strong> Varies by university and program (typically 20-80 points)</li>
@@ -826,7 +485,7 @@
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <h5 class="mb-3 text-primary">Program-Specific Requirements</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><strong>Engineering Programs:</strong> Physics, Chemistry, and Mathematics all B- or better</li>
                         <li class="mb-2"><strong>Medical Programs:</strong> Biology, Chemistry, Physics (min C+)</li>

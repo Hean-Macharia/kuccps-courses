@@ -19,7 +19,7 @@
         </div>
     </div>
     
-    <!-- Statistics Cards -->
+    <!-- Statistics Cards - Fast loading with cached data -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="card-custom">
@@ -55,12 +55,40 @@
         </div>
     </div>
     
-    <!-- Pending Issues Table -->
-    <div class="card-custom">
+    <!-- Batch Actions Bar -->
+    <div class="card-custom mb-4">
         <div class="card-header-custom">
             <h5 class="mb-0">
-                <i class="fas fa-clock me-2"></i>Pending Payment Issues
+                <i class="fas fa-tools me-2"></i>Batch Actions
             </h5>
+        </div>
+        <div class="card-body-custom">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <p class="mb-2"><strong>Auto-Resolve Existing Issues</strong></p>
+                    <p class="text-muted small mb-0">This will check all pending payment issues against the database. Issues with valid payments and existing courses will be automatically resolved, and users will receive email notifications with access instructions.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-warning btn-lg" onclick="batchResolveExistingIssues()" id="batchResolveBtn">
+                        <i class="fas fa-magic me-2"></i>Auto-Resolve All Issues
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Issues Table with Pagination -->
+    <div class="card-custom">
+        <div class="card-header-custom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Pending Payment Issues
+                    <span class="badge bg-warning ms-2">{{ total_pending|default(0) }}</span>
+                </h5>
+                {% if total_pages > 1 %}
+                <span class="badge bg-secondary">Page {{ page }} of {{ total_pages }}</span>
+                {% endif %}
+            </div>
         </div>
         <div class="card-body-custom">
             {% if issues %}
@@ -68,54 +96,116 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Email</th>
-                                <th>Index Number</th>
-                                <th>M-Pesa Receipt</th>
-                                <th>Screenshot</th>
-                                <th>Actions</th>
+                                <th style="width: 15%">Date</th>
+                                <th style="width: 20%">Email</th>
+                                <th style="width: 15%">Index Number</th>
+                                <th style="width: 15%">M-Pesa Receipt</th>
+                                <th style="width: 10%">Screenshot</th>
+                                <th style="width: 15%">Quick Check</th>
+                                <th style="width: 10%">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for issue in issues %}
-                            <tr>
-                                <td>{{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                <td>{{ issue.email }}</td>
-                                <td>{{ issue.index_number }}</td>
+                            <tr id="issue-row-{{ issue._id }}">
                                 <td>
-                                    <span class="badge bg-info">{{ issue.mpesa_receipt }}</span>
-                                    <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ issue.mpesa_receipt }}')">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
+                                    {% if issue.created_at %}
+                                        {{ issue.created_at.strftime('%Y-%m-%d %H:%M') if issue.created_at is not string else issue.created_at[:16] }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>{{ issue.email|truncate(25) if issue.email else 'N/A' }}</td>
+                                <td>{{ issue.index_number if issue.index_number else 'N/A' }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-info font-monospace">{{ issue.mpesa_receipt }}</span>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ issue.mpesa_receipt }}')" title="Copy receipt">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
                                 </td>
                                 <td>
                                     {% if issue.screenshot %}
                                     <button class="btn btn-sm btn-primary" onclick="viewScreenshot('{{ issue.screenshot }}')">
-                                        <i class="fas fa-image"></i> View
+                                        <i class="fas fa-image me-1"></i>View
                                     </button>
                                     {% else %}
                                     <span class="text-muted">No screenshot</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <form method="POST" action="{{ url_for('process_payment_issue', issue_id=issue._id) }}" class="d-inline">
-                                        <input type="hidden" name="action" value="approve">
-                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this issue and create manual activation?')">
-                                            <i class="fas fa-check me-1"></i>Approve
-                                        </button>
-                                    </form>
-                                    <form method="POST" action="{{ url_for('process_payment_issue', issue_id=issue._id) }}" class="d-inline">
-                                        <input type="hidden" name="action" value="delete">
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this issue? Details not found.')">
-                                            <i class="fas fa-trash me-1"></i>Delete
-                                        </button>
-                                    </form>
+                                    <button class="btn btn-sm btn-info" onclick="checkAndResolveIssue('{{ issue._id }}')" id="check-btn-{{ issue._id }}">
+                                        <i class="fas fa-search me-1"></i>Check
+                                    </button>
+                                    <div id="check-status-{{ issue._id }}" class="small mt-1"></div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <form method="POST" action="{{ url_for('process_payment_issue', issue_id=issue._id) }}" class="d-inline" onsubmit="return confirm('Approve this issue and create manual activation?')">
+                                            <input type="hidden" name="action" value="approve">
+                                            <button type="submit" class="btn btn-success" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('process_payment_issue', issue_id=issue._id) }}" class="d-inline" onsubmit="return confirm('Delete this issue? Details not found.')">
+                                            <input type="hidden" name="action" value="delete">
+                                            <button type="submit" class="btn btn-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Pagination Controls -->
+                {% if total_pages > 1 %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin_payment_issues', page=page-1, per_page=per_page) }}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                        
+                        {% set start_page = [page - 2, 1]|max %}
+                        {% set end_page = [start_page + 4, total_pages]|min %}
+                        
+                        {% for p in range(start_page, end_page + 1) %}
+                            <li class="page-item {% if p == page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('admin_payment_issues', page=p, per_page=per_page) }}">{{ p }}</a>
+                            </li>
+                        {% endfor %}
+                        
+                        <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin_payment_issues', page=page+1, per_page=per_page) }}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Per page selector -->
+                <div class="text-center mt-3">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="{{ url_for('admin_payment_issues', page=1, per_page=10) }}" class="btn btn-outline-secondary {% if per_page == 10 %}active{% endif %}">10</a>
+                        <a href="{{ url_for('admin_payment_issues', page=1, per_page=20) }}" class="btn btn-outline-secondary {% if per_page == 20 %}active{% endif %}">20</a>
+                        <a href="{{ url_for('admin_payment_issues', page=1, per_page=50) }}" class="btn btn-outline-secondary {% if per_page == 50 %}active{% endif %}">50</a>
+                        <a href="{{ url_for('admin_payment_issues', page=1, per_page=100) }}" class="btn btn-outline-secondary {% if per_page == 100 %}active{% endif %}">100</a>
+                    </div>
+                    <span class="ms-2 text-muted small">items per page</span>
+                </div>
+                {% endif %}
+                
+                <!-- Showing info -->
+                <div class="text-center text-muted small mt-3">
+                    Showing {{ issues|length }} of {{ total_pending }} pending issues
+                </div>
+                
             {% else %}
                 <div class="text-center py-5">
                     <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
@@ -123,6 +213,53 @@
                     <p class="text-muted">All payment issues have been processed.</p>
                 </div>
             {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Progress Modal for Batch Processing -->
+<div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-spinner fa-spin me-2"></i>
+                    Processing Issues
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p id="progressMessage">Checking payment issues against database...</p>
+                    <div class="progress mt-3">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Result Modal -->
+<div class="modal fade" id="resultModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Batch Processing Results
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="resultModalBody">
+                <!-- Results will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="location.reload()">Refresh Page</button>
+            </div>
         </div>
     </div>
 </div>
@@ -142,17 +279,329 @@
     </div>
 </div>
 
+<style>
+.card-custom {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.card-header-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    font-weight: 500;
+}
+
+.card-body-custom {
+    padding: 20px;
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 5px;
+    transition: transform 0.2s;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    color: white;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+.display-6 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.font-monospace {
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.pagination .page-link {
+    color: #667eea;
+}
+
+.pagination .active .page-link {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Loading spinner for check button */
+.btn-info:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+    }
+}
+</style>
+
 <script>
+// Global variables
+let autoRefreshInterval = null;
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Start auto-refresh for pending count every 30 seconds
+    startAutoRefresh();
+});
+
+function startAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+    autoRefreshInterval = setInterval(refreshPendingCount, 30000);
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+}
+
+function refreshPendingCount() {
+    fetch('/api/pending-issues-count')
+        .then(response => response.json())
+        .then(data => {
+            const pendingBadge = document.querySelector('.badge.bg-warning');
+            const pendingCountSpan = document.querySelector('.badge.bg-warning');
+            if (pendingBadge && data.count !== undefined) {
+                pendingBadge.textContent = data.count;
+                if (pendingCountSpan) {
+                    pendingCountSpan.textContent = data.count;
+                }
+            }
+        })
+        .catch(error => console.log('Error refreshing count:', error));
+}
+
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        alert('Receipt number copied: ' + text);
+        // Show temporary success message
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+        }, 1000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy receipt number');
     });
 }
 
 function viewScreenshot(screenshotData) {
     const modal = new bootstrap.Modal(document.getElementById('screenshotModal'));
-    document.getElementById('screenshotImage').src = screenshotData;
+    const imgElement = document.getElementById('screenshotImage');
+    imgElement.src = screenshotData;
     modal.show();
 }
+
+function checkAndResolveIssue(issueId) {
+    const checkBtn = document.getElementById('check-btn-' + issueId);
+    const statusDiv = document.getElementById('check-status-' + issueId);
+    
+    // Disable button and show loading
+    checkBtn.disabled = true;
+    checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking...';
+    statusDiv.innerHTML = '<span class="text-info">Checking database...</span>';
+    
+    fetch('/admin/check-resolve-issue/' + issueId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusDiv.innerHTML = '<span class="text-success">✓ ' + data.message + '</span>';
+            // Highlight the row and fade out
+            const row = document.getElementById('issue-row-' + issueId);
+            row.style.backgroundColor = '#d4edda';
+            setTimeout(() => {
+                row.style.transition = 'opacity 0.5s';
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            }, 2000);
+        } else {
+            statusDiv.innerHTML = '<span class="text-danger">✗ ' + data.error + '</span>';
+            checkBtn.disabled = false;
+            checkBtn.innerHTML = '<i class="fas fa-search me-1"></i>Check';
+        }
+    })
+    .catch(error => {
+        statusDiv.innerHTML = '<span class="text-danger">✗ Error: ' + error + '</span>';
+        checkBtn.disabled = false;
+        checkBtn.innerHTML = '<i class="fas fa-search me-1"></i>Check';
+    });
+}
+
+function batchResolveExistingIssues() {
+    if (!confirm('⚠️ WARNING: This will check ALL pending payment issues against the database.\n\n' +
+                 'Issues with valid payments AND existing courses will be automatically resolved.\n\n' +
+                 'Users will receive email notifications with access instructions.\n\n' +
+                 'Do you want to continue?')) {
+        return;
+    }
+    
+    // Stop auto-refresh temporarily
+    stopAutoRefresh();
+    
+    // Show progress modal
+    const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+    progressModal.show();
+    
+    // Update progress
+    const progressBar = document.getElementById('progressBar');
+    const progressMessage = document.getElementById('progressMessage');
+    
+    progressBar.style.width = '30%';
+    progressMessage.textContent = 'Fetching pending issues...';
+    
+    // Call the batch resolve API
+    fetch('/admin/batch-resolve-issues', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Close progress modal
+        progressModal.hide();
+        
+        // Show results in modal
+        const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+        const resultBody = document.getElementById('resultModalBody');
+        
+        if (data.success) {
+            let statusIcon = '';
+            let statusColor = '';
+            if (data.resolved > 0) {
+                statusIcon = '✅';
+                statusColor = 'success';
+            } else if (data.pending > 0) {
+                statusIcon = '⚠️';
+                statusColor = 'warning';
+            } else {
+                statusIcon = 'ℹ️';
+                statusColor = 'info';
+            }
+            
+            resultBody.innerHTML = `
+                <div class="text-center">
+                    <div class="display-1 mb-3">${statusIcon}</div>
+                    <h4>Batch Processing Complete</h4>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Processed</h5>
+                                    <p class="card-text display-6">${data.processed}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-${statusColor} text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Resolved</h5>
+                                    <p class="card-text display-6">${data.resolved}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card bg-warning">
+                                <div class="card-body">
+                                    <h5 class="card-title">Still Pending</h5>
+                                    <p class="card-text display-6">${data.pending}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Emails Sent</h5>
+                                    <p class="card-text display-6">${data.emails_sent}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <p class="text-muted">${data.message}</p>
+                    <div class="alert alert-info mt-3">
+                        <small>💡 Tip: Resolved issues have been removed from the pending list. Users have received email notifications with access instructions.</small>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultBody.innerHTML = `
+                <div class="text-center">
+                    <div class="display-1 mb-3">❌</div>
+                    <h4>Error Processing Issues</h4>
+                    <p class="text-danger">${data.error}</p>
+                    <button class="btn btn-primary mt-3" onclick="location.reload()">Refresh Page</button>
+                </div>
+            `;
+        }
+        
+        resultModal.show();
+        
+        // Restart auto-refresh
+        startAutoRefresh();
+    })
+    .catch(error => {
+        progressModal.hide();
+        alert('Error processing issues: ' + error);
+        startAutoRefresh();
+    });
+}
+
+// Refresh page when modal is closed
+document.getElementById('resultModal').addEventListener('hidden.bs.modal', function () {
+    if (confirm('Refresh page to see updated list?')) {
+        location.reload();
+    }
+});
 </script>
 {% endblock %}

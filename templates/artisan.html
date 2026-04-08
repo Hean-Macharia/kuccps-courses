@@ -1,5 +1,7 @@
-{% extends "./base.html" %} {% block title %} KUCCPS Artisan Courses | Skills Training in Kenya {% endblock %} {%
-block links %}
+{% extends "./base.html" %}
+{% block title %} KUCCPS Artisan Courses | Skills Training in Kenya {% endblock %}
+
+{% block links %}
 <link rel="canonical" href="{{ get_canonical_url('artisan') }}" />
 <!-- Explicit Self-Referential Canonical Tag for /artisan -->
 <meta name="description" content="Find KUCCPS artisan courses and vocational skills training programs in Kenya. Match your KCSE grades with practical trade programs in plumbing, electrical, carpentry, and more.">
@@ -32,807 +34,991 @@ block links %}
     <meta itemprop="skills" content="practical trades, technical skills, hands-on competencies, craft mastery"/>
 </div>
 
+<link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
+
+<!-- Enhanced Artisan Page Styling - Modern UI/UX -->
 <style>
-    .artisan-title {
+    /* Modern Color Scheme for Artisan */
+    :root {
+        --artisan-primary: #00b4d8;
+        --artisan-primary-dark: #0096c7;
+        --artisan-secondary: #48cae4;
+        --artisan-accent: #f4a261;
+        --artisan-success: #2a9d8f;
+        --artisan-warning: #e9c46a;
+        --artisan-dark: #264653;
+        --artisan-light-bg: #f0f8ff;
+        --artisan-card-shadow: 0 10px 30px -8px rgba(0,0,0,0.08);
+        --artisan-hover-shadow: 0 20px 35px -12px rgba(0,180,216,0.15);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    .animate-fade-up { animation: fadeInUp 0.5s ease-out; }
+
+    /* Hero Section */
+    .artisan-hero {
+        background: linear-gradient(135deg, #023e8a 0%, #0077b6 50%, #00b4d8 100%);
+        border-radius: 28px;
+        padding: 2.5rem 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .artisan-hero::before {
+        content: "🔧";
+        position: absolute;
+        font-size: 8rem;
+        opacity: 0.08;
+        bottom: -20px;
+        right: -20px;
+        transform: rotate(-15deg);
+    }
+    .artisan-hero h1 {
         font-size: 1.8rem;
+        margin-bottom: 0.75rem;
         font-weight: 700;
-        margin: 0;
+    }
+    .artisan-hero p {
+        font-size: 1rem;
+        opacity: 0.92;
+        max-width: 750px;
+        margin: 0 auto;
+    }
+
+    /* Form Cards */
+    .artisan-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: var(--artisan-card-shadow);
+        padding: 1.8rem;
+        margin-bottom: 2rem;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .artisan-card:hover {
+        box-shadow: var(--artisan-hover-shadow);
+        transform: translateY(-2px);
+    }
+
+    /* Section Titles */
+    .artisan-section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--artisan-dark);
+        border-left: 5px solid var(--artisan-primary);
+        padding-left: 1rem;
+        margin-bottom: 1.5rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .artisan-section-title i {
+        color: var(--artisan-primary);
+        font-size: 1.3rem;
+    }
+
+    /* Subject Group Headers */
+    .artisan-subject-group {
+        background: var(--artisan-light-bg);
+        border-radius: 20px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(0,180,216,0.1);
+    }
+    .artisan-subject-group:hover {
+        background: #e6f4ff;
+        border-color: var(--artisan-primary);
+    }
+    .artisan-subject-group h2 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--artisan-primary-dark);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .artisan-subject-group h2 i {
+        font-size: 1.2rem;
+    }
+
+    /* Form Grid Layout */
+    .artisan-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+    .artisan-form-group {
+        margin-bottom: 0;
+    }
+    .artisan-form-group label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.4rem;
+        display: block;
+        font-size: 0.85rem;
+        letter-spacing: 0.3px;
+    }
+    .artisan-select {
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 0.6rem 0.8rem;
+        background-color: white;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+    .artisan-select:focus {
+        border-color: var(--artisan-primary);
+        box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
+        outline: none;
+    }
+    .artisan-select:hover {
+        border-color: var(--artisan-primary);
+    }
+
+    /* Overall Grade Special Styling */
+    .overall-grade-section {
+        background: linear-gradient(135deg, #e6f4ff 0%, #d4eaff 100%);
+        border-radius: 20px;
+        padding: 1.2rem 1.8rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .overall-grade-section label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--artisan-primary-dark);
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .overall-grade-section .artisan-select {
+        width: 220px;
+        font-weight: 500;
+        background: white;
+    }
+
+    /* Submit Button */
+    .artisan-submit-btn {
+        background: linear-gradient(135deg, var(--artisan-primary) 0%, var(--artisan-primary-dark) 100%);
+        border: none;
+        padding: 14px 32px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        color: white;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 12px;
     }
-    
-    .artisan-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        overflow: hidden;
-        margin-bottom: 30px;
-    }
-    
-    #gradesForm {
-        padding: 30px;
-        background: white;
-    }
-    
-    #gradesForm h1 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #00f2fe;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #00f2fe;
-    }
-    
-    #gradesForm h2 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #4facfe;
-        margin-top: 25px;
-        margin-bottom: 15px;
-        padding-left: 10px;
-        border-left: 4px solid #4facfe;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-group label {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 8px;
-        display: block;
-        font-size: 0.95rem;
-    }
-    
-    .form-select {
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-select:focus {
-        border-color: #00f2fe;
-        box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.1);
-        outline: none;
-    }
-    
-    .form-select:hover {
-        border-color: #00f2fe;
-    }
-    
-    .subjects {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-    
-    form button {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        border: none;
-        color: white;
-        padding: 12px 40px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 30px;
-        width: 100%;
-    }
-    
-    form button:hover {
+    .artisan-submit-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 242, 254, 0.3);
+        box-shadow: 0 8px 25px rgba(0,180,216,0.35);
+        background: linear-gradient(135deg, var(--artisan-primary-dark) 0%, var(--artisan-primary) 100%);
     }
-    
-    .intro-span {
+
+    /* Info Cards */
+    .artisan-info-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--artisan-card-shadow);
+        height: 100%;
+        transition: all 0.2s ease;
+        overflow: hidden;
+    }
+    .artisan-info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--artisan-hover-shadow);
+    }
+    .artisan-info-card .card-body {
+        padding: 1.5rem;
+    }
+    .artisan-info-card h5 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--artisan-primary-dark);
+    }
+    .artisan-info-card ul {
+        padding-left: 1.2rem;
+        margin-bottom: 0;
+    }
+    .artisan-info-card li {
+        margin-bottom: 0.6rem;
+        line-height: 1.4;
+    }
+
+    /* Alert Boxes */
+    .artisan-alert {
+        border-radius: 20px;
+        border: none;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .artisan-alert h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+    }
+    .artisan-alert-info {
+        background: linear-gradient(135deg, #e6f4ff 0%, #d4eaff 100%);
+        color: #023e8a;
+    }
+    .artisan-alert-success {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        color: #1b5e20;
+    }
+
+    /* Accordion Styling */
+    .artisan-accordion-item {
+        border: none;
+        margin-bottom: 0.75rem;
+        border-radius: 16px !important;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .artisan-accordion-button {
+        font-weight: 600;
+        background-color: white;
+        padding: 1rem 1.2rem;
+        color: var(--artisan-dark);
+    }
+    .artisan-accordion-button:not(.collapsed) {
+        background-color: var(--artisan-light-bg);
+        color: var(--artisan-primary);
+    }
+    .artisan-accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,0.1);
+    }
+    .artisan-accordion-body {
+        padding: 1.2rem;
+        background-color: #fefefe;
+    }
+
+    /* Success Story Cards */
+    .artisan-story-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--artisan-card-shadow);
+        height: 100%;
+        transition: all 0.2s ease;
+        background: white;
+    }
+    .artisan-story-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--artisan-hover-shadow);
+    }
+    .artisan-story-card .card-body {
+        padding: 1.5rem;
+    }
+    .artisan-story-card h5 {
+        font-weight: 700;
+        color: var(--artisan-primary-dark);
+        margin-bottom: 0.75rem;
+    }
+    .artisan-story-card .story-quote {
+        font-style: italic;
+        color: #555;
+        line-height: 1.5;
+    }
+    .artisan-story-card .story-badge {
+        background: var(--artisan-success);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 0.75rem;
+    }
+
+    /* Feature Cards */
+    .artisan-feature-card {
+        background: white;
+        border-radius: 18px;
+        padding: 1.2rem;
+        height: 100%;
+        transition: all 0.2s ease;
+        border: 1px solid #eef2f7;
+    }
+    .artisan-feature-card:hover {
+        background: linear-gradient(135deg, #fff 0%, #e6f4ff 100%);
+        border-color: var(--artisan-primary);
+        transform: translateY(-2px);
+    }
+    .artisan-feature-card h5 {
+        font-weight: 700;
+        color: var(--artisan-primary);
+        margin-bottom: 0.5rem;
+    }
+    .artisan-feature-card p {
+        color: #666;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    /* Intro Text */
+    .artisan-intro-text {
         font-size: 1.1rem;
         color: #555;
         display: block;
-        margin-bottom: 30px;
+        margin-bottom: 1.8rem;
         font-weight: 500;
+        text-align: center;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .artisan-hero {
+            padding: 1.5rem;
+        }
+        .artisan-hero h1 {
+            font-size: 1.4rem;
+        }
+        .artisan-card {
+            padding: 1.2rem;
+        }
+        .artisan-section-title {
+            font-size: 1.3rem;
+        }
+        .overall-grade-section {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+        .overall-grade-section .artisan-select {
+            width: 100%;
+        }
+        .artisan-form-grid {
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+        }
+        .artisan-subject-group {
+            padding: 1rem;
+        }
+        .artisan-submit-btn {
+            padding: 12px 20px;
+            font-size: 1rem;
+        }
+        .artisan-intro-text {
+            font-size: 1rem;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        .artisan-submit-btn, .artisan-card, .artisan-hero {
+            break-inside: avoid;
+        }
+    }
+
+    /* Additional Styling */
+    .badge-artisan {
+        background: var(--artisan-primary);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+    }
+    .trade-tag {
+        background: var(--artisan-light-bg);
+        border: 1px solid var(--artisan-primary);
+        border-radius: 40px;
+        padding: 6px 16px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--artisan-primary-dark);
+        transition: all 0.2s ease;
+        display: inline-block;
+    }
+    .trade-tag:hover {
+        background: var(--artisan-primary);
+        color: white;
+        transform: translateY(-2px);
     }
 </style>
-{% endblock %} {% block displaytext %}Find Artisan Programs Matching Your Grades{% endblock
-%} {% block content %}
+{% endblock %}
 
-    <div class="container">
-        <h1 class="text-center mb-4">KUCCPS Artisan & Trade Programs Qualification Checker</h1>
+{% block displaytext %}Find Artisan Programs Matching Your Grades{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div class="container mt-3">
+    <div class="artisan-hero animate-fade-in">
+        <h1>🔧 KUCCPS Artisan & Trade Programs</h1>
+        <p>Discover 1-2 year practical trade programs in plumbing, electrical, carpentry, welding, automotive repair, and more. Enter your KCSE grades below to find vocational courses that match your qualifications and start your hands-on career journey.</p>
     </div>
+</div>
 
-    <span>Fill in your KCSE grades and submit to see all artisan programs you qualify for!
-    </span>
+<div class="container">
+    <span class="artisan-intro-text animate-fade-up">✨ Fill in your KCSE grades and submit to see all artisan programs you qualify for!</span>
+    
     <form action="{{ url_for('submit_artisan_grades') }}" method="POST">
-    <!-- User Email and Index Number will be collected after grades submission (Step 2) -->
-        <!-- KCSE Subjects Grades -->
-        <div id="gradesForm">
-            <h1 class="text-primary">Artisan Training Qualifications</h1>
-            <div class="">
-                <div class="mb-4">
-                    <div class="form-group">
-                        <label for="overall">Overall:</label>
-                        <select id="overall" name="overall" class="form-select" required>
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                </div>
+        
+        <!-- Artisan Program Qualifications Card -->
+        <div class="artisan-card animate-fade-up">
+            <div class="artisan-section-title">
+                <i>📋</i> Artisan Training Qualifications
+            </div>
+            
+            <!-- Overall Grade Section - Styled -->
+            <div class="overall-grade-section">
+                <label for="overall">🎯 Overall KCSE Grade:</label>
+                <select id="overall" name="overall" class="artisan-select" required>
+                    <option value="">Select Grade</option>
+                    <option value="A">A</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="B-">B-</option>
+                    <option value="C+">C+</option>
+                    <option value="C">C</option>
+                    <option value="C-">C-</option>
+                    <option value="D+">D+</option>
+                    <option value="D">D</option>
+                    <option value="D-">D-</option>
+                    <option value="E">E</option>
+                </select>
             </div>
         </div>
-        <!-- Grades Inputs -->
-        <div id="gradesForm">
-            <h1 class="text-primary">Enter KCSE Grades</h1>
+
+        <!-- KCSE Grades Entry Card -->
+        <div class="artisan-card animate-fade-up">
+            <div class="artisan-section-title">
+                <i>📝</i> Enter Your KCSE Subject Grades
+            </div>
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">Select the grades you achieved in each subject. Artisan programs have flexible entry requirements focused on practical aptitude.</p>
+            
             <div class="subjects">
                 <!-- Core Subjects -->
-                <div class="mb-4">
-                    <h2>Core Subjects</h2>
-                    <div class="form-group">
-                        <label for="mathematics">Mathematics:</label>
-                        <select id="mathematics" name="mathematics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="english">English:</label>
-                        <select id="english" name="english" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kiswahili">Kiswahili:</label>
-                        <select id="kiswahili" name="kiswahili" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="artisan-subject-group">
+                    <h2><i>⭐</i> Core Subjects</h2>
+                    <div class="artisan-form-grid">
+                        <div class="artisan-form-group">
+                            <label for="mathematics">Mathematics</label>
+                            <select id="mathematics" name="mathematics" class="artisan-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="english">English</label>
+                            <select id="english" name="english" class="artisan-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="kiswahili">Kiswahili</label>
+                            <select id="kiswahili" name="kiswahili" class="artisan-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Sciences -->
-                <div class="mb-4">
-                    <h2>Sciences</h2>
-                    <div class="form-group">
-                        <label for="chemistry">Chemistry:</label>
-                        <select id="chemistry" name="chemistry" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="biology">Biology:</label>
-                        <select id="biology" name="biology" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="physics">Physics:</label>
-                        <select id="physics" name="physics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="artisan-subject-group">
+                    <h2><i>🔬</i> Sciences</h2>
+                    <div class="artisan-form-grid">
+                        <div class="artisan-form-group">
+                            <label for="chemistry">Chemistry</label>
+                            <select id="chemistry" name="chemistry" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="biology">Biology</label>
+                            <select id="biology" name="biology" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="physics">Physics</label>
+                            <select id="physics" name="physics" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Humanities -->
-                <div class="mb-4">
-                    <h2>Humanities</h2>
-                    <div class="form-group">
-                        <label for="geography">Geography:</label>
-                        <select id="geography" name="geography" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="history">History:</label>
-                        <select id="history" name="history" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="cre">Christian Religious Education (CRE):</label>
-                        <select id="cre" name="cre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ire">Islamic Religious Education (CRE):</label>
-                        <select id="ire" name="ire" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="hre">Hindu Religious Education (CRE):</label>
-                        <select id="hre" name="hre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="artisan-subject-group">
+                    <h2><i>📖</i> Humanities</h2>
+                    <div class="artisan-form-grid">
+                        <div class="artisan-form-group">
+                            <label for="geography">Geography</label>
+                            <select id="geography" name="geography" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="history">History</label>
+                            <select id="history" name="history" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="cre">Christian Religious Education (CRE)</label>
+                            <select id="cre" name="cre" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="ire">Islamic Religious Education (IRE)</label>
+                            <select id="ire" name="ire" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="hre">Hindu Religious Education (HRE)</label>
+                            <select id="hre" name="hre" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Technical Subjects -->
-                <div class="mb-4">
-                    <h2>Technical Subjects</h2>
-                    <div class="form-group">
-                        <label for="agriculture">Agriculture:</label>
-                        <select id="agriculture" name="agriculture" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="computer">Computer Studies:</label>
-                        <select id="computer" name="computer" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="arts">Art and Design:</label>
-                        <select id="arts" name="arts" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="woodwork">Woodwork:</label>
-                        <select id="woodwork" name="woodwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="homescience">HomeScience:</label>
-                        <select id="homescience" name="homescience" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="business">Business Studies:</label>
-                        <select id="business" name="business" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="music">Music:</label>
-                        <select id="music" name="muc" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="artisan-subject-group">
+                    <h2><i>⚙️</i> Technical Subjects</h2>
+                    <div class="artisan-form-grid">
+                        <div class="artisan-form-group">
+                            <label for="agriculture">Agriculture</label>
+                            <select id="agriculture" name="agriculture" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="computer">Computer Studies</label>
+                            <select id="computer" name="computer" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="arts">Art and Design</label>
+                            <select id="arts" name="arts" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="woodwork">Woodwork</label>
+                            <select id="woodwork" name="woodwork" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="homescience">Home Science</label>
+                            <select id="homescience" name="homescience" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="business">Business Studies</label>
+                            <select id="business" name="business" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="music">Music</label>
+                            <select id="music" name="music" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Other Subjects -->
-                <div class="mb-4">
-                    <h2>Other Subjects</h2>
-                    <div class="form-group">
-                        <label for="building">Building and Construction:</label>
-                        <select id="building" name="building" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="electronics">Electricity and Electronics:</label>
-                        <select id="electronics" name="electronics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="metalwork">Metalwork:</label>
-                        <select id="metalwork" name="metalwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="french">French:</label>
-                        <select id="french" name="french" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="german">German:</label>
-                        <select id="german" name="german" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kenya Sign Language">Kenya Sign Language:</label>
-                        <select id="kenya Sign Language" name="kenya Sign Language" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="aviation">Aviation:</label>
-                        <select id="aviation" name="aviation" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="artisan-subject-group">
+                    <h2><i>➕</i> Other Subjects</h2>
+                    <div class="artisan-form-grid">
+                        <div class="artisan-form-group">
+                            <label for="building">Building and Construction</label>
+                            <select id="building" name="building" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="electronics">Electricity and Electronics</label>
+                            <select id="electronics" name="electronics" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="metalwork">Metalwork</label>
+                            <select id="metalwork" name="metalwork" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="french">French</label>
+                            <select id="french" name="french" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="german">German</label>
+                            <select id="german" name="german" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="kenyaSignLanguage">Kenya Sign Language</label>
+                            <select id="kenyaSignLanguage" name="kenyaSignLanguage" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artisan-form-group">
+                            <label for="aviation">Aviation</label>
+                            <select id="aviation" name="aviation" class="artisan-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary w-50" styles="width=100px">
-            Submit
+
+        <!-- Submit Button -->
+        <button type="submit" class="artisan-submit-btn animate-fade-up">
+            🔍 Find Artisan Programs I Qualify For
         </button>
     </form>
+</div>
+
+<!-- Artisan Programs Information Section -->
+<div class="container mt-5 mb-4">
+    <div class="artisan-alert artisan-alert-info animate-fade-up">
+        <h2 class="alert-heading">🛠️ KUCCPS Artisan Programs Overview</h2>
+        <p class="mb-2">
+            <strong>Artisan programs</strong> are 1-2 year practical trade courses focused on hands-on skills development.
+            These programs prepare students for immediate employment or entrepreneurship in various trades.
+        </p>
+        <ul class="mb-0">
+            <li><strong>Duration:</strong> 1-2 years (fastest path to employment)</li>
+            <li><strong>Focus:</strong> Practical, job-ready trade skills for immediate application</li>
+            <li><strong>Entry:</strong> Minimum D- or D in KCSE - very accessible</li>
+            <li><strong>Outcome:</strong> Artisan Certificate recognized by trade bodies and employers</li>
+        </ul>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="artisan-info-card card animate-fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">🔧 Popular Artisan Trades</h5>
+                    <ul>
+                        <li>Electrical Installation</li>
+                        <li>Plumbing & Pipe Fitting</li>
+                        <li>Carpentry & Joinery</li>
+                        <li>Welding & Fabrication</li>
+                        <li>Motor Vehicle Mechanics</li>
+                        <li>Masonry & Bricklaying</li>
+                        <li>Hairdressing & Beauty Therapy</li>
+                        <li>Catering & Food Production</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="artisan-info-card card animate-fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">💪 Career Opportunities</h5>
+                    <ul>
+                        <li>Self-employment / Start your own business</li>
+                        <li>Employment in construction companies</li>
+                        <li>Work in manufacturing industries</li>
+                        <li>Join maintenance departments</li>
+                        <li>Work as independent contractor</li>
+                        <li>Opportunities in hospitality industry</li>
+                        <li>Pathway to diploma programs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Why Choose Artisan Programs -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
+<div class="container my-5">
+    <div class="artisan-card animate-fade-up">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4">Why Choose Artisan Trade Programs</h2>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Hands-On Practical Learning</h5>
-                            <p class="mb-0">Learn by doing - develop real trade skills through intensive practical training in workshops and actual work environments.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Self-Employment Opportunity</h5>
-                            <p class="mb-0">Start your own business immediately - artisan skills are always in demand, from plumbing to electrical work to carpentry.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Quick Skills Development</h5>
-                            <p class="mb-0">Complete your training in 1-2 years and be job-ready immediately with skills employers desperately need.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>High Income Potential</h5>
-                            <p class="mb-0">Skilled tradespeople earn excellent incomes, with many earning more than degree holders, especially as business owners.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Frequently Asked Questions -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Frequently Asked Questions About Artisan Programs</h2>
-            <div class="accordion" id="artisanFAQ">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq1">
-                            What trades are available in artisan programs?
-                        </button>
-                    </h2>
-                    <div id="artisanfaq1" class="accordion-collapse collapse show" data-bs-parent="#artisanFAQ">
-                        <div class="accordion-body">
-                            Popular artisan trades include plumbing, electrical installation, carpentry, welding, motor mechanics, masonry, hairdressing, catering, and beauty therapy. Each provides specific technical skills for job placement or self-employment.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq2">
-                            Can I start my own business after artisan training?
-                        </button>
-                    </h2>
-                    <div id="artisanfaq2" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
-                        <div class="accordion-body">
-                            Absolutely. Artisan training is specifically designed for self-employment. Many graduates start their own workshops, businesses, or work as independent contractors with excellent earning potential.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq3">
-                            What are entry requirements for artisan programs?
-                        </button>
-                    </h2>
-                    <div id="artisanfaq3" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
-                        <div class="accordion-body">
-                            Artisan programs have flexible entry requirements, typically minimum D- or D grade in KCSE. The focus is on practical aptitude and willingness to learn rather than high academic grades.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq4">
-                            How long does artisan training take?
-                        </button>
-                    </h2>
-                    <div id="artisanfaq4" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
-                        <div class="accordion-body">
-                            Most artisan programs take 1-2 years. Some trades may offer accelerated programs or apprenticeships. The duration varies by trade and institution offering the training.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq5">
-                            What qualifications will I earn?
-                        </button>
-                    </h2>
-                    <div id="artisanfaq5" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
-                        <div class="accordion-body">
-                            You will earn an Artisan Certificate or Trade Certificate recognized by relevant trade bodies and employers. These qualifications allow you to practice your trade, register as a tradesperson, and operate your own business.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Success Stories -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Success Stories from Artisan Graduates</h2>
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">John Kipchoge - Electrical Installation</h5>
-                            <p class="small mb-3">After completing his electrical installation artisan course, John started his own electrical business. He now employs 6 technicians and handles major commercial projects across Nairobi.</p>
-                            <p class="small text-muted">"From tradesperson to business owner - artisan training made it possible."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Miriam Omondi - Hairdressing</h5>
-                            <p class="small mb-3">Miriam completed her hairdressing and beauty therapy artisan course and opened a salon. Five years later, her salon employs 4 stylists and she trains apprentices in modern hairdressing techniques.</p>
-                            <p class="small text-muted">"My salon is thriving because of the practical skills I learned in the artisan program."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">David Kipkorir - Motor Vehicle Mechanics</h5>
-                            <p class="small mb-3">David's mechanics artisan certificate helped him establish a successful workshop that serves a whole district. He now contracts with local transport companies for vehicle maintenance.</p>
-                            <p class="small text-muted">"The hands-on training gave me confidence to start and grow my business."</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Prerequisites and Requirements -->
-<div class="container my-5 mb-5">
-    <div class="card border-left-primary shadow-sm">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Artisan Program Prerequisites and Requirements</h2>
-            <div class="row">
+            <h2 class="card-title mb-4" style="color: var(--artisan-dark);">📚 Why Choose Artisan Trade Programs?</h2>
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <div class="artisan-feature-card">
+                        <h5>⚡ Quick Skills Development</h5>
+                        <p>Complete your training in 1-2 years and be job-ready immediately with skills employers desperately need in the trades.</p>
+                    </div>
+                    <div class="artisan-feature-card mt-3">
+                        <h5>🛠️ Hands-On Practical Learning</h5>
+                        <p>Learn by doing - develop real trade skills through intensive practical training in workshops and actual work environments.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="artisan-feature-card">
+                        <h5>💼 Self-Employment Opportunity</h5>
+                        <p>Start your own business immediately - artisan skills are always in demand, from plumbing to electrical work to carpentry.</p>
+                    </div>
+                    <div class="artisan-feature-card mt-3">
+                        <h5>💰 High Income Potential</h5>
+                        <p>Skilled tradespeople earn excellent incomes, with many earning more than degree holders, especially as business owners.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Artisan Program FAQs -->
+<div class="container my-5">
+    <h2 class="mb-4" style="color: var(--artisan-dark);">❓ Frequently Asked Questions About Artisan Programs</h2>
+    <div class="accordion" id="artisanFAQ">
+        <div class="artisan-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq1">
+                    What trades are available in artisan programs?
+                </button>
+            </h2>
+            <div id="artisanfaq1" class="accordion-collapse collapse show" data-bs-parent="#artisanFAQ">
+                <div class="accordion-body artisan-accordion-body">
+                    Popular artisan trades include plumbing, electrical installation, carpentry, welding, motor mechanics, masonry, hairdressing, catering, and beauty therapy. Each provides specific technical skills for job placement or self-employment.
+                </div>
+            </div>
+        </div>
+        <div class="artisan-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq2">
+                    Can I start my own business after artisan training?
+                </button>
+            </h2>
+            <div id="artisanfaq2" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
+                <div class="accordion-body artisan-accordion-body">
+                    Absolutely. Artisan training is specifically designed for self-employment. Many graduates start their own workshops, businesses, or work as independent contractors with excellent earning potential.
+                </div>
+            </div>
+        </div>
+        <div class="artisan-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq3">
+                    What are entry requirements for artisan programs?
+                </button>
+            </h2>
+            <div id="artisanfaq3" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
+                <div class="accordion-body artisan-accordion-body">
+                    Artisan programs have flexible entry requirements, typically minimum D- or D grade in KCSE. The focus is on practical aptitude and willingness to learn rather than high academic grades.
+                </div>
+            </div>
+        </div>
+        <div class="artisan-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq4">
+                    How long does artisan training take?
+                </button>
+            </h2>
+            <div id="artisanfaq4" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
+                <div class="accordion-body artisan-accordion-body">
+                    Most artisan programs take 1-2 years. Some trades may offer accelerated programs or apprenticeships. The duration varies by trade and institution offering the training.
+                </div>
+            </div>
+        </div>
+        <div class="artisan-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq5">
+                    What qualifications will I earn?
+                </button>
+            </h2>
+            <div id="artisanfaq5" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
+                <div class="accordion-body artisan-accordion-body">
+                    You will earn an Artisan Certificate or Trade Certificate recognized by relevant trade bodies and employers. These qualifications allow you to practice your trade, register as a tradesperson, and operate your own business.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Artisan Success Stories -->
+<div class="container my-5">
+    <h2 class="mb-4" style="color: var(--artisan-dark);">🌟 Success Stories: Artisan Graduates</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="artisan-story-card card h-100 animate-fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">John Kipchoge - Electrical Installation</h5>
+                    <p class="story-quote">"After completing my electrical installation artisan course, John started his own electrical business. He now employs 6 technicians and handles major commercial projects across Nairobi."</p>
+                    <span class="story-badge">✓ Business Owner</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="artisan-story-card card h-100 animate-fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">Miriam Omondi - Hairdressing</h5>
+                    <p class="story-quote">"Miriam completed her hairdressing and beauty therapy artisan course and opened a salon. Five years later, her salon employs 4 stylists and she trains apprentices."</p>
+                    <span class="story-badge">✓ Salon Owner</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="artisan-story-card card h-100 animate-fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">David Kipkorir - Motor Vehicle Mechanics</h5>
+                    <p class="story-quote">"David's mechanics artisan certificate helped him establish a successful workshop that serves a whole district. He now contracts with local transport companies."</p>
+                    <span class="story-badge">✓ Workshop Owner</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Artisan Prerequisites & Requirements -->
+<div class="container my-5 mb-5">
+    <div class="artisan-card animate-fade-up">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4" style="color: var(--artisan-dark);">📋 Artisan Program Prerequisites & Requirements</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h5 class="mb-3" style="color: var(--artisan-primary);">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum D- or D grade - flexible requirements</li>
-                        <li class="mb-2"><strong>Form 4 Completion:</strong> Basic secondary school education</li>
-                        <li class="mb-2"><strong>Entry Score:</strong> Very flexible, low cluster point requirements</li>
-                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 16+ years at entry</li>
-                        <li class="mb-2"><strong>Additional:</strong> Basic literacy and numeracy skills helpful</li>
+                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum D- or D grade - flexible requirements</li>
+                        <li class="mb-2"><strong>🎓 Form 4 Completion:</strong> Basic secondary school education</li>
+                        <li class="mb-2"><strong>📖 Entry Score:</strong> Very flexible, low cluster point requirements</li>
+                        <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 16+ years at entry</li>
+                        <li class="mb-2"><strong>✅ Additional:</strong> Basic literacy and numeracy skills helpful</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--artisan-primary);">Program-Specific Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>All Trades:</strong> Physical fitness and ability to perform manual work</li>
-                        <li class="mb-2"><strong>Electrical/Plumbing:</strong> Safety awareness, attention to detail important</li>
-                        <li class="mb-2"><strong>Mechanical Trades:</strong> Problem-solving ability and mechanical aptitude</li>
-                        <li class="mb-2"><strong>Beauty/Hairdressing:</strong> Interpersonal skills, creativity, patience</li>
-                        <li class="mb-2"><strong>Health Requirements:</strong> Good health and ability to work in trade environments</li>
+                        <li class="mb-2"><strong>🔧 All Trades:</strong> Physical fitness and ability to perform manual work</li>
+                        <li class="mb-2"><strong>⚡ Electrical/Plumbing:</strong> Safety awareness, attention to detail important</li>
+                        <li class="mb-2"><strong>🚗 Mechanical Trades:</strong> Problem-solving ability and mechanical aptitude</li>
+                        <li class="mb-2"><strong>💇 Beauty/Hairdressing:</strong> Interpersonal skills, creativity, patience</li>
+                        <li class="mb-2"><strong>🏥 Health Requirements:</strong> Good health and ability to work in trade environments</li>
                     </ul>
                 </div>
             </div>
@@ -840,5 +1026,6 @@ block links %}
     </div>
 </div>
 
-</div>
-{% endblock %} {% block scripts %}{% endblock %}
+{% endblock %}
+
+{% block scripts %}{% endblock %}

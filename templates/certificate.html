@@ -1,5 +1,7 @@
-{% extends "./base.html" %} {% block title %} KUCCPS Certificate Courses | Vocational Programs in Kenya {% endblock %} {%
-block links %}
+{% extends "./base.html" %}
+{% block title %} KUCCPS Certificate Courses | Vocational Programs in Kenya {% endblock %}
+
+{% block links %}
 <link rel="canonical" href="{{ get_canonical_url('certificate') }}" />
 <meta name="description" content="Find KUCCPS certificate courses and vocational programs in Kenya. Match your KCSE grades with 1-2 year certificate programs in business, IT, hospitality, beauty, and skilled trades.">
 <script type="application/ld+json">
@@ -32,742 +34,802 @@ block links %}
 </div>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
+
+<!-- Enhanced Certificate Page Styling - Modern UI/UX -->
 <style>
-    /* Certificate Card Styling */
-    .certificate-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 30px 0;
+    /* Modern Color Scheme for Certificate */
+    :root {
+        --cert-primary: #6c5ce7;
+        --cert-secondary: #a29bfe;
+        --cert-accent: #fd79a8;
+        --cert-success: #00b894;
+        --cert-warning: #fdcb6e;
+        --cert-dark: #2d3436;
+        --cert-light-bg: #f0f2f5;
+        --cert-card-shadow: 0 10px 30px -8px rgba(0,0,0,0.1);
+        --cert-hover-shadow: 0 20px 35px -12px rgba(108,92,231,0.15);
     }
-    
-    .certificate-header {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+
+    /* Hero Section */
+    .cert-hero {
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 50%, #fd79a8 100%);
+        border-radius: 28px;
+        padding: 2.5rem 2rem;
+        margin-bottom: 2rem;
         color: white;
-        padding: 40px 30px;
-        border-radius: 12px 12px 0 0;
-        margin-bottom: 0;
         text-align: center;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
     }
-    
-    .certificate-header h2 {
-        font-size: 1.8rem;
+    .cert-hero::before {
+        content: "🎓";
+        position: absolute;
+        font-size: 8rem;
+        opacity: 0.1;
+        bottom: -20px;
+        right: -20px;
+        transform: rotate(-15deg);
+    }
+    .cert-hero h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
         font-weight: 700;
-        margin: 0;
+    }
+    .cert-hero p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        max-width: 750px;
+        margin: 0 auto;
+    }
+
+    /* Form Cards */
+    .cert-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: var(--cert-card-shadow);
+        padding: 1.8rem;
+        margin-bottom: 2rem;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .cert-card:hover {
+        box-shadow: var(--cert-hover-shadow);
+        transform: translateY(-2px);
+    }
+
+    /* Section Titles */
+    .cert-section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--cert-dark);
+        border-left: 5px solid var(--cert-primary);
+        padding-left: 1rem;
+        margin-bottom: 1.5rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .cert-section-title i {
+        color: var(--cert-primary);
+        font-size: 1.3rem;
+    }
+
+    /* Subject Group Headers */
+    .cert-subject-group {
+        background: var(--cert-light-bg);
+        border-radius: 20px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+    .cert-subject-group:hover {
+        background: #e8ebf0;
+    }
+    .cert-subject-group h2 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--cert-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .cert-subject-group h2 i {
+        font-size: 1.2rem;
+    }
+
+    /* Form Grid Layout */
+    .cert-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+    .cert-form-group {
+        margin-bottom: 0;
+    }
+    .cert-form-group label {
+        font-weight: 600;
+        color: #2d3436;
+        margin-bottom: 0.4rem;
+        display: block;
+        font-size: 0.85rem;
+        letter-spacing: 0.3px;
+    }
+    .cert-select {
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 0.6rem 0.8rem;
+        background-color: white;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+    .cert-select:focus {
+        border-color: var(--cert-primary);
+        box-shadow: 0 0 0 3px rgba(108,92,231,0.15);
+        outline: none;
+    }
+    .cert-select:hover {
+        border-color: var(--cert-primary);
+    }
+
+    /* Overall Grade Special Styling */
+    .overall-grade-section {
+        background: linear-gradient(135deg, #f8f4ff 0%, #f0ebff 100%);
+        border-radius: 20px;
+        padding: 1.2rem 1.8rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .overall-grade-section label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--cert-primary);
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .overall-grade-section .cert-select {
+        width: 220px;
+        font-weight: 500;
+        background: white;
+    }
+
+    /* Submit Button */
+    .cert-submit-btn {
+        background: linear-gradient(135deg, var(--cert-primary) 0%, var(--cert-secondary) 100%);
+        border: none;
+        padding: 14px 32px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        color: white;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 12px;
     }
-    
-    .certificate-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        overflow: hidden;
-        margin-bottom: 30px;
-    }
-    
-    #gradesForm {
-        padding: 30px;
-        background: white;
-    }
-    
-    #gradesForm h1 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #f5576c;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #f5576c;
-    }
-    
-    #gradesForm h2 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #f093fb;
-        margin-top: 25px;
-        margin-bottom: 15px;
-        padding-left: 10px;
-        border-left: 4px solid #f093fb;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-group label {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 8px;
-        display: block;
-        font-size: 0.95rem;
-    }
-    
-    .form-select {
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-select:focus {
-        border-color: #f5576c;
-        box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
-        outline: none;
-    }
-    
-    .form-select:hover {
-        border-color: #f5576c;
-    }
-    
-    .subjects {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-    
-    form button {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        border: none;
-        color: white;
-        padding: 12px 40px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 30px;
-        width: 100%;
-    }
-    
-    form button:hover {
+    .cert-submit-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(245, 87, 108, 0.3);
+        box-shadow: 0 8px 25px rgba(108,92,231,0.35);
+        background: linear-gradient(135deg, var(--cert-secondary) 0%, var(--cert-primary) 100%);
     }
-    
-    .intro-span {
+
+    /* Info Cards */
+    .cert-info-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--cert-card-shadow);
+        height: 100%;
+        transition: all 0.2s ease;
+        overflow: hidden;
+    }
+    .cert-info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--cert-hover-shadow);
+    }
+    .cert-info-card .card-body {
+        padding: 1.5rem;
+    }
+    .cert-info-card h5 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--cert-primary);
+    }
+    .cert-info-card ul {
+        padding-left: 1.2rem;
+        margin-bottom: 0;
+    }
+    .cert-info-card li {
+        margin-bottom: 0.6rem;
+        line-height: 1.4;
+    }
+
+    /* Alert Boxes */
+    .cert-alert {
+        border-radius: 20px;
+        border: none;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .cert-alert h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+    }
+    .cert-alert-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdef5 100%);
+        color: #1565c0;
+    }
+    .cert-alert-success {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        color: #2e7d32;
+    }
+
+    /* Accordion Styling */
+    .cert-accordion-item {
+        border: none;
+        margin-bottom: 0.75rem;
+        border-radius: 16px !important;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .cert-accordion-button {
+        font-weight: 600;
+        background-color: white;
+        padding: 1rem 1.2rem;
+        color: var(--cert-dark);
+    }
+    .cert-accordion-button:not(.collapsed) {
+        background-color: var(--cert-light-bg);
+        color: var(--cert-primary);
+    }
+    .cert-accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,0.1);
+    }
+    .cert-accordion-body {
+        padding: 1.2rem;
+        background-color: #fefefe;
+    }
+
+    /* Success Story Cards */
+    .cert-story-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--cert-card-shadow);
+        height: 100%;
+        transition: all 0.2s ease;
+        background: white;
+    }
+    .cert-story-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--cert-hover-shadow);
+    }
+    .cert-story-card .card-body {
+        padding: 1.5rem;
+    }
+    .cert-story-card h5 {
+        font-weight: 700;
+        color: var(--cert-primary);
+        margin-bottom: 0.75rem;
+    }
+    .cert-story-card .story-quote {
+        font-style: italic;
+        color: #555;
+        line-height: 1.5;
+    }
+    .cert-story-card .story-badge {
+        background: var(--cert-success);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 0.75rem;
+    }
+
+    /* Feature Cards */
+    .cert-feature-card {
+        background: white;
+        border-radius: 18px;
+        padding: 1.2rem;
+        height: 100%;
+        transition: all 0.2s ease;
+        border: 1px solid #eef2f7;
+    }
+    .cert-feature-card:hover {
+        background: linear-gradient(135deg, #fff 0%, #f8f4ff 100%);
+        border-color: var(--cert-primary);
+        transform: translateY(-2px);
+    }
+    .cert-feature-card h5 {
+        font-weight: 700;
+        color: var(--cert-primary);
+        margin-bottom: 0.5rem;
+    }
+    .cert-feature-card p {
+        color: #666;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    /* Intro Text */
+    .cert-intro-text {
         font-size: 1.1rem;
         color: #555;
         display: block;
-        margin-bottom: 30px;
+        margin-bottom: 1.8rem;
         font-weight: 500;
+        text-align: center;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .cert-hero {
+            padding: 1.5rem;
+        }
+        .cert-hero h1 {
+            font-size: 1.5rem;
+        }
+        .cert-card {
+            padding: 1.2rem;
+        }
+        .cert-section-title {
+            font-size: 1.3rem;
+        }
+        .overall-grade-section {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+        .overall-grade-section .cert-select {
+            width: 100%;
+        }
+        .cert-form-grid {
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+        }
+        .cert-subject-group {
+            padding: 1rem;
+        }
+        .cert-submit-btn {
+            padding: 12px 20px;
+            font-size: 1rem;
+        }
+        .cert-intro-text {
+            font-size: 1rem;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        .cert-submit-btn, .cert-card, .cert-hero {
+            break-inside: avoid;
+        }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .cert-card, .cert-hero, .cert-info-card {
+        animation: fadeInUp 0.4s ease-out forwards;
     }
 </style>
 {% endblock %}
-%} {% block content %}
 
+{% block displaytext %}Find Certificate & Vocational Programs Matching Your Grades{% endblock %}
 
+{% block content %}
 
-    <div class="container">
-        <h1 class="text-center mb-4">KUCCPS Certificate & Vocational Programs Qualification Checker</h1>
+<!-- Hero Section -->
+<div class="container mt-3">
+    <div class="cert-hero">
+        <h1>📜 KUCCPS Certificate & Vocational Programs</h1>
+        <p>Discover 1-2 year certificate programs in business, IT, hospitality, beauty, skilled trades, and more. Enter your KCSE grades below to find vocational courses that match your qualifications and start your career journey.</p>
     </div>
+</div>
 
-    <span>Fill in your KCSE grades and submit to see all certificate programs you qualify for!
-    </span>
+<div class="container">
+    <span class="cert-intro-text">✨ Fill in your KCSE grades and submit to see all certificate programs you qualify for!</span>
+    
     <form action="/submit-certificate-grades" method="post">
-    <!-- User Email and Index Number will be collected after grades submission (Step 2) -->
-        <!-- KCSE Subjects Grades -->
-        <div id="gradesForm">
-            <h1 class="text-primary">Certificate Program Qualifications</h1>
-            <div class="">
-                <div class="mb-4">
-                    <div class="form-group">
-                        <label for="overall">Overall:</label>
-                        <select id="overall" name="overall" class="form-select" required>
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                </div>
+        
+        <!-- Certificate Program Qualifications Card -->
+        <div class="cert-card">
+            <div class="cert-section-title">
+                <i>📋</i> Certificate Program Qualification
+            </div>
+            
+            <!-- Overall Grade Section - Styled -->
+            <div class="overall-grade-section">
+                <label for="overall">🎯 Overall KCSE Grade:</label>
+                <select id="overall" name="overall" class="cert-select" required>
+                    <option value="">Select Grade</option>
+                    <option value="A">A</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="B-">B-</option>
+                    <option value="C+">C+</option>
+                    <option value="C">C</option>
+                    <option value="C-">C-</option>
+                    <option value="D+">D+</option>
+                    <option value="D">D</option>
+                    <option value="D-">D-</option>
+                    <option value="E">E</option>
+                </select>
             </div>
         </div>
-        <!-- Grades Inputs -->
-        <div id="gradesForm">
-            <h1 class="text-primary">Enter KCSE Grades</h1>
+
+        <!-- KCSE Grades Entry Card -->
+        <div class="cert-card">
+            <div class="cert-section-title">
+                <i>📝</i> Enter Your KCSE Subject Grades
+            </div>
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">Select the grades you achieved in each subject. Certificate programs have flexible entry requirements, so many combinations are accepted.</p>
+            
             <div class="subjects">
                 <!-- Core Subjects -->
-                <div class="mb-4">
-                    <h2>Core Subjects</h2>
-                    <div class="form-group">
-                        <label for="mathematics">Mathematics:</label>
-                        <select id="mathematics" name="mathematics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="english">English:</label>
-                        <select id="english" name="english" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kiswahili">Kiswahili:</label>
-                        <select id="kiswahili" name="kiswahili" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="cert-subject-group">
+                    <h2><i>⭐</i> Core Subjects</h2>
+                    <div class="cert-form-grid">
+                        <div class="cert-form-group">
+                            <label for="mathematics">Mathematics</label>
+                            <select id="mathematics" name="mathematics" class="cert-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="english">English</label>
+                            <select id="english" name="english" class="cert-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="kiswahili">Kiswahili</label>
+                            <select id="kiswahili" name="kiswahili" class="cert-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Sciences -->
-                <div class="mb-4">
-                    <h2>Sciences</h2>
-                    <div class="form-group">
-                        <label for="chemistry">Chemistry:</label>
-                        <select id="chemistry" name="chemistry" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="biology">Biology:</label>
-                        <select id="biology" name="biology" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="physics">Physics:</label>
-                        <select id="physics" name="physics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="cert-subject-group">
+                    <h2><i>🔬</i> Sciences</h2>
+                    <div class="cert-form-grid">
+                        <div class="cert-form-group">
+                            <label for="chemistry">Chemistry</label>
+                            <select id="chemistry" name="chemistry" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="biology">Biology</label>
+                            <select id="biology" name="biology" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="physics">Physics</label>
+                            <select id="physics" name="physics" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Humanities -->
-                <div class="mb-4">
-                    <h2>Humanities</h2>
-                    <div class="form-group">
-                        <label for="geography">Geography:</label>
-                        <select id="geography" name="geography" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="history">History:</label>
-                        <select id="history" name="history" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="cre">Christian Religious Education (CRE):</label>
-                        <select id="cre" name="cre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ire">Islamic Religious Education (CRE):</label>
-                        <select id="ire" name="ire" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="hre">Hindu Religious Education (CRE):</label>
-                        <select id="hre" name="hre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="cert-subject-group">
+                    <h2><i>📖</i> Humanities</h2>
+                    <div class="cert-form-grid">
+                        <div class="cert-form-group">
+                            <label for="geography">Geography</label>
+                            <select id="geography" name="geography" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="history">History</label>
+                            <select id="history" name="history" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="cre">Christian Religious Education (CRE)</label>
+                            <select id="cre" name="cre" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="ire">Islamic Religious Education (IRE)</label>
+                            <select id="ire" name="ire" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="hre">Hindu Religious Education (HRE)</label>
+                            <select id="hre" name="hre" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Technical Subjects -->
-                <div class="mb-4">
-                    <h2>Technical Subjects</h2>
-                    <div class="form-group">
-                        <label for="agriculture">Agriculture:</label>
-                        <select id="agriculture" name="agriculture" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="computer">Computer Studies:</label>
-                        <select id="computer" name="computer" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="arts">Art and Design:</label>
-                        <select id="arts" name="arts" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="woodwork">Woodwork:</label>
-                        <select id="woodwork" name="woodwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="homescience">HomeScience:</label>
-                        <select id="homescience" name="homescience" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="business">Business Studies:</label>
-                        <select id="business" name="business" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="music">Music:</label>
-                        <select id="music" name="muc" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="cert-subject-group">
+                    <h2><i>⚙️</i> Technical Subjects</h2>
+                    <div class="cert-form-grid">
+                        <div class="cert-form-group">
+                            <label for="agriculture">Agriculture</label>
+                            <select id="agriculture" name="agriculture" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="computer">Computer Studies</label>
+                            <select id="computer" name="computer" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="arts">Art and Design</label>
+                            <select id="arts" name="arts" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="woodwork">Woodwork</label>
+                            <select id="woodwork" name="woodwork" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="homescience">Home Science</label>
+                            <select id="homescience" name="homescience" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="business">Business Studies</label>
+                            <select id="business" name="business" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="music">Music</label>
+                            <select id="music" name="music" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Other Subjects -->
-                <div class="mb-4">
-                    <h2>Other Subjects</h2>
-                    <div class="form-group">
-                        <label for="building">Building and Construction:</label>
-                        <select id="building" name="building" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="electronics">Electricity and Electronics:</label>
-                        <select id="electronics" name="electronics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="metalwork">Metalwork:</label>
-                        <select id="metalwork" name="metalwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="french">French:</label>
-                        <select id="french" name="french" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="german">German:</label>
-                        <select id="german" name="german" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kenya Sign Language">Kenya Sign Language:</label>
-                        <select id="kenya Sign Language" name="kenya Sign Language" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="aviation">Aviation:</label>
-                        <select id="aviation" name="aviation" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="cert-subject-group">
+                    <h2><i>➕</i> Other Subjects</h2>
+                    <div class="cert-form-grid">
+                        <div class="cert-form-group">
+                            <label for="building">Building and Construction</label>
+                            <select id="building" name="building" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="electronics">Electricity and Electronics</label>
+                            <select id="electronics" name="electronics" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="metalwork">Metalwork</label>
+                            <select id="metalwork" name="metalwork" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="french">French</label>
+                            <select id="french" name="french" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="german">German</label>
+                            <select id="german" name="german" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="kenyaSignLanguage">Kenya Sign Language</label>
+                            <select id="kenyaSignLanguage" name="kenyaSignLanguage" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="aviation">Aviation</label>
+                            <select id="aviation" name="aviation" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary w-50" styles="width=100px">
-            Submit
+
+        <!-- Submit Button -->
+        <button type="submit" class="cert-submit-btn">
+            🔍 Find Certificate Programs I Qualify For
         </button>
     </form>
+</div>
 
-    <div class="container mt-4 mb-4">
-        <div class="alert alert-info mb-4" role="alert">
-            <h2 class="alert-heading">🎓 KUCCPS Certificate Programs</h2>
-            <p class="mb-2">
-                <strong>Certificate programs</strong> are 1-2 year vocational training courses focused on practical skills development.
-                These flexible programs prepare students for immediate employment or entrepreneurship.
-            </p>
-            <ul class="mb-0">
-                <li><strong>Duration:</strong> 1-2 years</li>
-                <li><strong>Focus:</strong> Practical, job-ready skills</li>
-                <li><strong>Entry:</strong> Minimum E in KCSE or basic education</li>
-                <li><strong>Outcome:</strong> National Certificate with immediate employment potential</li>
-            </ul>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">✨ Certificate Program Categories</h5>
-                        <ul>
-                            <li>Business & Entrepreneurship</li>
-                            <li>Information Technology & Digital Skills</li>
-                            <li>Beauty, Wellness & Cosmetology</li>
-                            <li>Hospitality & Catering</li>
-                            <li>Office Administration</li>
-                            <li>Security & Safety Services</li>
-                            <li>Retail & Customer Service</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">💪 Quick Employment Path</h5>
-                        <ul>
-                            <li>Immediate job entry after completion</li>
-                            <li>Flexible full-time and part-time options</li>
-                            <li>Affordable training costs</li>
-                            <li>Skill-based learning with practical internships</li>
-                            <li>Self-employment ready credentials</li>
-                            <li>Pathway to diploma programs</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container mt-5">
-    <!-- Certificate Programs Section Header -->
-    <div class="alert alert-success mb-4" role="alert">
-        <h2 class="alert-heading">📜 KUCCPS Certificate Programs Checker</h2>
+<!-- Certificate Programs Information Section -->
+<div class="container mt-5 mb-4">
+    <div class="cert-alert cert-alert-info">
+        <h2 class="alert-heading">🎓 KUCCPS Certificate Programs Overview</h2>
         <p class="mb-2">
-            Certificate programs are short-term vocational courses (typically 1 year) that provide practical training and industry-relevant skills. 
-            They are offered by KUCCPS partner colleges and training centers across Kenya in fields like hospitality, agriculture, business, construction, and many others.
+            <strong>Certificate programs</strong> are 1-2 year vocational training courses focused on practical skills development.
+            These flexible programs prepare students for immediate employment or entrepreneurship.
         </p>
-        <p class="mb-0">
-            <strong>How it works:</strong> Enter your KCSE overall grade and individual subject grades below to discover which certificate programs you qualify for. 
-            Certificate programs often have lower entry requirements than diplomas and offer quick pathways to employment.
-        </p>
+        <ul class="mb-0">
+            <li><strong>Duration:</strong> 1-2 years (quickest path to employment)</li>
+            <li><strong>Focus:</strong> Practical, job-ready skills for immediate application</li>
+            <li><strong>Entry:</strong> Minimum E in KCSE - accessible to most students</li>
+            <li><strong>Outcome:</strong> National Certificate with immediate employment potential</li>
+        </ul>
     </div>
-
-    <!-- Certificate Information Section -->
-    <div class="row mt-5 mb-4">
+    
+    <div class="row g-4">
         <div class="col-md-6">
-            <div class="card">
+            <div class="cert-info-card card">
                 <div class="card-body">
-                    <h5 class="card-title">⚡ Certificate Program Advantages</h5>
-                    <ul class="small">
-                        <li>Short duration (1 year) - quick entry to workforce</li>
-                        <li>Lower entry requirements than diplomas</li>
-                        <li>Practical, hands-on training focused on industry needs</li>
-                        <li>Affordable tuition costs</li>
-                        <li>Pathway to further studies (upgrade to diploma)</li>
+                    <h5 class="card-title">✨ Certificate Program Categories</h5>
+                    <ul>
+                        <li>Business & Entrepreneurship</li>
+                        <li>Information Technology & Digital Skills</li>
+                        <li>Beauty, Wellness & Cosmetology</li>
+                        <li>Hospitality & Catering Management</li>
+                        <li>Office Administration & Secretarial</li>
+                        <li>Security & Safety Services</li>
+                        <li>Retail & Customer Service</li>
+                        <li>Agriculture & Horticulture</li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
+            <div class="cert-info-card card">
                 <div class="card-body">
-                    <h5 class="card-title">🎯 Certificate Study Areas</h5>
-                    <ul class="small">
-                        <li>Hospitality & Catering</li>
-                        <li>Business & Entrepreneurship</li>
-                        <li>Agriculture & Horticulture</li>
-                        <li>Construction & Building</li>
-                        <li>Hair & Beauty Services</li>
-                        <li>Food Science & Nutrition</li>
-                        <li>Computing & Digital Skills</li>
+                    <h5 class="card-title">💪 Quick Employment Path</h5>
+                    <ul>
+                        <li>Immediate job entry after completion (3-6 months)</li>
+                        <li>Flexible full-time and part-time study options</li>
+                        <li>Affordable training costs with payment plans</li>
+                        <li>Skill-based learning with practical internships</li>
+                        <li>Self-employment ready credentials</li>
+                        <li>Clear pathway to diploma programs</li>
+                        <li>Industry-recognized certifications</li>
                     </ul>
                 </div>
             </div>
@@ -776,181 +838,161 @@ block links %}
 </div>
 
 <!-- Why Choose Certificate Programs -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
+<div class="container my-5">
+    <div class="cert-card">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4">Why Choose Certificate Programs</h2>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Quick Entry into Career</h5>
-                            <p class="mb-0">Complete your training in just 1-2 years and start working immediately with job-ready skills.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Self-Employment Ready</h5>
-                            <p class="mb-0">Start your own business immediately upon graduation with practical entrepreneurship skills.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Affordable Training Costs</h5>
-                            <p class="mb-0">Lower tuition fees compared to diplomas, making quality vocational training accessible to all.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Upgrade to Diploma</h5>
-                            <p class="mb-0">Use your certificate as a pathway to diploma programs for further career advancement.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Frequently Asked Questions -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Frequently Asked Questions</h2>
-            <div class="accordion" id="certificateFAQ">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                            How long does a certificate program take?
-                        </button>
-                    </h2>
-                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#certificateFAQ">
-                        <div class="accordion-body">
-                            Certificate programs typically take 1-2 years to complete, depending on the specific course and institution. This shorter duration makes them ideal for those wanting quick entry into the job market.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                            What are the entry requirements for certificate programs?
-                        </button>
-                    </h2>
-                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
-                        <div class="accordion-body">
-                            Most certificate programs require a minimum of E grade in KCSE or basic secondary education. Some programs may have specific subject requirements, but overall requirements are flexible to accommodate many students.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                            Can I upgrade from a certificate to a diploma?
-                        </button>
-                    </h2>
-                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
-                        <div class="accordion-body">
-                            Yes. Many institutions offer articulation pathways where certificate graduates can upgrade to diploma programs. This allows you to gain work experience before pursuing further education.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                            What job opportunities are available after certification?
-                        </button>
-                    </h2>
-                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
-                        <div class="accordion-body">
-                            Certificate graduates can pursue employment in their field, start their own businesses, or work as skilled technicians. Many employers actively seek certificate holders for entry-level and mid-level positions.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
-                            Is financial aid available for certificate programs?
-                        </button>
-                    </h2>
-                    <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
-                        <div class="accordion-body">
-                            Many certificate programs are eligible for government funding and student loans. Check with individual institutions for available financing options, scholarships, and payment plans.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Success Stories -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Success Stories from Certificate Graduates</h2>
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Sarah Kipchoge - Hospitality Management</h5>
-                            <p class="small mb-3">After completing her hospitality certificate in 2 years, Sarah started her own catering business. She now employs 8 people and has contracts with major corporate clients in Nairobi.</p>
-                            <p class="small text-muted">"The certificate program gave me practical skills that I used immediately to build my business."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Mwangi Muthui - IT Support</h5>
-                            <p class="small mb-3">Mwangi completed his IT support certificate and was hired immediately by a tech company. Two years later, he was promoted to IT Manager and now oversees a team of 5 technicians.</p>
-                            <p class="small text-muted">"Quick training, immediate employment, and growth opportunity - that is what I got."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Grace Okonkwo - Beauty and Cosmetology</h5>
-                            <p class="small mb-3">Grace opened a beauty salon after her certificate course. Her business now has 3 branches and she trains other beauticians using her certificate as a foundation.</p>
-                            <p class="small text-muted">"From student to salon owner in just 3 years - that is the power of practical training."</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Prerequisites and Requirements -->
-<div class="container my-5 mb-5">
-    <div class="card border-left-primary shadow-sm">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Certificate Program Prerequisites and Requirements</h2>
-            <div class="row">
+            <h2 class="card-title mb-4" style="color: var(--cert-dark);">📚 Why Choose Certificate & Vocational Programs?</h2>
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <div class="cert-feature-card">
+                        <h5>⚡ Quick Entry into Career</h5>
+                        <p>Complete your training in just 1-2 years and start working immediately with job-ready skills that employers value.</p>
+                    </div>
+                    <div class="cert-feature-card mt-3">
+                        <h5>🛠️ Practical Hands-On Training</h5>
+                        <p>80% practical training with real equipment and real-world scenarios. Learn by doing, not just theory.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="cert-feature-card">
+                        <h5>💰 Affordable & Accessible</h5>
+                        <p>Lower tuition fees than diplomas and degrees, with flexible payment options and government funding available.</p>
+                    </div>
+                    <div class="cert-feature-card mt-3">
+                        <h5>🚀 Self-Employment Ready</h5>
+                        <p>Start your own business immediately upon graduation with practical entrepreneurship skills and business management training.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Certificate Program FAQs -->
+<div class="container my-5">
+    <h2 class="mb-4" style="color: var(--cert-dark);">❓ Frequently Asked Questions About Certificate Programs</h2>
+    <div class="accordion" id="certificateFAQ">
+        <div class="cert-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button cert-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                    How long does a certificate program take?
+                </button>
+            </h2>
+            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#certificateFAQ">
+                <div class="accordion-body cert-accordion-body">
+                    Certificate programs typically take 1-2 years to complete, depending on the specific course and institution. Some accelerated programs can be completed in 6-9 months, while part-time options may take up to 2 years. This shorter duration makes them ideal for those wanting quick entry into the job market.
+                </div>
+            </div>
+        </div>
+        <div class="cert-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed cert-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                    What are the entry requirements for certificate programs?
+                </button>
+            </h2>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
+                <div class="accordion-body cert-accordion-body">
+                    Most certificate programs require a minimum of E grade in KCSE or basic secondary education completion. Some programs may have specific subject requirements, but overall requirements are very flexible to accommodate many students. This makes certificate programs accessible to nearly all KCSE graduates.
+                </div>
+            </div>
+        </div>
+        <div class="cert-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed cert-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                    Can I upgrade from a certificate to a diploma?
+                </button>
+            </h2>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
+                <div class="accordion-body cert-accordion-body">
+                    Yes, absolutely! Many institutions offer articulation pathways where certificate graduates can upgrade to diploma programs with credit transfers. This allows you to gain work experience and earn money first, then pursue further education for career advancement.
+                </div>
+            </div>
+        </div>
+        <div class="cert-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed cert-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                    What job opportunities are available after certification?
+                </button>
+            </h2>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
+                <div class="accordion-body cert-accordion-body">
+                    Certificate graduates can pursue immediate employment in their field, start their own businesses, or work as skilled technicians and specialists. Many employers actively seek certificate holders for entry-level and mid-level positions in hospitality, IT, beauty, security, retail, and administrative roles.
+                </div>
+            </div>
+        </div>
+        <div class="cert-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed cert-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                    Is financial aid available for certificate programs?
+                </button>
+            </h2>
+            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
+                <div class="accordion-body cert-accordion-body">
+                    Yes, many certificate programs are eligible for government funding through HELB, as well as county government scholarships and bursaries. Many institutions also offer flexible payment plans, work-study options, and need-based scholarships. Check with individual institutions for available financing options.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Certificate Success Stories -->
+<div class="container my-5">
+    <h2 class="mb-4" style="color: var(--cert-dark);">🌟 Success Stories: Certificate Graduates</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="cert-story-card card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Sarah Kipchoge - Hospitality</h5>
+                    <p class="story-quote">"After completing my hospitality certificate in 1 year, I started my own catering business. I now employ 8 people and have contracts with major corporate clients in Nairobi."</p>
+                    <span class="story-badge">✓ Successful Business Owner</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="cert-story-card card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">James Mwangi - IT Support</h5>
+                    <p class="story-quote">"My IT certificate gave me immediate practical skills. I was hired right after graduation, and within 2 years, I became IT Manager overseeing a team of 5 technicians."</p>
+                    <span class="story-badge">✓ IT Manager</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="cert-story-card card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Grace Okonkwo - Beauty & Cosmetology</h5>
+                    <p class="story-quote">"My beauty certificate course took just 8 months. I opened my salon immediately after graduation, and now have 3 branches and train other beauticians."</p>
+                    <span class="story-badge">✓ Entrepreneur & Trainer</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Certificate Prerequisites & Requirements -->
+<div class="container my-5 mb-5">
+    <div class="cert-card">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4" style="color: var(--cert-dark);">📋 Certificate Program Prerequisites & Requirements</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h5 class="mb-3" style="color: var(--cert-primary);">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum E (1 point) - flexible entry</li>
-                        <li class="mb-2"><strong>Form 4 Completion:</strong> Completion of secondary school education</li>
-                        <li class="mb-2"><strong>Entry Score:</strong> Generally flexible, low minimum requirements</li>
-                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 16+ years old at entry</li>
-                        <li class="mb-2"><strong>Additional:</strong> Some programs may require basic numeracy and literacy</li>
+                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum E (1 point) - flexible entry for all</li>
+                        <li class="mb-2"><strong>🎓 Form 4 Completion:</strong> Completion of secondary school education</li>
+                        <li class="mb-2"><strong>📖 Entry Score:</strong> Generally flexible, very low minimum requirements</li>
+                        <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 16+ years old at entry</li>
+                        <li class="mb-2"><strong>✅ Additional:</strong> Some programs may require basic numeracy and literacy</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--cert-primary);">Program-Specific Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Hospitality Programs:</strong> Customer service aptitude, communication skills</li>
-                        <li class="mb-2"><strong>IT Programs:</strong> Basic computer literacy helpful but not required</li>
-                        <li class="mb-2"><strong>Beauty Programs:</strong> Practical skills and attention to detail</li>
-                        <li class="mb-2"><strong>Business Programs:</strong> Basic arithmetic and communication abilities</li>
-                        <li class="mb-2"><strong>Trade Programs:</strong> Physical ability and aptitude for hands-on work</li>
+                        <li class="mb-2"><strong>🍽️ Hospitality Programs:</strong> Customer service aptitude, communication skills</li>
+                        <li class="mb-2"><strong>💻 IT Programs:</strong> Basic computer literacy helpful but not required</li>
+                        <li class="mb-2"><strong>💄 Beauty Programs:</strong> Practical skills and attention to detail</li>
+                        <li class="mb-2"><strong>📈 Business Programs:</strong> Basic arithmetic and communication abilities</li>
+                        <li class="mb-2"><strong>🔧 Trade Programs:</strong> Physical ability and aptitude for hands-on work</li>
                     </ul>
                 </div>
             </div>
@@ -958,5 +1000,6 @@ block links %}
     </div>
 </div>
 
-</div>
-{% endblock %} {% block scripts %}{% endblock %}
+{% endblock %}
+
+{% block scripts %}{% endblock %}

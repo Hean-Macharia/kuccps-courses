@@ -1,5 +1,5 @@
 {% extends "./base.html" %} 
-{% block title %}KUCCPS Teacher Training Colleges (TTC) | KUCCPS {% endblock %} 
+{% block title %}KUCCPS Teacher Training Colleges (TTC) | Education Programs in Kenya{% endblock %} 
 
 {% block links %}
 <link rel="canonical" href="{{ get_canonical_url('ttc') }}" />
@@ -34,128 +34,425 @@
     <meta itemprop="skills" content="teaching methodology, pedagogy, classroom management, subject expertise"/>
 </div>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
+
+<!-- Enhanced TTC Page Styling - Modern Education Theme -->
 <style>
-    /* TTC Card Styling */
-    .ttc-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 30px 0;
+    /* Modern Color Scheme for TTC - Education Theme */
+    :root {
+        --ttc-primary: #4a90e2;
+        --ttc-primary-dark: #2c5f8a;
+        --ttc-secondary: #9b59b6;
+        --ttc-accent: #e67e22;
+        --ttc-success: #27ae60;
+        --ttc-warning: #f1c40f;
+        --ttc-dark: #2c3e50;
+        --ttc-light-bg: #f4f7fb;
+        --ttc-card-shadow: 0 10px 30px -8px rgba(0,0,0,0.08);
+        --ttc-hover-shadow: 0 20px 35px -12px rgba(74,144,226,0.15);
     }
-    
-    .ttc-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    .animate-fade-up { animation: fadeInUp 0.5s ease-out; }
+    .animate-slide-right { animation: slideInRight 0.4s ease-out; }
+
+    /* Hero Section */
+    .ttc-hero {
+        background: linear-gradient(135deg, #2c5f8a 0%, #4a90e2 50%, #9b59b6 100%);
+        border-radius: 28px;
+        padding: 2.5rem 2rem;
+        margin-bottom: 2rem;
         color: white;
-        padding: 40px 30px;
-        border-radius: 12px 12px 0 0;
-        margin-bottom: 0;
         text-align: center;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
     }
-    
-    .ttc-header h2 {
+    .ttc-hero::before {
+        content: "👨‍🏫";
+        position: absolute;
+        font-size: 8rem;
+        opacity: 0.08;
+        bottom: -20px;
+        right: -20px;
+        transform: rotate(-15deg);
+    }
+    .ttc-hero h1 {
         font-size: 1.8rem;
+        margin-bottom: 0.75rem;
         font-weight: 700;
-        margin: 0;
+    }
+    .ttc-hero p {
+        font-size: 1rem;
+        opacity: 0.92;
+        max-width: 750px;
+        margin: 0 auto;
+    }
+
+    /* Form Cards */
+    .ttc-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: var(--ttc-card-shadow);
+        padding: 1.8rem;
+        margin-bottom: 2rem;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .ttc-card:hover {
+        box-shadow: var(--ttc-hover-shadow);
+        transform: translateY(-2px);
+    }
+
+    /* Section Titles */
+    .ttc-section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ttc-dark);
+        border-left: 5px solid var(--ttc-primary);
+        padding-left: 1rem;
+        margin-bottom: 1.5rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .ttc-section-title i {
+        color: var(--ttc-primary);
+        font-size: 1.3rem;
+    }
+
+    /* Subject Group Headers */
+    .ttc-subject-group {
+        background: var(--ttc-light-bg);
+        border-radius: 20px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(74,144,226,0.1);
+    }
+    .ttc-subject-group:hover {
+        background: #eef3fc;
+        border-color: var(--ttc-primary);
+    }
+    .ttc-subject-group h2 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--ttc-primary-dark);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .ttc-subject-group h2 i {
+        font-size: 1.2rem;
+    }
+
+    /* Form Grid Layout */
+    .ttc-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+    .ttc-form-group {
+        margin-bottom: 0;
+    }
+    .ttc-form-group label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.4rem;
+        display: block;
+        font-size: 0.85rem;
+        letter-spacing: 0.3px;
+    }
+    .ttc-select {
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 0.6rem 0.8rem;
+        background-color: white;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+    .ttc-select:focus {
+        border-color: var(--ttc-primary);
+        box-shadow: 0 0 0 3px rgba(74,144,226,0.15);
+        outline: none;
+    }
+    .ttc-select:hover {
+        border-color: var(--ttc-primary);
+    }
+
+    /* Overall Grade Special Styling */
+    .overall-grade-section {
+        background: linear-gradient(135deg, #e8f0fe 0%, #d4e2fc 100%);
+        border-radius: 20px;
+        padding: 1.2rem 1.8rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .overall-grade-section label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--ttc-primary-dark);
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .overall-grade-section .ttc-select {
+        width: 220px;
+        font-weight: 500;
+        background: white;
+    }
+
+    /* Submit Button */
+    .ttc-submit-btn {
+        background: linear-gradient(135deg, var(--ttc-primary) 0%, var(--ttc-secondary) 100%);
+        border: none;
+        padding: 14px 32px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        color: white;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 12px;
     }
-    
-    .ttc-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        overflow: hidden;
-        margin-bottom: 30px;
-    }
-    
-    #gradesForm {
-        padding: 30px;
-        background: white;
-    }
-    
-    #gradesForm h1 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #667eea;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #667eea;
-    }
-    
-    #gradesForm h2 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #764ba2;
-        margin-top: 25px;
-        margin-bottom: 15px;
-        padding-left: 10px;
-        border-left: 4px solid #764ba2;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-group label {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 8px;
-        display: block;
-        font-size: 0.95rem;
-    }
-    
-    .form-select {
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        outline: none;
-    }
-    
-    .form-select:hover {
-        border-color: #667eea;
-    }
-    
-    .subjects {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-    
-    form button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        color: white;
-        padding: 12px 40px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 30px;
-        width: 100%;
-    }
-    
-    form button:hover {
+    .ttc-submit-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 25px rgba(74,144,226,0.35);
+        background: linear-gradient(135deg, var(--ttc-secondary) 0%, var(--ttc-primary) 100%);
     }
-    
-    .intro-span {
+
+    /* Info Cards */
+    .ttc-info-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--ttc-card-shadow);
+        height: 100%;
+        transition: all 0.2s ease;
+        overflow: hidden;
+    }
+    .ttc-info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--ttc-hover-shadow);
+    }
+    .ttc-info-card .card-body {
+        padding: 1.5rem;
+    }
+    .ttc-info-card h5 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--ttc-primary-dark);
+    }
+    .ttc-info-card ul {
+        padding-left: 1.2rem;
+        margin-bottom: 0;
+    }
+    .ttc-info-card li {
+        margin-bottom: 0.6rem;
+        line-height: 1.4;
+    }
+
+    /* Alert Boxes */
+    .ttc-alert {
+        border-radius: 20px;
+        border: none;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .ttc-alert h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+    }
+    .ttc-alert-dark {
+        background: linear-gradient(135deg, #e8ecf1 0%, #d5dbe3 100%);
+        color: #2c3e50;
+    }
+
+    /* Accordion Styling */
+    .ttc-accordion-item {
+        border: none;
+        margin-bottom: 0.75rem;
+        border-radius: 16px !important;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .ttc-accordion-button {
+        font-weight: 600;
+        background-color: white;
+        padding: 1rem 1.2rem;
+        color: var(--ttc-dark);
+    }
+    .ttc-accordion-button:not(.collapsed) {
+        background-color: var(--ttc-light-bg);
+        color: var(--ttc-primary);
+    }
+    .ttc-accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,0.1);
+    }
+    .ttc-accordion-body {
+        padding: 1.2rem;
+        background-color: #fefefe;
+    }
+
+    /* Success Story Cards */
+    .ttc-story-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--ttc-card-shadow);
+        height: 100%;
+        transition: all 0.2s ease;
+        background: white;
+    }
+    .ttc-story-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--ttc-hover-shadow);
+    }
+    .ttc-story-card .card-body {
+        padding: 1.5rem;
+    }
+    .ttc-story-card h5 {
+        font-weight: 700;
+        color: var(--ttc-primary-dark);
+        margin-bottom: 0.75rem;
+    }
+    .ttc-story-card .story-quote {
+        font-style: italic;
+        color: #555;
+        line-height: 1.5;
+    }
+    .ttc-story-card .story-badge {
+        background: var(--ttc-success);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 0.75rem;
+    }
+
+    /* Feature Cards */
+    .ttc-feature-card {
+        background: white;
+        border-radius: 18px;
+        padding: 1.2rem;
+        height: 100%;
+        transition: all 0.2s ease;
+        border: 1px solid #eef2f7;
+    }
+    .ttc-feature-card:hover {
+        background: linear-gradient(135deg, #fff 0%, #e8f0fe 100%);
+        border-color: var(--ttc-primary);
+        transform: translateY(-2px);
+    }
+    .ttc-feature-card h5 {
+        font-weight: 700;
+        color: var(--ttc-primary);
+        margin-bottom: 0.5rem;
+    }
+    .ttc-feature-card p {
+        color: #666;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    /* Intro Text */
+    .ttc-intro-text {
         font-size: 1.1rem;
         color: #555;
         display: block;
-        margin-bottom: 30px;
+        margin-bottom: 1.8rem;
         font-weight: 500;
+        text-align: center;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .ttc-hero {
+            padding: 1.5rem;
+        }
+        .ttc-hero h1 {
+            font-size: 1.4rem;
+        }
+        .ttc-card {
+            padding: 1.2rem;
+        }
+        .ttc-section-title {
+            font-size: 1.3rem;
+        }
+        .overall-grade-section {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+        .overall-grade-section .ttc-select {
+            width: 100%;
+        }
+        .ttc-form-grid {
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+        }
+        .ttc-subject-group {
+            padding: 1rem;
+        }
+        .ttc-submit-btn {
+            padding: 12px 20px;
+            font-size: 1rem;
+        }
+        .ttc-intro-text {
+            font-size: 1rem;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        .ttc-submit-btn, .ttc-card, .ttc-hero {
+            break-inside: avoid;
+        }
+    }
+
+    /* Special Badges */
+    .teaching-badge {
+        background: var(--ttc-primary);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+    }
+    .requirement-badge {
+        background: var(--ttc-warning);
+        color: #2c3e50;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-block;
     }
 </style>
 {% endblock %} 
@@ -164,524 +461,351 @@
 
 {% block content %}
 
-    <div class="container">
-        <h1 class="text-center mb-4">Teacher Training College (TTC) Programs Qualification Checker</h1>
+<!-- Hero Section -->
+<div class="container mt-3">
+    <div class="ttc-hero animate-fade-in">
+        <h1>👨‍🏫 Teacher Training College (TTC) Programs</h1>
+        <p>Discover 2-3 year education diploma programs at accredited Teacher Training Colleges across Kenya. Enter your KCSE grades below to find teaching programs that match your qualifications.</p>
     </div>
+</div>
 
-    <div class="container mt-4 mb-4">
-    <span class="intro-span">Fill in your KCSE grades and submit to see all teacher training programs you qualify for!
-    </span>
+<div class="container">
+    <span class="ttc-intro-text animate-fade-up">✨ Fill in your KCSE grades and submit to see all teacher training programs you qualify for!</span>
     
     <form action="/submit-ttc-grades" method="post">
-        <!-- KCSE Subjects Grades -->
-        <div id="gradesForm">
-            <h1 class="text-primary">Enter Your Overall Grade</h1>
-            <div class="">
-                <div class="mb-4">
-                    <div class="form-group">
-                        <label for="overall">Overall:</label>
-                        <select id="overall" name="overall" class="form-select" required>
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                </div>
+        
+        <!-- TTC Program Qualifications Card -->
+        <div class="ttc-card animate-fade-up">
+            <div class="ttc-section-title">
+                <i>📋</i> Teacher Training Qualifications
+            </div>
+            
+            <!-- Overall Grade Section - Styled -->
+            <div class="overall-grade-section">
+                <label for="overall">🎯 Overall KCSE Grade:</label>
+                <select id="overall" name="overall" class="ttc-select" required>
+                    <option value="">Select Grade</option>
+                    <option value="A">A</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="B-">B-</option>
+                    <option value="C+">C+</option>
+                    <option value="C">C</option>
+                    <option value="C-">C-</option>
+                    <option value="D+">D+</option>
+                    <option value="D">D</option>
+                    <option value="D-">D-</option>
+                    <option value="E">E</option>
+                </select>
             </div>
         </div>
-        <!-- Grades Inputs -->
-        <div id="gradesForm">
-            <h1 class="text-primary">Enter KCSE Grades</h1>
+
+        <!-- KCSE Grades Entry Card -->
+        <div class="ttc-card animate-fade-up">
+            <div class="ttc-section-title">
+                <i>📝</i> Enter Your KCSE Subject Grades
+            </div>
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">Select the grades you achieved in each subject. Teaching programs require good performance in core subjects like English and Mathematics.</p>
+            
             <div class="subjects">
                 <!-- Core Subjects -->
-                <div class="mb-4">
-                    <h2>Core Subjects</h2>
-                    <div class="form-group">
-                        <label for="mathematics">Mathematics:</label>
-                        <select id="mathematics" name="mathematics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="english">English:</label>
-                        <select id="english" name="english" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kiswahili">Kiswahili:</label>
-                        <select id="kiswahili" name="kiswahili" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="ttc-subject-group">
+                    <h2><i>⭐</i> Core Subjects</h2>
+                    <div class="ttc-form-grid">
+                        <div class="ttc-form-group">
+                            <label for="mathematics">Mathematics</label>
+                            <select id="mathematics" name="mathematics" class="ttc-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="english">English</label>
+                            <select id="english" name="english" class="ttc-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="kiswahili">Kiswahili</label>
+                            <select id="kiswahili" name="kiswahili" class="ttc-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Sciences -->
-                <div class="mb-4">
-                    <h2>Sciences</h2>
-                    <div class="form-group">
-                        <label for="chemistry">Chemistry:</label>
-                        <select id="chemistry" name="chemistry" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="biology">Biology:</label>
-                        <select id="biology" name="biology" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="physics">Physics:</label>
-                        <select id="physics" name="physics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="ttc-subject-group">
+                    <h2><i>🔬</i> Sciences</h2>
+                    <div class="ttc-form-grid">
+                        <div class="ttc-form-group">
+                            <label for="chemistry">Chemistry</label>
+                            <select id="chemistry" name="chemistry" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="biology">Biology</label>
+                            <select id="biology" name="biology" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="physics">Physics</label>
+                            <select id="physics" name="physics" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Humanities -->
-                <div class="mb-4">
-                    <h2>Humanities</h2>
-                    <div class="form-group">
-                        <label for="geography">Geography:</label>
-                        <select id="geography" name="geography" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="history">History:</label>
-                        <select id="history" name="history" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="cre">Christian Religious Education (CRE):</label>
-                        <select id="cre" name="cre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ire">Islamic Religious Education (CRE):</label>
-                        <select id="ire" name="ire" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="hre">Hindu Religious Education (CRE):</label>
-                        <select id="hre" name="hre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="ttc-subject-group">
+                    <h2><i>📖</i> Humanities</h2>
+                    <div class="ttc-form-grid">
+                        <div class="ttc-form-group">
+                            <label for="geography">Geography</label>
+                            <select id="geography" name="geography" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="history">History</label>
+                            <select id="history" name="history" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="cre">Christian Religious Education (CRE)</label>
+                            <select id="cre" name="cre" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="ire">Islamic Religious Education (IRE)</label>
+                            <select id="ire" name="ire" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="hre">Hindu Religious Education (HRE)</label>
+                            <select id="hre" name="hre" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Technical Subjects -->
-                <div class="mb-4">
-                    <h2>Technical Subjects</h2>
-                    <div class="form-group">
-                        <label for="agriculture">Agriculture:</label>
-                        <select id="agriculture" name="agriculture" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="computer">Computer Studies:</label>
-                        <select id="computer" name="computer" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="arts">Art and Design:</label>
-                        <select id="arts" name="arts" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="woodwork">Woodwork:</label>
-                        <select id="woodwork" name="woodwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="homescience">HomeScience:</label>
-                        <select id="homescience" name="homescience" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="business">Business Studies:</label>
-                        <select id="business" name="business" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="music">Music:</label>
-                        <select id="music" name="muc" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="ttc-subject-group">
+                    <h2><i>⚙️</i> Technical Subjects</h2>
+                    <div class="ttc-form-grid">
+                        <div class="ttc-form-group">
+                            <label for="agriculture">Agriculture</label>
+                            <select id="agriculture" name="agriculture" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="computer">Computer Studies</label>
+                            <select id="computer" name="computer" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="arts">Art and Design</label>
+                            <select id="arts" name="arts" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="woodwork">Woodwork</label>
+                            <select id="woodwork" name="woodwork" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="homescience">Home Science</label>
+                            <select id="homescience" name="homescience" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="business">Business Studies</label>
+                            <select id="business" name="business" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="music">Music</label>
+                            <select id="music" name="music" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Other Subjects -->
-                <div class="mb-4">
-                    <h2>Other Subjects</h2>
-                    <div class="form-group">
-                        <label for="building">Building and Construction:</label>
-                        <select id="building" name="building" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="electronics">Electricity and Electronics:</label>
-                        <select id="electronics" name="electronics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="metalwork">Metalwork:</label>
-                        <select id="metalwork" name="metalwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="french">French:</label>
-                        <select id="french" name="french" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="german">German:</label>
-                        <select id="german" name="german" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kenya Sign Language">Kenya Sign Language:</label>
-                        <select id="kenya Sign Language" name="kenya Sign Language" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="aviation">Aviation:</label>
-                        <select id="aviation" name="aviation" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="ttc-subject-group">
+                    <h2><i>➕</i> Other Subjects</h2>
+                    <div class="ttc-form-grid">
+                        <div class="ttc-form-group">
+                            <label for="building">Building and Construction</label>
+                            <select id="building" name="building" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="electronics">Electricity and Electronics</label>
+                            <select id="electronics" name="electronics" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="metalwork">Metalwork</label>
+                            <select id="metalwork" name="metalwork" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="french">French</label>
+                            <select id="french" name="french" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="german">German</label>
+                            <select id="german" name="german" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="kenyaSignLanguage">Kenya Sign Language</label>
+                            <select id="kenyaSignLanguage" name="kenyaSignLanguage" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="ttc-form-group">
+                            <label for="aviation">Aviation</label>
+                            <select id="aviation" name="aviation" class="ttc-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary w-50" styles="width=100px">
-            Submit
+
+        <!-- Submit Button -->
+        <button type="submit" class="ttc-submit-btn animate-fade-up">
+            🔍 Find Teacher Training Programs I Qualify For
         </button>
     </form>
-    <div class="container mt-5">
-    <!-- TTC Programs Section Header -->
-    <div class="alert alert-dark mb-4" role="alert">
+</div>
+
+<!-- TTC Programs Information Section -->
+<div class="container mt-5 mb-4">
+    <div class="ttc-alert ttc-alert-dark animate-fade-up">
         <h2 class="alert-heading">👨‍🏫 Teachers Training Colleges (TTC) Programs</h2>
         <p class="mb-2">
             Teacher Training Colleges (TTC) prepare passionate individuals for careers in education. These KUCCPS-partnered programs offer 
@@ -694,34 +818,36 @@
     </div>
     
     <!-- TTC Information Section -->
-    <div class="row mt-5 mb-4">
+    <div class="row mt-5 mb-4 g-4">
         <div class="col-md-6">
-            <div class="card">
+            <div class="ttc-info-card card animate-fade-up">
                 <div class="card-body">
                     <h5 class="card-title">🎓 TTC Teaching Specializations</h5>
-                    <ul class="small">
+                    <ul>
                         <li>Primary Teacher Education</li>
                         <li>Secondary Teacher Education</li>
-                        <li>Science Teaching</li>
+                        <li>Science Teaching (Biology, Chemistry, Physics)</li>
                         <li>Mathematics Teaching</li>
                         <li>Language Teaching (English, Kiswahili)</li>
                         <li>Special Needs Education</li>
                         <li>Early Childhood Development</li>
+                        <li>Technical & Vocational Teaching</li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
+            <div class="ttc-info-card card animate-fade-up">
                 <div class="card-body">
                     <h5 class="card-title">📚 Why Choose Teaching</h5>
-                    <ul class="small">
-                        <li>Stable, secure government employment</li>
-                        <li>Regular salary and pension benefits</li>
+                    <ul>
+                        <li>Stable, secure government employment with TSC</li>
+                        <li>Regular salary increments and pension benefits</li>
                         <li>Holidays aligned with school calendar</li>
                         <li>Professional development opportunities</li>
                         <li>Make a lasting impact on students' lives</li>
                         <li>Growing demand for teachers in Kenya</li>
+                        <li>Opportunity for career advancement</li>
                     </ul>
                 </div>
             </div>
@@ -730,41 +856,29 @@
 </div>
 
 <!-- Why Choose Teacher Training Programs -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
+<div class="container my-5">
+    <div class="ttc-card animate-fade-up">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4">Why Choose Teacher Training College Programs</h2>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Secure Government Employment</h5>
-                            <p class="mb-0">Teaching is recognized by TSC, guaranteeing stable government employment with pension benefits and regular salary progression.</p>
-                        </div>
+            <h2 class="card-title mb-4" style="color: var(--ttc-dark);">👨‍🏫 Why Choose Teacher Training College Programs</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="ttc-feature-card">
+                        <h5>🏛️ Secure Government Employment</h5>
+                        <p>Teaching is recognized by TSC, guaranteeing stable government employment with pension benefits and regular salary progression.</p>
+                    </div>
+                    <div class="ttc-feature-card mt-3">
+                        <h5>🌟 Respected Professional Career</h5>
+                        <p>Teaching is a noble profession that impacts society. Teachers are respected members of the community with professional development opportunities.</p>
                     </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Respected Professional Career</h5>
-                            <p class="mb-0">Teaching is a noble profession that impacts society. Teachers are respected members of the community with professional development opportunities.</p>
-                        </div>
+                <div class="col-md-6">
+                    <div class="ttc-feature-card">
+                        <h5>💰 TSC Benefits and Pension</h5>
+                        <p>Access to Teachers Service Commission benefits including healthcare, housing allowance, and comprehensive retirement pension scheme.</p>
                     </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>TSC Benefits and Pension</h5>
-                            <p class="mb-0">Access to Teachers Service Commission benefits including healthcare, housing allowance, and comprehensive retirement pension scheme.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Work-Life Balance</h5>
-                            <p class="mb-0">School holidays align with your personal calendar, offering excellent work-life balance and time with family.</p>
-                        </div>
+                    <div class="ttc-feature-card mt-3">
+                        <h5>⚖️ Work-Life Balance</h5>
+                        <p>School holidays align with your personal calendar, offering excellent work-life balance and time with family.</p>
                     </div>
                 </div>
             </div>
@@ -773,70 +887,66 @@
 </div>
 
 <!-- Frequently Asked Questions -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Frequently Asked Questions About Teacher Training</h2>
-            <div class="accordion" id="ttcFAQ">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq1">
-                            What are the different teaching specializations available?
-                        </button>
-                    </h2>
-                    <div id="ttcfaq1" class="accordion-collapse collapse show" data-bs-parent="#ttcFAQ">
-                        <div class="accordion-body">
-                            TTCs offer programs in Primary Teacher Training, Secondary Teacher Training in various subjects (Science, Mathematics, Language Arts), Technical Teacher Training, and Special Needs Education. You choose based on your interests and qualifications.
-                        </div>
-                    </div>
+<div class="container my-5">
+    <h2 class="mb-4" style="color: var(--ttc-dark);">❓ Frequently Asked Questions About Teacher Training</h2>
+    <div class="accordion" id="ttcFAQ">
+        <div class="ttc-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button ttc-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq1">
+                    What are the different teaching specializations available?
+                </button>
+            </h2>
+            <div id="ttcfaq1" class="accordion-collapse collapse show" data-bs-parent="#ttcFAQ">
+                <div class="accordion-body ttc-accordion-body">
+                    TTCs offer programs in Primary Teacher Training, Secondary Teacher Training in various subjects (Science, Mathematics, Language Arts), Technical Teacher Training, and Special Needs Education. You choose based on your interests and qualifications.
                 </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq2">
-                            Will I get a job after completing teacher training?
-                        </button>
-                    </h2>
-                    <div id="ttcfaq2" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
-                        <div class="accordion-body">
-                            Yes. TTC graduates are absorbed into schools. The Teachers Service Commission recruits qualified teachers regularly. Job placement is virtually guaranteed, with teachers posted to schools across Kenya.
-                        </div>
-                    </div>
+            </div>
+        </div>
+        <div class="ttc-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed ttc-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq2">
+                    Will I get a job after completing teacher training?
+                </button>
+            </h2>
+            <div id="ttcfaq2" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
+                <div class="accordion-body ttc-accordion-body">
+                    Yes. TTC graduates are absorbed into schools. The Teachers Service Commission recruits qualified teachers regularly. Job placement is virtually guaranteed, with teachers posted to schools across Kenya.
                 </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq3">
-                            What is the entry requirement for TTC programs?
-                        </button>
-                    </h2>
-                    <div id="ttcfaq3" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
-                        <div class="accordion-body">
-                            You need a minimum C grade in KCSE overall. For secondary teaching, you also need relevant subject passes at C or better. Primary teaching has slightly more flexible requirements in some institutions.
-                        </div>
-                    </div>
+            </div>
+        </div>
+        <div class="ttc-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed ttc-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq3">
+                    What is the entry requirement for TTC programs?
+                </button>
+            </h2>
+            <div id="ttcfaq3" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
+                <div class="accordion-body ttc-accordion-body">
+                    You need a minimum C grade in KCSE overall. For secondary teaching, you also need relevant subject passes at C or better. Primary teaching has slightly more flexible requirements in some institutions.
                 </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq4">
-                            What salary will I earn as a teacher?
-                        </button>
-                    </h2>
-                    <div id="ttcfaq4" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
-                        <div class="accordion-body">
-                            Starting salaries for TSC teachers range from 25,000 to 35,000 Kenya shillings per month, with regular progression up to 80,000+ shillings with experience and promotions. Add to this housing allowance and other TSC benefits.
-                        </div>
-                    </div>
+            </div>
+        </div>
+        <div class="ttc-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed ttc-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq4">
+                    What salary will I earn as a teacher?
+                </button>
+            </h2>
+            <div id="ttcfaq4" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
+                <div class="accordion-body ttc-accordion-body">
+                    Starting salaries for TSC teachers range from KES 25,000 to 35,000 per month, with regular progression up to KES 80,000+ with experience and promotions. Add to this housing allowance and other TSC benefits.
                 </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq5">
-                            Can I pursue further studies after TTC?
-                        </button>
-                    </h2>
-                    <div id="ttcfaq5" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
-                        <div class="accordion-body">
-                            Yes, absolutely. Many TTC graduates pursue bachelor's degrees in Education through distance learning or university transfer programs while working as teachers. TSC also supports staff development.
-                        </div>
-                    </div>
+            </div>
+        </div>
+        <div class="ttc-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed ttc-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ttcfaq5">
+                    Can I pursue further studies after TTC?
+                </button>
+            </h2>
+            <div id="ttcfaq5" class="accordion-collapse collapse" data-bs-parent="#ttcFAQ">
+                <div class="accordion-body ttc-accordion-body">
+                    Yes, absolutely. Many TTC graduates pursue bachelor's degrees in Education through distance learning or university transfer programs while working as teachers. TSC also supports staff development.
                 </div>
             </div>
         </div>
@@ -844,37 +954,33 @@
 </div>
 
 <!-- Success Stories -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Success Stories from TTC Graduates</h2>
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Teacher Rose Kipchoge - Primary Teaching</h5>
-                            <p class="small mb-3">Rose completed her primary teacher training and has been teaching for 8 years. She recently promoted to Senior Teacher and now mentors junior teachers while running a school library program.</p>
-                            <p class="small text-muted">"Teaching changed my life and enabled me to impact thousands of children."</p>
-                        </div>
-                    </div>
+<div class="container my-5">
+    <h2 class="mb-4" style="color: var(--ttc-dark);">🌟 Success Stories from TTC Graduates</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="ttc-story-card card h-100 animate-fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">Teacher Rose Kipchoge - Primary Teaching</h5>
+                    <p class="story-quote">"Rose completed her primary teacher training and has been teaching for 8 years. She recently promoted to Senior Teacher and now mentors junior teachers while running a school library program."</p>
+                    <span class="story-badge">✓ Senior Teacher</span>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Teacher James Ochieng - Secondary Mathematics</h5>
-                            <p class="small mb-3">James' TTC training led to a position teaching mathematics at a national school. He completed his bachelor's degree while teaching and was promoted to Head of Department after 5 years.</p>
-                            <p class="small text-muted">"TTC provided the foundation for a rewarding career in education."</p>
-                        </div>
-                    </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="ttc-story-card card h-100 animate-fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">Teacher James Ochieng - Secondary Mathematics</h5>
+                    <p class="story-quote">"James' TTC training led to a position teaching mathematics at a national school. He completed his bachelor's degree while teaching and was promoted to Head of Department after 5 years."</p>
+                    <span class="story-badge">✓ Head of Department</span>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Teacher Grace Mwangi - Special Needs Education</h5>
-                            <p class="small mb-3">Grace specialized in Special Needs Education through TTC. She works at an inclusive school supporting learners with diverse needs and has won recognition for her innovative teaching methods.</p>
-                            <p class="small text-muted">"My TTC training gave me the skills to make a real difference for every child."</p>
-                        </div>
-                    </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="ttc-story-card card h-100 animate-fade-up">
+                <div class="card-body">
+                    <h5 class="card-title">Teacher Grace Mwangi - Special Needs Education</h5>
+                    <p class="story-quote">"Grace specialized in Special Needs Education through TTC. She works at an inclusive school supporting learners with diverse needs and has won recognition for her innovative teaching methods."</p>
+                    <span class="story-badge">✓ Award-Winning Teacher</span>
                 </div>
             </div>
         </div>
@@ -883,28 +989,28 @@
 
 <!-- Prerequisites and Requirements -->
 <div class="container my-5 mb-5">
-    <div class="card border-left-primary shadow-sm">
+    <div class="ttc-card animate-fade-up">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4">Teacher Training Program Prerequisites and Requirements</h2>
-            <div class="row">
+            <h2 class="card-title mb-4" style="color: var(--ttc-dark);">📋 Teacher Training Program Prerequisites and Requirements</h2>
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--ttc-primary);">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum C (5 points) - higher for secondary streams</li>
-                        <li class="mb-2"><strong>English Language:</strong> Minimum C for communication skills essential</li>
-                        <li class="mb-2"><strong>For Secondary:</strong> Minimum C in teaching subject required</li>
-                        <li class="mb-2"><strong>Cluster Points:</strong> Typically 40-60 points depending on TTC</li>
-                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 18+ years at entry</li>
+                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum C (5 points) - higher for secondary streams</li>
+                        <li class="mb-2"><strong>📖 English Language:</strong> Minimum C for communication skills essential</li>
+                        <li class="mb-2"><strong>🔢 For Secondary:</strong> Minimum C in teaching subject required</li>
+                        <li class="mb-2"><strong>🎯 Cluster Points:</strong> Typically 40-60 points depending on TTC</li>
+                        <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 18+ years at entry</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--ttc-primary);">Program-Specific Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Primary Teaching:</strong> Love for working with children, communication skills</li>
-                        <li class="mb-2"><strong>Secondary Teaching:</strong> Strong subject knowledge in chosen specialization</li>
-                        <li class="mb-2"><strong>Technical Teaching:</strong> Practical aptitude and technical subject knowledge</li>
-                        <li class="mb-2"><strong>Special Needs Education:</strong> Compassion, patience, and commitment to inclusion</li>
-                        <li class="mb-2"><strong>All Programs:</strong> Good character, health screening, and teaching aptitude</li>
+                        <li class="mb-2"><strong>🏫 Primary Teaching:</strong> Love for working with children, communication skills</li>
+                        <li class="mb-2"><strong>📚 Secondary Teaching:</strong> Strong subject knowledge in chosen specialization</li>
+                        <li class="mb-2"><strong>🔧 Technical Teaching:</strong> Practical aptitude and technical subject knowledge</li>
+                        <li class="mb-2"><strong>💙 Special Needs Education:</strong> Compassion, patience, and commitment to inclusion</li>
+                        <li class="mb-2"><strong>✅ All Programs:</strong> Good character, health screening, and teaching aptitude</li>
                     </ul>
                 </div>
             </div>
@@ -912,5 +1018,5 @@
     </div>
 </div>
 
-</div>
-{% endblock %} {% block scripts %}{% endblock %}
+{% endblock %} 
+{% block scripts %}{% endblock %}

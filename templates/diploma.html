@@ -1,5 +1,7 @@
-{% extends "./base.html" %} {% block title %} KUCCPS Diploma Courses | Technical Programs in Kenya {% endblock %} {%
-block links %}
+{% extends "./base.html" %}
+{% block title %} KUCCPS Diploma Courses | Technical Programs in Kenya {% endblock %}
+
+{% block links %}
 <link rel="canonical" href="{{ get_canonical_url('diploma') }}" />
 <meta name="description" content="Find KUCCPS diploma courses and technical programs in Kenya. Match your KCSE grades with 2-year diploma programs in engineering, business, IT, hospitality, and more.">
 <script type="application/ld+json">
@@ -33,614 +35,708 @@ block links %}
 </div>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
-{% endblock %} {% block displaytext %}Find Diploma Programs Matching Your Grades{% endblock %} {% block content %}
 
+<!-- Enhanced Diploma Page Styling - Improved UI/UX -->
+<style>
+    /* Modern Color Scheme */
+    :root {
+        --diploma-primary: #2c3e50;
+        --diploma-secondary: #3498db;
+        --diploma-accent: #e67e22;
+        --diploma-success: #27ae60;
+        --diploma-light-bg: #f8f9fa;
+        --diploma-card-shadow: 0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.02);
+    }
 
-    <div class="container">
-        <h1 class="text-center mb-4">KUCCPS Diploma & Technical Programs Qualification Checker</h1>
+    /* Hero Section */
+    .diploma-hero {
+        background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
+        border-radius: 24px;
+        padding: 2rem 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+    .diploma-hero h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    .diploma-hero p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Form Cards */
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--diploma-card-shadow);
+        padding: 1.8rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .form-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 30px -12px rgba(0,0,0,0.12);
+    }
+
+    /* Section Titles */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--diploma-primary);
+        border-left: 5px solid var(--diploma-secondary);
+        padding-left: 1rem;
+        margin-bottom: 1.5rem;
+        margin-top: 0.5rem;
+    }
+    .section-title i {
+        margin-right: 10px;
+        color: var(--diploma-secondary);
+    }
+
+    /* Subject Group Headers */
+    .subject-group {
+        background: var(--diploma-light-bg);
+        border-radius: 16px;
+        padding: 1.2rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid var(--diploma-secondary);
+    }
+    .subject-group h2 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--diploma-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .subject-group h2 i {
+        font-size: 1.3rem;
+    }
+
+    /* Form Grid Layout */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    .form-group {
+        margin-bottom: 0;
+    }
+    .form-group label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.4rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+    .form-select {
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+        padding: 0.6rem 0.8rem;
+        background-color: white;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+    .form-select:focus {
+        border-color: var(--diploma-secondary);
+        box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+        outline: none;
+    }
+
+    /* Overall Grade Special Styling */
+    .overall-grade-card {
+        background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+        border-radius: 16px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .overall-grade-card label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--diploma-primary);
+        margin-bottom: 0;
+    }
+    .overall-grade-card .form-select {
+        width: 200px;
+        font-weight: 500;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+        background: linear-gradient(135deg, var(--diploma-success) 0%, #219653 100%);
+        border: none;
+        padding: 14px 32px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        color: white;
+        cursor: pointer;
+    }
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(39,174,96,0.3);
+        background: linear-gradient(135deg, #219653 0%, #1e8449 100%);
+    }
+
+    /* Info Cards */
+    .info-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--diploma-card-shadow);
+        height: 100%;
+        transition: transform 0.2s ease;
+    }
+    .info-card:hover {
+        transform: translateY(-3px);
+    }
+    .info-card .card-body {
+        padding: 1.5rem;
+    }
+    .info-card h5 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--diploma-primary);
+    }
+    .info-card ul {
+        padding-left: 1.2rem;
+        margin-bottom: 0;
+    }
+    .info-card li {
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    /* Alert Boxes */
+    .custom-alert {
+        border-radius: 20px;
+        border: none;
+        padding: 1.5rem;
+    }
+    .custom-alert h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Accordion Styling */
+    .accordion-item {
+        border: none;
+        margin-bottom: 0.75rem;
+        border-radius: 16px !important;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .accordion-button {
+        font-weight: 600;
+        background-color: white;
+        padding: 1rem 1.2rem;
+    }
+    .accordion-button:not(.collapsed) {
+        background-color: var(--diploma-light-bg);
+        color: var(--diploma-secondary);
+    }
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,0.1);
+    }
+    .accordion-body {
+        padding: 1.2rem;
+        background-color: #fefefe;
+    }
+
+    /* Success Story Cards */
+    .story-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--diploma-card-shadow);
+        height: 100%;
+        transition: all 0.2s ease;
+    }
+    .story-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -12px rgba(0,0,0,0.15);
+    }
+    .story-card .card-body {
+        padding: 1.5rem;
+    }
+    .story-card h5 {
+        font-weight: 700;
+        color: var(--diploma-primary);
+        margin-bottom: 0.75rem;
+    }
+    .story-card .text-success {
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 0.75rem;
+    }
+
+    /* Feature Cards */
+    .feature-card {
+        background: var(--diploma-light-bg);
+        border-radius: 16px;
+        padding: 1.2rem;
+        height: 100%;
+        transition: all 0.2s ease;
+    }
+    .feature-card:hover {
+        background: white;
+        box-shadow: var(--diploma-card-shadow);
+    }
+    .feature-card h5 {
+        font-weight: 700;
+        color: var(--diploma-secondary);
+        margin-bottom: 0.5rem;
+    }
+    .feature-card p {
+        color: #555;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .diploma-hero {
+            padding: 1.5rem;
+        }
+        .diploma-hero h1 {
+            font-size: 1.5rem;
+        }
+        .form-card {
+            padding: 1rem;
+        }
+        .section-title {
+            font-size: 1.3rem;
+        }
+        .overall-grade-card {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .overall-grade-card .form-select {
+            width: 100%;
+        }
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+        }
+        .subject-group {
+            padding: 1rem;
+        }
+        .submit-btn {
+            padding: 12px 20px;
+            font-size: 1rem;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        .submit-btn, .form-card {
+            break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block displaytext %}Find Diploma Programs Matching Your Grades{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div class="container mt-3">
+    <div class="diploma-hero">
+        <h1>🎓 KUCCPS Diploma & Technical Programs</h1>
+        <p>Find 3-year diploma programs in engineering, IT, business, health sciences, hospitality, and more. Enter your KCSE grades below to discover courses that match your qualifications.</p>
     </div>
+</div>
 
-    <span>Fill in your KCSE grades and submit to see all diploma programs you qualify for!
-    </span>
+<div class="container">
     <form action="/submit-diploma-grades" method="post">
-    <!-- User Email and Index Number will be collected after grades submission (Step 2) -->
-        <!-- KCSE Subjects Grades -->
-        <div id="gradesForm">
-            <h1 class="text-primary">Diploma Program Qualifications</h1>
-            <div class="">
-                <div class="mb-4">
-                    <div class="form-group">
-                        <label for="overall">Overall:</label>
-                        <select id="overall" name="overall" class="form-select" required>
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                </div>
+        
+        <!-- Diploma Program Qualifications Card -->
+        <div class="form-card">
+            <div class="section-title">
+                <i>📋</i> Diploma Program Qualification
+            </div>
+            
+            <!-- Overall Grade Section - Styled -->
+            <div class="overall-grade-card">
+                <label for="overall">📊 Overall KCSE Grade:</label>
+                <select id="overall" name="overall" class="form-select" required>
+                    <option value="">Select Grade</option>
+                    <option value="A">A</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="B-">B-</option>
+                    <option value="C+">C+</option>
+                    <option value="C">C</option>
+                    <option value="C-">C-</option>
+                    <option value="D+">D+</option>
+                    <option value="D">D</option>
+                    <option value="D-">D-</option>
+                    <option value="E">E</option>
+                </select>
             </div>
         </div>
-        <!-- Grades Inputs -->
-        <div id="gradesForm">
-            <h1 class="text-primary">Enter KCSE Grades</h1>
+
+        <!-- KCSE Grades Entry Card -->
+        <div class="form-card">
+            <div class="section-title">
+                <i>📝</i> Enter Your KCSE Subject Grades
+            </div>
+            <p class="text-muted mb-4">Select the grades you achieved in each subject. Only subjects you took will be considered for program matching.</p>
+            
             <div class="subjects">
                 <!-- Core Subjects -->
-                <div class="mb-4">
-                    <h2>Core Subjects</h2>
-                    <div class="form-group">
-                        <label for="mathematics">Mathematics:</label>
-                        <select id="mathematics" name="mathematics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="english">English:</label>
-                        <select id="english" name="english" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kiswahili">Kiswahili:</label>
-                        <select id="kiswahili" name="kiswahili" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="subject-group">
+                    <h2><i>⭐</i> Core Subjects</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="mathematics">Mathematics</label>
+                            <select id="mathematics" name="mathematics" class="form-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="english">English</label>
+                            <select id="english" name="english" class="form-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="kiswahili">Kiswahili</label>
+                            <select id="kiswahili" name="kiswahili" class="form-select" required>
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Sciences -->
-                <div class="mb-4">
-                    <h2>Sciences</h2>
-                    <div class="form-group">
-                        <label for="chemistry">Chemistry:</label>
-                        <select id="chemistry" name="chemistry" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="biology">Biology:</label>
-                        <select id="biology" name="biology" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="physics">Physics:</label>
-                        <select id="physics" name="physics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D+">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="subject-group">
+                    <h2><i>🔬</i> Sciences</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="chemistry">Chemistry</label>
+                            <select id="chemistry" name="chemistry" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="biology">Biology</label>
+                            <select id="biology" name="biology" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="physics">Physics</label>
+                            <select id="physics" name="physics" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Humanities -->
-                <div class="mb-4">
-                    <h2>Humanities</h2>
-                    <div class="form-group">
-                        <label for="geography">Geography:</label>
-                        <select id="geography" name="geography" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="history">History:</label>
-                        <select id="history" name="history" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="cre">Christian Religious Education (CRE):</label>
-                        <select id="cre" name="cre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ire">Islamic Religious Education (CRE):</label>
-                        <select id="ire" name="ire" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="hre">Hindu Religious Education (CRE):</label>
-                        <select id="hre" name="hre" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="subject-group">
+                    <h2><i>📖</i> Humanities</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="geography">Geography</label>
+                            <select id="geography" name="geography" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="history">History</label>
+                            <select id="history" name="history" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cre">Christian Religious Education (CRE)</label>
+                            <select id="cre" name="cre" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ire">Islamic Religious Education (IRE)</label>
+                            <select id="ire" name="ire" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hre">Hindu Religious Education (HRE)</label>
+                            <select id="hre" name="hre" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Technical Subjects -->
-                <div class="mb-4">
-                    <h2>Technical Subjects</h2>
-                    <div class="form-group">
-                        <label for="agriculture">Agriculture:</label>
-                        <select id="agriculture" name="agriculture" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="computer">Computer Studies:</label>
-                        <select id="computer" name="computer" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="arts">Art and Design:</label>
-                        <select id="arts" name="arts" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="woodwork">Woodwork:</label>
-                        <select id="woodwork" name="woodwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="homescience">HomeScience:</label>
-                        <select id="homescience" name="homescience" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="business">Business Studies:</label>
-                        <select id="business" name="business" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="music">Music:</label>
-                        <select id="music" name="muc" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="subject-group">
+                    <h2><i>⚙️</i> Technical Subjects</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="agriculture">Agriculture</label>
+                            <select id="agriculture" name="agriculture" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="computer">Computer Studies</label>
+                            <select id="computer" name="computer" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="arts">Art and Design</label>
+                            <select id="arts" name="arts" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="woodwork">Woodwork</label>
+                            <select id="woodwork" name="woodwork" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="homescience">Home Science</label>
+                            <select id="homescience" name="homescience" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="business">Business Studies</label>
+                            <select id="business" name="business" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="music">Music</label>
+                            <select id="music" name="music" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <!-- Other Subjects -->
-                <div class="mb-4">
-                    <h2>Other Subjects</h2>
-                    <div class="form-group">
-                        <label for="building">Building and Construction:</label>
-                        <select id="building" name="building" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="electronics">Electricity and Electronics:</label>
-                        <select id="electronics" name="electronics" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="metalwork">Metalwork:</label>
-                        <select id="metalwork" name="metalwork" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="french">French:</label>
-                        <select id="french" name="french" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="german">German:</label>
-                        <select id="german" name="german" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kenya Sign Language">Kenya Sign Language:</label>
-                        <select id="kenya Sign Language" name="kenya Sign Language" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="aviation">Aviation:</label>
-                        <select id="aviation" name="aviation" class="form-select">
-                            <option value="">Select Grade</option>
-                            <option value="A">A</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="B-">B-</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="C-">C-</option>
-                            <option value="D+">D+</option>
-                            <option value="D">D</option>
-                            <option value="D-">D-</option>
-                            <option value="E">E</option>
-                        </select>
+                <div class="subject-group">
+                    <h2><i>➕</i> Other Subjects</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="building">Building and Construction</label>
+                            <select id="building" name="building" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="electronics">Electricity and Electronics</label>
+                            <select id="electronics" name="electronics" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="metalwork">Metalwork</label>
+                            <select id="metalwork" name="metalwork" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="french">French</label>
+                            <select id="french" name="french" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="german">German</label>
+                            <select id="german" name="german" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="kenyaSignLanguage">Kenya Sign Language</label>
+                            <select id="kenyaSignLanguage" name="kenyaSignLanguage" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="aviation">Aviation</label>
+                            <select id="aviation" name="aviation" class="form-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary w-50" styles="width=100px">
-            Submit
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn">
+            🔍 Find Diploma Programs I Qualify For
         </button>
     </form>
+</div>
 
-    <div class="container mt-4 mb-4">
-        <div class="alert alert-secondary mb-4" role="alert">
-            <h2 class="alert-heading">📚 KUCCPS Diploma Programs</h2>
-            <p class="mb-2">
-                <strong>Diploma programs</strong> are 2-year technical and professional courses offered by colleges and technical institutions.
-                These programs combine theoretical knowledge with practical skills for career-focused training.
-            </p>
-            <ul class="mb-0">
-                <li><strong>Duration:</strong> 2 years</li>
-                <li><strong>Focus:</strong> Practical skills and professional competency</li>
-                <li><strong>Entry:</strong> Typically D+ or C- in KCSE</li>
-                <li><strong>Outcome:</strong> National Diploma recognized by employers</li>
-            </ul>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">⚙️ Popular Diploma Programs</h5>
-                        <ul>
-                            <li>Engineering & Technology</li>
-                            <li>Information Technology</li>
-                            <li>Business & Accounting</li>
-                            <li>Hospitality & Tourism</li>
-                            <li>Health Sciences</li>
-                            <li>Agriculture & Environmental Studies</li>
-                            <li>Automotive & Mechanical</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">💼 Employment Pathways</h5>
-                        <ul>
-                            <li>Direct entry into skilled jobs</li>
-                            <li>Fast-track career progression</li>
-                            <li>Self-employment opportunities</li>
-                            <li>Pathway to bachelor's degree programs</li>
-                            <li>Specialized professional roles</li>
-                            <li>Technical supervisory positions</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container mt-5">
-    <!-- Diploma Programs Section Header -->
-    <div class="alert alert-info mb-4" role="alert">
-        <h2 class="alert-heading">🎓 KUCCPS Diploma Programs Checker</h2>
+<!-- Diploma Programs Information Section -->
+<div class="container mt-5 mb-4">
+    <div class="custom-alert alert alert-secondary mb-4">
+        <h2 class="alert-heading">📚 KUCCPS Diploma Programs Overview</h2>
         <p class="mb-2">
-            Diploma programs are 2-year post-secondary courses offered by KUCCPS partner technical colleges and institutions across Kenya. 
-            They focus on applied learning and technical skills in fields such as engineering, agriculture, business, health sciences, and many more.
+            <strong>Diploma programs</strong> are 3-year technical and professional courses offered by colleges and technical institutions across Kenya.
+            These programs combine theoretical knowledge with practical skills for career-focused training.
         </p>
-        <p class="mb-0">
-            <strong>How it works:</strong> Enter your KCSE overall grade and individual subject grades below to discover which diploma programs you qualify for 
-            based on your academic performance and the specific program requirements.
-        </p>
+        <ul class="mb-0">
+            <li><strong>Duration:</strong> 3 years (accelerated career entry)</li>
+            <li><strong>Focus:</strong> Practical skills and professional competency</li>
+            <li><strong>Entry:</strong> Typically  C- and above in KCSE overall</li>
+            <li><strong>Outcome:</strong> National Diploma recognized by employers nationwide</li>
+        </ul>
     </div>
-    <!-- Diploma Information Section -->
-    <div class="row mt-5 mb-4">
+    
+    <div class="row g-4">
         <div class="col-md-6">
-            <div class="card">
+            <div class="info-card card">
                 <div class="card-body">
-                    <h5 class="card-title">💼 Diploma Advantages</h5>
-                    <ul class="small">
-                        <li>Practical, skills-focused education</li>
-                        <li>2-year duration (more affordable than degrees)</li>
-                        <li>Pathway to employment or further studies</li>
-                        <li>Wide range of specializations available</li>
-                        <li>Access to KUCCPS placement opportunities</li>
+                    <h5 class="card-title">⚙️ Popular Diploma Programs</h5>
+                    <ul>
+                        <li>Engineering & Technology (Civil, Electrical, Mechanical)</li>
+                        <li>Information Technology & Computer Science</li>
+                        <li>Business & Accounting (CPA, CIFA, ATD pathway)</li>
+                        <li>Hospitality & Tourism Management</li>
+                        <li>Health Sciences (Nursing, Clinical Medicine)</li>
+                        <li>Agriculture & Environmental Studies</li>
+                        <li>Automotive & Mechanical Engineering</li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
+            <div class="info-card card">
                 <div class="card-body">
-                    <h5 class="card-title">📚 Diploma Fields of Study</h5>
-                    <ul class="small">
-                        <li>Engineering & Technology</li>
-                        <li>Business & Commerce</li>
-                        <li>Health Sciences</li>
-                        <li>Agriculture & Environmental</li>
-                        <li>Hospitality & Tourism</li>
-                        <li>Computing & IT</li>
+                    <h5 class="card-title">💼 Employment Pathways</h5>
+                    <ul>
+                        <li>Direct entry into skilled technical jobs</li>
+                        <li>Fast-track career progression to supervisory roles</li>
+                        <li>Self-employment and entrepreneurship opportunities</li>
+                        <li>Pathway to bachelor's degree programs (credit transfer)</li>
+                        <li>Specialized professional roles in various industries</li>
+                        <li>Technical supervisory and management positions</li>
                     </ul>
                 </div>
             </div>
@@ -650,28 +746,28 @@ block links %}
 
 <!-- Why Choose Diploma Programs -->
 <div class="container my-5">
-    <div class="card border-0 shadow-sm">
+    <div class="info-card card border-0 shadow-sm">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4">📚 Why Choose Diploma & Technical Programs?</h2>
-            <div class="row g-3">
+            <h2 class="card-title mb-4" style="color: var(--diploma-primary);">📚 Why Choose Diploma & Technical Programs?</h2>
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <h5>2-Year Fast Track</h5>
-                        <p class="text-muted">Complete your qualification in just 2 years compared to 4-year degrees, entering workforce faster.</p>
+                    <div class="feature-card">
+                        <h5>⏱️ 3-Year Fast Track</h5>
+                        <p>Complete your qualification in just 3 years compared to 4-year degrees, entering the workforce faster and starting your career earlier.</p>
                     </div>
-                    <div class="mb-3">
-                        <h5>Practical Skills Focus</h5>
-                        <p class="text-muted">Heavy emphasis on hands-on training and practical assignments directly applicable to your career.</p>
+                    <div class="feature-card mt-3">
+                        <h5>🛠️ Practical Skills Focus</h5>
+                        <p>Heavy emphasis on hands-on training and practical assignments directly applicable to your chosen career field.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <h5>Affordable Education</h5>
-                        <p class="text-muted">Lower fees than universities while providing quality technical education and industry certifications.</p>
+                    <div class="feature-card">
+                        <h5>💰 Affordable Education</h5>
+                        <p>Lower fees than university degree programs while providing quality technical education and industry-recognized certifications.</p>
                     </div>
-                    <div class="mb-3">
-                        <h5>Career Ready</h5>
-                        <p class="text-muted">Job placement partnerships with industries ensure you enter employment market with relevant certifications.</p>
+                    <div class="feature-card mt-3">
+                        <h5>🎯 Career Ready</h5>
+                        <p>Job placement partnerships with industries ensure you enter the employment market with relevant, in-demand certifications.</p>
                     </div>
                 </div>
             </div>
@@ -681,36 +777,66 @@ block links %}
 
 <!-- Diploma Program FAQs -->
 <div class="container my-5">
-    <h2 class="mb-4">❓ Frequently Asked Questions About Diploma Programs</h2>
+    <h2 class="mb-4" style="color: var(--diploma-primary);">❓ Frequently Asked Questions About Diploma Programs</h2>
     <div class="accordion" id="diplomaFAQ">
         <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq1">What's the difference between diploma and degree?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq1">
+                    What's the difference between a diploma and a degree?
+                </button>
+            </h2>
             <div id="dfaq1" class="accordion-collapse collapse show" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">Diplomas are 2-year programs focused on practical skills, while degrees are 4-year programs with more theory. Diploma graduates enter workforce faster with technical expertise; degree holders have broader academic foundation and higher earning potential long-term.</div>
+                <div class="accordion-body">
+                    Diplomas are 2-year programs focused on practical, hands-on skills, while degrees are 4-year programs with more theoretical depth. Diploma graduates enter the workforce faster with technical expertise; degree holders have a broader academic foundation and higher long-term earning potential. Many diploma holders later upgrade to degrees through articulation programs.
+                </div>
             </div>
         </div>
         <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq2">Can I upgrade my diploma to a degree later?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq2">
+                    Can I upgrade my diploma to a degree later?
+                </button>
+            </h2>
             <div id="dfaq2" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">Yes, many universities offer degree upgrade programs for diploma holders. You typically complete 2 more years to earn a full bachelor's degree, and credits from your diploma may be recognized.</div>
+                <div class="accordion-body">
+                    Yes, many universities offer degree upgrade programs specifically for diploma holders. You typically complete 2 additional years to earn a full bachelor's degree, and credits from your diploma may be recognized, reducing the total time needed.
+                </div>
             </div>
         </div>
         <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq3">What job prospects exist after a diploma?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq3">
+                    What job prospects exist after completing a diploma?
+                </button>
+            </h2>
             <div id="dfaq3" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">Diploma graduates find immediate employment in industries like engineering, nursing, IT, hospitality, agriculture, and construction. Many start earning within weeks of graduation, and can progress to supervisory/management roles.</div>
+                <div class="accordion-body">
+                    Diploma graduates find immediate employment in industries like engineering, nursing, IT, hospitality, agriculture, and construction. Many start earning within weeks of graduation and can progress to supervisory and management roles with experience and additional certifications.
+                </div>
             </div>
         </div>
         <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq4">Is internship included in diploma programs?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq4">
+                    Is internship included in diploma programs?
+                </button>
+            </h2>
             <div id="dfaq4" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">Yes, most diploma programs include 6-12 months of industrial attachment/internship where you work in real companies. This provides practical experience and often leads to permanent employment offers.</div>
+                <div class="accordion-body">
+                    Yes, most diploma programs include 6-12 months of industrial attachment or internship where you work in real companies. This provides invaluable practical experience and often leads to permanent employment offers upon graduation.
+                </div>
             </div>
         </div>
         <div class="accordion-item">
-            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq5">What certifications do I get with a diploma?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq5">
+                    What certifications do I get with a diploma?
+                </button>
+            </h2>
             <div id="dfaq5" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">Besides the diploma, you often get industry-recognized certifications like KNEC, KASNEB, or international certifications (CompTIA, Cisco, etc.) depending on your field. These certifications are directly valued by employers.</div>
+                <div class="accordion-body">
+                    Besides the national diploma certificate, you often earn industry-recognized certifications like KNEC, KASNEB, or international certifications (CompTIA, Cisco, etc.) depending on your field. These certifications are directly valued by employers and enhance your job prospects.
+                </div>
             </div>
         </div>
     </div>
@@ -718,184 +844,32 @@ block links %}
 
 <!-- Diploma Success Stories -->
 <div class="container my-5">
-    <h2 class="mb-4">🌟 Success Stories: Diploma Graduates</h2>
-    <div class="row g-3">
+    <h2 class="mb-4" style="color: var(--diploma-primary);">🌟 Success Stories: Diploma Graduates</h2>
+    <div class="row g-4">
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="story-card card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Moses Kariuki - Engineering Technician</h5>
-                    <p class="card-text"><em>"After my 2-year diploma in Mechanical Engineering, I got hired immediately at a manufacturing company. In 5 years, I'm now a senior technician supervising 20 staff."</em></p>
+                    <p class="card-text"><em>"After my 3-year diploma in Mechanical Engineering, I got hired immediately at a manufacturing company. Within 5 years, I'm now a senior technician supervising 20 staff members."</em></p>
                     <small class="text-success">✓ Now earning KES 120,000+ monthly</small>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="story-card card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Grace Kipchoge - Registered Nurse</h5>
-                    <p class="card-text"><em>"My nursing diploma gave me immediate employment at a private hospital. The practical training was excellent, and I've built a successful healthcare career while pursuing degree part-time."</em></p>
+                    <p class="card-text"><em>"My nursing diploma gave me immediate employment at a private hospital. The practical training was excellent, and I've built a successful healthcare career while pursuing my degree part-time."</em></p>
                     <small class="text-success">✓ Now pursuing Degree in Nursing</small>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="story-card card h-100">
                 <div class="card-body">
                     <h5 class="card-title">David Mwangi - IT Technician</h5>
-                    <p class="card-text"><em>"My IT diploma included hands-on training with real equipment. I started at an IT firm, gained experience, and now I run my own computer services business with 5 employees."</em></p>
+                    <p class="card-text"><em>"My IT diploma included hands-on training with real equipment. I started at an IT firm, gained valuable experience, and now I run my own computer services business with 5 employees."</em></p>
                     <small class="text-success">✓ Successful Business Owner</small>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Why Choose Diploma Programs -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Why Choose Diploma Programs</h2>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Practical Industry-Focused Training</h5>
-                            <p class="mb-0">Learn skills directly applicable to the job market with curriculum designed by industry professionals.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Direct Job Placement</h5>
-                            <p class="mb-0">Graduate with skills employers need. Diploma holders are in high demand across all sectors in Kenya.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Affordable Technical Education</h5>
-                            <p class="mb-0">More affordable than university degree programs while providing excellent career prospects and earning potential.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h5>Pathway to Bachelor's Degree</h5>
-                            <p class="mb-0">Use your diploma as a foundation to pursue bachelor's degrees through articulation programs for career advancement.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Frequently Asked Questions -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Frequently Asked Questions About Diploma Programs</h2>
-            <div class="accordion" id="diplomaFAQ">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq1">
-                            What diploma programs are available?
-                        </button>
-                    </h2>
-                    <div id="diplomafaq1" class="accordion-collapse collapse show" data-bs-parent="#diplomaFAQ">
-                        <div class="accordion-body">
-                            Popular diploma programs include Engineering (Civil, Electrical, Mechanical), Information Technology, Business and Accounting, Hospitality and Tourism, Nursing, Agriculture, and Automotive. Colleges offer various specializations in these fields.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq2">
-                            How long does a diploma program take?
-                        </button>
-                    </h2>
-                    <div id="diplomafaq2" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                        <div class="accordion-body">
-                            Most diploma programs take 2 years of full-time study. Some programs may offer part-time options spanning 3-4 years. Some accelerated programs can be completed in 18 months.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq3">
-                            What are entry requirements for diploma programs?
-                        </button>
-                    </h2>
-                    <div id="diplomafaq3" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                        <div class="accordion-body">
-                            Typical entry requirement is D+ or C- in KCSE overall. Technical programs may require specific subject grades. Lower entry points compared to university degrees make diplomas accessible to more students.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq4">
-                            Can I work while studying for a diploma?
-                        </button>
-                    </h2>
-                    <div id="diplomafaq4" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                        <div class="accordion-body">
-                            Many colleges offer part-time evening or weekend programs specifically designed for working students. Full-time programs are more demanding but often include industrial attachments.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#diplomafaq5">
-                            Will I get a job after my diploma?
-                        </button>
-                    </h2>
-                    <div id="diplomafaq5" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                        <div class="accordion-body">
-                            Yes, diploma holders are highly sought after by employers. Many colleges have job placement support and industry connections. Graduates work in various sectors including engineering firms, IT companies, banks, hospitals, and hospitality businesses.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Success Stories -->
-<div class="container my-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="card-title mb-4">Success Stories from Diploma Graduates</h2>
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Engineer Richard Kipchoge - Civil Engineering Diploma</h5>
-                            <p class="small mb-3">Richard completed his civil engineering diploma and joined a construction firm. After 5 years, he now supervises major infrastructure projects and has started his own consulting company.</p>
-                            <p class="small text-muted">"My diploma gave me the technical foundation and practical skills to build a successful career."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Accountant Mary Ochieng - Business Studies Diploma</h5>
-                            <p class="small mb-3">Mary's diploma in business studies led to a position in a multinational company. She has since completed her CPA qualification and now works as a Financial Manager with excellent career progression.</p>
-                            <p class="small text-muted">"The diploma was my stepping stone to a thriving finance career."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card border-0 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">IT Specialist David Kipkemboi - IT Diploma</h5>
-                            <p class="small mb-3">David's IT diploma helped him secure employment at a tech firm. He has since earned additional certifications and now leads the IT infrastructure team at a major bank.</p>
-                            <p class="small text-muted">"Practical IT diploma training prepared me perfectly for the technology industry."</p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -904,28 +878,28 @@ block links %}
 
 <!-- Diploma Prerequisites & Requirements -->
 <div class="container my-5 mb-5">
-    <div class="card border-left-primary shadow-sm">
+    <div class="info-card card border-0 shadow-sm">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4">Diploma Program Prerequisites and Requirements</h2>
-            <div class="row">
+            <h2 class="card-title mb-4" style="color: var(--diploma-primary);">📋 Diploma Program Prerequisites & Requirements</h2>
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <h5 class="mb-3">Minimum Academic Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--diploma-secondary);">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum C (5 points) or equivalent</li>
-                        <li class="mb-2"><strong>Cluster Points:</strong> Generally lower than degrees (10-40 points)</li>
-                        <li class="mb-2"><strong>Core Subjects:</strong> English required; Mathematics required for most technical courses</li>
-                        <li class="mb-2"><strong>Entry Requirements:</strong> Form 4 completion with reasonable grades</li>
-                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 17+ years old at time of entry</li>
+                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum C (5 points) or equivalent</li>
+                        <li class="mb-2"><strong>🎯 Cluster Points:</strong> Generally lower than degrees (10-40 points)</li>
+                        <li class="mb-2"><strong>📖 Core Subjects:</strong> English required; Mathematics required for most technical courses</li>
+                        <li class="mb-2"><strong>✅ Entry Requirements:</strong> Form 4 completion with reasonable grades</li>
+                        <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 17+ years old at time of entry</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h5 class="mb-3">Program-Specific Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--diploma-secondary);">Program-Specific Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Engineering Diplomas:</strong> Physics, Chemistry, Mathematics required</li>
-                        <li class="mb-2"><strong>Nursing/Health Diplomas:</strong> Biology and Chemistry requirements</li>
-                        <li class="mb-2"><strong>IT/Computing Diplomas:</strong> Mathematics and Computer Studies helpful</li>
-                        <li class="mb-2"><strong>Business Diplomas:</strong> English and Mathematics; accounting subjects beneficial</li>
-                        <li class="mb-2"><strong>Hospitality Diplomas:</strong> No strict subject requirements; practical aptitude important</li>
+                        <li class="mb-2"><strong>🔧 Engineering Diplomas:</strong> Physics, Chemistry, Mathematics required</li>
+                        <li class="mb-2"><strong>🏥 Nursing/Health Diplomas:</strong> Biology and Chemistry requirements</li>
+                        <li class="mb-2"><strong>💻 IT/Computing Diplomas:</strong> Mathematics and Computer Studies helpful</li>
+                        <li class="mb-2"><strong>📈 Business Diplomas:</strong> English and Mathematics; accounting subjects beneficial</li>
+                        <li class="mb-2"><strong>🍽️ Hospitality Diplomas:</strong> No strict subject requirements; practical aptitude important</li>
                     </ul>
                 </div>
             </div>
@@ -933,4 +907,6 @@ block links %}
     </div>
 </div>
 
-{% endblock %} {% block scripts %}{% endblock %}
+{% endblock %}
+
+{% block scripts %}{% endblock %}

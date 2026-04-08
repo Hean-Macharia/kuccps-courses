@@ -1132,7 +1132,21 @@ def mark_activation_as_used(email, index_number, flow):
     except Exception as e:
         print(f"❌ Error marking activation as used: {str(e)}")
         return False
-
+def check_courses_exist_for_payment(email, index_number, level):
+    """Check if courses exist for a given payment"""
+    if not database_connected or user_courses_collection is None:
+        return False
+    
+    try:
+        courses_data = user_courses_collection.find_one({
+            'email': email,
+            'index_number': index_number,
+            'level': level
+        })
+        return courses_data is not None and len(courses_data.get('courses', [])) > 0
+    except Exception as e:
+        print(f"❌ Error checking courses: {str(e)}")
+        return False
 
 def get_pending_payment_issues():
     """Get all pending payment issues for admin"""
@@ -1261,7 +1275,7 @@ def get_all_payment_issues(status=None):
         return []
 @app.route('/submit-payment-issue', methods=['POST'])
 def submit_payment_issue():
-    """Handle payment issue submission from users"""
+    """Handle payment issue submission from users with automatic verification"""
     try:
         # Log the request size for debugging
         print(f"📦 Request content length: {request.content_length} bytes")
@@ -1299,31 +1313,131 @@ def submit_payment_issue():
                 'error': 'Invalid M-Pesa receipt format. Must be 10 alphanumeric characters (e.g., RJ89A5LBQ2)'
             })
         
-        # Optional: Validate screenshot size (base64 string length)
-        if screenshot:
-            # Rough estimate: base64 string is about 1.33x original size
-            estimated_size = len(screenshot) * 0.75 / (1024 * 1024)  # Size in MB
-            if estimated_size > 5:  # Limit to 5MB
-                print(f"⚠️ Screenshot too large: {estimated_size:.2f}MB")
-                # Still proceed, but log it
-            print(f"📸 Screenshot size: {estimated_size:.2f}MB")
+        # ============================================
+        # CHECK IF MPESA RECEIPT EXISTS IN DATABASE
+        # ============================================
+        payment_found = False
+        paid_courses_levels = []
+        paid_courses_data = {}
         
-        # Save payment issue
-        issue_id = save_payment_issue(email, index_number, mpesa_receipt, screenshot)
+        if database_connected and user_payments_collection is not None:
+            try:
+                # Find all payments with this receipt (across all levels)
+                payments = user_payments_collection.find({
+                    'mpesa_receipt': mpesa_receipt,
+                    'payment_confirmed': True
+                })
+                
+                payments_list = list(payments)
+                if payments_list:
+                    payment_found = True
+                    print(f"✅ Found {len(payments_list)} payment(s) with receipt {mpesa_receipt}")
+                    
+                    for payment in payments_list:
+                        level = payment.get('level')
+                        if level:
+                            paid_courses_levels.append(level)
+                            
+                            # Check if courses exist for this level
+                            if user_courses_collection is not None:
+                                courses_data = user_courses_collection.find_one({
+                                    'email': email,
+                                    'index_number': index_number,
+                                    'level': level
+                                })
+                                
+                                if courses_data and courses_data.get('courses'):
+                                    paid_courses_data[level] = {
+                                        'courses': courses_data['courses'],
+                                        'count': len(courses_data['courses'])
+                                    }
+                                    print(f"📚 Found {len(courses_data['courses'])} {level} courses")
+                                else:
+                                    print(f"⚠️ No courses found for {level} level")
+                                    paid_courses_data[level] = {'courses': [], 'count': 0}
+                else:
+                    print(f"❌ No confirmed payment found with receipt {mpesa_receipt}")
+                    
+            except Exception as e:
+                print(f"❌ Error checking payment in database: {str(e)}")
         
-        if issue_id:
-            # Show success message with 6-hour waiting period
-            return jsonify({
-                'success': True,
-                'message': 'Your payment issue has been submitted successfully. Please try again after 6 hours as your issue is being reviewed.',
-                'wait_time': 6,  # hours
-                'redirect_url': url_for('index')
-            })
+        # ============================================
+        # IF PAYMENT FOUND AND COURSES EXIST
+        # ============================================
+        if payment_found and paid_courses_data:
+            # Check if at least one level has courses
+            has_courses = any(data['count'] > 0 for data in paid_courses_data.values())
+            
+            if has_courses:
+                print(f"✅ Payment and courses verified for receipt {mpesa_receipt}")
+                
+                # Send email to user with instructions to access their courses
+                email_sent = send_payment_issue_resolution_email(
+                    email, index_number, mpesa_receipt, paid_courses_levels, paid_courses_data
+                )
+                
+                # Delete any pending issues with this receipt (auto-resolve)
+                if database_connected and payment_issues_collection is not None:
+                    try:
+                        result = payment_issues_collection.delete_many({
+                            'mpesa_receipt': mpesa_receipt,
+                            'status': 'pending'
+                        })
+                        if result.deleted_count > 0:
+                            print(f"✅ Auto-resolved and deleted {result.deleted_count} pending issue(s) for receipt {mpesa_receipt}")
+                    except Exception as e:
+                        print(f"⚠️ Error deleting resolved issues: {e}")
+                
+                # Prepare course access instructions
+                course_list_html = ""
+                for level, data in paid_courses_data.items():
+                    if data['count'] > 0:
+                        course_list_html += f"""
+                        <li><strong>{level.upper()}</strong>: {data['count']} courses found</li>
+                        """
+                
+                return jsonify({
+                    'success': True,
+                    'auto_resolved': True,
+                    'message': 'Your payment has been verified! Check your email for instructions to access your courses.',
+                    'courses_found': True,
+                    'levels': paid_courses_levels,
+                    'email_sent': email_sent,
+                    'redirect_url': url_for('verified_results_dashboard', index=index_number, receipt=mpesa_receipt)
+                })
+            else:
+                # Payment found but no courses - need admin review
+                print(f"⚠️ Payment found but no courses for receipt {mpesa_receipt}")
+                issue_id = save_payment_issue(email, index_number, mpesa_receipt, screenshot)
+                
+                return jsonify({
+                    'success': True,
+                    'auto_resolved': False,
+                    'message': 'Your payment was found but courses were not generated. Our team will review and activate your account within 6 hours.',
+                    'issue_id': str(issue_id) if issue_id else None,
+                    'wait_time': 6
+                })
+        
+        # ============================================
+        # NO PAYMENT FOUND - Save as pending issue
+        # ============================================
         else:
-            return jsonify({
-                'success': False,
-                'error': 'Failed to submit payment issue. Please try again later.'
-            })
+            print(f"⚠️ No payment found with receipt {mpesa_receipt}, saving as pending issue")
+            issue_id = save_payment_issue(email, index_number, mpesa_receipt, screenshot)
+            
+            if issue_id:
+                return jsonify({
+                    'success': True,
+                    'auto_resolved': False,
+                    'message': 'Your payment issue has been submitted successfully. Our team will review it within 6 hours.',
+                    'wait_time': 6,
+                    'issue_id': str(issue_id) if issue_id else None
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to submit payment issue. Please try again later.'
+                })
         
     except Exception as e:
         print(f"❌ Error submitting payment issue: {str(e)}")
@@ -1333,28 +1447,636 @@ def submit_payment_issue():
             'success': False,
             'error': 'An error occurred. Please try again later.'
         })
+
+
+def send_payment_issue_resolution_email(email, index_number, mpesa_receipt, paid_levels, courses_data):
+    """Send email to user when payment issue is auto-resolved with instructions to access courses"""
+    try:
+        subject = "Your KUCCPS Payment Has Been Verified - Access Your Courses"
+        
+        # Build course list HTML
+        courses_html = ""
+        for level, data in courses_data.items():
+            if data['count'] > 0:
+                courses_html += f"""
+                <div style="background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                    <strong>{level.upper()} Courses</strong> ({data['count']} courses found)
+                </div>
+                """
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Payment Verified - Access Your Courses</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0;">Payment Verified!</h1>
+                <p style="color: white; margin: 5px 0 0;">Your courses are ready</p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
+                <p>Dear Student,</p>
+                
+                <p>Great news! We have verified your M-Pesa payment and your courses are ready to view.</p>
+                
+                <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0 0 10px 0;"><strong>✅ Your Payment Details:</strong></p>
+                    <p style="margin: 5px 0;">📧 Email: <strong>{email}</strong></p>
+                    <p style="margin: 5px 0;">📝 KCSE Index Number: <strong>{index_number}</strong></p>
+                    <p style="margin: 5px 0;">💰 M-Pesa Receipt: <strong>{mpesa_receipt}</strong></p>
+                    <p style="margin: 5px 0;">📚 Paid Categories: <strong>{', '.join(paid_levels).upper()}</strong></p>
+                </div>
+                
+                <p><strong>To access your courses:</strong></p>
+                <ol>
+                    <li>Go to <a href="https://www.kuccpscourses.co.ke">https://www.kuccpscourses.co.ke</a></li>
+                    <li>Click the <strong>"Already Made Payment"</strong> button on the homepage</li>
+                    <li>Enter your M-Pesa receipt number: <strong>{mpesa_receipt}</strong></li>
+                    <li>Enter your KCSE index number: <strong>{index_number}</strong></li>
+                    <li>Your course results will be displayed instantly!</li>
+                </ol>
+                
+                {courses_html}
+                
+                <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: #0056b3;">
+                        <strong>💡 Tip:</strong> You can also re-enter your grades for any of these categories and the system will recognize your payment.
+                    </p>
+                </div>
+                
+                <p>Need help? Contact our support team:</p>
+                <ul>
+                    <li>Email: courseschecker@gmail.com</li>
+                    <li>Phone: +254791196121</li>
+                </ul>
+                
+                <hr style="margin: 20px 0;">
+                
+                <p style="font-size: 12px; color: #666; text-align: center;">
+                    © 2025 KUCCPS Courses Checker. All rights reserved.
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Send email via Brevo
+        email_sent = send_brevo_email(email, "Student", subject, html_content)
+        
+        if email_sent:
+            print(f"✅ Resolution email sent to {email}")
+            return True
+        else:
+            print(f"⚠️ Failed to send resolution email to {email}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error sending resolution email: {str(e)}")
+        return False
 @app.route('/admin/payment-issues')
 def admin_payment_issues():
-    """Admin page to manage payment issues"""
+    """Admin page to manage payment issues with pagination"""
     if not session.get('admin_logged_in'):
         flash("Please login as administrator", "error")
         return redirect(url_for('admin_login'))
     
-    # Get all pending issues
-    pending_issues = get_pending_payment_issues()
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)  # 20 items per page
     
-    # Get statistics
-    all_issues = get_all_payment_issues()
-    stats = {
-        'total': len(all_issues),
-        'pending': len(pending_issues),
-        'approved': len([i for i in all_issues if i.get('status') == 'approved']),
-        'deleted': len([i for i in all_issues if i.get('status') == 'deleted'])
-    }
+    # Get pending issues with pagination
+    pending_issues = []
+    total_pending = 0
+    
+    if database_connected and payment_issues_collection is not None:
+        try:
+            # Get total count first (fast)
+            total_pending = payment_issues_collection.count_documents({'status': 'pending'})
+            
+            # Get paginated results with projection (only needed fields)
+            cursor = payment_issues_collection.find(
+                {'status': 'pending'},
+                {
+                    '_id': 1,
+                    'email': 1,
+                    'index_number': 1,
+                    'mpesa_receipt': 1,
+                    'screenshot': 1,
+                    'created_at': 1,
+                    'status': 1
+                }
+            ).sort('created_at', -1).skip((page - 1) * per_page).limit(per_page)
+            
+            pending_issues = list(cursor)
+            
+            # Convert ObjectId to string for JSON
+            for issue in pending_issues:
+                if '_id' in issue and isinstance(issue['_id'], ObjectId):
+                    issue['_id'] = str(issue['_id'])
+                    
+        except Exception as e:
+            print(f"❌ Error loading payment issues: {str(e)}")
+    
+    # Get statistics (cached for 5 minutes)
+    stats = get_cached_payment_stats()
+    
+    # Calculate pagination
+    total_pages = (total_pending + per_page - 1) // per_page if total_pending > 0 else 1
     
     return render_template('admin_payment_issues.html', 
                          issues=pending_issues,
-                         stats=stats)
+                         stats=stats,
+                         page=page,
+                         per_page=per_page,
+                         total_pages=total_pages,
+                         total_pending=total_pending)
+
+def get_cached_payment_stats():
+    """Get cached payment statistics"""
+    cache_key = 'payment_stats'
+    cached_stats = cache.get(cache_key)
+    
+    if cached_stats:
+        return cached_stats
+    
+    stats = {
+        'total': 0,
+        'pending': 0,
+        'approved': 0,
+        'deleted': 0
+    }
+    
+    if database_connected and payment_issues_collection is not None:
+        try:
+            # Use aggregation for faster stats
+            pipeline = [
+                {'$group': {
+                    '_id': '$status',
+                    'count': {'$sum': 1}
+                }}
+            ]
+            
+            results = list(payment_issues_collection.aggregate(pipeline))
+            
+            for result in results:
+                status = result['_id']
+                count = result['count']
+                if status == 'pending':
+                    stats['pending'] = count
+                elif status == 'approved':
+                    stats['approved'] = count
+                elif status == 'deleted':
+                    stats['deleted'] = count
+            
+            stats['total'] = stats['pending'] + stats['approved'] + stats['deleted']
+            
+        except Exception as e:
+            print(f"❌ Error calculating stats: {str(e)}")
+    
+    # Cache for 5 minutes
+    cache.set(cache_key, stats, timeout=300)
+    
+    return stats
+@app.route('/api/manual-activation-advanced', methods=['POST'])
+def api_manual_activation_advanced():
+    """Advanced manual activation API - deletes old payment and creates activation"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        data = request.get_json()
+        email = data.get('email', '').strip().lower()
+        index_number = data.get('index_number', '').strip()
+        mpesa_receipt = data.get('mpesa_receipt', '').strip().upper()
+        activation_type = data.get('activation_type', 'manual')
+        send_email = data.get('send_email', True)
+        
+        # Validation
+        if not email or not index_number or not mpesa_receipt:
+            return jsonify({'success': False, 'error': 'All fields are required'})
+        
+        if not re.match(r'^\d{11}/\d{4}$', index_number):
+            return jsonify({'success': False, 'error': 'Invalid index number format'})
+        
+        if len(mpesa_receipt) != 10 or not mpesa_receipt.isalnum():
+            return jsonify({'success': False, 'error': 'Invalid M-Pesa receipt format'})
+        
+        print(f"🔧 Advanced manual activation: {email}, {index_number}, {mpesa_receipt}")
+        
+        payment_deleted = False
+        courses_deleted = False
+        
+        # STEP 1: Delete ALL existing payment records for this user/level
+        if database_connected and user_payments_collection is not None:
+            try:
+                result = user_payments_collection.delete_many({
+                    '$or': [
+                        {'email': email},
+                        {'index_number': index_number}
+                    ]
+                })
+                if result.deleted_count > 0:
+                    payment_deleted = True
+                    print(f"✅ Deleted {result.deleted_count} payment records for {index_number}")
+            except Exception as e:
+                print(f"⚠️ Error deleting payments: {e}")
+        
+        # STEP 2: Delete existing courses (to start fresh)
+        if database_connected and user_courses_collection is not None:
+            try:
+                result = user_courses_collection.delete_many({
+                    '$or': [
+                        {'email': email},
+                        {'index_number': index_number}
+                    ]
+                })
+                if result.deleted_count > 0:
+                    courses_deleted = True
+                    print(f"✅ Deleted {result.deleted_count} course records for {index_number}")
+            except Exception as e:
+                print(f"⚠️ Error deleting courses: {e}")
+        
+        # STEP 3: Create new activation record
+        activation_saved = False
+        if database_connected and admin_activations_collection is not None:
+            try:
+                # Deactivate any existing activations
+                admin_activations_collection.update_many(
+                    {'index_number': index_number},
+                    {'$set': {'is_active': False, 'status': 'superseded'}}
+                )
+                
+                # Create new activation
+                activation_record = {
+                    'email': email,
+                    'index_number': index_number,
+                    'mpesa_receipt': mpesa_receipt,
+                    'original_receipt': mpesa_receipt,
+                    'activation_type': activation_type,
+                    'activated_by': session.get('admin_username', 'admin'),
+                    'activated_at': datetime.now(),
+                    'is_active': True,
+                    'status': 'active',
+                    'used_for_flow': None,
+                    'used_at': None,
+                    'payment_deleted': payment_deleted,
+                    'courses_deleted': courses_deleted,
+                    'email_sent': False
+                }
+                
+                result = admin_activations_collection.insert_one(activation_record)
+                if result.inserted_id:
+                    activation_saved = True
+                    print(f"✅ Manual activation created with receipt: {mpesa_receipt}")
+            except Exception as e:
+                print(f"❌ Error creating activation: {e}")
+                return jsonify({'success': False, 'error': f'Failed to create activation: {str(e)}'})
+        
+        # STEP 4: Send email if requested
+        email_sent = False
+        if activation_saved and send_email:
+            try:
+                subject = "Your KUCCPS Account Has Been Activated"
+                html_content = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Account Activated</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <h2 style="color: #27ae60;">Account Activated!</h2>
+                        <p>Dear Student,</p>
+                        <p>Your account has been <strong>manually activated</strong>. You can now access your courses.</p>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                            <p><strong>Your Details:</strong></p>
+                            <p>📧 Email: {email}</p>
+                            <p>📝 Index: {index_number}</p>
+                            <p>💰 Receipt: <strong>{mpesa_receipt}</strong></p>
+                        </div>
+                        <p><strong>To access your courses:</strong></p>
+                        <ol>
+                            <li>Go to <a href="https://www.kuccpscourses.co.ke">www.kuccpscourses.co.ke</a></li>
+                            <li>Select your course category</li>
+                            <li>Enter your grades</li>
+                            <li>Use the "Already Made Payment" option</li>
+                            <li>Enter your receipt: <strong>{mpesa_receipt}</strong></li>
+                        </ol>
+                        <p>You will NOT be charged again.</p>
+                        <hr>
+                        <p style="font-size: 12px; color: #666;">KUCCPS Courses Checker Support</p>
+                    </div>
+                </body>
+                </html>
+                """
+                
+                email_sent = send_brevo_email(email, "Student", subject, html_content)
+                if email_sent:
+                    admin_activations_collection.update_one(
+                        {'_id': result.inserted_id},
+                        {'$set': {'email_sent': True, 'email_sent_at': datetime.now()}}
+                    )
+                    print(f"✅ Email sent to {email}")
+            except Exception as e:
+                print(f"⚠️ Email failed: {e}")
+        
+        return jsonify({
+            'success': True,
+            'email': email,
+            'index_number': index_number,
+            'mpesa_receipt': mpesa_receipt,
+            'payment_deleted': payment_deleted,
+            'courses_deleted': courses_deleted,
+            'email_sent': email_sent,
+            'message': f'User {email} activated successfully'
+        })
+        
+    except Exception as e:
+        print(f"❌ Error in advanced manual activation: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/deactivate-activation', methods=['POST'])
+def api_deactivate_activation():
+    """Deactivate a manual activation"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        data = request.get_json()
+        index_number = data.get('index_number')
+        
+        if not index_number:
+            return jsonify({'success': False, 'error': 'Index number required'})
+        
+        if database_connected and admin_activations_collection is not None:
+            result = admin_activations_collection.update_many(
+                {'index_number': index_number, 'is_active': True},
+                {'$set': {'is_active': False, 'status': 'deactivated', 'deactivated_at': datetime.now()}}
+            )
+            
+            if result.modified_count > 0:
+                return jsonify({'success': True, 'message': f'Deactivated {result.modified_count} activation(s)'})
+        
+        return jsonify({'success': False, 'error': 'No active activation found'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+@app.route('/admin/check-resolve-issue/<issue_id>', methods=['POST'])
+def check_and_resolve_issue(issue_id):
+    """Check a single issue and resolve if payment and courses exist"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        if not database_connected or payment_issues_collection is None:
+            return jsonify({'success': False, 'error': 'Database not connected'})
+        
+        issue = payment_issues_collection.find_one({'_id': ObjectId(issue_id), 'status': 'pending'})
+        
+        if not issue:
+            return jsonify({'success': False, 'error': 'Issue not found or already processed'})
+        
+        email = issue.get('email')
+        index_number = issue.get('index_number')
+        mpesa_receipt = issue.get('mpesa_receipt')
+        
+        # Check if payment exists
+        payment_found = False
+        paid_levels = []
+        courses_exist = False
+        
+        if user_payments_collection is not None:
+            payments = list(user_payments_collection.find({
+                'mpesa_receipt': mpesa_receipt,
+                'payment_confirmed': True
+            }))
+            
+            if payments:
+                payment_found = True
+                for payment in payments:
+                    level = payment.get('level')
+                    if level:
+                        paid_levels.append(level)
+                        
+                        if user_courses_collection is not None:
+                            courses_data = user_courses_collection.find_one({
+                                'email': email,
+                                'index_number': index_number,
+                                'level': level
+                            })
+                            if courses_data and courses_data.get('courses'):
+                                courses_exist = True
+        
+        if payment_found and courses_exist:
+            # Resolve the issue
+            payment_issues_collection.update_one(
+                {'_id': ObjectId(issue_id)},
+                {'$set': {
+                    'status': 'resolved',
+                    'resolved_at': datetime.now(),
+                    'resolved_by': session.get('admin_username', 'admin'),
+                    'resolution_type': 'manual_check',
+                    'notes': 'Manually verified - payment and courses exist'
+                }}
+            )
+            
+            # Send email
+            email_sent = send_issue_resolution_email(email, index_number, mpesa_receipt, paid_levels)
+            
+            return jsonify({
+                'success': True,
+                'message': f'Issue resolved! User notified: {email_sent}',
+                'payment_found': True,
+                'courses_exist': True,
+                'email_sent': email_sent
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Cannot resolve - Payment found: {payment_found}, Courses exist: {courses_exist}',
+                'payment_found': payment_found,
+                'courses_exist': courses_exist
+            })
+            
+    except Exception as e:
+        print(f"❌ Error checking issue: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/admin/batch-resolve-issues', methods=['POST'])
+def batch_resolve_existing_issues():
+    """Batch process all existing pending payment issues"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        if not database_connected or payment_issues_collection is None:
+            return jsonify({'success': False, 'error': 'Database not connected'})
+        
+        # Get all pending issues
+        pending_issues = list(payment_issues_collection.find({'status': 'pending'}))
+        
+        processed_count = 0
+        resolved_count = 0
+        pending_count = 0
+        emails_sent = 0
+        
+        for issue in pending_issues:
+            processed_count += 1
+            email = issue.get('email')
+            index_number = issue.get('index_number')
+            mpesa_receipt = issue.get('mpesa_receipt')
+            
+            if not email or not index_number or not mpesa_receipt:
+                pending_count += 1
+                continue
+            
+            # Check if payment exists in database
+            payment_found = False
+            paid_levels = []
+            courses_exist = False
+            
+            if user_payments_collection is not None:
+                payments = list(user_payments_collection.find({
+                    'mpesa_receipt': mpesa_receipt,
+                    'payment_confirmed': True
+                }))
+                
+                if payments:
+                    payment_found = True
+                    for payment in payments:
+                        level = payment.get('level')
+                        if level:
+                            paid_levels.append(level)
+                            
+                            # Check if courses exist
+                            if user_courses_collection is not None:
+                                courses_data = user_courses_collection.find_one({
+                                    'email': email,
+                                    'index_number': index_number,
+                                    'level': level
+                                })
+                                if courses_data and courses_data.get('courses'):
+                                    courses_exist = True
+            
+            # If payment found AND courses exist, resolve the issue
+            if payment_found and courses_exist:
+                # Update issue status
+                payment_issues_collection.update_one(
+                    {'_id': issue['_id']},
+                    {'$set': {
+                        'status': 'resolved',
+                        'resolved_at': datetime.now(),
+                        'resolved_by': 'batch_processor',
+                        'resolution_type': 'auto_resolved',
+                        'notes': 'Auto-resolved by batch processor - Payment and courses verified'
+                    }}
+                )
+                
+                # Send email to user
+                email_sent = send_issue_resolution_email(email, index_number, mpesa_receipt, paid_levels)
+                if email_sent:
+                    emails_sent += 1
+                
+                resolved_count += 1
+                print(f"✅ Auto-resolved issue for {email} - Receipt: {mpesa_receipt}")
+            else:
+                pending_count += 1
+                print(f"⚠️ Issue still pending for {email} - Receipt: {mpesa_receipt} (Payment found: {payment_found}, Courses exist: {courses_exist})")
+        
+        return jsonify({
+            'success': True,
+            'processed': processed_count,
+            'resolved': resolved_count,
+            'pending': pending_count,
+            'emails_sent': emails_sent,
+            'message': f'Processed {processed_count} issues. Resolved {resolved_count}. Still pending: {pending_count}.'
+        })
+        
+    except Exception as e:
+        print(f"❌ Error in batch resolve: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)})
+
+
+def send_issue_resolution_email(email, index_number, mpesa_receipt, paid_levels):
+    """Send email notification for resolved payment issue"""
+    try:
+        subject = "Your KUCCPS Payment Issue Has Been Resolved"
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Payment Issue Resolved</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0;">Issue Resolved!</h1>
+                <p style="color: white; margin: 5px 0 0;">Your courses are ready</p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
+                <p>Dear Student,</p>
+                
+                <p>Your previously submitted payment issue has been <strong>resolved</strong>. Your courses are now ready to view.</p>
+                
+                <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0 0 10px 0;"><strong>✅ Your Verified Details:</strong></p>
+                    <p style="margin: 5px 0;">📧 Email: <strong>{email}</strong></p>
+                    <p style="margin: 5px 0;">📝 KCSE Index Number: <strong>{index_number}</strong></p>
+                    <p style="margin: 5px 0;">💰 M-Pesa Receipt: <strong>{mpesa_receipt}</strong></p>
+                    <p style="margin: 5px 0;">📚 Verified Categories: <strong>{', '.join(paid_levels).upper()}</strong></p>
+                </div>
+                
+                <p><strong>To access your courses now:</strong></p>
+                <ol>
+                    <li>Go to <a href="https://www.kuccpscourses.co.ke">https://www.kuccpscourses.co.ke</a></li>
+                    <li>Click the <strong>"Already Made Payment"</strong> button</li>
+                    <li>Enter your M-Pesa receipt: <strong>{mpesa_receipt}</strong></li>
+                    <li>Enter your index number: <strong>{index_number}</strong></li>
+                    <li>Your courses will be displayed immediately!</li>
+                </ol>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: #856404;">
+                        <strong>📌 Note:</strong> You can also re-enter your grades for any category and the system will recognize your payment automatically.
+                    </p>
+                </div>
+                
+                <hr style="margin: 20px 0;">
+                
+                <p style="font-size: 12px; color: #666; text-align: center;">
+                    Need help? Contact us: courseschecker@gmail.com | +254791196121<br>
+                    © 2025 KUCCPS Courses Checker. All rights reserved.
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Use your existing email sending function
+        email_sent = send_brevo_email(email, "Student", subject, html_content)
+        
+        if email_sent:
+            print(f"✅ Resolution email sent to {email}")
+            return True
+        else:
+            print(f"⚠️ Failed to send resolution email to {email}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error sending resolution email: {str(e)}")
+        return False
 
 @app.route('/admin/process-payment-issue/<issue_id>', methods=['POST'])
 def process_payment_issue(issue_id):
@@ -6464,7 +7186,7 @@ def enter_details(flow):
         # ============================================
         existing = get_user_paid_categories_strict(email, index_number)
         is_first = len(existing) == 0
-        amount = 200 if is_first else 100
+        amount =  200 if is_first else 100
  
         # Store minimal data in session
         session['email'] = email

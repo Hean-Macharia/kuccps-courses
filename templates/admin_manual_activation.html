@@ -6,99 +6,614 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manual Activation - KUCCPS Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .activation-table {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .badge-active {
+            background-color: #28a745;
+        }
+        
+        .badge-used {
+            background-color: #dc3545;
+        }
+        
+        .badge-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .table thead th {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .btn-action {
+            margin: 2px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">KUCCPS Admin</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
-                <a class="nav-link" href="{{ url_for('admin_payments') }}">Payments</a>
-                <a class="nav-link" href="{{ url_for('admin_users') }}">Users</a>
-                <a class="nav-link" href="{{ url_for('admin_manual_activation') }}">Manual Activation</a>
-                <a class="nav-link" href="{{ url_for('admin_system_health') }}">System Health</a>
-                <a class="nav-link" href="{{ url_for('admin_logout') }}">Logout</a>
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-graduation-cap me-2"></i>KUCCPS Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
+                    <a class="nav-link" href="{{ url_for('admin_payments') }}">
+                        <i class="fas fa-money-bill-wave me-1"></i>Payments
+                    </a>
+                    <a class="nav-link" href="{{ url_for('admin_users') }}">
+                        <i class="fas fa-users me-1"></i>Users
+                    </a>
+                    <a class="nav-link active" href="{{ url_for('admin_manual_activation') }}">
+                        <i class="fas fa-user-plus me-1"></i>Manual Activation
+                    </a>
+                    <a class="nav-link" href="{{ url_for('admin_payment_issues') }}">
+                        <i class="fas fa-headset me-1"></i>Payment Issues
+                        <span id="pendingIssuesBadge" class="badge bg-danger ms-1">0</span>
+                    </a>
+                    <a class="nav-link" href="{{ url_for('admin_missing_courses') }}">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Missing Courses
+                    </a>
+                    <a class="nav-link" href="{{ url_for('admin_system_health') }}">
+                        <i class="fas fa-heartbeat me-1"></i>System Health
+                    </a>
+                    <a class="nav-link" href="{{ url_for('admin_logout') }}">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
     <div class="container mt-4">
-        <h2>Manual User Activation</h2>
-        <p class="text-muted">Activate users who paid but didn't receive results</p>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-user-plus me-2"></i>Manual User Activation
+            </h2>
+            <p class="text-muted mb-0">Activate users who paid but didn't receive results</p>
+        </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         {% for category, message in messages %}
-        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show fade-in">
+            <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }} me-2"></i>
             {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         {% endfor %}
         {% endif %}
         {% endwith %}
 
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ active_count|default(0) }}</div>
+                    <div class="stats-label">
+                        <i class="fas fa-check-circle me-1"></i>Active Activations
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="stats-number">{{ used_count|default(0) }}</div>
+                    <div class="stats-label">
+                        <i class="fas fa-history me-1"></i>Used Activations
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="stats-number">{{ total_count|default(0) }}</div>
+                    <div class="stats-label">
+                        <i class="fas fa-database me-1"></i>Total Activations
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <div class="stats-number">{{ today_count|default(0) }}</div>
+                    <div class="stats-label">
+                        <i class="fas fa-calendar-day me-1"></i>Today's Activations
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Activate User</h5>
+            <!-- Activation Form -->
+            <div class="col-md-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>Activate User
+                        </h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST">
+                        <form method="POST" id="activationForm">
                             <div class="mb-3">
-                                <label for="email" class="form-label">User Email</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>User Email
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" required 
+                                       placeholder="student@example.com">
                             </div>
                             <div class="mb-3">
-                                <label for="index_number" class="form-label">Index Number</label>
+                                <label for="index_number" class="form-label">
+                                    <i class="fas fa-id-card me-1"></i>Index Number
+                                </label>
                                 <input type="text" class="form-control" id="index_number" name="index_number"
-                                    placeholder="12345678901/2024" required>
-                                <div class="form-text">Format: 11 digits, slash, 4 digits</div>
+                                    placeholder="12345678901/2024" required pattern="\d{11}/\d{4}">
+                                <div class="form-text">Format: 11 digits, slash, 4 digits (e.g., 12345678901/2024)</div>
                             </div>
                             <div class="mb-3">
-                                <label for="mpesa_receipt" class="form-label">M-Pesa Receipt</label>
+                                <label for="mpesa_receipt" class="form-label">
+                                    <i class="fas fa-receipt me-1"></i>Original M-Pesa Receipt
+                                </label>
                                 <input type="text" class="form-control" id="mpesa_receipt" name="mpesa_receipt"
-                                    placeholder="ABC123DEF4" required>
-                                <div class="form-text">10 alphanumeric characters</div>
+                                    placeholder="ABC123DEF4" required pattern="[A-Z0-9]{10}" maxlength="10">
+                                <div class="form-text">10 alphanumeric characters from user's M-Pesa message</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="send_email" name="send_email" checked>
+                                    <label class="form-check-label" for="send_email">
+                                        <i class="fas fa-envelope-open-text me-1"></i>Send activation email to user
+                                    </label>
+                                </div>
                             </div>
                             <input type="hidden" name="activation_type" value="manual">
-                            <button type="submit" class="btn btn-success">Activate User</button>
+                            <button type="submit" class="btn btn-success w-100" id="submitBtn">
+                                <i class="fas fa-user-check me-2"></i>Activate User & Delete Old Payment
+                            </button>
                         </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>What this does:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>✅ Creates manual activation for the user</li>
+                                <li>✅ Deletes any old/failed payment records</li>
+                                <li>✅ Stores original M-Pesa receipt for retrieval</li>
+                                <li>✅ User can access courses without paying again</li>
+                                <li>✅ Sends confirmation email (if checked)</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Activation Instructions</h5>
+            <!-- Instructions and Recent Activations -->
+            <div class="col-md-7">
+                <!-- Instructions Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Activation Instructions
+                        </h5>
                     </div>
                     <div class="card-body">
-                        <h6>When to use manual activation:</h6>
-                        <ul>
-                            <li>User paid but didn't receive results</li>
-                            <li>Payment confirmation failed</li>
-                            <li>System error during payment processing</li>
-                            <li>User has valid M-Pesa receipt but no access</li>
-                        </ul>
-
-                        <h6>What happens after activation:</h6>
-                        <ul>
-                            <li>User can enter grades again</li>
-                            <li>Payment will be bypassed</li>
-                            <li>User will get results immediately</li>
-                            <li>Activation record is saved for tracking</li>
-                        </ul>
-
-                        <div class="alert alert-info">
-                            <strong>Note:</strong> This activation allows the user to bypass payment and access all
-                            course categories.
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-clock text-warning me-2"></i>When to use manual activation:</h6>
+                                <ul>
+                                    <li>User paid but didn't receive results</li>
+                                    <li>Payment confirmation failed</li>
+                                    <li>System error during payment processing</li>
+                                    <li>User has valid M-Pesa receipt but no access</li>
+                                    <li>User's payment record is corrupted</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-magic text-success me-2"></i>What happens after activation:</h6>
+                                <ul>
+                                    <li>Old payment record is DELETED</li>
+                                    <li>New activation record is created</li>
+                                    <li>Original receipt is stored permanently</li>
+                                    <li>User can bypass payment check</li>
+                                    <li>User gets results immediately</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search and Recent Activations -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Recent Activations
+                        </h5>
+                        <button class="btn btn-sm btn-light" onclick="refreshActivations()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search by email, index, or receipt...">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="activationsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Email</th>
+                                        <th>Index Number</th>
+                                        <th>Receipt</th>
+                                        <th>Status</th>
+                                        <th>Used For</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activationsTableBody">
+                                    {% if recent_activations %}
+                                        {% for activation in recent_activations %}
+                                        <tr class="activation-row">
+                                            <td>
+                                                {% if activation.activated_at %}
+                                                    {{ activation.activated_at.strftime('%Y-%m-%d %H:%M') if activation.activated_at is not string else activation.activated_at[:16] }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ activation.email|truncate(25) }}</td>
+                                            <td>{{ activation.index_number }}</td>
+                                            <td>
+                                                <span class="badge bg-info font-monospace">{{ activation.mpesa_receipt }}</span>
+                                                <button class="btn btn-sm btn-outline-secondary ms-1" onclick="copyToClipboard('{{ activation.mpesa_receipt }}')">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                {% if activation.is_active and activation.status == 'active' %}
+                                                    <span class="badge badge-active">Active</span>
+                                                {% elif activation.status == 'used' %}
+                                                    <span class="badge badge-used">Used</span>
+                                                {% else %}
+                                                    <span class="badge badge-pending">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if activation.used_for_flow %}
+                                                    <span class="badge bg-primary">{{ activation.used_for_flow|upper }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">Not used</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-danger btn-action" onclick="deactivateActivation('{{ activation.index_number }}')" title="Deactivate">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted py-4">
+                                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                                No recent activations
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <div class="loading mx-auto mb-3"></div>
+                    <h5>Processing Activation...</h5>
+                    <p class="text-muted" id="loadingMessage">Creating manual activation and cleaning up old records...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal fade" id="resultModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Activation Result
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="resultModalBody">
+                    <!-- Results will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="location.reload()">Refresh Page</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.activation-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Receipt copied to clipboard', 'success');
+            });
+        }
+        
+        // Show toast notification
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed top-0 end-0 m-3`;
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Handle form submission with AJAX
+        document.getElementById('activationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading modal
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+            loadingModal.show();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const data = {
+                email: formData.get('email'),
+                index_number: formData.get('index_number'),
+                mpesa_receipt: formData.get('mpesa_receipt'),
+                activation_type: formData.get('activation_type'),
+                send_email: formData.get('send_email') === 'on'
+            };
+            
+            try {
+                const response = await fetch('/api/manual-activation-advanced', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                loadingModal.hide();
+                
+                // Show result modal
+                const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                const resultBody = document.getElementById('resultModalBody');
+                
+                if (result.success) {
+                    resultBody.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h4>Activation Successful!</h4>
+                            <div class="alert alert-success">
+                                <p><strong>User:</strong> ${result.email}</p>
+                                <p><strong>Index:</strong> ${result.index_number}</p>
+                                <p><strong>Receipt:</strong> ${result.mpesa_receipt}</p>
+                                <p><strong>Payment Deleted:</strong> ${result.payment_deleted ? 'Yes' : 'No'}</p>
+                                <p><strong>Email Sent:</strong> ${result.email_sent ? 'Yes' : 'No'}</p>
+                            </div>
+                            <p>User can now access courses using their original receipt.</p>
+                        </div>
+                    `;
+                    
+                    // Clear form
+                    document.getElementById('activationForm').reset();
+                    
+                    // Refresh the page after modal closes
+                    resultModal._element.addEventListener('hidden.bs.modal', function() {
+                        location.reload();
+                    });
+                } else {
+                    resultBody.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                            <h4>Activation Failed</h4>
+                            <div class="alert alert-danger">
+                                <p>${result.error}</p>
+                            </div>
+                            <button class="btn btn-primary mt-3" onclick="location.reload()">Try Again</button>
+                        </div>
+                    `;
+                }
+                
+                resultModal.show();
+                
+            } catch (error) {
+                loadingModal.hide();
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Deactivate activation
+        async function deactivateActivation(indexNumber) {
+            if (!confirm('Deactivate this activation? User will lose access.')) return;
+            
+            try {
+                const response = await fetch('/api/deactivate-activation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ index_number: indexNumber })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Activation deactivated', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Refresh activations list
+        function refreshActivations() {
+            location.reload();
+        }
+        
+        // Fetch pending issues count for badge
+        async function fetchPendingIssuesCount() {
+            try {
+                const response = await fetch('/api/pending-issues-count');
+                const data = await response.json();
+                const badge = document.getElementById('pendingIssuesBadge');
+                if (badge && data.count !== undefined) {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline-block' : 'none';
+                }
+            } catch (error) {
+                console.log('Error fetching pending count:', error);
+            }
+        }
+        
+        // Auto-refresh pending count every 30 seconds
+        fetchPendingIssuesCount();
+        setInterval(fetchPendingIssuesCount, 30000);
+        
+        // Validate index number format as user types
+        document.getElementById('index_number').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value.length > 11) {
+                if (value.length === 11) {
+                    e.target.value = value + '/';
+                } else if (value.length > 11 && !e.target.value.includes('/')) {
+                    e.target.value = value.slice(0, 11) + '/' + value.slice(11, 15);
+                } else if (value.length > 15) {
+                    e.target.value = value.slice(0, 11) + '/' + value.slice(11, 15);
+                }
+            }
+        });
+        
+        // Validate receipt format
+        document.getElementById('mpesa_receipt').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+        });
+    </script>
 </body>
 
 </html>
