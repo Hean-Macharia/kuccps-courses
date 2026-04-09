@@ -259,7 +259,7 @@ SUBJECTS = {
     'cre': 'CRE', 'hre': 'HRE', 'ire': 'IRE', 'agriculture': 'AGR', 'computer': 'COM',
     'arts': 'ARD', 'business': 'BST', 'music': 'MUC', 'homescience': 'HSC',
     'french': 'FRE', 'german': 'GER', 'aviation': 'AVI', 'woodwork': 'ARD',
-    'building': 'ARD', 'electronics': 'COM', 'metalwork': 'ARD'
+    'building': 'ARD', 'electronics': 'COM', 'metalwork': 'ARD', 'drawing': 'ARD', 'arabic': 'ARB'
 }
 
 GRADE_VALUES = {
