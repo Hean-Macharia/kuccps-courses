@@ -111,4 +111,267 @@
         </div>
     </div>
 </div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="helpModalLabel">
+                    <i class="fa fa-headset me-2"></i>Contact Support
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Our support team is here to help you with:</p>
+                <ul class="list-unstyled mb-3">
+                    <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i>Missing course results</li>
+                    <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i>Payment verification issues</li>
+                    <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i>Technical difficulties</li>
+                    <li class="mb-2"><i class="fa fa-check-circle text-success me-2"></i>General inquiries</li>
+                </ul>
+                <div class="alert alert-info mb-3">
+                    <i class="fa fa-envelope me-2"></i>
+                    <strong>Email:</strong> courseschecker@gmail.com
+                </div>
+                <div class="alert alert-success mb-0">
+                    <i class="fa fa-phone me-2"></i>
+                    <strong>Phone:</strong> +254791196121
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa fa-times me-1"></i>Close
+                </button>
+                <a href="mailto:courseschecker@gmail.com" class="btn btn-primary">
+                    <i class="fa fa-envelope me-1"></i>Send Email
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional JavaScript for responsive adjustments -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure all course level cards have consistent height
+        function adjustCardHeights() {
+            const cards = document.querySelectorAll('.row-cols-1 .card');
+            if (cards.length > 0) {
+                // Reset heights first
+                cards.forEach(card => {
+                    card.style.height = 'auto';
+                });
+                
+                // Only adjust on desktop (md and up)
+                if (window.innerWidth >= 768) {
+                    let maxHeight = 0;
+                    cards.forEach(card => {
+                        const height = card.offsetHeight;
+                        if (height > maxHeight) maxHeight = height;
+                    });
+                    cards.forEach(card => {
+                        card.style.height = maxHeight + 'px';
+                    });
+                }
+            }
+        }
+        
+        // Run on load and resize
+        adjustCardHeights();
+        window.addEventListener('resize', adjustCardHeights);
+        
+        // Add touch-friendly enhancements for mobile
+        if ('ontouchstart' in window) {
+            // Add active state styling for touch devices
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('touchstart', function() {
+                    this.classList.add('btn-active');
+                });
+                button.addEventListener('touchend', function() {
+                    this.classList.remove('btn-active');
+                });
+            });
+        }
+        
+        // Log dashboard load for debugging
+        console.log('✅ Verified dashboard loaded successfully');
+        console.log(`📊 Available levels: {{ user_courses.keys()|list|tojson }}`);
+        console.log(`📚 Total courses: {{ total_courses }}`);
+    });
+</script>
+
+<style>
+    /* Mobile-first responsive styles */
+    @media (max-width: 767px) {
+        .fs-md-4 {
+            font-size: 1.1rem !important;
+        }
+        
+        .fs-md-5 {
+            font-size: 0.9rem !important;
+        }
+        
+        .card-header {
+            padding: 0.75rem 1rem !important;
+        }
+        
+        .card-body {
+            padding: 1rem !important;
+        }
+        
+        .badge {
+            font-size: 0.75rem !important;
+        }
+        
+        .btn {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .alert {
+            padding: 0.75rem 1rem !important;
+        }
+        
+        /* Improve touch targets on mobile */
+        .btn {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .badge {
+            padding: 0.5rem 0.75rem !important;
+        }
+    }
+    
+    /* Desktop styles */
+    @media (min-width: 768px) {
+        .fs-md-4 {
+            font-size: 1.25rem !important;
+        }
+        
+        .text-truncate {
+            max-width: 300px;
+        }
+    }
+    
+    /* Card hover effects */
+    .card.border-success {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card.border-success:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Button active state for touch devices */
+    .btn-active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+    
+    /* Smooth transitions */
+    .btn, .card, .badge {
+        transition: all 0.2s ease;
+    }
+    
+    /* Responsive text truncation */
+    .text-truncate {
+        max-width: 100%;
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    @media (min-width: 768px) {
+        .text-truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+    
+    /* Print styles */
+    @media print {
+        .alert-info, .modal, .btn, .btn-close {
+            display: none !important;
+        }
+        
+        .card {
+            border: 1px solid #ddd !important;
+            box-shadow: none !important;
+        }
+        
+        .card-header {
+            background-color: #f8f9fa !important;
+            color: #000 !important;
+        }
+        
+        .badge {
+            border: 1px solid #000 !important;
+            background-color: #f8f9fa !important;
+            color: #000 !important;
+        }
+        
+        .btn-success {
+            border: 1px solid #000 !important;
+            background-color: #f8f9fa !important;
+            color: #000 !important;
+        }
+        
+        a {
+            text-decoration: none !important;
+            color: #000 !important;
+        }
+    }
+    
+    /* Loading state for buttons */
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin-left: -8px;
+        margin-top: -8px;
+        border: 2px solid #fff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* Accessibility improvements */
+    .btn:focus-visible,
+    a:focus-visible {
+        outline: 2px solid #0d6efd;
+        outline-offset: 2px;
+    }
+    
+    /* Improved contrast for badges on mobile */
+    @media (max-width: 767px) {
+        .bg-success {
+            background-color: #198754 !important;
+        }
+        
+        .bg-primary {
+            background-color: #0d6efd !important;
+        }
+    }
+</style>
 {% endblock %}

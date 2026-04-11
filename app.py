@@ -253,15 +253,49 @@ def debug_models():
 
 
 # --- Constants ---
+# --- Constants ---
 SUBJECTS = {
-    'mathematics': 'MAT', 'english': 'ENG', 'kiswahili': 'KIS', 'chemistry': 'CHE',
-    'biology': 'BIO', 'physics': 'PHY', 'geography': 'GEO', 'history': 'HAG',
-    'cre': 'CRE', 'hre': 'HRE', 'ire': 'IRE', 'agriculture': 'AGR', 'computer': 'COM',
-    'arts': 'ARD', 'business': 'BST', 'music': 'MUC', 'homescience': 'HSC',
-    'french': 'FRE', 'german': 'GER', 'aviation': 'AVI', 'woodwork': 'ARD',
-    'building': 'ARD', 'electronics': 'COM', 'metalwork': 'ARD', 'drawing': 'ARD', 'arabic': 'ARB'
+    # Core Subjects (Group 1)
+    'mathematics': 'MAT',
+    'english': 'ENG', 
+    'kiswahili': 'KIS',
+    'kenya_sign_language': 'KSL',  # Kenya Sign Language
+    
+    # Sciences (Group 2)
+    'biology': 'BIO',
+    'physics': 'PHY',
+    'chemistry': 'CHE',
+    
+    # Humanities (Group 3)
+    'geography': 'GEO',
+    'history': 'HAG',  # History & Government
+    'cre': 'CRE',
+    'ire': 'IRE',
+    'hre': 'HRE',
+    
+    # Technical & Applied (Group 4 & 5)
+    'general_science': 'GSC',  # General Science
+    'home_science': 'HSC',  # Home Science
+    'art_design': 'ARD',  # Art & Design
+    'agriculture': 'AGR',
+    'woodwork': 'WW',  # Woodwork
+    'metalwork': 'MW',  # Metalwork
+    'building_construction': 'BC',  # Building Construction
+    'power_mechanics': 'PM',  # Power Mechanics
+    'electricity': 'ECT',  # Electricity
+    'drawing_design': 'DRD',  # Drawing & Design
+    'aviation': 'AVT',  # Aviation
+    'computer_studies': 'CMP',  # Computer Studies
+    
+    # Languages
+    'french': 'FRE',
+    'german': 'GER',
+    'arabic': 'ARB',
+    
+    # Others
+    'business_studies': 'BST',  # Business Studies
+    'music': 'MUC',
 }
-
 GRADE_VALUES = {
     'A': 12, 'A-': 11, 'B+': 10, 'B': 9, 'B-': 8, 'C+': 7, 'C': 6, 'C-': 5,
     'D+': 4, 'D': 3, 'D-': 2, 'E': 1

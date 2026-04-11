@@ -442,12 +442,10 @@
 
 {% block content %}
 
-
-
 <div class="container">
     <span class="cert-intro-text">✨ Fill in your KCSE grades and submit to see all certificate programs you qualify for!</span>
     
-    <form action="/submit-certificate-grades" method="post">
+    <form action="{{ url_for('submit_certificate_grades') }}" method="POST">
         
         <!-- Certificate Program Qualifications Card -->
         <div class="cert-card">
@@ -630,8 +628,8 @@
                             </select>
                         </div>
                         <div class="cert-form-group">
-                            <label for="computer">Computer Studies</label>
-                            <select id="computer" name="computer" class="cert-select">
+                            <label for="computer_studies">Computer Studies</label>
+                            <select id="computer_studies" name="computer_studies" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -640,8 +638,8 @@
                             </select>
                         </div>
                         <div class="cert-form-group">
-                            <label for="arts">Art and Design</label>
-                            <select id="arts" name="arts" class="cert-select">
+                            <label for="art_design">Art and Design</label>
+                            <select id="art_design" name="art_design" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -660,8 +658,8 @@
                             </select>
                         </div>
                         <div class="cert-form-group">
-                            <label for="homescience">Home Science</label>
-                            <select id="homescience" name="homescience" class="cert-select">
+                            <label for="home_science">Home Science</label>
+                            <select id="home_science" name="home_science" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -670,8 +668,8 @@
                             </select>
                         </div>
                         <div class="cert-form-group">
-                            <label for="business">Business Studies</label>
-                            <select id="business" name="business" class="cert-select">
+                            <label for="business_studies">Business Studies</label>
+                            <select id="business_studies" name="business_studies" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -697,8 +695,8 @@
                     <h2><i>➕</i> Other Subjects</h2>
                     <div class="cert-form-grid">
                         <div class="cert-form-group">
-                            <label for="building">Building and Construction</label>
-                            <select id="building" name="building" class="cert-select">
+                            <label for="general_science">General Science</label>
+                            <select id="general_science" name="general_science" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -707,8 +705,8 @@
                             </select>
                         </div>
                         <div class="cert-form-group">
-                            <label for="electronics">Electricity and Electronics</label>
-                            <select id="electronics" name="electronics" class="cert-select">
+                            <label for="building_construction">Building and Construction</label>
+                            <select id="building_construction" name="building_construction" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -717,8 +715,18 @@
                             </select>
                         </div>
                         <div class="cert-form-group">
-                            <label for="drawing">Drawing and Design</label>
-                            <select id="drawing" name="drawing" class="cert-select">
+                            <label for="electricity">Electricity and Electronics</label>
+                            <select id="electricity" name="electricity" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="drawing_design">Drawing and Design</label>
+                            <select id="drawing_design" name="drawing_design" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -767,8 +775,8 @@
                             </select>
                         </div>
                         <div class="cert-form-group">
-                            <label for="kenyaSignLanguage">Kenya Sign Language</label>
-                            <select id="kenyaSignLanguage" name="kenyaSignLanguage" class="cert-select">
+                            <label for="kenya_sign_language">Kenya Sign Language</label>
+                            <select id="kenya_sign_language" name="kenya_sign_language" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -779,6 +787,16 @@
                         <div class="cert-form-group">
                             <label for="aviation">Aviation</label>
                             <select id="aviation" name="aviation" class="cert-select">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="cert-form-group">
+                            <label for="power_mechanics">Power Mechanics</label>
+                            <select id="power_mechanics" name="power_mechanics" class="cert-select">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -809,7 +827,7 @@
         <ul class="mb-0">
             <li><strong>Duration:</strong> 1-2 years (quickest path to employment)</li>
             <li><strong>Focus:</strong> Practical, job-ready skills for immediate application</li>
-            <li><strong>Entry:</strong> Minimum E in KCSE - accessible to most students</li>
+            <li><strong>Entry:</strong> Minimum D+ in KCSE - accessible to many students</li>
             <li><strong>Outcome:</strong> National Certificate with immediate employment potential</li>
         </ul>
     </div>
@@ -906,7 +924,7 @@
             </h2>
             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#certificateFAQ">
                 <div class="accordion-body cert-accordion-body">
-                    Most certificate programs require a minimum of E grade in KCSE or basic secondary education completion. Some programs may have specific subject requirements, but overall requirements are very flexible to accommodate many students. This makes certificate programs accessible to nearly all KCSE graduates.
+                    Most certificate programs require a minimum of D+ grade in KCSE or basic secondary education completion. Some programs may have specific subject requirements, but overall requirements are very flexible to accommodate many students. This makes certificate programs accessible to most KCSE graduates.
                 </div>
             </div>
         </div>
@@ -992,9 +1010,9 @@
                 <div class="col-md-6">
                     <h5 class="mb-3" style="color: var(--cert-primary);">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum E (1 point) - flexible entry for all</li>
+                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum D+ - flexible entry</li>
                         <li class="mb-2"><strong>🎓 Form 4 Completion:</strong> Completion of secondary school education</li>
-                        <li class="mb-2"><strong>📖 Entry Score:</strong> Generally flexible, very low minimum requirements</li>
+                        <li class="mb-2"><strong>📖 Entry Score:</strong> Generally flexible, low minimum requirements</li>
                         <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 16+ years old at entry</li>
                         <li class="mb-2"><strong>✅ Additional:</strong> Some programs may require basic numeracy and literacy</li>
                     </ul>

@@ -152,6 +152,21 @@
             padding: 1.2rem;
         }
     }
+    
+    /* Animation for form elements */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .card, .cluster-points-card, .video-tutorial-section {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
 </style>
 {% endblock %}
 
@@ -167,7 +182,7 @@
     <!-- As a heading -->
     <span class="d-block mb-4 fs-5 text-muted">Fill in the details and submit to get the programmes you qualify!</span>
 
-    <form action="/submit-grades" method="post">
+    <form action="{{ url_for('submit_grades') }}" method="post" id="degreeForm">
         <!-- KCSE Subjects Grades (Email and Index will be collected after grades submission) -->
         <div id="gradesForm">
             <div class="card shadow-sm border-0 mb-5">
@@ -213,52 +228,344 @@
                                 </div>
                             </div>
                         </div>
+                        
                         <!-- Sciences -->
                         <div class="mb-5">
                             <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">🔬 Sciences</h2>
                             <div class="row g-3">
-                                <div class="col-md-4"><div class="form-group"><label for="chemistry" class="fw-semibold">Chemistry:</label><select id="chemistry" name="chemistry" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="biology" class="fw-semibold">Biology:</label><select id="biology" name="biology" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="physics" class="fw-semibold">Physics:</label><select id="physics" name="physics" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="chemistry" class="fw-semibold">Chemistry:</label>
+                                        <select id="chemistry" name="chemistry" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="biology" class="fw-semibold">Biology:</label>
+                                        <select id="biology" name="biology" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="physics" class="fw-semibold">Physics:</label>
+                                        <select id="physics" name="physics" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        
                         <!-- Humanities -->
                         <div class="mb-5">
                             <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">📖 Humanities</h2>
                             <div class="row g-3">
-                                <div class="col-md-4"><div class="form-group"><label for="geography" class="fw-semibold">Geography:</label><select id="geography" name="geography" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="history" class="fw-semibold">History:</label><select id="history" name="history" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="cre" class="fw-semibold">Christian Religious Education (CRE):</label><select id="cre" name="cre" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="ire" class="fw-semibold">Islamic Religious Education (IRE):</label><select id="ire" name="ire" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="hre" class="fw-semibold">Hindu Religious Education (HRE):</label><select id="hre" name="hre" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="geography" class="fw-semibold">Geography:</label>
+                                        <select id="geography" name="geography" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="history" class="fw-semibold">History:</label>
+                                        <select id="history" name="history" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="cre" class="fw-semibold">Christian Religious Education (CRE):</label>
+                                        <select id="cre" name="cre" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="ire" class="fw-semibold">Islamic Religious Education (IRE):</label>
+                                        <select id="ire" name="ire" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="hre" class="fw-semibold">Hindu Religious Education (HRE):</label>
+                                        <select id="hre" name="hre" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        
                         <!-- Technical Subjects -->
                         <div class="mb-5">
                             <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">⚙️ Technical Subjects</h2>
                             <div class="row g-3">
-                                <div class="col-md-4"><div class="form-group"><label for="agriculture" class="fw-semibold">Agriculture:</label><select id="agriculture" name="agriculture" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="computer" class="fw-semibold">Computer Studies:</label><select id="computer" name="computer" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="arts" class="fw-semibold">Art and Design:</label><select id="arts" name="arts" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="woodwork" class="fw-semibold">Woodwork:</label><select id="woodwork" name="woodwork" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="homescience" class="fw-semibold">Home Science:</label><select id="homescience" name="homescience" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="business" class="fw-semibold">Business Studies:</label><select id="business" name="business" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="music" class="fw-semibold">Music:</label><select id="music" name="music" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="agriculture" class="fw-semibold">Agriculture:</label>
+                                        <select id="agriculture" name="agriculture" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="computer_studies" class="fw-semibold">Computer Studies:</label>
+                                        <select id="computer_studies" name="computer_studies" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="art_design" class="fw-semibold">Art and Design:</label>
+                                        <select id="art_design" name="art_design" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="woodwork" class="fw-semibold">Woodwork:</label>
+                                        <select id="woodwork" name="woodwork" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="home_science" class="fw-semibold">Home Science:</label>
+                                        <select id="home_science" name="home_science" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="business_studies" class="fw-semibold">Business Studies:</label>
+                                        <select id="business_studies" name="business_studies" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="music" class="fw-semibold">Music:</label>
+                                        <select id="music" name="music" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        
                         <!-- Other Subjects -->
                         <div class="mb-4">
                             <h2 class="fs-3 fw-semibold border-bottom pb-2 mb-3">➕ Other Subjects</h2>
                             <div class="row g-3">
-                                <div class="col-md-4"><div class="form-group"><label for="building" class="fw-semibold">Building and Construction:</label><select id="building" name="building" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="electronics" class="fw-semibold">Electricity and Electronics:</label><select id="electronics" name="electronics" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="metalwork" class="fw-semibold">Metalwork:</label><select id="metalwork" name="metalwork" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="french" class="fw-semibold">French:</label><select id="french" name="french" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="kenya Sign Language" class="fw-semibold">Kenya Sign Language:</label><select id="kenya Sign Language" name="kenya Sign Language" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="german" class="fw-semibold">German:</label><select id="german" name="german" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="aviation" class="fw-semibold">Aviation:</label><select id="aviation" name="aviation" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="drawing" class="fw-semibold">Drawing and Design:</label><select id="drawing" name="drawing" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
-                                <div class="col-md-4"><div class="form-group"><label for="arabic" class="fw-semibold">Arabic:</label><select id="arabic" name="arabic" class="form-select"><option value="">Select Grade</option><option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option><option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option><option value="D">D</option><option value="D-">D-</option><option value="E">E</option></select></div></div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="general_science" class="fw-semibold">General Science:</label>
+                                        <select id="general_science" name="general_science" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="building_construction" class="fw-semibold">Building and Construction:</label>
+                                        <select id="building_construction" name="building_construction" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="electricity" class="fw-semibold">Electricity and Electronics:</label>
+                                        <select id="electricity" name="electricity" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="metalwork" class="fw-semibold">Metalwork:</label>
+                                        <select id="metalwork" name="metalwork" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="french" class="fw-semibold">French:</label>
+                                        <select id="french" name="french" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="kenya_sign_language" class="fw-semibold">Kenya Sign Language:</label>
+                                        <select id="kenya_sign_language" name="kenya_sign_language" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="german" class="fw-semibold">German:</label>
+                                        <select id="german" name="german" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="aviation" class="fw-semibold">Aviation:</label>
+                                        <select id="aviation" name="aviation" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="drawing_design" class="fw-semibold">Drawing and Design:</label>
+                                        <select id="drawing_design" name="drawing_design" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="arabic" class="fw-semibold">Arabic:</label>
+                                        <select id="arabic" name="arabic" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="power_mechanics" class="fw-semibold">Power Mechanics:</label>
+                                        <select id="power_mechanics" name="power_mechanics" class="form-select">
+                                            <option value="">Select Grade</option>
+                                            <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                            <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                            <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                            <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -332,7 +639,7 @@
         <ul class="mb-0">
             <li><strong>Duration:</strong> 4 years (standard bachelor's program)</li>
             <li><strong>Focus:</strong> Comprehensive academic and professional training</li>
-            <li><strong>Entry:</strong> Minimum 12 cluster points (varies by program)</li>
+            <li><strong>Entry:</strong> Minimum C+ mean grade + cluster points</li>
             <li><strong>Outcome:</strong> Bachelor's Degree recognized nationally and internationally</li>
         </ul>
     </div>
@@ -404,31 +711,51 @@
     <h2 class="mb-4 text-center">❓ Frequently Asked Questions About Degree Programs</h2>
     <div class="accordion" id="degreeFAQ">
         <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
-            <h2 class="accordion-header"><button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">What are cluster points and how are they calculated?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                    What are cluster points and how are they calculated?
+                </button>
+            </h2>
             <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">Cluster points are weighted grades that reflect your academic performance. They are calculated from your KCSE results, with each subject weighted differently based on university requirements. Higher points indicate stronger academic performance.</div>
             </div>
         </div>
         <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
-            <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">Can I change my course choice after admission?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                    Can I change my course choice after admission?
+                </button>
+            </h2>
             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">Yes, most universities allow course changes within the first semester or during admission appeals process. However, this depends on subject requirements and university policies. Contact your university directly for specific procedures.</div>
             </div>
         </div>
         <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
-            <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">What career prospects does a degree offer?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                    What career prospects does a degree offer?
+                </button>
+            </h2>
             <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">University degrees prepare you for diverse career paths in: engineering, medicine, law, business, education, IT, architecture, and more. Graduates typically earn significantly higher salaries and have greater career mobility than diploma holders.</div>
             </div>
         </div>
         <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
-            <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">How much does a university degree cost?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                    How much does a university degree cost?
+                </button>
+            </h2>
             <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">University fees vary by institution and program. Public universities cost KES 4,000-20,000 per semester, while private universities range from KES 50,000-200,000+. Government loans and scholarships are available to eligible students.</div>
             </div>
         </div>
         <div class="accordion-item border-0 shadow-sm rounded-3 overflow-hidden">
-            <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">Can I pursue further studies after my degree?</button></h2>
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                    Can I pursue further studies after my degree?
+                </button>
+            </h2>
             <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#degreeFAQ">
                 <div class="accordion-body">Yes, Bachelor's degree holders can pursue Master's degrees, PhDs, professional qualifications (Law, Medicine), and postgraduate diplomas. Many employers offer professional development opportunities after hiring.</div>
             </div>
@@ -479,21 +806,21 @@
                 <div class="col-md-6">
                     <h5 class="mb-3 text-primary">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Overall KCSE Grade:</strong> Minimum C+ (8 points) across all subjects</li>
-                        <li class="mb-2"><strong>Cluster Points:</strong> Varies by university and program (typically 20-80 points)</li>
-                        <li class="mb-2"><strong>Core Subjects:</strong> English and Mathematics required for most programs</li>
-                        <li class="mb-2"><strong>Subject Combinations:</strong> Science or Humanities depending on course choice</li>
-                        <li class="mb-2"><strong>Age Requirement:</strong> Usually 18+ years old at time of entry</li>
+                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum C+ (8 points) across all subjects</li>
+                        <li class="mb-2"><strong>🎯 Cluster Points:</strong> Varies by university and program (typically 20-80 points)</li>
+                        <li class="mb-2"><strong>📖 Core Subjects:</strong> English and Mathematics required for most programs</li>
+                        <li class="mb-2"><strong>🔬 Subject Combinations:</strong> Science or Humanities depending on course choice</li>
+                        <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 18+ years old at time of entry</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
                     <h5 class="mb-3 text-primary">Program-Specific Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>Engineering Programs:</strong> Physics, Chemistry, and Mathematics all B- or better</li>
-                        <li class="mb-2"><strong>Medical Programs:</strong> Biology, Chemistry, Physics (min C+)</li>
-                        <li class="mb-2"><strong>Humanities Programs:</strong> Strong English and subject-specific papers required</li>
-                        <li class="mb-2"><strong>Business Programs:</strong> Mathematics and any other subject</li>
-                        <li class="mb-2"><strong>Law Programs:</strong> English and Social Studies/History recommended</li>
+                        <li class="mb-2"><strong>⚙️ Engineering Programs:</strong> Physics, Chemistry, and Mathematics all B- or better</li>
+                        <li class="mb-2"><strong>🏥 Medical Programs:</strong> Biology, Chemistry, Physics (min C+)</li>
+                        <li class="mb-2"><strong>📚 Humanities Programs:</strong> Strong English and subject-specific papers required</li>
+                        <li class="mb-2"><strong>💼 Business Programs:</strong> Mathematics and any other subject</li>
+                        <li class="mb-2"><strong>⚖️ Law Programs:</strong> English and Social Studies/History recommended</li>
                     </ul>
                 </div>
             </div>
@@ -503,4 +830,103 @@
 
 {% endblock %}
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+<script>
+    // Form validation and enhancement script
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('degreeForm');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Show loading state on submit
+                const submitBtn = form.querySelector('.submit-btn');
+                if (submitBtn) {
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i> Processing...';
+                    submitBtn.disabled = true;
+                    
+                    // Re-enable after timeout (in case of errors)
+                    setTimeout(function() {
+                        if (submitBtn.disabled) {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }
+                    }, 30000);
+                }
+            });
+        }
+        
+        // Auto-format cluster point inputs to 4 decimal places
+        const clusterInputs = document.querySelectorAll('.form-group-modern input[type="number"]');
+        clusterInputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value) {
+                    let value = parseFloat(this.value);
+                    if (!isNaN(value)) {
+                        this.value = value.toFixed(4);
+                    }
+                }
+            });
+        });
+        
+        // Add validation for required core subjects
+        const requiredSubjects = ['mathematics', 'english', 'kiswahili'];
+        requiredSubjects.forEach(subject => {
+            const select = document.getElementById(subject);
+            if (select) {
+                select.addEventListener('change', function() {
+                    if (this.value === '') {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
+        });
+    });
+    
+    // Function to save form data to localStorage (for recovery on page refresh)
+    function saveFormData() {
+        const form = document.getElementById('degreeForm');
+        if (form) {
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            localStorage.setItem('degreeFormData', JSON.stringify(data));
+        }
+    }
+    
+    // Function to restore form data from localStorage
+    function restoreFormData() {
+        const savedData = localStorage.getItem('degreeFormData');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            for (const [key, value] of Object.entries(data)) {
+                const element = document.querySelector(`[name="${key}"]`);
+                if (element && value) {
+                    element.value = value;
+                }
+            }
+            // Clear saved data after restore
+            localStorage.removeItem('degreeFormData');
+        }
+    }
+    
+    // Auto-save form data on input change
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('degreeForm');
+        if (form) {
+            const inputs = form.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', saveFormData);
+                input.addEventListener('blur', saveFormData);
+            });
+        }
+        
+        // Restore saved data if any
+        restoreFormData();
+    });
+</script>
+{% endblock %}

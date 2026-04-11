@@ -97,6 +97,7 @@
             </div>
         </div>
     </div>
+    
     <!-- Search Results Info -->
     <div id="search-info" class="alert alert-info mb-3" style="display: none;">
         <i class="fas fa-info-circle me-2"></i>
@@ -134,8 +135,7 @@
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h3 class="card-title h6 mb-0 text-primary flex-grow-1 me-2">
                                     <i class="fas fa-book-open me-1"></i>
-                                    <span class="course-name-text">{{ course.programme_name or 'Programme Name Not
-                                        Available' }}</span>
+                                    <span class="course-name-text">{{ course.programme_name or course.course_name or 'Programme Name Not Available' }}</span>
                                 </h3>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
@@ -145,7 +145,7 @@
                                     </small>
                                     <span class="badge bg-dark fs-6">
                                         <i class="fas fa-barcode me-1"></i>
-                                        <span class="programme-code-text">{{ course.programme_code or 'N/A' }}</span>
+                                        <span class="programme-code-text">{{ course.programme_code or course.course_code or 'N/A' }}</span>
                                     </span>
                                 </div>
                                 <div class="d-flex flex-column align-items-end">
@@ -174,8 +174,7 @@
                                     </strong>
                                     <span class="detail-value institution-text">
                                         <i class="fas fa-school me-1 text-success"></i>
-                                        <span class="institution-name-text">{{ course.institution_name or 'Not
-                                            Specified' }}</span>
+                                        <span class="institution-name-text">{{ course.institution_name or 'Not Specified' }}</span>
                                     </span>
                                 </div>
 
@@ -222,12 +221,25 @@
                                     </div>
                                 </div>
                                 {% endif %}
+                                
+                                <!-- Duration if available -->
+                                {% if course.duration %}
+                                <div class="detail-item mt-2">
+                                    <strong class="detail-label">
+                                        <i class="fas fa-clock me-1 text-muted"></i>Duration:
+                                    </strong>
+                                    <span class="detail-value">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        <span class="duration-text">{{ course.duration }}</span>
+                                    </span>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="card-footer bg-transparent border-top-0">
                             <button class="btn btn-sm btn-outline-primary add-to-basket-btn w-100"
                                 data-course='{{ course|tojson|safe }}'
-                                title="Add {{ course.programme_name }} to your basket">
+                                title="Add {{ course.programme_name or course.course_name }} to your basket">
                                 <i class="fas fa-cart-plus me-1"></i>Add to Basket
                             </button>
                         </div>
@@ -312,7 +324,6 @@
             toggleFloatingButton();
         }
 
-        // Rest of your existing JavaScript code...
         // Load basket from database/session on page load
         loadBasketOnPageLoad();
 
@@ -442,7 +453,8 @@
                 '.category-text',
                 '.cutoff-points-text',
                 '.minimum-grade-text',
-                '.requirement-text'
+                '.requirement-text',
+                '.duration-text'
             ];
 
             searchableSelectors.forEach(selector => {
@@ -578,7 +590,9 @@
                 coursesContainer.style.display = 'block';
             }
 
-            searchInfo.style.display = 'none';
+            if (searchInfo) {
+                searchInfo.style.display = 'none';
+            }
             console.log('🔄 Showing all courses');
         }
 
@@ -654,17 +668,27 @@
                 currentCollectionTitle.innerHTML = `<i class="fas fa-folder me-2"></i>${displayName} Courses (${visibleCount})`;
             }
 
-            noCoursesMessage.style.display = visibleCount === 0 ? 'block' : 'none';
-            coursesContainer.style.display = visibleCount === 0 ? 'none' : 'block';
+            if (noCoursesMessage) {
+                noCoursesMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+            if (coursesContainer) {
+                coursesContainer.style.display = visibleCount === 0 ? 'none' : 'block';
+            }
 
             if (visibleCourseCount) {
                 visibleCourseCount.textContent = visibleCount;
             }
 
             // Clear search when switching collections
-            courseSearch.value = '';
-            clearSearch.style.display = 'none';
-            searchInfo.style.display = 'none';
+            if (courseSearch) {
+                courseSearch.value = '';
+            }
+            if (clearSearch) {
+                clearSearch.style.display = 'none';
+            }
+            if (searchInfo) {
+                searchInfo.style.display = 'none';
+            }
 
             console.log(`📂 Collection filter: ${collection}, showing ${visibleCount} courses`);
         }
@@ -819,7 +843,7 @@
                 const badge = document.createElement('span');
                 badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
                 badge.id = 'basketCounter';
-                badge.innerHTML = `<i class="fas fa-shopping-cart me-1"></i>${count}`;
+                badge.innerHTML = count;
                 basketLink.appendChild(badge);
             }
         }
@@ -902,7 +926,7 @@
         }
     }
 
-    /* Rest of your existing CSS styles... */
+    /* Collection button styles */
     .collection-btn {
         transition: all 0.3s ease;
         border-radius: 8px;
@@ -915,6 +939,7 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
+    /* Course card styles */
     .course-card {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         border: 1px solid #e9ecef;
@@ -945,6 +970,7 @@
         padding: 1rem;
     }
 
+    /* Detail item styles */
     .detail-item {
         border-left: 3px solid #0d6efd;
         padding-left: 0.75rem;
@@ -964,6 +990,7 @@
         display: block;
     }
 
+    /* Requirements grid */
     .requirements-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -983,6 +1010,7 @@
         font-weight: 500;
     }
 
+    /* Add to basket button */
     .add-to-basket-btn {
         transition: all 0.3s ease;
         border-radius: 6px;
@@ -1000,6 +1028,7 @@
         cursor: not-allowed;
     }
 
+    /* Highlight styles */
     mark {
         background-color: #fff3cd;
         padding: 0.1em 0.2em;
