@@ -302,26 +302,25 @@ GRADE_VALUES = {
 }
 CLUSTER_NAMES = {
     'cluster_1': 'Law',
-    'cluster_2': 'Business, Hospitality & Related',
-    'cluster_3': 'Social Sciences, Media Studies, Fine Arts, Film, Animation, Graphics & Related',
-    'cluster_4': 'Geosciences & Related',
-    'cluster_5': 'Engineering, Engineering Technology & Related',
-    'cluster_6': 'Architecture, Building Construction & Related',
-    'cluster_7': 'Computing, IT & Related',
-    'cluster_8': 'Agribusiness & Related',
-    'cluster_9': 'General Science, Biological Sciences, Physics, Chemistry & Related',
-    'cluster_10': 'Actuarial Science, Accountancy, Mathematics, Economics, Statistics & Related',
-    'cluster_11': 'Interior Design, Fashion Design, Textiles & Related',
-    'cluster_12': 'Sport Science & Related',
-    'cluster_13': 'Medicine, Health, Veterinary Medicine & Related',
-    'cluster_14': 'History, Archeology & Related',
-    'cluster_15': 'Agriculture, Animal Health, Food Science, Nutrition Dietetics, Environmental Sciences, Natural Resources & Related',
-    'cluster_16': 'Music & Related',
-    'cluster_17': 'Education & Related',
-    'cluster_18': 'Religious Studies, Theology, Islamic Studies & Related'
+    'cluster_2': 'Business, Hospitality, Tourism And Related',
+    'cluster_3': 'Communication, Media, Languages, Public Relations, International Relations, Film, Graphics And Related',
+    'cluster_4': 'Geosciences And Related',
+    'cluster_5': 'Engineering, Engineering Technology, Energy And Related',
+    'cluster_6': 'Architecture, Quantity Survey, Building Construction, Urban Planning And Related',
+    'cluster_7': 'Computer Science, Cyber Security, Information Technology And Related',
+    'cluster_8': 'Agricultural Economics, Agribusiness And Related',
+    'cluster_9': 'General Sciences, Biological Sciences, Physics, Chemistry And Related',
+    'cluster_10': 'Acturial Science, Mathematics, Statistics And Related',
+    'cluster_11': 'Interior Design, Fashion Design, Textile And Related',
+    'cluster_12': 'Sports Science And Related',
+    'cluster_13': 'Medicine, Nursing, Dentistry, Pharmacy, Health Sciences And Related',
+    'cluster_14': 'History, Archeology, Geography And Related',
+    'cluster_15': 'Agriculture, Animal Health, Food Science And Nutrition, Environmental Sciences, Natural Resources And Related',
+    'cluster_16': 'Music And Related',
+    'cluster_17': 'Education And Related',
+    'cluster_18': 'Religious Studies, Theology, Islamic Studies And Related'
 }
-
-CLUSTERS = [f"cluster_{i}" for i in range(1, 21)]
+CLUSTERS = [f"cluster_{i}" for i in range(1, 19)]
 
 DIPLOMA_COLLECTIONS = [
     "Agricultural_Sciences_Related", "Animal_Health_Related", "Applied_Sciences",
