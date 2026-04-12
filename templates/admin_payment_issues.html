@@ -13,56 +13,53 @@
             <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
             </a>
-            <a href="{{ url_for('admin_all_payment_issues') }}" class="btn btn-primary-custom">
-                <i class="fas fa-list me-2"></i>View All Issues
-            </a>
         </div>
     </div>
     
-    <!-- Statistics Cards - Fast loading with cached data -->
+    <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
-            <div class="card-custom">
-                <div class="card-body-custom text-center">
-                    <h3 class="text-primary">{{ stats.total|default(0) }}</h3>
-                    <p class="text-muted mb-0">Total Issues</p>
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ stats.total|default(0) }}</h3>
+                    <p class="mb-0">Total Issues</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <div class="card-custom">
-                <div class="card-body-custom text-center">
-                    <h3 class="text-warning">{{ stats.pending|default(0) }}</h3>
-                    <p class="text-muted mb-0">Pending</p>
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ stats.pending|default(0) }}</h3>
+                    <p class="mb-0">Pending</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <div class="card-custom">
-                <div class="card-body-custom text-center">
-                    <h3 class="text-success">{{ stats.approved|default(0) }}</h3>
-                    <p class="text-muted mb-0">Approved</p>
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ stats.approved|default(0) }}</h3>
+                    <p class="mb-0">Approved</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <div class="card-custom">
-                <div class="card-body-custom text-center">
-                    <h3 class="text-danger">{{ stats.deleted|default(0) }}</h3>
-                    <p class="text-muted mb-0">Deleted</p>
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ stats.deleted|default(0) }}</h3>
+                    <p class="mb-0">Deleted</p>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Batch Actions Bar -->
-    <div class="card-custom mb-4">
-        <div class="card-header-custom">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
             <h5 class="mb-0">
                 <i class="fas fa-tools me-2"></i>Batch Actions
             </h5>
         </div>
-        <div class="card-body-custom">
+        <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <p class="mb-2"><strong>Auto-Resolve Existing Issues</strong></p>
@@ -77,32 +74,32 @@
         </div>
     </div>
     
-    <!-- Pending Issues Table with Pagination -->
-    <div class="card-custom">
-        <div class="card-header-custom">
+    <!-- Pending Issues Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="fas fa-clock me-2"></i>Pending Payment Issues
-                    <span class="badge bg-warning ms-2">{{ total_pending|default(0) }}</span>
+                    <span class="badge bg-light text-dark ms-2">{{ total_pending|default(0) }}</span>
                 </h5>
                 {% if total_pages > 1 %}
-                <span class="badge bg-secondary">Page {{ page }} of {{ total_pages }}</span>
+                <span class="badge bg-light text-dark">Page {{ page }} of {{ total_pages }}</span>
                 {% endif %}
             </div>
         </div>
-        <div class="card-body-custom">
+        <div class="card-body">
             {% if issues %}
                 <div class="table-responsive">
                     <table class="table table-hover">
-                        <thead>
+                        <thead class="table-light">
                             <tr>
-                                <th style="width: 15%">Date</th>
-                                <th style="width: 20%">Email</th>
-                                <th style="width: 15%">Index Number</th>
-                                <th style="width: 15%">M-Pesa Receipt</th>
-                                <th style="width: 10%">Screenshot</th>
-                                <th style="width: 15%">Quick Check</th>
-                                <th style="width: 10%">Actions</th>
+                                <th>Date</th>
+                                <th>Email</th>
+                                <th>Index Number</th>
+                                <th>M-Pesa Receipt</th>
+                                <th>Screenshot</th>
+                                <th>Quick Check</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -110,7 +107,11 @@
                             <tr id="issue-row-{{ issue._id }}">
                                 <td>
                                     {% if issue.created_at %}
-                                        {{ issue.created_at.strftime('%Y-%m-%d %H:%M') if issue.created_at is not string else issue.created_at[:16] }}
+                                        {% if issue.created_at is string %}
+                                            {{ issue.created_at[:16] }}
+                                        {% else %}
+                                            {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        {% endif %}
                                     {% else %}
                                         N/A
                                     {% endif %}
@@ -119,8 +120,8 @@
                                 <td>{{ issue.index_number if issue.index_number else 'N/A' }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <span class="badge bg-info font-monospace">{{ issue.mpesa_receipt }}</span>
-                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ issue.mpesa_receipt }}')" title="Copy receipt">
+                                        <code class="bg-light p-1 rounded">{{ issue.mpesa_receipt }}</code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ issue.mpesa_receipt }}', event)" title="Copy receipt">
                                             <i class="fas fa-copy"></i>
                                         </button>
                                     </div>
@@ -142,18 +143,12 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <form method="POST" action="{{ url_for('process_payment_issue', issue_id=issue._id) }}" class="d-inline" onsubmit="return confirm('Approve this issue and create manual activation?')">
-                                            <input type="hidden" name="action" value="approve">
-                                            <button type="submit" class="btn btn-success" title="Approve">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="{{ url_for('process_payment_issue', issue_id=issue._id) }}" class="d-inline" onsubmit="return confirm('Delete this issue? Details not found.')">
-                                            <input type="hidden" name="action" value="delete">
-                                            <button type="submit" class="btn btn-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-success" onclick="processIssue('{{ issue._id }}', 'approve')" title="Approve">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="processIssue('{{ issue._id }}', 'delete')" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -201,7 +196,6 @@
                 </div>
                 {% endif %}
                 
-                <!-- Showing info -->
                 <div class="text-center text-muted small mt-3">
                     Showing {{ issues|length }} of {{ total_pending }} pending issues
                 </div>
@@ -217,15 +211,16 @@
     </div>
 </div>
 
-<!-- Progress Modal for Batch Processing -->
+<!-- Progress Modal -->
 <div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
                     <i class="fas fa-spinner fa-spin me-2"></i>
                     Processing Issues
                 </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="text-center">
@@ -279,97 +274,7 @@
     </div>
 </div>
 
-<style>
-.card-custom {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    overflow: hidden;
-}
-
-.card-header-custom {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    font-weight: 500;
-}
-
-.card-body-custom {
-    padding: 20px;
-}
-
-.btn-primary-custom {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 8px 20px;
-    border-radius: 5px;
-    transition: transform 0.2s;
-}
-
-.btn-primary-custom:hover {
-    transform: translateY(-2px);
-    color: white;
-}
-
-.table th {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    vertical-align: middle;
-}
-
-.progress {
-    height: 10px;
-    border-radius: 5px;
-}
-
-.display-6 {
-    font-size: 2rem;
-    font-weight: 600;
-}
-
-.font-monospace {
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-
-.pagination .page-link {
-    color: #667eea;
-}
-
-.pagination .active .page-link {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-color: #667eea;
-    color: white;
-}
-
-.btn-group-sm .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-}
-
-/* Loading spinner for check button */
-.btn-info:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-/* Responsive table */
-@media (max-width: 768px) {
-    .table-responsive {
-        font-size: 0.85rem;
-    }
-    
-    .btn-group-sm .btn {
-        padding: 0.2rem 0.4rem;
-    }
-}
-</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 // Global variables
@@ -377,7 +282,7 @@ let autoRefreshInterval = null;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Start auto-refresh for pending count every 30 seconds
+    console.log('Payment Issues page loaded');
     startAutoRefresh();
 });
 
@@ -399,38 +304,81 @@ function refreshPendingCount() {
     fetch('/api/pending-issues-count')
         .then(response => response.json())
         .then(data => {
-            const pendingBadge = document.querySelector('.badge.bg-warning');
-            const pendingCountSpan = document.querySelector('.badge.bg-warning');
+            const pendingBadge = document.querySelector('.badge.bg-light.text-dark');
             if (pendingBadge && data.count !== undefined) {
                 pendingBadge.textContent = data.count;
-                if (pendingCountSpan) {
-                    pendingCountSpan.textContent = data.count;
-                }
             }
         })
         .catch(error => console.log('Error refreshing count:', error));
 }
 
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        // Show temporary success message
-        const btn = event.target.closest('button');
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i>';
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-        }, 1000);
-    }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('Failed to copy receipt number');
-    });
+function copyToClipboard(text, event) {
+    if (event) event.stopPropagation();
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showTempMessage('Copied!', 'success');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy receipt number');
+        });
+    } else {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showTempMessage('Copied!', 'success');
+    }
+}
+
+function showTempMessage(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '200px';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) alertDiv.remove();
+    }, 2000);
 }
 
 function viewScreenshot(screenshotData) {
-    const modal = new bootstrap.Modal(document.getElementById('screenshotModal'));
+    const modalElement = document.getElementById('screenshotModal');
+    const modal = new bootstrap.Modal(modalElement);
     const imgElement = document.getElementById('screenshotImage');
     imgElement.src = screenshotData;
     modal.show();
+}
+
+function processIssue(issueId, action) {
+    const actionText = action === 'approve' ? 'approve' : 'delete';
+    if (!confirm(`Are you sure you want to ${actionText} this issue?`)) {
+        return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/process-payment-issue/${issueId}`;
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'action';
+    input.value = action;
+    
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
 }
 
 function checkAndResolveIssue(issueId) {
@@ -454,14 +402,16 @@ function checkAndResolveIssue(issueId) {
             statusDiv.innerHTML = '<span class="text-success">✓ ' + data.message + '</span>';
             // Highlight the row and fade out
             const row = document.getElementById('issue-row-' + issueId);
-            row.style.backgroundColor = '#d4edda';
-            setTimeout(() => {
-                row.style.transition = 'opacity 0.5s';
-                row.style.opacity = '0';
+            if (row) {
+                row.style.backgroundColor = '#d4edda';
                 setTimeout(() => {
-                    location.reload();
-                }, 500);
-            }, 2000);
+                    row.style.transition = 'opacity 0.5s';
+                    row.style.opacity = '0';
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                }, 2000);
+            }
         } else {
             statusDiv.innerHTML = '<span class="text-danger">✗ ' + data.error + '</span>';
             checkBtn.disabled = false;
@@ -487,7 +437,8 @@ function batchResolveExistingIssues() {
     stopAutoRefresh();
     
     // Show progress modal
-    const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+    const progressModalElement = document.getElementById('progressModal');
+    const progressModal = new bootstrap.Modal(progressModalElement);
     progressModal.show();
     
     // Update progress
@@ -510,7 +461,8 @@ function batchResolveExistingIssues() {
         progressModal.hide();
         
         // Show results in modal
-        const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+        const resultModalElement = document.getElementById('resultModal');
+        const resultModal = new bootstrap.Modal(resultModalElement);
         const resultBody = document.getElementById('resultModalBody');
         
         if (data.success) {
@@ -596,12 +548,67 @@ function batchResolveExistingIssues() {
         startAutoRefresh();
     });
 }
-
-// Refresh page when modal is closed
-document.getElementById('resultModal').addEventListener('hidden.bs.modal', function () {
-    if (confirm('Refresh page to see updated list?')) {
-        location.reload();
-    }
-});
 </script>
+
+<style>
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+.display-6 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.pagination .page-link {
+    color: #0d6efd;
+}
+
+.pagination .active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-info:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+    }
+}
+</style>
 {% endblock %}

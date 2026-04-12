@@ -393,9 +393,9 @@ def initialize_database():
             
             client = MongoClient(
                 MONGODB_URI,
-                serverSelectionTimeoutMS=10000,
-                connectTimeoutMS=30000,
-                socketTimeoutMS=30000,
+                serverSelectionTimeoutMS=30000,
+                connectTimeoutMS=60000,
+                socketTimeoutMS=60000,
                 retryWrites=True,
                 retryReads=True,
                 maxPoolSize=50
@@ -1198,7 +1198,6 @@ def get_pending_payment_issues():
     except Exception as e:
         print(f"❌ Error getting pending payment issues: {str(e)}")
         return []
-
 def approve_payment_issue(issue_id, admin_username):
     """Approve a payment issue and create manual activation"""
     if not database_connected or payment_issues_collection is None:
@@ -1206,7 +1205,7 @@ def approve_payment_issue(issue_id, admin_username):
     
     try:
         # Get the issue
-        issue = payment_issues_collection.find_one({'_id': ObjectId(issue_id), 'status': 'pending'})
+        issue = payment_issues_collection.find_one({'_id': issue_id, 'status': 'pending'})
         
         if not issue:
             print(f"❌ Payment issue not found: {issue_id}")
@@ -1214,7 +1213,7 @@ def approve_payment_issue(issue_id, admin_username):
         
         # Update issue status
         result = payment_issues_collection.update_one(
-            {'_id': ObjectId(issue_id)},
+            {'_id': issue_id},
             {'$set': {
                 'status': 'approved',
                 'processed_by': admin_username,
@@ -1243,7 +1242,7 @@ def approve_payment_issue(issue_id, admin_username):
                     'status': 'active',
                     'used_for_flow': None,
                     'used_at': None,
-                    'issue_id': issue_id
+                    'issue_id': str(issue_id)
                 }
                 
                 if admin_activations_collection is not None:
@@ -1258,6 +1257,7 @@ def approve_payment_issue(issue_id, admin_username):
         print(f"❌ Error approving payment issue: {str(e)}")
         return False
 
+
 def delete_payment_issue(issue_id, admin_username):
     """Delete a payment issue (mark as deleted)"""
     if not database_connected or payment_issues_collection is None:
@@ -1265,7 +1265,7 @@ def delete_payment_issue(issue_id, admin_username):
     
     try:
         result = payment_issues_collection.update_one(
-            {'_id': ObjectId(issue_id)},
+            {'_id': issue_id},
             {'$set': {
                 'status': 'deleted',
                 'processed_by': admin_username,
@@ -1284,6 +1284,54 @@ def delete_payment_issue(issue_id, admin_username):
     except Exception as e:
         print(f"❌ Error deleting payment issue: {str(e)}")
         return False
+
+
+def get_cached_payment_stats():
+    """Get cached payment statistics"""
+    cache_key = 'payment_stats'
+    cached_stats = cache.get(cache_key)
+    
+    if cached_stats:
+        return cached_stats
+    
+    stats = {
+        'total': 0,
+        'pending': 0,
+        'approved': 0,
+        'deleted': 0
+    }
+    
+    if database_connected and payment_issues_collection is not None:
+        try:
+            # Use aggregation for faster stats
+            pipeline = [
+                {'$group': {
+                    '_id': '$status',
+                    'count': {'$sum': 1}
+                }}
+            ]
+            
+            results = list(payment_issues_collection.aggregate(pipeline))
+            
+            for result in results:
+                status = result['_id']
+                count = result['count']
+                if status == 'pending':
+                    stats['pending'] = count
+                elif status == 'approved':
+                    stats['approved'] = count
+                elif status == 'deleted':
+                    stats['deleted'] = count
+            
+            stats['total'] = stats['pending'] + stats['approved'] + stats['deleted']
+            
+        except Exception as e:
+            print(f"❌ Error calculating stats: {str(e)}")
+    
+    # Cache for 5 minutes
+    cache.set(cache_key, stats, timeout=300)
+    
+    return stats
 
 def get_all_payment_issues(status=None):
     """Get all payment issues with optional status filter"""
@@ -1578,29 +1626,23 @@ def admin_payment_issues():
     
     # Get pagination parameters
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)  # 20 items per page
+    per_page = request.args.get('per_page', 20, type=int)
     
-    # Get pending issues with pagination
+    # Initialize variables
     pending_issues = []
     total_pending = 0
+    total_pages = 1
+    stats = {'total': 0, 'pending': 0, 'approved': 0, 'deleted': 0}
     
+    # Check if database is connected and collection exists
     if database_connected and payment_issues_collection is not None:
         try:
-            # Get total count first (fast)
+            # Get total count
             total_pending = payment_issues_collection.count_documents({'status': 'pending'})
             
-            # Get paginated results with projection (only needed fields)
+            # Get paginated results
             cursor = payment_issues_collection.find(
-                {'status': 'pending'},
-                {
-                    '_id': 1,
-                    'email': 1,
-                    'index_number': 1,
-                    'mpesa_receipt': 1,
-                    'screenshot': 1,
-                    'created_at': 1,
-                    'status': 1
-                }
+                {'status': 'pending'}
             ).sort('created_at', -1).skip((page - 1) * per_page).limit(per_page)
             
             pending_issues = list(cursor)
@@ -1609,15 +1651,35 @@ def admin_payment_issues():
             for issue in pending_issues:
                 if '_id' in issue and isinstance(issue['_id'], ObjectId):
                     issue['_id'] = str(issue['_id'])
-                    
+            
+            # Calculate statistics
+            stats['total'] = payment_issues_collection.count_documents({})
+            stats['pending'] = total_pending
+            stats['approved'] = payment_issues_collection.count_documents({'status': 'approved'})
+            stats['deleted'] = payment_issues_collection.count_documents({'status': 'deleted'})
+            
         except Exception as e:
             print(f"❌ Error loading payment issues: {str(e)}")
-    
-    # Get statistics (cached for 5 minutes)
-    stats = get_cached_payment_stats()
+            flash(f"Error loading payment issues: {str(e)}", "error")
+            # Show sample data for debugging
+            pending_issues = get_sample_payment_issues()
+            stats = {'total': 1, 'pending': 1, 'approved': 0, 'deleted': 0}
+            total_pending = 1
+    else:
+        # If database not connected, show sample data for testing
+        print("⚠️ Database not connected or payment_issues_collection is None")
+        flash("Database connection issue. Using sample data for testing. Please check your MongoDB connection.", "warning")
+        
+        # Sample data for testing when database is not available
+        pending_issues = get_sample_payment_issues()
+        stats = {'total': 1, 'pending': 1, 'approved': 0, 'deleted': 0}
+        total_pending = 1
     
     # Calculate pagination
-    total_pages = (total_pending + per_page - 1) // per_page if total_pending > 0 else 1
+    if total_pending > 0:
+        total_pages = (total_pending + per_page - 1) // per_page
+    else:
+        total_pages = 1
     
     return render_template('admin_payment_issues.html', 
                          issues=pending_issues,
@@ -1627,52 +1689,28 @@ def admin_payment_issues():
                          total_pages=total_pages,
                          total_pending=total_pending)
 
-def get_cached_payment_stats():
-    """Get cached payment statistics"""
-    cache_key = 'payment_stats'
-    cached_stats = cache.get(cache_key)
-    
-    if cached_stats:
-        return cached_stats
-    
-    stats = {
-        'total': 0,
-        'pending': 0,
-        'approved': 0,
-        'deleted': 0
-    }
-    
-    if database_connected and payment_issues_collection is not None:
-        try:
-            # Use aggregation for faster stats
-            pipeline = [
-                {'$group': {
-                    '_id': '$status',
-                    'count': {'$sum': 1}
-                }}
-            ]
-            
-            results = list(payment_issues_collection.aggregate(pipeline))
-            
-            for result in results:
-                status = result['_id']
-                count = result['count']
-                if status == 'pending':
-                    stats['pending'] = count
-                elif status == 'approved':
-                    stats['approved'] = count
-                elif status == 'deleted':
-                    stats['deleted'] = count
-            
-            stats['total'] = stats['pending'] + stats['approved'] + stats['deleted']
-            
-        except Exception as e:
-            print(f"❌ Error calculating stats: {str(e)}")
-    
-    # Cache for 5 minutes
-    cache.set(cache_key, stats, timeout=300)
-    
-    return stats
+def get_sample_payment_issues():
+    """Return sample payment issues for testing when database is not connected"""
+    return [
+        {
+            '_id': 'sample1',
+            'email': 'test@example.com',
+            'index_number': '12345678901/2024',
+            'mpesa_receipt': 'SAMPLE12345',
+            'screenshot': None,
+            'created_at': datetime.now(),
+            'status': 'pending'
+        },
+        {
+            '_id': 'sample2',
+            'email': 'student@example.com',
+            'index_number': '98765432109/2024',
+            'mpesa_receipt': 'SAMPLE67890',
+            'screenshot': None,
+            'created_at': datetime.now(),
+            'status': 'pending'
+        }
+    ]
 @app.route('/api/manual-activation-advanced', methods=['POST'])
 def api_manual_activation_advanced():
     """Advanced manual activation API - deletes old payment and creates activation"""
@@ -1871,7 +1909,14 @@ def check_and_resolve_issue(issue_id):
         if not database_connected or payment_issues_collection is None:
             return jsonify({'success': False, 'error': 'Database not connected'})
         
-        issue = payment_issues_collection.find_one({'_id': ObjectId(issue_id), 'status': 'pending'})
+        # Convert string ID to ObjectId
+        try:
+            from bson import ObjectId
+            obj_id = ObjectId(issue_id)
+        except:
+            return jsonify({'success': False, 'error': 'Invalid issue ID format'})
+        
+        issue = payment_issues_collection.find_one({'_id': obj_id, 'status': 'pending'})
         
         if not issue:
             return jsonify({'success': False, 'error': 'Issue not found or already processed'})
@@ -1910,7 +1955,7 @@ def check_and_resolve_issue(issue_id):
         if payment_found and courses_exist:
             # Resolve the issue
             payment_issues_collection.update_one(
-                {'_id': ObjectId(issue_id)},
+                {'_id': obj_id},
                 {'$set': {
                     'status': 'resolved',
                     'resolved_at': datetime.now(),
@@ -1940,7 +1985,11 @@ def check_and_resolve_issue(issue_id):
             
     except Exception as e:
         print(f"❌ Error checking issue: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
+
+
 
 
 @app.route('/admin/batch-resolve-issues', methods=['POST'])
@@ -2039,7 +2088,6 @@ def batch_resolve_existing_issues():
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
 
-
 def send_issue_resolution_email(email, index_number, mpesa_receipt, paid_levels):
     """Send email notification for resolved payment issue"""
     try:
@@ -2115,20 +2163,28 @@ def send_issue_resolution_email(email, index_number, mpesa_receipt, paid_levels)
 def process_payment_issue(issue_id):
     """Process a payment issue (approve or delete)"""
     if not session.get('admin_logged_in'):
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
     
     action = request.form.get('action')
     admin_username = session.get('admin_username', 'admin')
     
+    try:
+        from bson import ObjectId
+        obj_id = ObjectId(issue_id)
+    except:
+        flash("Invalid issue ID", "error")
+        return redirect(url_for('admin_payment_issues'))
+    
     if action == 'approve':
-        success = approve_payment_issue(issue_id, admin_username)
+        success = approve_payment_issue(obj_id, admin_username)
         if success:
             flash("Payment issue approved and manual activation created", "success")
         else:
             flash("Failed to approve payment issue", "error")
     
     elif action == 'delete':
-        success = delete_payment_issue(issue_id, admin_username)
+        success = delete_payment_issue(obj_id, admin_username)
         if success:
             flash("Payment issue deleted", "success")
         else:
@@ -6536,41 +6592,74 @@ def get_user_existing_data(email, index_number):
 # --- Basket Database Functions ---
 def save_user_basket(email, index_number, basket_data):
     """Save user basket to database with enhanced validation"""
-    print(f"💾 ENHANCED: Saving basket for {index_number}")
+    print(f"💾 Saving basket for {index_number} with {len(basket_data)} items")
     
-    # Validate and process basket data first
-    processed_basket = validate_and_process_basket(basket_data, "save")
+    # Validate basket data
+    if not isinstance(basket_data, list):
+        print(f"⚠️ basket_data is not a list: {type(basket_data)}")
+        basket_data = []
+    
+    # Clean up basket items - ensure they're serializable
+    clean_basket = []
+    for item in basket_data:
+        if isinstance(item, dict):
+            # Convert any non-serializable objects
+            clean_item = {}
+            for key, value in item.items():
+                if isinstance(value, ObjectId):
+                    clean_item[key] = str(value)
+                elif isinstance(value, datetime):
+                    clean_item[key] = value.isoformat()
+                else:
+                    clean_item[key] = value
+            clean_basket.append(clean_item)
+        else:
+            print(f"⚠️ Skipping non-dict item: {type(item)}")
     
     if not database_connected:
-        session['course_basket'] = processed_basket
-        print(f"💾 Basket saved to session: {len(processed_basket)} items")
+        session['course_basket'] = clean_basket
+        print(f"💾 Basket saved to session: {len(clean_basket)} items")
         return True
-        
+    
     basket_record = {
         'email': email,
         'index_number': index_number,
-        'basket': processed_basket,
-        'created_at': datetime.now(),
+        'basket': clean_basket,
         'updated_at': datetime.now(),
         'is_active': True
     }
     
     try:
-        result = user_baskets_collection.update_one(
-            {'index_number': index_number},
-            {'$set': basket_record},
-            upsert=True
-        )
-        print(f"✅ Basket saved to database for {index_number} with {len(processed_basket)} courses")
+        # Check if record exists
+        existing = user_baskets_collection.find_one({'index_number': index_number})
         
-        # Also update session for consistency
-        session['course_basket'] = processed_basket
+        if existing:
+            # Update existing record
+            result = user_baskets_collection.update_one(
+                {'index_number': index_number},
+                {'$set': {
+                    'basket': clean_basket,
+                    'updated_at': datetime.now(),
+                    'is_active': True
+                }}
+            )
+            print(f"✅ Updated basket in database for {index_number}")
+        else:
+            # Create new record
+            basket_record['created_at'] = datetime.now()
+            result = user_baskets_collection.insert_one(basket_record)
+            print(f"✅ Created new basket in database for {index_number}")
+        
+        # Also update session
+        session['course_basket'] = clean_basket
+        session.modified = True
+        
         return True
         
     except Exception as e:
         print(f"❌ Error saving user basket: {str(e)}")
         # Fallback to session
-        session['course_basket'] = processed_basket
+        session['course_basket'] = clean_basket
         return False
 def get_user_basket_by_index(index_number):
     """Get user basket from database by index number with enhanced error handling"""
@@ -8821,37 +8910,69 @@ def show_verified_level_results(level):
 # --- Course Basket Routes ---
 @app.route('/add-to-basket', methods=['POST'])
 def add_to_basket():
+    """Add course to basket - FIXED VERSION for all categories"""
     try:
         course_data = request.get_json()
-        print(f"📥 Adding course to basket: {course_data.get('programme_name', 'Unknown Course')}")
+        print(f"📥 Received course data: {course_data.get('programme_name', 'Unknown')}")
         
-        # Get current flow/level
-        current_level = session.get('current_level', session.get('current_flow', 'degree'))
-        print(f"🔗 Stored current level: {current_level}")
+        # Get user identification
+        email = session.get('email')
+        index_number = session.get('index_number')
         
-        # Initialize course_basket as a list if it doesn't exist or is not a list
+        # For verified users (via "Already Made Payment" button)
+        if not index_number:
+            index_number = session.get('verified_index')
+            if index_number:
+                email = f"verified_{index_number}@temp.com"
+                print(f"🔑 Using verified user: {index_number}")
+        
+        # Get current level from multiple possible sources
+        current_level = session.get('current_level') or session.get('current_flow')
+        
+        # Also check if course data has level
+        if not current_level and course_data.get('level'):
+            current_level = course_data.get('level')
+        
+        # Last resort - try to infer from session
+        if not current_level:
+            for level in ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']:
+                if session.get(f'paid_{level}') or session.get(f'{level}_data_submitted'):
+                    current_level = level
+                    break
+        
+        print(f"📂 Current level: {current_level}")
+        print(f"👤 User: {email}, Index: {index_number}")
+        
+        # Initialize basket if needed
         if 'course_basket' not in session:
             session['course_basket'] = []
-            print("🆕 Initialized new course basket")
+            print("🆕 Created new basket in session")
         
         basket = session['course_basket']
         
         # Ensure basket is a list
         if not isinstance(basket, list):
-            print(f"⚠️ Basket was not a list, converting: {type(basket)}")
+            print(f"⚠️ Basket was {type(basket)}, converting to list")
             if isinstance(basket, dict):
-                basket = [basket]
+                basket = [basket] if basket else []
             else:
                 basket = []
             session['course_basket'] = basket
         
+        # Get course code for duplicate checking
         course_code = course_data.get('programme_code') or course_data.get('course_code')
+        if not course_code:
+            print(f"⚠️ No course code found in data: {course_data.keys()}")
+            # Try to generate a unique ID from course name if no code
+            course_code = str(hash(course_data.get('programme_name', '')))
         
-        # Check for duplicates by programme_code
-        existing_course = next((item for item in basket if (
-            item.get('programme_code') == course_code or 
-            item.get('course_code') == course_code
-        )), None)
+        # Check for duplicates
+        existing_course = None
+        for item in basket:
+            item_code = item.get('programme_code') or item.get('course_code')
+            if item_code and item_code == course_code:
+                existing_course = item
+                break
         
         if existing_course:
             print(f"⚠️ Course already in basket: {course_code}")
@@ -8861,29 +8982,39 @@ def add_to_basket():
                 'basket_count': len(basket)
             })
         
-        # Add basket_id and timestamp
-        course_data['basket_id'] = str(ObjectId())
-        course_data['added_at'] = datetime.now().isoformat()
-        course_data['level'] = current_level
+        # Prepare course data for storage
+        basket_item = {
+            'basket_id': str(ObjectId()),
+            'added_at': datetime.now().isoformat(),
+            'level': current_level,
+            'programme_name': course_data.get('programme_name') or course_data.get('course_name', 'Unknown Course'),
+            'programme_code': course_code,
+            'institution_name': course_data.get('institution_name', 'Not Specified'),
+            'cut_off_points': course_data.get('cut_off_points'),
+            'minimum_grade': course_data.get('minimum_grade'),
+            'minimum_subject_requirements': course_data.get('minimum_subject_requirements', {}),
+            'duration': course_data.get('duration'),
+            'cluster': course_data.get('cluster'),
+            'collection': course_data.get('collection')
+        }
         
-        # Add course to basket
-        basket.append(course_data)
+        # Add to basket
+        basket.append(basket_item)
         session['course_basket'] = basket
         session.modified = True
         
-        print(f"✅ Added course to basket. Total items: {len(basket)}")
-        print(f"📊 Basket contents: {[item.get('programme_name', 'Unknown') for item in basket]}")
+        print(f"✅ Added course to basket. Total: {len(basket)}")
         
-        # Save to database if user is verified
-        email = session.get('email')
-        index_number = session.get('index_number')
-        if email and index_number:
-            save_user_basket(email, index_number, basket)
+        # Save to database if user is identified
+        if index_number:
+            saved = save_user_basket(email, index_number, basket)
+            print(f"💾 Database save {'successful' if saved else 'failed'}")
         
         return jsonify({
             'success': True,
             'basket_count': len(basket),
-            'message': 'Course added to basket successfully'
+            'message': 'Course added to basket successfully',
+            'basket_id': basket_item['basket_id']
         })
         
     except Exception as e:
