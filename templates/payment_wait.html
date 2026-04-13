@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Processing Payment | KUCCPS Courses Checker</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7fa;
+            background: linear-gradient(145deg, #f0f4fa 0%, #e9eef4 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -17,279 +17,394 @@
         }
         .card {
             background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.05);
             padding: 40px 32px;
-            max-width: 440px;
+            max-width: 500px;
             width: 100%;
             text-align: center;
+            transition: transform 0.2s ease;
         }
         .spinner {
-            width: 56px; height: 56px;
-            border: 5px solid #e8f0fe;
-            border-top-color: #4285f4;
+            width: 64px;
+            height: 64px;
+            border: 5px solid #e9f0fe;
+            border-top-color: #1a73e8;
+            border-right-color: #34a853;
             border-radius: 50%;
-            animation: spin 0.9s linear infinite;
+            animation: spin 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
             margin: 0 auto 24px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        h2 { font-size: 22px; color: #1a1a2e; margin-bottom: 8px; font-weight: 600; }
-        .subtitle { color: #666; font-size: 14px; margin-bottom: 28px; }
+        h2 { font-size: 26px; color: #0f172a; margin-bottom: 8px; font-weight: 700; letter-spacing: -0.2px; }
+        .subtitle { color: #5b6e8c; font-size: 14px; margin-bottom: 20px; }
         #status-msg {
             font-size: 15px;
-            color: #333;
+            font-weight: 500;
+            color: #1e293b;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 40px;
+            display: inline-block;
             margin-bottom: 20px;
-            min-height: 24px;
-            transition: all 0.3s;
+            min-height: 48px;
+            transition: all 0.2s;
         }
         .progress-track {
-            background: #e8f0fe;
-            border-radius: 999px;
-            height: 8px;
+            background: #e2e8f0;
+            border-radius: 40px;
+            height: 10px;
             overflow: hidden;
             margin-bottom: 12px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
         }
         #progress-bar {
-            background: linear-gradient(90deg, #4285f4, #34a853);
+            background: linear-gradient(90deg, #1a73e8, #34a853, #f9ab00);
             height: 100%;
-            width: 5%;
-            border-radius: 999px;
-            transition: width 0.6s ease;
+            width: 4%;
+            border-radius: 40px;
+            transition: width 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
-        .timer-text { font-size: 13px; color: #999; margin-bottom: 28px; }
+        .timer-text { font-size: 12px; color: #94a3b8; margin-bottom: 24px; font-family: monospace; }
         .info-box {
-            background: #f8f9ff;
-            border: 1px solid #e0e7ff;
-            border-radius: 10px;
-            padding: 16px;
+            background: #ffffff;
+            border: 1px solid #e2edff;
+            border-radius: 24px;
+            padding: 18px 20px;
             text-align: left;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
             font-size: 14px;
         }
-        .info-label { color: #888; }
-        .info-value { color: #333; font-weight: 500; }
-        .steps { list-style: none; text-align: left; margin-bottom: 24px; }
+        .info-label { color: #5b6e8c; font-weight: 500; }
+        .info-value { color: #0f172a; font-weight: 600; word-break: break-word; }
+        .steps { list-style: none; text-align: left; margin-bottom: 28px; background: #f9fbfe; padding: 12px 16px; border-radius: 28px; }
         .steps li {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 10px;
+            gap: 12px;
+            font-size: 13.5px;
+            color: #1f2a44;
+            margin-bottom: 12px;
         }
         .step-num {
-            min-width: 22px; height: 22px;
-            background: #4285f4; color: #fff;
-            border-radius: 50%;
+            min-width: 24px; height: 24px;
+            background: #1a73e8; color: #fff;
+            border-radius: 30px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 700;
+            font-size: 12px; font-weight: 700;
             flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .btn {
             display: inline-block;
-            padding: 11px 28px;
-            border-radius: 8px;
+            padding: 10px 24px;
+            border-radius: 60px;
             font-size: 14px;
             font-weight: 600;
             text-decoration: none;
             border: none;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
+            background: #f1f5f9;
+            color: #1e293b;
         }
-        .btn-secondary { background: #f1f3f4; color: #444; }
-        .btn-secondary:hover { opacity: 0.8; }
+        .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
+        .btn-secondary:hover { background: #e6edf5; transform: scale(0.97); }
         .done-icon {
             display: none;
-            font-size: 48px;
+            font-size: 58px;
             margin-bottom: 16px;
+            background: #e6f7ec;
+            width: 90px;
+            height: 90px;
+            line-height: 90px;
+            border-radius: 60px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 8px 20px rgba(52,168,83,0.2);
         }
         .amount-badge {
             display: inline-block;
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 20px;
-            padding: 4px 14px;
-            font-size: 14px;
-            font-weight: 600;
+            background: #eaf9e7;
+            color: #1e7b3a;
+            border-radius: 100px;
+            padding: 6px 22px;
+            font-size: 20px;
+            font-weight: 800;
             margin-bottom: 20px;
+            font-family: monospace;
+            letter-spacing: 0.5px;
         }
         .error-box {
             display: none;
-            background: #fff3f3;
-            border: 1px solid #ffcdd2;
-            border-radius: 10px;
-            padding: 14px;
+            background: #fff4f0;
+            border-left: 5px solid #dc2626;
+            border-radius: 20px;
+            padding: 14px 18px;
             font-size: 13px;
-            color: #c62828;
-            margin-bottom: 16px;
+            color: #b91c1c;
+            margin-bottom: 20px;
             text-align: left;
+            font-weight: 500;
+        }
+        .text-muted { color: #5b6e8c; }
+        hr { margin: 10px 0; border: 0; border-top: 1px solid #ecf3fa; }
+        @media (max-width: 480px) {
+            .card { padding: 28px 20px; }
+            .info-box { padding: 14px; }
         }
     </style>
 </head>
 <body>
 <div class="card">
-    <div class="spinner" id="spinner"></div>
+    <div id="spinner-container">
+        <div class="spinner" id="spinner"></div>
+    </div>
     <div class="done-icon" id="done-icon">✅</div>
 
-    <h2>Processing Your Payment</h2>
-    <p class="subtitle">Please keep this page open</p>
+    <h2>Finalising Payment</h2>
+    <p class="subtitle">Stay on this page — we’ll redirect you automatically</p>
 
     <div class="amount-badge">KSh {{ amount }}</div>
 
-    <p id="status-msg">Waiting for M-Pesa confirmation on your phone…</p>
+    <p id="status-msg">⏳ Waiting for M-Pesa confirmation on your phone…</p>
 
     <div class="progress-track">
         <div id="progress-bar"></div>
     </div>
-    <p class="timer-text">Time elapsed: <span id="elapsed-timer">0s</span></p>
+    <p class="timer-text">⏱️ Elapsed time: <span id="elapsed-timer">0s</span></p>
 
     <div class="error-box" id="error-box"></div>
 
     <div class="info-box">
         <div class="info-row">
-            <span class="info-label">Course Level</span>
+            <span class="info-label">📘 Course Level</span>
             <span class="info-value">{{ flow | upper }}</span>
         </div>
         <div class="info-row">
-            <span class="info-label">Index Number</span>
+            <span class="info-label">🎓 Index Number</span>
             <span class="info-value">{{ index_number }}</span>
         </div>
         {% if transaction_ref and transaction_ref != 'manual' %}
         <div class="info-row">
-            <span class="info-label">Transaction Ref</span>
-           
+            <span class="info-label">🔁 Transaction Ref</span>
+            <span class="info-value">{{ transaction_ref[:12] }}{% if transaction_ref|length > 12 %}...{% endif %}</span>
         </div>
         {% endif %}
     </div>
 
     <ol class="steps">
-        <li>
-            <span class="step-num">1</span>
-            <span>Check your phone for the M-Pesa STK prompt</span>
-        </li>
-        <li>
-            <span class="step-num">2</span>
-            <span>Enter your 4-digit M-Pesa PIN to confirm</span>
-        </li>
-        <li>
-            <span class="step-num">3</span>
-            <span>This page redirects automatically — no refresh needed</span>
-        </li>
+        <li><span class="step-num">1</span>📱 Check your phone for the M-Pesa STK prompt</li>
+        <li><span class="step-num">2</span>🔐 Enter your 4-digit M-Pesa PIN to confirm</li>
+        <li><span class="step-num">3</span>✨ This page updates automatically — no refresh needed</li>
     </ol>
 
     <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Home</a>
 </div>
 
 <script>
-(function () {
-    var flow      = {{ flow | tojson }};
-    var startedAt = Date.now();
-    var checking  = false;
-    var pollTimer = null;
-    var errorShown = false;
+(function() {
+    // ---- Backend variables injected from Flask ----
+    var flow           = {{ flow | tojson }};
+    var startedAt      = Date.now();
+    var checking       = false;
+    var pollTimer      = null;
+    var errorShown     = false;
+    var redirectDone   = false;        // prevent double redirect
 
-    var statusEl   = document.getElementById('status-msg');
-    var timerEl    = document.getElementById('elapsed-timer');
-    var progressEl = document.getElementById('progress-bar');
-    var spinnerEl  = document.getElementById('spinner');
-    var doneEl     = document.getElementById('done-icon');
-    var errorEl    = document.getElementById('error-box');
+    // DOM elements
+    var statusEl       = document.getElementById('status-msg');
+    var timerEl        = document.getElementById('elapsed-timer');
+    var progressEl     = document.getElementById('progress-bar');
+    var spinnerEl      = document.getElementById('spinner');
+    var doneIcon       = document.getElementById('done-icon');
+    var errorBox       = document.getElementById('error-box');
+    var spinnerContainer = document.getElementById('spinner-container');
 
-    // Live elapsed counter — updates every second
-    setInterval(function () {
-        var s = Math.floor((Date.now() - startedAt) / 1000);
-        if (timerEl) timerEl.textContent = s + 's';
+    // Helper: format elapsed seconds & progress bar
+    function updateProgressAndTimer() {
+        var elapsedSec = Math.floor((Date.now() - startedAt) / 1000);
+        if (timerEl) timerEl.textContent = elapsedSec + 's';
+
+        // Smooth progress simulation (visual only, backend independent)
+        var pct = 5;
+        if (elapsedSec < 6) {
+            pct = 12 + elapsedSec * 8;   // 12% → 60% within 6 sec
+        } else if (elapsedSec < 12) {
+            pct = 60 + (elapsedSec - 6) * 5;   // 60% → 90% by 12 sec
+        } else if (elapsedSec < 25) {
+            pct = 90 + (elapsedSec - 12) * 0.6; // 90% → 97% slowly
+        } else {
+            pct = 97;
+        }
+        if (pct > 97) pct = 97;
+        if (progressEl) progressEl.style.width = pct + '%';
+    }
+
+    // Live timer and progress update every second
+    setInterval(function() {
+        if (!redirectDone && !errorShown) {
+            updateProgressAndTimer();
+        }
     }, 1000);
 
-    function setProgress(pct) {
-        if (progressEl) progressEl.style.width = Math.min(pct, 97) + '%';
-    }
-
-    function setStatus(msg) {
-        if (statusEl && msg) statusEl.textContent = msg;
-    }
-
-    function showDone() {
-        if (spinnerEl) spinnerEl.style.display = 'none';
-        if (doneEl)    doneEl.style.display = 'block';
-        setProgress(100);
-    }
-
-    function showError(msg) {
-        if (errorEl) {
-            errorEl.textContent = msg;
-            errorEl.style.display = 'block';
+    function setStatusMessage(msg, isError = false) {
+        if (statusEl) {
+            statusEl.innerHTML = msg;
+            if (!isError) statusEl.style.background = "#f0f9ff";
+            else statusEl.style.background = "#fff0f0";
         }
-        if (spinnerEl) spinnerEl.style.display = 'none';
-        errorShown = true;
     }
 
-    function poll() {
-        if (checking || errorShown) return;
+    function showSuccessReady() {
+        if (redirectDone) return;
+        redirectDone = true;
+        if (pollTimer) clearInterval(pollTimer);
+        if (spinnerEl) spinnerEl.style.display = 'none';
+        if (doneIcon) doneIcon.style.display = 'block';
+        if (progressEl) progressEl.style.width = '100%';
+        setStatusMessage('✅ Payment confirmed! Redirecting to your courses...');
+        // optional: hide spinner container extra style
+        if (spinnerContainer) spinnerContainer.style.opacity = '0.5';
+    }
+
+    function showErrorMessage(msg) {
+        if (errorShown) return;
+        errorShown = true;
+        if (pollTimer) clearInterval(pollTimer);
+        if (spinnerEl) spinnerEl.style.display = 'none';
+        if (errorBox) {
+            errorBox.textContent = msg || '❌ Payment verification failed. Please contact support: courseschecker@gmail.com';
+            errorBox.style.display = 'block';
+        }
+        setStatusMessage('⚠️ Verification failed. See details below.', true);
+        if (progressEl) progressEl.style.width = '100%';
+        progressEl.style.background = '#e9ecef';
+    }
+
+    // ---------- POLLING LOGIC (IMPROVED) ----------
+    // This calls the backend endpoint: /check-courses-ready/<flow>
+    // Expected JSON: { ready: bool, redirect_url: string, error?: bool, message?: string, status?: string }
+    function pollPaymentStatus() {
+        if (checking || errorShown || redirectDone) return;
         checking = true;
 
-        fetch('/check-courses-ready/' + flow, {
+        fetch('/check-courses-ready/' + encodeURIComponent(flow), {
+            method: 'GET',
             credentials: 'same-origin',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            headers: { 
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
         })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
+        .then(function(response) {
+            if (!response.ok) {
+                // Server error but continue polling after short delay
                 checking = false;
+                return null;
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            checking = false;
+            if (!data) {
+                // network glitch but still retry
+                return;
+            }
 
-                if (data.ready) {
-                    clearInterval(pollTimer);
-                    showDone();
-                    setStatus('Courses ready! Redirecting…');
-                    // Small delay so user sees the checkmark before redirect
-                    setTimeout(function () {
+            // ---- HANDLE READY STATE (Payment confirmed + grades OR grades missing but payment ok) ----
+            if (data.ready === true) {
+                // Important: Use redirect_url from backend (already points to /results/<flow>)
+                // The backend ensures if no grades, redirect_url sends user to grade entry without charge.
+                if (data.redirect_url) {
+                    showSuccessReady();
+                    // small delay to let user see success animation
+                    setTimeout(function() {
+                        if (!redirectDone) return;
                         window.location.href = data.redirect_url;
-                    }, 400);
-                    return;
+                    }, 700);
+                } else {
+                    // fallback (should not happen)
+                    window.location.href = '/results/' + flow + '?ref=payment_ok';
                 }
+                return;
+            }
 
-                if (data.error) {
-                    clearInterval(pollTimer);
-                    var errMsg = data.message || 'An error occurred. Please contact support at courseschecker@gmail.com.';
-                    showError(errMsg);
-                    setStatus('Processing failed.');
-                    return;
+            // ---- ERROR from backend (payment failed, invalid, or missing) ----
+            if (data.error === true) {
+                var errMsg = data.message || 'Payment verification failed. Please retry or contact support.';
+                showErrorMessage(errMsg);
+                return;
+            }
+
+            // ---- Special status: timeout / pending but still waiting ----
+            if (data.status === 'timeout') {
+                setStatusMessage('⏳ Still waiting for M-Pesa confirmation. Check your phone & try again in a moment.', false);
+                // keep polling
+                return;
+            }
+
+            // ---- Normal pending: update message if backend provides custom message ----
+            if (data.message && typeof data.message === 'string') {
+                setStatusMessage(data.message);
+            } else {
+                // fallback dynamic message based on elapsed
+                var secs = Math.floor((Date.now() - startedAt) / 1000);
+                if (secs > 18) {
+                    setStatusMessage("🔄 Still processing... Ensure you entered M-Pesa PIN. It may take up to 30 seconds.");
+                } else {
+                    setStatusMessage("📲 Tap 'OK' on your M-Pesa prompt to complete payment.");
                 }
+            }
 
-                // Handle timeout state — suggest checking M-Pesa
-                if (data.status === 'timeout') {
-                    setStatus('Payment is taking longer than expected. Check your M-Pesa messages and try again.');
-                    return;
-                }
-
-                // Animate progress bar based on elapsed seconds
-                var elapsed = Math.floor((Date.now() - startedAt) / 1000);
-                var pct;
-                if      (elapsed < 5)  { pct = elapsed * 12; }         // 0→60% in 5s
-                else if (elapsed < 10) { pct = 60 + (elapsed-5)*4; }   // 60→80% in 5s
-                else if (elapsed < 20) { pct = 80 + (elapsed-10)*1.5; }// 80→95% in 10s
-                else                   { pct = 95; }                    // hold at 95%
-
-                setProgress(pct);
-
-                if (data.message) {
-                    setStatus(data.message);
-                }
-            })
-            .catch(function () {
-                checking = false;
-                // Network blip — keep polling silently, don't show error
-            });
+            // Update progress bar based on time (already done by setInterval)
+            updateProgressAndTimer();
+        })
+        .catch(function(err) {
+            checking = false;
+            // Do not show fatal error on single network hiccup
+            console.warn("Polling fetch error", err);
+            if (Date.now() - startedAt > 45000 && !errorShown) {
+                // after 45 secs with persistent network failure suggest refresh
+                setStatusMessage("⚠️ Network issue – check connection. Page will retry automatically.", false);
+            }
+        });
     }
 
-    // Poll immediately, then every 800ms
-    poll();
-    pollTimer = setInterval(poll, 800);
+    // start polling with immediate check
+    pollPaymentStatus();
+    pollTimer = setInterval(pollPaymentStatus, 1800); // poll every 1.8 sec (balanced)
+
+    // Optional safety timeout: if after 70 seconds payment still pending but no error, suggest manual check
+    setTimeout(function() {
+        if (!redirectDone && !errorShown) {
+            var elapsed = (Date.now() - startedAt) / 1000;
+            if (elapsed > 70) {
+                var manualMsg = "⌛ Payment is taking longer than usual. Please check your M-Pesa messages. If deducted, contact courseschecker@gmail.com with your index number.";
+                if (errorBox && errorBox.style.display !== 'block') {
+                    errorBox.textContent = manualMsg;
+                    errorBox.style.display = 'block';
+                    errorBox.style.background = "#fff8e7";
+                    errorBox.style.borderLeftColor = "#f97316";
+                }
+                setStatusMessage("⏰ Still waiting – verify M-Pesa transaction", false);
+            }
+        }
+    }, 68000);
 })();
 </script>
+
+<!-- 
+    Additional frontend enhancement: if backend returns no_grades scenario, this page does not directly
+    handle it, but the polling endpoint /check-courses-ready/<flow> must return ready: true 
+    and redirect_url that points to /results/<flow> which internally handles missing grades.
+    That's exactly what the updated backend does. This page is fully compatible.
+-->
 </body>
 </html>

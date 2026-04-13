@@ -38,8 +38,10 @@
                 </h6>
                 <p class="mb-2 fs-6">You have access to the following course categories:</p>
                 <div class="d-flex flex-wrap gap-1 mt-2">
-                    {% for level, data in user_courses.items() %}
-                    <span class="badge bg-success fs-6">{{ level.upper() }} ({{ data.count }})</span>
+                    {% for level, info in user_courses.items() %}
+                    <span class="badge {% if info.has_grades %}bg-success{% else %}bg-warning text-dark{% endif %} fs-6">
+                        {{ level.upper() }} ({{ info.count }})
+                    </span>
                     {% endfor %}
                 </div>
             </div>
@@ -54,18 +56,33 @@
                 <div class="card-body p-3 p-md-4">
                     {% if user_courses %}
                     <div class="row row-cols-1 row-cols-md-2 g-3">
-                        {% for level, data in user_courses.items() %}
+                        {% for level, info in user_courses.items() %}
                         <div class="col">
-                            <div class="card h-100 border-success">
+                            <div class="card h-100 {% if info.has_grades %}border-success{% else %}border-warning{% endif %}">
                                 <div class="card-body text-center p-3">
                                     <h5 class="card-title text-capitalize fs-5 fs-md-4 mb-2">{{ level }} Courses</h5>
-                                    <p class="card-text mb-3">
-                                        <span class="badge bg-primary fs-6">{{ data.count }} courses</span>
-                                    </p>
-                                    <a href="{{ url_for('show_verified_level_results', level=level, index=index_number, receipt=receipt) }}"
-                                        class="btn btn-success w-100">
-                                        <i class="fa fa-eye me-1"></i>View {{ level|title }} Courses
-                                    </a>
+                                    
+                                    {% if info.has_grades %}
+                                        <p class="card-text mb-3">
+                                            <span class="badge bg-primary fs-6">{{ info.count }} courses match your grades</span>
+                                        </p>
+                                        <a href="{{ url_for('show_verified_level_results', level=level, index=index_number, receipt=receipt) }}"
+                                            class="btn btn-success w-100">
+                                            <i class="fa fa-eye me-1"></i>View {{ level|title }} Courses
+                                        </a>
+                                    {% else %}
+                                        <p class="card-text mb-3">
+                                            <span class="badge bg-warning text-dark fs-6">⚠️ Grades Needed</span>
+                                        </p>
+                                        <p class="text-muted small mb-3">
+                                            Your payment was confirmed but we need your grades to show matching courses.<br>
+                                            <strong>You will NOT be charged again.</strong>
+                                        </p>
+                                        <a href="{{ url_for('show_course_level', level=level) }}?index={{ index_number }}&receipt={{ receipt }}&verified=1"
+                                            class="btn btn-warning w-100">
+                                            <i class="fa fa-edit me-1"></i>Enter {{ level|title }} Grades
+                                        </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -103,8 +120,11 @@
                 </h6>
                 <p class="mb-1 fs-6">You have access to the following course categories:</p>
                 <div class="d-flex flex-wrap gap-2 mt-2">
-                    {% for level, data in user_courses.items() %}
-                    <span class="badge bg-success">{{ level.upper() }} ({{ data.count }} courses)</span>
+                    {% for level, info in user_courses.items() %}
+                    <span class="badge {% if info.has_grades %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                        {{ level.upper() }} ({{ info.count }} courses)
+                        {% if not info.has_grades %}⚠️ grades pending{% endif %}
+                    </span>
                     {% endfor %}
                 </div>
             </div>
@@ -197,8 +217,35 @@
         
         // Log dashboard load for debugging
         console.log('✅ Verified dashboard loaded successfully');
-        console.log(`📊 Available levels: {{ user_courses.keys()|list|tojson }}`);
-        console.log(`📚 Total courses: {{ total_courses }}`);
+        console.log('📊 Available levels:', Object.keys({{ user_courses|tojson }}));
+        console.log('📚 Total courses: {{ total_courses }}');
+        
+        // Check for any levels without grades and show helpful message
+        const levelsWithoutGrades = [];
+        {% for level, info in user_courses.items() %}
+            {% if not info.has_grades %}
+                levelsWithoutGrades.push('{{ level }}');
+            {% endif %}
+        {% endfor %}
+        
+        if (levelsWithoutGrades.length > 0) {
+            console.log('⚠️ Levels requiring grade entry:', levelsWithoutGrades);
+            // Optional: Show a toast notification for mobile users
+            if (window.innerWidth < 768) {
+                const toastMsg = document.createElement('div');
+                toastMsg.className = 'alert alert-warning alert-dismissible fade show position-fixed bottom-0 start-0 m-3';
+                toastMsg.style.zIndex = '9999';
+                toastMsg.style.maxWidth = '90%';
+                toastMsg.innerHTML = `
+                    <strong><i class="fa fa-info-circle me-1"></i>Action Needed!</strong><br>
+                    You need to enter grades for: ${levelsWithoutGrades.join(', ')}<br>
+                    <small>You won't be charged again.</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(toastMsg);
+                setTimeout(() => toastMsg.remove(), 5000);
+            }
+        }
     });
 </script>
 
@@ -268,6 +315,15 @@
         box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     }
     
+    .card.border-warning {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card.border-warning:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(255,193,7,0.2);
+    }
+    
     /* Button active state for touch devices */
     .btn-active {
         transform: scale(0.98);
@@ -316,7 +372,7 @@
             color: #000 !important;
         }
         
-        .btn-success {
+        .btn-success, .btn-warning {
             border: 1px solid #000 !important;
             background-color: #f8f9fa !important;
             color: #000 !important;
@@ -372,6 +428,26 @@
         .bg-primary {
             background-color: #0d6efd !important;
         }
+        
+        .bg-warning {
+            background-color: #ffc107 !important;
+            color: #000 !important;
+        }
+    }
+    
+    /* Warning text styling */
+    .text-warning {
+        color: #ff6b00 !important;
+    }
+    
+    /* Small text improvements */
+    .small {
+        font-size: 0.85rem;
+    }
+    
+    /* Card body spacing */
+    .card-body p.text-muted {
+        line-height: 1.4;
     }
 </style>
 {% endblock %}

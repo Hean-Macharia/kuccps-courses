@@ -3019,6 +3019,68 @@
         // ============================================
         // VERIFY PAYMENT FORM
         // ============================================
+        // Helper function to show styled messages in the modal
+        function showMessage(msg, type) {
+            const colors = { 
+                info: '#17a2b8', 
+                success: '#28a745', 
+                error: '#dc3545' 
+            };
+            const icons = {
+                info: 'fa-info-circle',
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle'
+            };
+            
+            let el = document.getElementById('verify-message');
+            
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'verify-message';
+                const form = document.getElementById('verifyPaymentForm');
+                if (form && form.firstChild) {
+                    form.insertBefore(el, form.firstChild);
+                } else if (form) {
+                    form.appendChild(el);
+                }
+            }
+            
+            el.style.cssText = `
+                padding: 14px 18px; 
+                margin-bottom: 20px; 
+                border-radius: 12px;
+                background: ${colors[type] || colors.info}15;
+                border-left: 4px solid ${colors[type] || colors.info};
+                color: ${colors[type] || colors.info};
+                font-size: 14px; 
+                line-height: 1.5;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+            el.innerHTML = `<i class="fas ${icons[type] || 'fa-info-circle'}" style="font-size: 18px;"></i><span>${msg}</span>`;
+            el.style.display = 'flex';
+            
+            if (type === 'info') {
+                setTimeout(() => {
+                    if (el) {
+                        el.style.opacity = '0';
+                        setTimeout(() => {
+                            if (el) el.style.display = 'none';
+                        }, 300);
+                    }
+                }, 5000);
+            }
+        }
+
+        function clearVerifyMessage() {
+            const el = document.getElementById('verify-message');
+            if (el) {
+                el.style.display = 'none';
+            }
+        }
+        
         function initVerifyPaymentForm() {
             const verifyPaymentForm = document.getElementById('verifyPaymentForm');
             const verifyPaymentModal = document.getElementById('verifyPaymentModal');
@@ -3040,6 +3102,7 @@
                 loadingDiv.style.display = 'block';
                 submitBtn.disabled = true;
                 previewDiv.style.display = 'none';
+                clearVerifyMessage();
                 
                 // Validate inputs
                 if (!mpesaReceipt || !indexNumber) {
@@ -3078,7 +3141,24 @@
                     submitBtn.disabled = false;
                     
                     if (data.success) {
-                        handleVerificationSuccess(data, mpesaReceipt, indexNumber);
+                        sessionStorage.setItem('userVerified', 'true');
+                        sessionStorage.setItem('userIndex', indexNumber);
+                        sessionStorage.setItem('userReceipt', mpesaReceipt);
+                        
+                        // Check if payment verified but no grades saved
+                        if (data.no_grades) {
+                            // Show info message and redirect to grade entry page (no charge)
+                            showMessage(
+                                data.message || '✓ Payment verified! Please enter your grades to view your results. You will NOT be charged again.',
+                                'info'
+                            );
+                            setTimeout(() => {
+                                window.location.href = data.redirect_url;
+                            }, 2500);
+                        } else {
+                            // Grades exist - go to results
+                            window.location.href = data.redirect_url;
+                        }
                     } else {
                         showError(data.error || 'Verification failed. Please check your details and try again.');
                     }
@@ -3097,6 +3177,7 @@
                 document.getElementById('verifyLoading').style.display = 'none';
                 document.getElementById('verifyPreview').style.display = 'none';
                 document.getElementById('verifySubmitBtn').disabled = false;
+                clearVerifyMessage();
             });
             
             // Check for existing verification on page load

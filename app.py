@@ -749,6 +749,7 @@ def get_available_collections(db_instance, db_key):
             _collection_name_cache[db_key] = set()
     return _collection_name_cache[db_key]
  
+    return course
 def refresh_collection_cache():
     """Call this if you add new collections at runtime"""
     _collection_name_cache.clear()
@@ -796,11 +797,11 @@ course_processing_status = {}
 def background_course_processor():
     """
     Fast background processor.
-    - Marks status 'completed' RIGHT AFTER DB save (not after email)
-    - Sends email in a separate daemon thread so user is not blocked
+    - Marks status 'completed' RIGHT AFTER generation (no DB save of courses)
+    - Sends email in a separate daemon thread
     - Deduplicates jobs using the status map
     """
-    print("✅ Background course processor started (fast version)")
+    print("✅ Background course processor started (no-DB-save version)")
     while True:
         try:
             job = course_processing_queue.get(block=True)
@@ -821,7 +822,7 @@ def background_course_processor():
  
             cache_key = f"{email}_{index_number}_{flow}"
  
-            # Skip if already completed (duplicate job from queue)
+            # Skip if already completed
             existing = course_processing_status.get(cache_key, {})
             if isinstance(existing, dict) and existing.get('status') == 'completed':
                 print(f"✅ Already completed for {flow}: {email}")
@@ -844,8 +845,8 @@ def background_course_processor():
  
             # Fallback to job payload grades
             if not user_grades:
-                user_grades        = job.get('user_grades', {})
-                user_mean_grade    = job.get('user_mean_grade')
+                user_grades         = job.get('user_grades', {})
+                user_mean_grade     = job.get('user_mean_grade')
                 user_cluster_points = job.get('user_cluster_points', {})
  
             if not user_grades:
@@ -861,38 +862,22 @@ def background_course_processor():
             # ── Generate courses ──
             qualifying_courses = []
             try:
-                if flow == 'degree':
-                    qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points or {})
-                elif flow == 'diploma':
-                    qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
-                elif flow == 'certificate':
-                    qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
-                elif flow == 'artisan':
-                    qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
-                elif flow == 'kmtc':
-                    qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
-                elif flow == 'ttc':
-                    qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+                qualifying_courses = _generate_courses_for_flow(
+                    flow, user_grades, user_mean_grade, user_cluster_points
+                )
             except Exception as gen_err:
                 print(f"❌ Course generation error for {flow}: {gen_err}")
                 import traceback
                 traceback.print_exc()
  
-            # ── Save to DB ──
-            courses_to_save = qualifying_courses if qualifying_courses else []
-            try:
-                save_user_courses(email, index_number, flow, courses_to_save)
-            except Exception as save_err:
-                print(f"⚠️ Save error: {save_err}")
- 
             elapsed = time.time() - start_time
-            print(f"✅ {flow} completed in {elapsed:.2f}s — {len(qualifying_courses)} courses")
+            print(f"✅ {flow} generated {len(qualifying_courses)} courses in {elapsed:.2f}s — NOT saving to DB")
  
-            # ── CRITICAL: Mark completed IMMEDIATELY after save ──
-            # This is what allows check_courses_ready to detect completion
-            # The email is sent in a daemon thread and does NOT block the user
+            # ── Store courses ONLY in memory status map for retrieval ──
+            # (no DB write — show_results will regenerate on demand)
             course_processing_status[cache_key] = {
                 'status': 'completed',
+                'courses': qualifying_courses,          # kept in memory for the session
                 'courses_count': len(qualifying_courses),
                 'completed_at': datetime.now(),
                 'elapsed_seconds': elapsed
@@ -912,13 +897,31 @@ def background_course_processor():
             print(f"❌ Background processor error: {e}")
             import traceback
             traceback.print_exc()
- 
- 
 # Start background processor thread
 background_thread = threading.Thread(target=background_course_processor, daemon=True)
 background_thread.start()
 print("✅ Background course processor started")
-
+def _stringify_course_codes(course: dict) -> dict:
+    """Cast programme_code / course_code to str in-place, return course."""
+    for field in ('programme_code', 'course_code'):
+        if field in course and course[field] is not None:
+            course[field] = str(course[field])
+def _generate_courses_for_flow(flow, user_grades, user_mean_grade, user_cluster_points):
+    """Run the correct qualification function for a given flow."""
+    if flow == 'degree':
+        return get_qualifying_courses(user_grades, user_cluster_points or {})
+    elif flow == 'diploma':
+        return get_qualifying_diploma_courses(user_grades, user_mean_grade)
+    elif flow == 'certificate':
+        return get_qualifying_certificate_courses(user_grades, user_mean_grade)
+    elif flow == 'artisan':
+        return get_qualifying_artisan_courses(user_grades, user_mean_grade)
+    elif flow == 'kmtc':
+        return get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+    elif flow == 'ttc':
+        return get_qualifying_ttc(user_grades, user_mean_grade)
+    return []
+ 
 def process_courses_after_payment(email, index_number, flow, mpesa_receipt=None):
     """
     Queue course processing after payment confirmation.
@@ -2292,7 +2295,7 @@ def get_user_courses_data(email, index_number, level):
     return courses_data
 
 def get_qualifying_ttc(user_grades, user_mean_grade):
-    """FAST version with projection"""
+    """FAST version – codes always strings."""
     if not database_connected:
         return []
     qualifying_courses = []
@@ -2308,11 +2311,13 @@ def get_qualifying_ttc(user_grades, user_mean_grade):
                     c['collection'] = collection_name
                     if '_id' in c:
                         c['_id'] = str(c['_id'])
+                    _stringify_course_codes(c)
                     qualifying_courses.append(c)
     except Exception as e:
         print(f"⚠️ TTC error: {e}")
     print(f"📚 TTC: found {len(qualifying_courses)} courses")
     return qualifying_courses
+ 
 # --- Session Management Functions ---
 def init_session():
     """Initialize or reset session with default values"""
@@ -4847,7 +4852,7 @@ def _query_degree_cluster(args):
         return []
  
 def get_qualifying_courses(user_grades, user_cluster_points):
-    """FAST parallel degree version"""
+    """FAST parallel degree version – codes always strings."""
     if not database_connected:
         return []
     available = get_available_collections(db, 'degree')
@@ -4860,12 +4865,16 @@ def get_qualifying_courses(user_grades, user_cluster_points):
         futures = {executor.submit(_query_degree_cluster, args): args[0] for args in args_list}
         for future in as_completed(futures):
             try:
-                qualifying_courses.extend(future.result())
+                results = future.result()
+                for course in results:
+                    _stringify_course_codes(course)
+                qualifying_courses.extend(results)
             except Exception as e:
                 print(f"⚠️ Degree future error: {e}")
  
     print(f"📚 Degree: found {len(qualifying_courses)} courses (parallel)")
     return qualifying_courses
+ 
  
 
 def _query_diploma_collection(args):
@@ -4887,7 +4896,7 @@ def _query_diploma_collection(args):
         return []
  
 def get_qualifying_diploma_courses(user_grades, user_mean_grade):
-    """FAST parallel version - replaces the slow sequential loop"""
+    """FAST parallel version – codes always strings."""
     if not database_connected:
         return []
     available = get_available_collections(db_diploma, 'diploma')
@@ -4900,17 +4909,20 @@ def get_qualifying_diploma_courses(user_grades, user_mean_grade):
         futures = {executor.submit(_query_diploma_collection, args): args[0] for args in args_list}
         for future in as_completed(futures):
             try:
-                qualifying_courses.extend(future.result())
+                results = future.result()
+                for course in results:
+                    _stringify_course_codes(course)
+                qualifying_courses.extend(results)
             except Exception as e:
                 print(f"⚠️ Diploma future error: {e}")
  
     print(f"📚 Diploma: found {len(qualifying_courses)} courses (parallel)")
     return qualifying_courses
  
+ 
 
 def get_qualifying_kmtc_courses(user_grades, user_mean_grade):
-    """FAST version - KMTC only has one collection so no parallel needed,
-       but we add projection for speed"""
+    """FAST version – codes always strings."""
     if not database_connected:
         return []
     qualifying_courses = []
@@ -4924,12 +4936,12 @@ def get_qualifying_kmtc_courses(user_grades, user_mean_grade):
                 c = dict(course)
                 if '_id' in c:
                     c['_id'] = str(c['_id'])
+                _stringify_course_codes(c)
                 qualifying_courses.append(c)
     except Exception as e:
         print(f"⚠️ KMTC error: {e}")
     print(f"📚 KMTC: found {len(qualifying_courses)} courses")
     return qualifying_courses
- 
 
 def _query_certificate_collection(args):
     collection_name, db_certificate, user_grades, user_mean_grade = args
@@ -4949,7 +4961,7 @@ def _query_certificate_collection(args):
         return []
  
 def get_qualifying_certificate_courses(user_grades, user_mean_grade):
-    """FAST parallel version"""
+    """FAST parallel version – codes always strings."""
     if not database_connected:
         return []
     available = get_available_collections(db_certificate, 'certificate')
@@ -4962,12 +4974,16 @@ def get_qualifying_certificate_courses(user_grades, user_mean_grade):
         futures = {executor.submit(_query_certificate_collection, args): args[0] for args in args_list}
         for future in as_completed(futures):
             try:
-                qualifying_courses.extend(future.result())
+                results = future.result()
+                for course in results:
+                    _stringify_course_codes(course)
+                qualifying_courses.extend(results)
             except Exception as e:
                 print(f"⚠️ Certificate future error: {e}")
  
     print(f"📚 Certificate: found {len(qualifying_courses)} courses (parallel)")
     return qualifying_courses
+ 
  
 
 def _query_artisan_collection(args):
@@ -4988,7 +5004,7 @@ def _query_artisan_collection(args):
         return []
  
 def get_qualifying_artisan_courses(user_grades, user_mean_grade):
-    """FAST parallel version"""
+    """FAST parallel version – codes always strings."""
     if not database_connected:
         return []
     available = get_available_collections(db_artisan, 'artisan')
@@ -5001,7 +5017,10 @@ def get_qualifying_artisan_courses(user_grades, user_mean_grade):
         futures = {executor.submit(_query_artisan_collection, args): args[0] for args in args_list}
         for future in as_completed(futures):
             try:
-                qualifying_courses.extend(future.result())
+                results = future.result()
+                for course in results:
+                    _stringify_course_codes(course)
+                qualifying_courses.extend(results)
             except Exception as e:
                 print(f"⚠️ Artisan future error: {e}")
  
@@ -7155,25 +7174,24 @@ def submit_kmtc_grades():
 def enter_details(flow):
     """Handle user details entry with strict validation and manual activation support."""
  
-    # ── GET: show the form ──
+    # ── GET ──
     if request.method == 'GET':
         if not session.get(f'{flow}_data_submitted'):
             flash("Please submit your grades first", "error")
             return redirect(url_for(flow))
         return render_template('enter_details.html', flow=flow)
  
-    # ── POST: process details ──
+    # ── POST ──
     try:
         email        = request.form.get('email', '').strip().lower()
         index_number = request.form.get('index_number', '').strip()
  
-        # Validate
         if not email or not index_number:
             flash("Email and KCSE Index Number are required.", "error")
             return redirect(url_for('enter_details', flow=flow))
  
         if not re.match(r'^\d{11}/\d{4}$', index_number):
-            flash("Invalid index number format. Must be 11 digits, slash, 4 digits (e.g. 12345678901/2024)", "error")
+            flash("Invalid index number format (e.g. 12345678901/2024)", "error")
             return redirect(url_for('enter_details', flow=flow))
  
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
@@ -7186,7 +7204,7 @@ def enter_details(flow):
             flash(msg, "error")
             return redirect(url_for('enter_details', flow=flow))
  
-        # ── Save grades to DB BEFORE anything else ──
+        # ── Save grades to DB now (before payment) ──
         if flow == 'degree':
             save_user_grades_before_payment(
                 email, index_number, flow,
@@ -7224,57 +7242,56 @@ def enter_details(flow):
                 session.get('ttc_mean_grade', '')
             )
  
-        # ============================================
-        # STEP 1: CHECK MANUAL ACTIVATION FIRST
-        # This overrides any payment checks
-        # ============================================
-        activation_record = None
+        # ══════════════════════════════════════════════════════
+        # NEW: User verified payment but had no grades stored.
+        # Grades just submitted → go straight to results, skip payment.
+        # ══════════════════════════════════════════════════════
+        if session.get(f'verified_no_grades_{flow}') and session.get(f'paid_{flow}'):
+            print(f"✅ Verified-no-grades path: grades now saved, going to results for {flow}")
+            session['email']         = email
+            session['index_number']  = index_number
+            session['current_flow']  = flow
+            session['current_level'] = flow
+            session.pop(f'verified_no_grades_{flow}', None)
+            session.modified = True
+            flash("✅ Grades submitted! Generating your results…", "success")
+            return redirect(url_for('show_results', flow=flow))
+ 
+        # ══════════════════════════════════════════════════════
+        # STEP 1: Check manual activation
+        # ══════════════════════════════════════════════════════
+        activation_record    = None
         original_mpesa_receipt = None
  
         if database_connected and admin_activations_collection is not None:
             try:
                 activation_record = admin_activations_collection.find_one({
-                    '$or': [
-                        {'email': email},
-                        {'index_number': index_number}
-                    ],
+                    '$or': [{'email': email}, {'index_number': index_number}],
                     'is_active': True,
                     'status': 'active'
                 })
                 if activation_record:
                     original_mpesa_receipt = activation_record.get('mpesa_receipt')
-                    print(f"✅ Manual activation found in DB for {email}: receipt={original_mpesa_receipt}")
-                    print(f"   Activation ID: {activation_record.get('_id')}")
-                    print(f"   Flow: {flow}")
             except Exception as e:
-                print(f"⚠️ Activation DB check error: {e}")
+                print(f"⚠️ Activation check error: {e}")
  
-        # ============================================
-        # STEP 2: IF MANUAL ACTIVATION EXISTS - BYPASS PAYMENT
-        # ============================================
         if activation_record and original_mpesa_receipt:
-            print(f"🎯 Manual activation detected - bypassing payment for {flow}")
-            
-            # Store manual activation info in session
-            session['manual_activation_active'] = True
+            print(f"🎯 Manual activation found — bypassing payment for {flow}")
+            session['manual_activation_active']  = True
             session['manual_activation_receipt'] = original_mpesa_receipt
-            session['manual_activation_id'] = str(activation_record['_id'])
-            session['email'] = email
-            session['index_number'] = index_number
-            session['current_flow'] = flow
-            session['current_level'] = flow
-            session[f'paid_{flow}'] = True
-            session['mpesa_receipt'] = original_mpesa_receipt
+            session['manual_activation_id']      = str(activation_record['_id'])
+            session['email']          = email
+            session['index_number']   = index_number
+            session['current_flow']   = flow
+            session['current_level']  = flow
+            session[f'paid_{flow}']   = True
+            session['mpesa_receipt']  = original_mpesa_receipt
             session['verified_receipt'] = original_mpesa_receipt
             session.modified = True
-            
-            # Create/update payment record with original receipt
+ 
             create_manual_activation_payment(email, index_number, flow, original_mpesa_receipt)
-            
-            # Queue course generation immediately
             process_courses_after_payment(email, index_number, flow, original_mpesa_receipt)
-            
-            # Mark activation as used (so it can't be reused for another flow)
+ 
             try:
                 admin_activations_collection.update_one(
                     {'_id': activation_record['_id']},
@@ -7284,16 +7301,15 @@ def enter_details(flow):
                         'status': 'used'
                     }}
                 )
-                print(f"✅ Manual activation marked as used for {flow}")
             except Exception as e:
                 print(f"⚠️ Could not mark activation as used: {e}")
-            
-            flash("✅ Access granted via manual activation! Generating your courses...", "success")
+ 
+            flash("✅ Access granted! Generating your courses…", "success")
             return redirect(url_for('payment_wait', flow=flow, transaction_ref='manual'))
  
-        # ============================================
-        # STEP 3: CHECK IF ALREADY PAID (Normal flow)
-        # ============================================
+        # ══════════════════════════════════════════════════════
+        # STEP 2: Already paid?
+        # ══════════════════════════════════════════════════════
         if has_user_paid_for_category_strict(email, index_number, flow):
             paid = get_user_paid_categories_strict(email, index_number)
             flash(
@@ -7303,21 +7319,20 @@ def enter_details(flow):
             )
             return redirect(url_for('index'))
  
-        # ============================================
-        # STEP 4: NORMAL PAYMENT FLOW
-        # ============================================
-        existing = get_user_paid_categories_strict(email, index_number)
-        is_first = len(existing) == 0
-        amount =  200 if is_first else 100
+        # ══════════════════════════════════════════════════════
+        # STEP 3: Normal payment flow
+        # ══════════════════════════════════════════════════════
+        existing    = get_user_paid_categories_strict(email, index_number)
+        is_first    = len(existing) == 0
+        amount      = 200 if is_first else 100
  
-        # Store minimal data in session
-        session['email'] = email
-        session['index_number'] = index_number
-        session['current_flow'] = flow
-        session['current_level'] = flow
-        session['payment_amount'] = amount
+        session['email']            = email
+        session['index_number']     = index_number
+        session['current_flow']     = flow
+        session['current_level']    = flow
+        session['payment_amount']   = amount
         session['is_first_category'] = is_first
-        session[f'paid_{flow}'] = False
+        session[f'paid_{flow}']     = False
         session.modified = True
  
         save_user_payment(email, index_number, flow, amount=amount)
@@ -7523,16 +7538,14 @@ def check_courses_ready(flow):
  
     if not email or not index_number:
         return jsonify({
-            'ready': False,
-            'error': 'Session missing',
-            'should_redirect': True,
-            'redirect_url': url_for('index')
+            'ready': False, 'error': 'Session missing',
+            'should_redirect': True, 'redirect_url': url_for('index')
         })
  
     cache_key   = f"{email}_{index_number}_{flow}"
     status_data = course_processing_status.get(cache_key)
  
-    # ── TIER 1: In-memory status map (zero DB cost, instant) ──
+    # ── TIER 1: in-memory status map ──
     if isinstance(status_data, dict):
         status = status_data.get('status')
  
@@ -7548,88 +7561,41 @@ def check_courses_ready(flow):
         if status == 'processing':
             elapsed = (datetime.now() - status_data.get('started_at', datetime.now())).total_seconds()
             return jsonify({
-                'ready':      False,
-                'message':    f'Generating your courses… ({int(elapsed)}s)',
-                'processing': True,
-                'elapsed':    int(elapsed),
-                'status':     'processing'
+                'ready': False, 'message': f'Generating your courses… ({int(elapsed)}s)',
+                'processing': True, 'elapsed': int(elapsed), 'status': 'processing'
             })
  
         if status in ('pending', 'queued'):
-            return jsonify({
-                'ready':      False,
-                'message':    'Queued for processing…',
-                'processing': True,
-                'status':     'queued'
-            })
+            return jsonify({'ready': False, 'message': 'Queued…', 'processing': True, 'status': 'queued'})
  
         if status == 'failed':
-            return jsonify({
-                'ready':   False,
-                'message': 'Processing failed. Please contact support.',
-                'error':   True,
-                'status':  'failed'
-            })
+            return jsonify({'ready': False, 'message': 'Processing failed.', 'error': True, 'status': 'failed'})
  
-    # ── TIER 2: Courses already in DB (fast projection check) ──
-    if database_connected and user_courses_collection is not None:
-        try:
-            doc = user_courses_collection.find_one(
-                {'email': email, 'index_number': index_number, 'level': flow},
-                {'courses': {'$slice': 1}}
-            )
-            if doc and doc.get('courses'):
-                # Update memory map immediately so future polls are instant
-                course_processing_status[cache_key] = {
-                    'status': 'completed',
-                    'courses_count': -1,
-                    'completed_at': datetime.now()
-                }
-                _sync_session_after_completion(email, index_number, flow)
-                return jsonify({
-                    'ready':        True,
-                    'redirect_url': url_for('goto_results', flow=flow),
-                    'status':       'db_courses_found'
-                })
-        except Exception as e:
-            print(f"⚠️ check_courses_ready DB courses check: {e}")
- 
-    # ── TIER 3: Confirmed payment in DB → trigger queue (only once) ──
+    # ── TIER 2: Confirmed payment → trigger queue ──
     if database_connected and user_payments_collection is not None:
         try:
             p = user_payments_collection.find_one(
-                {
-                    'email': email,
-                    'index_number': index_number,
-                    'level': flow,
-                    'payment_confirmed': True
-                },
+                {'email': email, 'index_number': index_number,
+                 'level': flow, 'payment_confirmed': True},
                 {'mpesa_receipt': 1}
             )
             if p:
                 session[f'paid_{flow}'] = True
                 session.modified = True
-                process_courses_after_payment(
-                    email, index_number, flow, p.get('mpesa_receipt')
-                )
+                process_courses_after_payment(email, index_number, flow, p.get('mpesa_receipt'))
                 return jsonify({
-                    'ready':      False,
-                    'message':    'Payment confirmed. Generating courses…',
-                    'processing': True,
-                    'status':     'queued_from_db'
+                    'ready': False, 'message': 'Payment confirmed. Generating courses…',
+                    'processing': True, 'status': 'queued_from_db'
                 })
         except Exception as e:
-            print(f"⚠️ check_courses_ready DB payment check: {e}")
+            print(f"⚠️ check_courses_ready DB: {e}")
  
-    # ── TIER 4: Manual activation in DB ──
+    # ── TIER 3: Manual activation ──
     if database_connected and admin_activations_collection is not None:
         try:
             act = admin_activations_collection.find_one(
-                {
-                    '$or': [{'email': email}, {'index_number': index_number}],
-                    'is_active': True,
-                    'status': 'active'
-                },
+                {'$or': [{'email': email}, {'index_number': index_number}],
+                 'is_active': True, 'status': 'active'},
                 {'_id': 1}
             )
             if act:
@@ -7637,31 +7603,25 @@ def check_courses_ready(flow):
                 session.modified = True
                 process_courses_after_payment(email, index_number, flow)
                 return jsonify({
-                    'ready':      False,
-                    'message':    'Access confirmed. Generating courses…',
-                    'processing': True,
-                    'status':     'manual_activation_queued'
+                    'ready': False, 'message': 'Access confirmed. Generating courses…',
+                    'processing': True, 'status': 'manual_activation_queued'
                 })
         except Exception as e:
-            print(f"⚠️ check_courses_ready activation check: {e}")
+            print(f"⚠️ check_courses_ready activation: {e}")
  
-    # ── TIER 5: Session paid flag only ──
+    # ── TIER 4: Session paid flag ──
     if session.get(f'paid_{flow}'):
         process_courses_after_payment(email, index_number, flow)
         return jsonify({
-            'ready':      False,
-            'message':    'Starting course processing…',
-            'processing': True,
-            'status':     'starting'
+            'ready': False, 'message': 'Starting course processing…',
+            'processing': True, 'status': 'starting'
         })
  
-    # ── Nothing found ──
     return jsonify({
-        'ready':   False,
+        'ready': False,
         'message': 'Waiting for payment confirmation on your phone…',
-        'status':  'waiting_for_payment'
+        'status': 'waiting_for_payment'
     })
- 
 def _sync_session_after_completion(email, index_number, flow):
     """Helper: set session flags after courses are confirmed ready."""
     session[f'paid_{flow}']  = True
@@ -8388,45 +8348,32 @@ def mpesa_validation():
 # --- Results Display Routes ---
 @app.route('/results/<flow>')
 def show_results(flow):
+    """Display results — courses generated on-the-fly, never stored in DB."""
     from bson import ObjectId
-    """Display results - SESSION SAFE - courses always from database only"""
-    
+ 
     print(f"🎯 show_results called for flow: {flow}")
-    
-    # Get user identification from session
-    email = session.get('email')
+ 
+    email        = session.get('email')
     index_number = session.get('index_number')
-    
-    print(f"📧 Email from session: {email}")
-    print(f"📝 Index from session: {index_number}")
-    print(f"🔑 Session paid_{flow}: {session.get(f'paid_{flow}')}")
-    print(f"📋 All session keys: {list(session.keys())}")
-    
+ 
+    # ── Try to recover from manual activation ID ──
     if not email or not index_number:
-        print(f"❌ Session expired - email={email}, index={index_number}")
-        
-        # Try to recover from manual activation ID
         manual_id = session.get('manual_activation_id')
         if manual_id and database_connected and admin_activations_collection is not None:
             try:
-                from bson import ObjectId
                 activation = admin_activations_collection.find_one({'_id': ObjectId(manual_id)})
                 if activation:
-                    email = activation.get('email')
+                    email        = activation.get('email')
                     index_number = activation.get('index_number')
-                    print(f"🔄 Recovered user data from activation: {email}, {index_number}")
-                    
-                    # Clear and restore minimal session
                     session.clear()
-                    session['email'] = email
-                    session['index_number'] = index_number
-                    session[f'paid_{flow}'] = True
-                    session['current_flow'] = flow
-                    session['current_level'] = flow
-                    session['initialized'] = True
-                    session['last_activity'] = datetime.now().isoformat()
+                    session['email']          = email
+                    session['index_number']   = index_number
+                    session[f'paid_{flow}']   = True
+                    session['current_flow']   = flow
+                    session['current_level']  = flow
+                    session['initialized']    = True
+                    session['last_activity']  = datetime.now().isoformat()
                     session.modified = True
-                    print(f"✅ Session restored with keys: {list(session.keys())}")
                 else:
                     flash("Session expired. Please start again.", "error")
                     return redirect(url_for('index'))
@@ -8437,25 +8384,17 @@ def show_results(flow):
         else:
             flash("Session expired. Please start again.", "error")
             return redirect(url_for('index'))
-    
-    # ============================================
-    # MULTIPLE ACCESS VERIFICATION METHODS
-    # ============================================
+ 
+    # ── Access verification (same as before) ──
     has_access = False
-    
-    # Method 1: Check session paid flag
+ 
     if session.get(f'paid_{flow}'):
         has_access = True
-        print(f"✅ Access granted via session paid flag")
-    
-    # Method 2: Check database for confirmed payment
+ 
     if not has_access and database_connected and user_payments_collection is not None:
         try:
             payment = user_payments_collection.find_one({
-                '$or': [
-                    {'email': email},
-                    {'index_number': index_number}
-                ],
+                '$or': [{'email': email}, {'index_number': index_number}],
                 'level': flow,
                 'payment_confirmed': True
             })
@@ -8463,57 +8402,40 @@ def show_results(flow):
                 has_access = True
                 session[f'paid_{flow}'] = True
                 session.modified = True
-                print(f"✅ Access granted via confirmed payment in DB")
         except Exception as e:
-            print(f"⚠️ Error checking payment in DB: {e}")
-    
-    # Method 3: Check database for manual activation
+            print(f"⚠️ Error checking payment: {e}")
+ 
     if not has_access and database_connected and admin_activations_collection is not None:
         try:
             activation = admin_activations_collection.find_one({
-                '$or': [
-                    {'email': email},
-                    {'index_number': index_number}
-                ],
+                '$or': [{'email': email}, {'index_number': index_number}],
                 'is_active': True,
                 'status': 'active'
             })
             if activation:
                 has_access = True
-                session[f'paid_{flow}'] = True
-                session['manual_activation_id'] = str(activation['_id'])
+                session[f'paid_{flow}']          = True
+                session['manual_activation_id']  = str(activation['_id'])
                 session['manual_activation_receipt'] = activation.get('mpesa_receipt')
                 session.modified = True
-                print(f"✅ Access granted via manual activation in DB")
         except Exception as e:
-            print(f"⚠️ Error checking manual activation in DB: {e}")
-    
-    # Method 4: Check verified payment
-    if not has_access and session.get('verified_payment'):
-        if session.get('verified_index') == index_number:
-            has_access = True
-            session[f'paid_{flow}'] = True
-            session.modified = True
-            print(f"✅ Access granted via verified payment")
-    
+            print(f"⚠️ Error checking activation: {e}")
+ 
+    if not has_access and session.get('verified_payment') and session.get('verified_index') == index_number:
+        has_access = True
+        session[f'paid_{flow}'] = True
+        session.modified = True
+ 
     if not has_access:
         flash('Please complete payment to view your results.', 'error')
-        if flow:
-            return redirect(url_for('payment', flow=flow))
-        return redirect(url_for('index'))
-    
-    # ============================================
-    # MARK MANUAL ACTIVATION AS USED (only once)
-    # ============================================
+        return redirect(url_for('payment', flow=flow) if flow else url_for('index'))
+ 
+    # ── Mark manual activation as used (once) ──
     activation_id = session.get('manual_activation_id')
     if activation_id and database_connected and admin_activations_collection is not None:
         try:
-            from bson import ObjectId
-            activation = admin_activations_collection.find_one({
-                '_id': ObjectId(activation_id)
-            })
-            
-            if activation and activation.get('is_active') and activation.get('status') == 'active':
+            act = admin_activations_collection.find_one({'_id': ObjectId(activation_id)})
+            if act and act.get('is_active') and act.get('status') == 'active':
                 admin_activations_collection.update_one(
                     {'_id': ObjectId(activation_id)},
                     {'$set': {
@@ -8523,105 +8445,111 @@ def show_results(flow):
                         'status': 'used'
                     }}
                 )
-                print(f"✅ Manual activation {activation_id} marked as used")
                 session.pop('manual_activation_id', None)
                 session.modified = True
         except Exception as e:
-            print(f"⚠️ Error marking activation as used: {e}")
-    
-    # ============================================
-    # LOAD COURSES FROM DATABASE ONLY
-    # ============================================
+            print(f"⚠️ Error marking activation used: {e}")
+ 
+    # ══════════════════════════════════════════════════════
+    # CORE CHANGE: get courses from memory → re-generate if needed
+    # NEVER reads user_courses_collection
+    # ══════════════════════════════════════════════════════
     qualifying_courses = []
-    
-    if database_connected and user_courses_collection is not None:
-        try:
-            courses_data = user_courses_collection.find_one({
-                'email': email,
-                'index_number': index_number,
-                'level': flow
-            })
-            
-            if courses_data and courses_data.get('courses'):
-                qualifying_courses = courses_data['courses']
-                print(f"✅ Loaded {len(qualifying_courses)} courses from database")
-                
-                # Convert ObjectId to string for template
-                for course in qualifying_courses:
-                    if '_id' in course and isinstance(course['_id'], ObjectId):
-                        course['_id'] = str(course['_id'])
-            else:
-                print(f"⚠️ No courses found in database for {flow}")
-                
-                # Try to generate courses on the fly if grades exist
-                user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(email, index_number, flow)
-                
-                if user_grades:
-                    print(f"🔄 Found grades in DB, generating courses on the fly")
-                    
-                    if flow == 'degree':
-                        qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
-                    elif flow == 'diploma':
-                        qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
-                    elif flow == 'certificate':
-                        qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
-                    elif flow == 'artisan':
-                        qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
-                    elif flow == 'kmtc':
-                        qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
-                    elif flow == 'ttc':
-                        qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
-                    
-                    if qualifying_courses:
-                        save_user_courses(email, index_number, flow, qualifying_courses)
-                        print(f"✅ Generated and saved {len(qualifying_courses)} courses on the fly")
-        except Exception as e:
-            print(f"❌ Error getting courses from database: {e}")
-    
-    # IMPORTANT: NEVER store courses in session - causes cookie overflow!
-    # DO NOT: session[f'{flow}_courses_{index_number}'] = qualifying_courses
-    
+ 
+    # 1. Check in-memory status map first (fastest path)
+    cache_key   = f"{email}_{index_number}_{flow}"
+    status_data = course_processing_status.get(cache_key, {})
+    if isinstance(status_data, dict) and status_data.get('status') == 'completed':
+        qualifying_courses = status_data.get('courses', [])
+        print(f"✅ Loaded {len(qualifying_courses)} courses from in-memory cache")
+ 
+    # 2. Re-generate from saved grades if not in memory
+    if not qualifying_courses:
+        print(f"🔄 Not in memory — re-generating from saved grades for {flow}")
+        user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(
+            email, index_number, flow
+        )
+ 
+        # Also try session grades as fallback
+        if not user_grades:
+            if flow == 'degree':
+                user_grades         = session.get('degree_grades', {})
+                user_cluster_points = session.get('degree_cluster_points', {})
+            elif flow == 'diploma':
+                user_grades      = session.get('diploma_grades', {})
+                user_mean_grade  = session.get('diploma_mean_grade', '')
+            elif flow == 'certificate':
+                user_grades      = session.get('certificate_grades', {})
+                user_mean_grade  = session.get('certificate_mean_grade', '')
+            elif flow == 'artisan':
+                user_grades      = session.get('artisan_grades', {})
+                user_mean_grade  = session.get('artisan_mean_grade', '')
+            elif flow == 'kmtc':
+                user_grades      = session.get('kmtc_grades', {})
+                user_mean_grade  = session.get('kmtc_mean_grade', '')
+            elif flow == 'ttc':
+                user_grades      = session.get('ttc_grades', {})
+                user_mean_grade  = session.get('ttc_mean_grade', '')
+ 
+        if user_grades:
+            qualifying_courses = _generate_courses_for_flow(
+                flow, user_grades, user_mean_grade, user_cluster_points
+            )
+            # Cache in memory for this session
+            course_processing_status[cache_key] = {
+                'status': 'completed',
+                'courses': qualifying_courses,
+                'courses_count': len(qualifying_courses),
+                'completed_at': datetime.now()
+            }
+            print(f"✅ Re-generated {len(qualifying_courses)} courses")
+        else:
+            print(f"⚠️ No grades available for {flow} — cannot generate courses")
+ 
+    # ── Ensure codes are strings ──
+    for course in qualifying_courses:
+        _stringify_course_codes(course)
+        if '_id' in course and isinstance(course.get('_id'), ObjectId):
+            course['_id'] = str(course['_id'])
+ 
     if not qualifying_courses:
         flash(f"No {flow.upper()} courses found. Please try again.", "warning")
         return redirect(url_for('index'))
-    
-    # ============================================
-    # GROUP COURSES BY COLLECTION FOR DISPLAY
-    # ============================================
+ 
+    # ── Group by collection for display ──
     courses_by_collection = {}
     for course in qualifying_courses:
         if flow == 'degree':
-            collection_key = course.get('cluster', 'Other')
+            collection_key  = course.get('cluster', 'Other')
             collection_name = CLUSTER_NAMES.get(collection_key, collection_key)
         else:
-            collection_key = course.get('collection', 'Other')
+            collection_key  = course.get('collection', 'Other')
             collection_name = collection_key.replace('_', ' ').title()
-        
+ 
         if collection_key not in courses_by_collection:
-            courses_by_collection[collection_key] = {
-                'name': collection_name,
-                'courses': []
-            }
+            courses_by_collection[collection_key] = {'name': collection_name, 'courses': []}
         courses_by_collection[collection_key]['courses'].append(course)
-    
-    # Store current level for basket functionality (but NOT courses!)
+ 
     session['current_level'] = flow
-    session['current_flow'] = flow
+    session['current_flow']  = flow
     session.modified = True
-    
+ 
     print(f"🎯 Displaying {len(qualifying_courses)} courses for {flow}")
-    
-    return render_template('collection_results.html', 
-                         courses=qualifying_courses,
-                         courses_by_collection=courses_by_collection,
-                         user_grades={}, 
-                         user_mean_grade=None,
-                         user_cluster_points={},
-                         subjects=SUBJECTS, 
-                         email=email, 
-                         index_number=index_number,
-                         flow=flow,
-                         cluster_names=CLUSTER_NAMES)
+ 
+    return render_template(
+        'collection_results.html',
+        courses=qualifying_courses,
+        courses_by_collection=courses_by_collection,
+        user_grades={},
+        user_mean_grade=None,
+        user_cluster_points={},
+        subjects=SUBJECTS,
+        email=email,
+        index_number=index_number,
+        flow=flow,
+        cluster_names=CLUSTER_NAMES
+    )
+ 
 # --- Collection-based Results Routes ---
 @app.route('/collection-courses/<flow>/<collection_name>')
 def show_collection_courses(flow, collection_name):
@@ -8681,231 +8609,321 @@ def show_collection_courses(flow, collection_name):
 # --- Payment Verification Routes ---
 @app.route('/verify-payment', methods=['POST'])
 def verify_payment():
-    """Verify payment and return course information for all levels"""
+    """Verify payment and redirect to results (re-generates courses from grades)."""
     try:
         mpesa_receipt = request.form.get('mpesa_receipt', '').strip().upper()
-        index_number = request.form.get('index_number', '').strip()
-        
+        index_number  = request.form.get('index_number', '').strip()
+ 
         if not mpesa_receipt or not index_number:
             return jsonify({'success': False, 'error': 'M-Pesa receipt and index number are required'})
-        
-        # Validate M-Pesa receipt format
+ 
         if len(mpesa_receipt) != 10 or not mpesa_receipt.isalnum():
-            return jsonify({'success': False, 'error': 'Invalid M-Pesa receipt format. Must be 10 alphanumeric characters.'})
-        
-        # Validate index number format
+            return jsonify({'success': False,
+                            'error': 'Invalid M-Pesa receipt. Must be 10 alphanumeric characters.'})
+ 
         if not re.match(r'^\d{11}/\d{4}$', index_number):
-            return jsonify({'success': False, 'error': 'Invalid index number format. Must be 11 digits, slash, 4 digits (e.g., 12345678901/2024)'})
-        
-        print(f"🔍 Verifying payment for index: {index_number}, receipt: {mpesa_receipt}")
-        
-        # Find confirmed payments for this index number and receipt
-        payment_found = False
-        paid_categories = []
-        
-        if database_connected:
-            payment_data = user_payments_collection.find({
+            return jsonify({'success': False,
+                            'error': 'Invalid index number format (e.g. 12345678901/2024)'})
+ 
+        print(f"🔍 Verifying payment: index={index_number} receipt={mpesa_receipt}")
+ 
+        # ── Find confirmed payment ──
+        payment_found  = False
+        paid_levels    = []
+        email          = None
+ 
+        if database_connected and user_payments_collection is not None:
+            payments = list(user_payments_collection.find({
                 'index_number': index_number,
                 'mpesa_receipt': mpesa_receipt,
                 'payment_confirmed': True
-            })
-            
-            for payment in payment_data:
+            }))
+            if payments:
                 payment_found = True
-                level = payment.get('level')
-                if level and level not in paid_categories:
-                    paid_categories.append(level)
-        else:
-            # Session fallback
-            for key in session:
-                if isinstance(session.get(key), dict):
-                    payment_data = session[key]
-                    if (payment_data.get('index_number') == index_number and 
-                        payment_data.get('mpesa_receipt') == mpesa_receipt and
-                        payment_data.get('payment_confirmed')):
-                        payment_found = True
-                        level = payment_data.get('level')
-                        if level and level not in paid_categories:
-                            paid_categories.append(level)
-        
+                email = payments[0].get('email', '')
+                for p in payments:
+                    lvl = p.get('level')
+                    if lvl and lvl not in paid_levels:
+                        paid_levels.append(lvl)
+ 
         if not payment_found:
-            print(f"❌ No confirmed payment found for index: {index_number}, receipt: {mpesa_receipt}")
-            return jsonify({'success': False, 'error': 'No confirmed payment found with these details. Please ensure payment was successful and try again.'})
-        
-        print(f"✅ Payment confirmed for index: {index_number}, categories: {paid_categories}")
-        
-        # Get courses for all paid categories
-        user_courses = {}
-        total_courses = 0
-        
-        if database_connected:
-            for level in paid_categories:
-                courses_data = user_courses_collection.find_one({
-                    'index_number': index_number,
-                    'level': level
-                })
-                if courses_data and courses_data.get('courses'):
-                    course_count = len(courses_data['courses'])
-                    user_courses[level] = {
-                        'count': course_count
-                    }
-                    total_courses += course_count
-                    print(f"📚 Found {course_count} {level} courses")
-        
-        if total_courses == 0:
-            return jsonify({'success': False, 'error': 'No course results found for your payment. Please ensure you completed the qualification process.'})
-        
-        print(f"🎓 Total courses found: {total_courses} across {len(paid_categories)} categories")
-        
-        # Return success response with available categories
-        return jsonify({
-            'success': True,
-            'payment_confirmed': True,
-            'courses_count': total_courses,
-            'levels': paid_categories,
-            'level_details': user_courses,
-            'redirect_url': url_for('verified_results_dashboard', index=index_number, receipt=mpesa_receipt)
-        })
-        
+            return jsonify({'success': False,
+                            'error': 'No confirmed payment found with these details.'})
+ 
+        # ── For each paid level, check whether grades exist ──
+        # We'll redirect to the FIRST level's results (or grades page if no grades)
+        target_flow = paid_levels[0] if paid_levels else None
+        if not target_flow:
+            return jsonify({'success': False, 'error': 'No course level found for this payment.'})
+ 
+        # Check grades for target_flow
+        user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(
+            email, index_number, target_flow
+        )
+ 
+        # Restore minimal session
+        session['email']           = email
+        session['index_number']    = index_number
+        session['verified_payment'] = True
+        session['verified_index']   = index_number
+        session['verified_receipt'] = mpesa_receipt
+        session['mpesa_receipt']    = mpesa_receipt
+        for lvl in paid_levels:
+            session[f'paid_{lvl}'] = True
+        session['current_flow']  = target_flow
+        session['current_level'] = target_flow
+        session.modified = True
+ 
+        if user_grades:
+            # Grades exist → go straight to results (will re-generate)
+            print(f"✅ Grades exist for {target_flow}, redirecting to results")
+            return jsonify({
+                'success': True,
+                'payment_confirmed': True,
+                'levels': paid_levels,
+                'redirect_url': url_for('show_results', flow=target_flow)
+            })
+        else:
+            # No grades → redirect to grade-entry page for this flow
+            # Mark session so grade-entry skips payment
+            session[f'verified_no_grades_{target_flow}'] = True
+            session[f'{target_flow}_data_submitted'] = False
+            session.modified = True
+            print(f"⚠️ No grades found for {target_flow}, redirecting to grade entry")
+            return jsonify({
+                'success': True,
+                'payment_confirmed': True,
+                'no_grades': True,
+                'levels': paid_levels,
+                'redirect_url': url_for(target_flow),   # e.g. /diploma, /kmtc …
+                'message': (
+                    f'Payment verified! Please re-enter your {target_flow.upper()} grades '
+                    f'to view your results (you will NOT be charged again).'
+                )
+            })
+ 
     except Exception as e:
-        print(f"❌ Error verifying payment: {str(e)}")
+        print(f"❌ Error verifying payment: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': 'Internal server error. Please try again later.'})
+        return jsonify({'success': False, 'error': 'Internal server error. Please try again.'})
+ 
 
 @app.route('/verified-dashboard')
 def verified_results_dashboard():
-    """Dashboard showing all available course levels for verified payment"""
+    """Dashboard for all course levels available for a verified payment."""
     index_number = request.args.get('index')
-    receipt = request.args.get('receipt')
-    
+    receipt      = request.args.get('receipt')
+ 
     if not index_number or not receipt:
         flash("Invalid verification parameters", "error")
         return redirect(url_for('index'))
-    
-    print(f"📊 Loading dashboard for index: {index_number}")
-    
-    # Get all courses for this user across all levels
-    user_courses = {}
-    total_courses = 0
-    
-    if database_connected:
-        levels = ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']
-        for level in levels:
-            courses_data = user_courses_collection.find_one({
-                'index_number': index_number,
-                'level': level
-            })
-            if courses_data and courses_data.get('courses'):
-                course_count = len(courses_data['courses'])
-                user_courses[level] = {
-                    'courses': courses_data['courses'],
-                    'count': course_count
-                }
-                total_courses += course_count
-                print(f"📚 Loaded {course_count} {level} courses")
-    
-    if not user_courses:
+ 
+    print(f"📊 Loading verified dashboard for index: {index_number}")
+ 
+    # Find the real email associated with the payment
+    real_email = f"verified_{index_number}@temp.com"
+    if database_connected and user_payments_collection is not None:
+        try:
+            p = user_payments_collection.find_one(
+                {'index_number': index_number, 'mpesa_receipt': receipt},
+                {'email': 1}
+            )
+            if p and p.get('email'):
+                real_email = p['email']
+        except Exception:
+            pass
+ 
+    # Build info for each paid level (check grades existence, not courses)
+    user_courses_info = {}     # level → {'count': N, 'has_grades': bool}
+    total_courses     = 0
+ 
+    levels_to_check = ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']
+ 
+    for level in levels_to_check:
+        # Check if payment exists for this level
+        has_payment = False
+        if database_connected and user_payments_collection is not None:
+            try:
+                p = user_payments_collection.find_one({
+                    'index_number': index_number,
+                    'mpesa_receipt': receipt,
+                    'level': level,
+                    'payment_confirmed': True
+                })
+                has_payment = p is not None
+            except Exception:
+                pass
+ 
+        if not has_payment:
+            continue
+ 
+        # Check grades
+        g, m, cp = get_user_grades_from_db(real_email, index_number, level)
+        has_grades = bool(g)
+ 
+        # Estimate count from in-memory cache if available
+        cache_key   = f"{real_email}_{index_number}_{level}"
+        status_data = course_processing_status.get(cache_key, {})
+        count       = status_data.get('courses_count', 0) if isinstance(status_data, dict) else 0
+ 
+        if has_grades and count == 0:
+            # Quick generation to get count
+            courses = _generate_courses_for_flow(level, g, m, cp)
+            count   = len(courses)
+            course_processing_status[cache_key] = {
+                'status': 'completed',
+                'courses': courses,
+                'courses_count': count,
+                'completed_at': datetime.now()
+            }
+ 
+        user_courses_info[level] = {
+            'count': count,
+            'has_grades': has_grades
+        }
+        total_courses += count
+ 
+    if not user_courses_info:
         flash("No course results found for your payment details", "error")
         return redirect(url_for('index'))
-    
-    print(f"🎓 Dashboard ready with {total_courses} total courses")
-    
-    # Store verification in session
+ 
+    # Restore session
     session['verified_payment'] = True
-    session['verified_index'] = index_number
+    session['verified_index']   = index_number
     session['verified_receipt'] = receipt
-    session['email'] = f"verified_{index_number}@temp.com"
-    session['index_number'] = index_number
-    
-    # Load user's saved basket from database
+    session['email']            = real_email
+    session['index_number']     = index_number
+    for lvl in user_courses_info:
+        session[f'paid_{lvl}'] = True
+ 
     basket = get_user_basket_by_index(index_number)
     session['course_basket'] = basket
-    
-    return render_template('verified_dashboard.html',
-                         user_courses=user_courses,
-                         index_number=index_number,
-                         receipt=receipt,
-                         total_courses=total_courses,
-                         basket_count=len(basket))
+ 
+    return render_template(
+        'verified_dashboard.html',
+        user_courses=user_courses_info,
+        index_number=index_number,
+        receipt=receipt,
+        total_courses=total_courses,
+        basket_count=len(basket)
+    )
+ 
 
 @app.route('/verified-results/<level>')
 def show_verified_level_results(level):
-    """Show verified results for a specific course level"""
+    """Show verified results for a specific course level — re-generated."""
     index_number = request.args.get('index')
-    receipt = request.args.get('receipt')
-    
+    receipt      = request.args.get('receipt')
+ 
     if level not in ['degree', 'diploma', 'certificate', 'artisan', 'kmtc', 'ttc']:
         flash("Invalid course level", "error")
         return redirect(url_for('index'))
-    
+ 
     if not index_number or not receipt:
         flash("Invalid verification parameters", "error")
         return redirect(url_for('index'))
-    
-    print(f"🎓 Loading {level} courses for index: {index_number}")
-    
-    # Store the current level for basket redirects
-    session['current_level'] = level
-    print(f"🔗 Stored current level for verified user: {level}")
-    
-    # Get courses for the specific level
-    courses_data = None
-    if database_connected:
-        courses_data = user_courses_collection.find_one({
-            'index_number': index_number,
-            'level': level
-        })
-    
-    if not courses_data or not courses_data.get('courses'):
-        flash(f"No {level} course results found for your payment details", "error")
+ 
+    # Restore session
+    session['current_level']  = level
+    session['email']          = f"verified_{index_number}@temp.com"
+    session['index_number']   = index_number
+    session['verified_payment'] = True
+    session[f'paid_{level}']  = True
+    session.modified = True
+ 
+    email = f"verified_{index_number}@temp.com"
+ 
+    # ── Get grades from DB ──
+    user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(
+        email, index_number, level
+    )
+ 
+    # Also check with the real email (payment records may have real email)
+    if not user_grades and database_connected and user_payments_collection is not None:
+        try:
+            p = user_payments_collection.find_one(
+                {'index_number': index_number, 'mpesa_receipt': receipt},
+                {'email': 1}
+            )
+            if p and p.get('email'):
+                real_email = p['email']
+                user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(
+                    real_email, index_number, level
+                )
+                if user_grades:
+                    session['email'] = real_email
+                    session.modified = True
+                    email = real_email
+        except Exception:
+            pass
+ 
+    if not user_grades:
+        # Redirect to grade entry; mark as verified-no-grades
+        session[f'verified_no_grades_{level}'] = True
+        session[f'{level}_data_submitted'] = False
+        session.modified = True
+        flash(
+            f"Payment verified! Please enter your {level.upper()} grades to view your results "
+            f"(you will NOT be charged again).",
+            "info"
+        )
+        return redirect(url_for(level))
+ 
+    # ── Re-generate ──
+    cache_key   = f"{email}_{index_number}_{level}"
+    status_data = course_processing_status.get(cache_key, {})
+    if isinstance(status_data, dict) and status_data.get('status') == 'completed':
+        qualifying_courses = status_data.get('courses', [])
+    else:
+        qualifying_courses = _generate_courses_for_flow(
+            level, user_grades, user_mean_grade, user_cluster_points
+        )
+        course_processing_status[cache_key] = {
+            'status': 'completed',
+            'courses': qualifying_courses,
+            'courses_count': len(qualifying_courses),
+            'completed_at': datetime.now()
+        }
+ 
+    if not qualifying_courses:
+        flash(f"No {level} course results found. Please try again.", "error")
         return redirect(url_for('verified_results_dashboard', index=index_number, receipt=receipt))
-    
-    # Convert ObjectId to string for JSON serialization
-    qualifying_courses = []
-    for course in courses_data['courses']:
-        course_dict = dict(course)
-        # Convert _id from ObjectId to string if it exists
-        if '_id' in course_dict and isinstance(course_dict['_id'], ObjectId):
-            course_dict['_id'] = str(course_dict['_id'])
-        qualifying_courses.append(course_dict)
-    
-    # Group courses by collection with proper names
+ 
+    # Stringify codes and ids
+    for course in qualifying_courses:
+        _stringify_course_codes(course)
+        if '_id' in course and isinstance(course.get('_id'), ObjectId):
+            course['_id'] = str(course['_id'])
+ 
+    # Group by collection
     courses_by_collection = {}
     for course in qualifying_courses:
         if level == 'degree':
-            collection_key = course.get('cluster', 'Other')
-            # Use the proper cluster name for display
-            collection_name = CLUSTER_NAMES.get(collection_key, collection_key)
+            ck   = course.get('cluster', 'Other')
+            cname = CLUSTER_NAMES.get(ck, ck)
         else:
-            collection_key = course.get('collection', 'Other')
-            collection_name = collection_key.replace('_', ' ').title()
-        
-        if collection_key not in courses_by_collection:
-            courses_by_collection[collection_key] = {
-                'name': collection_name,
-                'courses': []
-            }
-        courses_by_collection[collection_key]['courses'].append(course)
-    
-    print(f"✅ Loaded {len(qualifying_courses)} {level} courses")
-    
-    # Set session data for basket and search functionality
-    session['email'] = f"verified_{index_number}@temp.com"
-    session['index_number'] = index_number
-    session['verified_payment'] = True
-    
-    return render_template('collection_results.html', 
-                         courses=qualifying_courses,
-                         courses_by_collection=courses_by_collection,
-                         user_grades={}, 
-                         user_mean_grade=None,
-                         user_cluster_points={},
-                         subjects=SUBJECTS, 
-                         email=f"verified_{index_number}@temp.com", 
-                         index_number=index_number,
-                         flow=level,
-                         cluster_names=CLUSTER_NAMES)
+            ck    = course.get('collection', 'Other')
+            cname = ck.replace('_', ' ').title()
+        if ck not in courses_by_collection:
+            courses_by_collection[ck] = {'name': cname, 'courses': []}
+        courses_by_collection[ck]['courses'].append(course)
+ 
+    print(f"✅ Loaded {len(qualifying_courses)} {level} courses (verified user, re-generated)")
+ 
+    return render_template(
+        'collection_results.html',
+        courses=qualifying_courses,
+        courses_by_collection=courses_by_collection,
+        user_grades={}, user_mean_grade=None, user_cluster_points={},
+        subjects=SUBJECTS,
+        email=email,
+        index_number=index_number,
+        flow=level,
+        cluster_names=CLUSTER_NAMES
+    )
+ 
+ 
 
 # --- Course Basket Routes ---
 @app.route('/add-to-basket', methods=['POST'])
