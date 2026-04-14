@@ -166,7 +166,7 @@
     <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
     
     <style>
-        /* Your existing CSS styles remain exactly the same */
+        /* Your existing CSS styles remain exactly the same (I'll include them here) */
         * {
             margin: 0;
             padding: 0;
@@ -319,6 +319,25 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .delete-chat-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: transparent;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .history-item:hover .delete-chat-btn {
+            opacity: 1;
+        }
+
+        .delete-chat-btn:hover {
+            background: rgba(0,0,0,0.1);
         }
 
         /* Sidebar overlay for mobile */
@@ -509,6 +528,16 @@
             background: var(--bot-message-bg);
             color: var(--text-color);
             border-bottom-left-radius: 4px;
+        }
+
+        .message-bubble a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .message-bubble a:hover {
+            text-decoration: underline;
         }
 
         .message-time {
@@ -746,10 +775,32 @@
             white-space: nowrap;
             border: 0;
         }
+
+        /* Link styling within messages */
+        .message-bubble a {
+            word-break: break-all;
+        }
+
+        /* Toast notifications */
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body data-theme="light">
-    <!-- SEO-friendly visible content for crawlers -->
+    <!-- SEO-friendly visible content for crawlers (kept as is) -->
     <div class="seo-content" aria-hidden="false">
         <h1>KUCCPS AI Assistant - Your Personal Course Guidance Chatbot</h1>
         <p>Welcome to the KUCCPS Courses Checker AI Assistant. Get instant answers about:</p>
@@ -826,15 +877,7 @@
             </button>
 
             <div class="chat-history" id="chatHistory">
-                <!-- Chat history will be loaded here -->
-                <div class="history-item active">
-                    <i class="fas fa-comment"></i>
-                    <span class="chat-title">Current Chat</span>
-                </div>
-                <div class="history-item">
-                    <i class="fas fa-comment"></i>
-                    <span class="chat-title">Previous conversation...</span>
-                </div>
+                <!-- Chat history will be loaded dynamically -->
             </div>
         </div>
 
@@ -874,27 +917,16 @@
                     </p>
                     
                     <div class="suggested-questions" id="suggestedQuestions">
-                        <div class="suggested-question" onclick="askQuestion('What courses can I do with C plain?')">
-                            What courses can I do with C plain?
-                        </div>
-                        <div class="suggested-question" onclick="askQuestion('How much does it cost to check courses?')">
-                            How much does it cost?
-                        </div>
-                        <div class="suggested-question" onclick="askQuestion('What are cluster points?')">
-                            What are cluster points?
-                        </div>
-                        <div class="suggested-question" onclick="askQuestion('KMTC nursing requirements')">
-                            KMTC nursing requirements
-                        </div>
-                        <div class="suggested-question" onclick="askQuestion('How to apply to KUCCPS?')">
-                            How to apply to KUCCPS?
-                        </div>
-                        <div class="suggested-question" onclick="askQuestion('Degree requirements with C+')">
-                            Degree requirements with C+
-                        </div>
+                        <div class="suggested-question" data-question="What courses can I do with C plain?">What courses can I do with C plain?</div>
+                        <div class="suggested-question" data-question="How much does it cost to check courses?">How much does it cost?</div>
+                        <div class="suggested-question" data-question="What are cluster points?">What are cluster points?</div>
+                        <div class="suggested-question" data-question="KMTC nursing requirements">KMTC nursing requirements</div>
+                        <div class="suggested-question" data-question="How to apply to KUCCPS?">How to apply to KUCCPS?</div>
+                        <div class="suggested-question" data-question="Degree requirements with C+">Degree requirements with C+</div>
+                        <div class="suggested-question" data-question="Tell me about Computer Science">Computer Science requirements</div>
+                        <div class="suggested-question" data-question="What are engineering cut-off points?">Engineering cut-off points</div>
                     </div>
                 </div>
-
                 <!-- Messages will be appended here -->
             </div>
 
@@ -956,6 +988,18 @@
                         <li>Mention the course level (degree, diploma, etc.)</li>
                         <li>Ask one question at a time for best results</li>
                     </ul>
+
+                    <h6 class="mt-3">Quick Links</h6>
+                    <ul>
+                        <li><a href="/" target="_blank">Homepage</a></li>
+                        <li><a href="/degree" target="_blank">Degree Courses</a></li>
+                        <li><a href="/diploma" target="_blank">Diploma Courses</a></li>
+                        <li><a href="/kmtc" target="_blank">KMTC Courses</a></li>
+                        <li><a href="/certificate" target="_blank">Certificate Courses</a></li>
+                        <li><a href="/artisan" target="_blank">Artisan Courses</a></li>
+                        <li><a href="/ttc" target="_blank">TTC Courses</a></li>
+                        <li><a href="/guides" target="_blank">Educational Guides</a></li>
+                    </ul>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -964,193 +1008,228 @@
         </div>
     </div>
 
+    <!-- Toast notification for link clicks -->
+    <div id="linkToast" class="toast-notification"></div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Store chat history
+        // Enhanced chat functionality with persistent history and link handling
         let chatMessages = [];
         let isTyping = false;
+        let currentChatId = null;
+        let chats = []; // Array of chat sessions
         
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadChatHistory();
-            loadThemePreference();
-            checkMobileViewport();
-            
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                checkMobileViewport();
-            });
-        });
-
-        // Check if mobile and ensure sidebar is closed on desktop
-        function checkMobileViewport() {
-            if (window.innerWidth > 768) {
-                closeSidebar();
-            }
-        }
-
-        // Toggle sidebar on mobile
-        function toggleSidebar() {
-            const sidebar = document.getElementById('chatSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            
-            sidebar.classList.toggle('open');
-            
-            if (sidebar.classList.contains('open')) {
-                overlay.classList.add('show');
-                document.body.style.overflow = 'hidden';
-            } else {
-                overlay.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        }
-
-        // Close sidebar
-        function closeSidebar() {
-            const sidebar = document.getElementById('chatSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            
-            sidebar.classList.remove('open');
-            overlay.classList.remove('show');
-            document.body.style.overflow = '';
-        }
-
-        // Theme management
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme') || 'light';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            
-            html.setAttribute('data-theme', newTheme);
-            
-            // Update toggle button
-            const toggleBtn = document.getElementById('themeToggle');
-            const icon = toggleBtn.querySelector('i');
-            const text = toggleBtn.querySelector('span');
-            
-            if (newTheme === 'dark') {
-                icon.className = 'fas fa-sun';
-                text.textContent = 'Light';
-            } else {
-                icon.className = 'fas fa-moon';
-                text.textContent = 'Dark';
-            }
-            
-            // Save preference
-            localStorage.setItem('theme', newTheme);
-        }
-
-        function loadThemePreference() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            
-            const toggleBtn = document.getElementById('themeToggle');
-            const icon = toggleBtn.querySelector('i');
-            const text = toggleBtn.querySelector('span');
-            
-            if (savedTheme === 'dark') {
-                icon.className = 'fas fa-sun';
-                text.textContent = 'Light';
-            } else {
-                icon.className = 'fas fa-moon';
-                text.textContent = 'Dark';
-            }
-        }
-
-        // Auto-resize textarea
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
-        }
-
-        // Handle Enter key (Shift+Enter for new line, Enter to send)
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
-        }
-
-        // Send message
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (!message || isTyping) return;
-            
-            // Clear input and reset height
-            input.value = '';
-            input.style.height = 'auto';
-            
-            // Hide welcome screen
-            document.getElementById('welcomeScreen').style.display = 'none';
-            
-            // Add user message to UI
-            addMessage(message, 'user');
-            
-            // Show typing indicator
-            showTypingIndicator();
-            
-            try {
-                // Send to API
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ message: message })
-                });
-                
-                const data = await response.json();
-                
-                // Remove typing indicator
-                hideTypingIndicator();
-                
-                if (data.success) {
-                    // Add bot response
-                    addMessage(data.response, 'bot');
-                } else {
-                    // Add error message
-                    addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+        // Load chats from localStorage
+        function loadChats() {
+            const savedChats = localStorage.getItem('kuccps_chats');
+            if (savedChats) {
+                chats = JSON.parse(savedChats);
+                // Ensure currentChatId exists
+                if (!currentChatId && chats.length > 0) {
+                    currentChatId = chats[0].id;
+                    chatMessages = chats[0].messages;
+                } else if (currentChatId) {
+                    const currentChat = chats.find(c => c.id === currentChatId);
+                    if (currentChat) chatMessages = currentChat.messages;
                 }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                hideTypingIndicator();
-                addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            } else {
+                // Initialize with empty chats array
+                chats = [];
+                startNewChat(false); // create first chat without confirmation
+            }
+            renderChatHistory();
+            renderMessages();
+        }
+        
+        // Save all chats to localStorage
+        function saveChats() {
+            localStorage.setItem('kuccps_chats', JSON.stringify(chats));
+        }
+        
+        // Update current chat messages in chats array
+        function updateCurrentChat() {
+            if (currentChatId) {
+                const index = chats.findIndex(c => c.id === currentChatId);
+                if (index !== -1) {
+                    chats[index].messages = chatMessages;
+                    chats[index].updatedAt = new Date().toISOString();
+                    if (chatMessages.length > 0 && !chats[index].title) {
+                        // Set title from first user message
+                        const firstUserMsg = chatMessages.find(m => m.sender === 'user');
+                        if (firstUserMsg) {
+                            chats[index].title = firstUserMsg.text.substring(0, 30) + (firstUserMsg.text.length > 30 ? '...' : '');
+                        } else {
+                            chats[index].title = 'New Chat';
+                        }
+                    }
+                } else {
+                    // Create new chat if not found
+                    const newChat = {
+                        id: currentChatId,
+                        title: chatMessages.length > 0 ? (chatMessages.find(m => m.sender === 'user')?.text.substring(0,30) || 'New Chat') : 'New Chat',
+                        messages: chatMessages,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    chats.unshift(newChat);
+                }
+            }
+            saveChats();
+            renderChatHistory();
+        }
+        
+        // Render chat history sidebar
+        function renderChatHistory() {
+            const historyContainer = document.getElementById('chatHistory');
+            if (!historyContainer) return;
+            
+            if (chats.length === 0) {
+                historyContainer.innerHTML = '<div class="text-muted text-center p-3">No chats yet. Start a new conversation!</div>';
+                return;
+            }
+            
+            historyContainer.innerHTML = '';
+            chats.forEach(chat => {
+                const chatDiv = document.createElement('div');
+                chatDiv.className = `history-item ${currentChatId === chat.id ? 'active' : ''}`;
+                chatDiv.innerHTML = `
+                    <i class="fas fa-comment"></i>
+                    <span class="chat-title">${escapeHtml(chat.title || 'New Chat')}</span>
+                    <button class="delete-chat-btn" data-chat-id="${chat.id}" title="Delete chat"><i class="fas fa-trash-alt"></i></button>
+                `;
+                chatDiv.addEventListener('click', (e) => {
+                    if (e.target.closest('.delete-chat-btn')) return;
+                    switchChat(chat.id);
+                });
+                const deleteBtn = chatDiv.querySelector('.delete-chat-btn');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteChat(chat.id);
+                    });
+                }
+                historyContainer.appendChild(chatDiv);
+            });
+        }
+        
+        // Switch to another chat
+        function switchChat(chatId) {
+            const chat = chats.find(c => c.id === chatId);
+            if (chat) {
+                currentChatId = chatId;
+                chatMessages = [...chat.messages];
+                renderMessages();
+                renderChatHistory();
+                // Hide welcome screen if there are messages
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                if (welcomeScreen) {
+                    welcomeScreen.style.display = chatMessages.length === 0 ? 'block' : 'none';
+                }
+                // Clear input
+                document.getElementById('messageInput').value = '';
+            }
+            closeSidebar();
+        }
+        
+        // Delete a chat
+        function deleteChat(chatId) {
+            if (confirm('Delete this chat?')) {
+                const index = chats.findIndex(c => c.id === chatId);
+                if (index !== -1) {
+                    chats.splice(index, 1);
+                    if (currentChatId === chatId) {
+                        if (chats.length > 0) {
+                            currentChatId = chats[0].id;
+                            chatMessages = chats[0].messages;
+                        } else {
+                            currentChatId = null;
+                            chatMessages = [];
+                            startNewChat(false);
+                        }
+                    }
+                    saveChats();
+                    renderChatHistory();
+                    renderMessages();
+                    const welcomeScreen = document.getElementById('welcomeScreen');
+                    if (welcomeScreen) welcomeScreen.style.display = chatMessages.length === 0 ? 'block' : 'none';
+                }
             }
         }
-
-        // Add message to UI
-        function addMessage(text, sender) {
+        
+        // Start a new chat
+        function startNewChat(confirmRequired = true) {
+            if (confirmRequired && chatMessages.length > 0) {
+                if (!confirm('Start a new chat? Current chat will be saved.')) return;
+            }
+            const newChatId = Date.now().toString();
+            currentChatId = newChatId;
+            chatMessages = [];
+            chats.unshift({
+                id: newChatId,
+                title: 'New Chat',
+                messages: [],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+            saveChats();
+            renderChatHistory();
+            renderMessages();
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) welcomeScreen.style.display = 'block';
+            document.getElementById('messageInput').value = '';
+            closeSidebar();
+        }
+        
+        // Render messages in the main area
+        function renderMessages() {
             const messagesArea = document.getElementById('messagesArea');
+            if (!messagesArea) return;
+            
+            // Keep welcome screen element (it's outside messages container in DOM)
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            
+            // Remove all message wrappers except welcome screen
+            const messageWrappers = messagesArea.querySelectorAll('.message-wrapper');
+            messageWrappers.forEach(wrapper => wrapper.remove());
+            
+            if (chatMessages.length === 0) {
+                if (welcomeScreen) welcomeScreen.style.display = 'block';
+                return;
+            }
+            
+            if (welcomeScreen) welcomeScreen.style.display = 'none';
+            
+            chatMessages.forEach(msg => {
+                const messageWrapper = createMessageElement(msg.text, msg.sender, msg.time);
+                messagesArea.appendChild(messageWrapper);
+            });
+            
+            // Scroll to bottom
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+        
+        // Create message DOM element
+        function createMessageElement(text, sender, timeStr) {
             const messageWrapper = document.createElement('div');
             messageWrapper.className = `message-wrapper ${sender}`;
             
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            // Create avatar
             const avatar = document.createElement('div');
             avatar.className = 'message-avatar';
             avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
             
-            // Create message content
             const content = document.createElement('div');
             content.className = 'message-content';
             
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
-            
-            // Format message with paragraphs and links
             const formattedText = formatMessage(text);
             bubble.innerHTML = formattedText;
             
             const timeDiv = document.createElement('div');
             timeDiv.className = 'message-time';
-            timeDiv.textContent = timeStr;
+            timeDiv.textContent = timeStr || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
             content.appendChild(bubble);
             content.appendChild(timeDiv);
@@ -1158,30 +1237,50 @@
             messageWrapper.appendChild(avatar);
             messageWrapper.appendChild(content);
             
-            messagesArea.appendChild(messageWrapper);
-            
-            // Scroll to bottom
-            messagesArea.scrollTop = messagesArea.scrollHeight;
-            
-            // Save to chat history
-            chatMessages.push({ text, sender, time: timeStr });
+            return messageWrapper;
         }
-
-        // Format message with line breaks and links
+        
+        // Format message with clickable links and line breaks
         function formatMessage(text) {
-            // Replace URLs with clickable links
-            text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--primary-color); text-decoration: none;">$1</a>');
-            
-            // Replace line breaks with <br>
-            text = text.replace(/\n/g, '<br>');
-            
-            return text;
+            // Escape HTML to prevent XSS, but allow safe tags
+            let safeText = escapeHtml(text);
+            // Convert URLs to clickable links (http, https, www)
+            safeText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+            safeText = safeText.replace(/(www\.[^\s]+)/g, '<a href="https://$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+            // Convert line breaks to <br>
+            safeText = safeText.replace(/\n/g, '<br>');
+            return safeText;
         }
-
+        
+        // Simple escape function
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // Add message to UI and storage
+        function addMessage(text, sender) {
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            chatMessages.push({ text, sender, time: timeStr });
+            updateCurrentChat();
+            
+            const messagesArea = document.getElementById('messagesArea');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) welcomeScreen.style.display = 'none';
+            
+            const messageWrapper = createMessageElement(text, sender, timeStr);
+            messagesArea.appendChild(messageWrapper);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+        
         // Show typing indicator
         function showTypingIndicator() {
             if (isTyping) return;
-            
             isTyping = true;
             document.getElementById('sendButton').disabled = true;
             
@@ -1212,101 +1311,203 @@
             messagesArea.appendChild(indicator);
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
-
+        
         // Hide typing indicator
         function hideTypingIndicator() {
             isTyping = false;
             document.getElementById('sendButton').disabled = false;
-            
             const indicator = document.getElementById('typingIndicator');
-            if (indicator) {
-                indicator.remove();
+            if (indicator) indicator.remove();
+        }
+        
+        // Send message to API
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message || isTyping) return;
+            
+            input.value = '';
+            input.style.height = 'auto';
+            
+            addMessage(message, 'user');
+            showTypingIndicator();
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                hideTypingIndicator();
+                if (data.success) {
+                    addMessage(data.response, 'bot');
+                } else {
+                    addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error. Please try again.', 'bot');
             }
         }
-
-        // Ask suggested question
-        function askQuestion(question) {
-            document.getElementById('messageInput').value = question;
-            sendMessage();
-            
-            // Close mobile sidebar if open
+        
+        // Clear current chat
+        function clearChat() {
+            if (chatMessages.length === 0) return;
+            if (confirm('Clear all messages in this chat?')) {
+                chatMessages = [];
+                updateCurrentChat();
+                renderMessages();
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                if (welcomeScreen) welcomeScreen.style.display = 'block';
+            }
             closeSidebar();
         }
-
-        // Clear chat
-        function clearChat() {
-            if (confirm('Clear all messages?')) {
-                const messagesArea = document.getElementById('messagesArea');
-                messagesArea.innerHTML = '';
-                document.getElementById('welcomeScreen').style.display = 'block';
-                chatMessages = [];
-                
-                // Close mobile sidebar if open
-                closeSidebar();
-            }
-        }
-
-        // Export chat
+        
+        // Export current chat
         function exportChat() {
             if (chatMessages.length === 0) {
-                alert('No messages to export');
+                showToast('No messages to export');
                 return;
             }
-            
             let exportText = 'KUCCPS AI Assistant Chat\n';
             exportText += '='.repeat(40) + '\n\n';
-            
             chatMessages.forEach(msg => {
                 const sender = msg.sender === 'user' ? 'You' : 'Assistant';
                 exportText += `[${msg.time}] ${sender}:\n${msg.text}\n\n`;
             });
-            
             const blob = new Blob([exportText], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `kuccps-chat-${new Date().toISOString().slice(0,10)}.txt`;
             a.click();
-            window.URL.revokeObjectURL(url);
-            
-            // Close mobile sidebar if open
+            URL.revokeObjectURL(url);
+            showToast('Chat exported successfully');
             closeSidebar();
         }
-
-        // Start new chat
-        function startNewChat() {
-            if (chatMessages.length > 0) {
-                if (confirm('Start a new chat? Current chat will be cleared.')) {
-                    clearChat();
+        
+        // Show temporary toast message
+        function showToast(message) {
+            const toast = document.getElementById('linkToast');
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2000);
+        }
+        
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        }
+        
+        // Handle Enter key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // Suggested question click
+        function askQuestion(question) {
+            document.getElementById('messageInput').value = question;
+            sendMessage();
+            closeSidebar();
+        }
+        
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            const toggleBtn = document.getElementById('themeToggle');
+            const icon = toggleBtn.querySelector('i');
+            const text = toggleBtn.querySelector('span');
+            if (newTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Light';
+            } else {
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark';
+            }
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const toggleBtn = document.getElementById('themeToggle');
+            const icon = toggleBtn.querySelector('i');
+            const text = toggleBtn.querySelector('span');
+            if (savedTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Light';
+            } else {
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark';
+            }
+        }
+        
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('chatSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) {
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            } else {
+                overlay.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function closeSidebar() {
+            const sidebar = document.getElementById('chatSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        
+        // Handle link clicks globally (delegation)
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('.chat-link');
+            if (link) {
+                e.preventDefault();
+                const url = link.getAttribute('href');
+                if (url) {
+                    window.open(url, '_blank');
+                    showToast('Opening link in new tab');
                 }
             }
-            closeSidebar();
-        }
-
-        // Load chat history (from localStorage)
-        function loadChatHistory() {
-            // You can implement localStorage persistence here
-            // For now, just initialize empty
-        }
-
-        // Handle escape key to close sidebar
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeSidebar();
-            }
         });
-
-        // Prevent body scroll when modal is open
-        const helpModal = document.getElementById('helpModal');
-        if (helpModal) {
-            helpModal.addEventListener('show.bs.modal', function() {
-                document.body.style.overflow = 'hidden';
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadThemePreference();
+            loadChats();
+            // Attach suggested question handlers
+            document.querySelectorAll('.suggested-question').forEach(el => {
+                const question = el.getAttribute('data-question');
+                if (question) {
+                    el.addEventListener('click', () => askQuestion(question));
+                }
             });
-            
-            helpModal.addEventListener('hidden.bs.modal', function() {
-                document.body.style.overflow = '';
+            // Check mobile viewport
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) closeSidebar();
             });
-        }
+            // Close sidebar on escape
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') closeSidebar();
+            });
+        });
     </script>
 </body>
 </html>

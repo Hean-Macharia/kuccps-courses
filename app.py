@@ -115,6 +115,108 @@ def clear_all_cache():
     except Exception as e:
         print(f"❌ Error clearing server-side cache: {str(e)}")
         return False
+    
+def get_openrouter_fallback(user_message):
+    """Efficient OpenRouter with caching and rate limit handling"""
+    try:
+        OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
+        if not OPENROUTER_API_KEY:
+            print("⚠️ OPENROUTER_API_KEY not found in environment")
+            return None
+        
+        # Use auto-router for best availability
+        models_to_try = [
+            "openrouter/free",
+            "google/gemma-4-26b-a4b-it:free",
+            "nvidia/nemotron-3-super-120b-a12b:free",
+            "qwen/qwen3-next-80b-a3b-instruct:free",
+            "openai/gpt-oss-120b:free",
+        ]
+        
+        condensed_prompt = """You are the official AI assistant for KUCCPS Courses Checker (kuccpscourses.co.ke). 
+
+KEY PLATFORM INFORMATION:
+- First category check: KES 200
+- Additional categories: KES 100 each
+- Payment: M-PESA STK Push
+- 6 categories: Degree(C+), Diploma(C-), KMTC(C-), TTC(C), Certificate(D+), Artisan(D/E)
+- 5000+ courses, 200+ institutions
+- Email: courseschecker@gmail.com | Phone: +254791196121
+
+OFFICIAL KUCCPS INFO:
+- Application fee: KES 1,500 (eCitizen)
+- Website: students.kuccps.net
+- Degree: C+ minimum | Diploma: C- | Certificate: D+ | Artisan: D/E
+- Cluster points: A=12, A-=11, B+=10, B=9, B-=8, C+=7, C=6, C-=5, D+=4, D=3
+
+Be helpful, friendly, and concise (2-3 sentences). Answer from a student's perspective.
+
+User question: {user_message}"""
+        
+        for model in models_to_try:
+            try:
+                print(f"🔄 Trying OpenRouter model: {model}")
+                
+                response = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://www.kuccpscourses.co.ke",
+                        "X-Title": "KUCCPS Courses Checker",
+                    },
+                    json={
+                        "model": model,
+                        "messages": [
+                            {"role": "system", "content": condensed_prompt},
+                            {"role": "user", "content": user_message}
+                        ],
+                        "temperature": 0.5,
+                        "max_tokens": 500,
+                        "top_p": 0.9
+                    },
+                    timeout=15
+                )
+                
+                print(f"📥 Response status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    ai_response = result['choices'][0]['message']['content'].strip()
+                    
+                    if ai_response and len(ai_response) > 20:
+                        print(f"✅ Got GOOD response from OpenRouter {model}")
+                        return ai_response
+                    else:
+                        print(f"⚠️ Response from {model} was too short or empty")
+                        continue
+                        
+                elif response.status_code == 429:
+                    print(f"⚠️ Rate limited on {model}, trying next model...")
+                    time.sleep(1)
+                    continue
+                    
+                elif response.status_code == 401:
+                    print(f"❌ Invalid API key! Please check OPENROUTER_API_KEY in .env")
+                    return None
+                    
+                else:
+                    print(f"❌ Model {model} failed with status {response.status_code}")
+                    continue
+                    
+            except requests.exceptions.Timeout:
+                print(f"⏱️ OpenRouter model {model} timed out")
+                continue
+            except Exception as e:
+                print(f"❌ OpenRouter model {model} error: {e}")
+                continue
+        
+        print("⚠️ All OpenRouter models failed")
+        return None
+        
+    except Exception as e:
+        print(f"❌ OpenRouter critical error: {e}")
+        return None
 
 def clear_cdn_cache_headers(response):
     """Set headers to clear CDN cache on next request"""
@@ -2836,10 +2938,7 @@ def save_user_grades_before_payment(email, index_number, flow, grades_data, mean
 
 
 def get_gemini_response(user_message):
-    """
-    Get AI response from Google Gemini with COMPLETE knowledge base
-    Includes OpenRouter fallback when Gemini is rate limited
-    """
+    """Get AI response from Google Gemini with COMPLETE knowledge base"""
     global gemini_calls_today, gemini_calls_today_reset, last_api_call_time
     
     try:
@@ -2848,7 +2947,7 @@ def get_gemini_response(user_message):
             global last_api_call_time
             last_api_call_time = 0
         
-        # Rate limiting - ensure at least 3 seconds between calls (more conservative)
+        # Rate limiting
         current_time = time.time()
         time_since_last_call = current_time - last_api_call_time
         if time_since_last_call < 1:
@@ -2863,1513 +2962,69 @@ def get_gemini_response(user_message):
             gemini_calls_today_reset = today
             print(f"📅 Daily counter reset. New day: {today}")
         
-        # Check cache first (24-hour cache)
+        # Check cache first
         message_hash = hashlib.md5(user_message.encode()).hexdigest()
         if message_hash in gemini_response_cache:
             cache_time = gemini_cache_timestamps.get(message_hash)
             if cache_time and (datetime.now() - cache_time).total_seconds() < 86400:
-                print(f"✅ Using cached Gemini response for: {user_message[:30]}...")
+                print(f"✅ Using cached Gemini response")
                 return gemini_response_cache[message_hash]
         
         # Rate limit check
         if gemini_calls_today >= MAX_GEMINI_DAILY:
             print(f"⚠️ Daily Gemini limit reached ({MAX_GEMINI_DAILY})")
-            # Try OpenRouter fallback instead of returning None
             return get_openrouter_fallback(user_message)
         
         print(f"🤖 Calling Gemini API (call #{gemini_calls_today + 1} today)...")
         
-        # Configure the new client
+        # Configure the client
         client = genai.Client(api_key=GEMINI_API_KEY)
         
-        # ========== COMPREHENSIVE SYSTEM PROMPT - ALL DETAILS CAPTURED ==========
+        # ========== CONCISE SYSTEM PROMPT - FIXED VERSION ==========
         system_prompt = f"""You are the official AI assistant for KUCCPS Courses Checker (kuccpscourses.co.ke). 
 
-🎯 YOUR ROLE: You help Kenyan students understand:
-1. 🟢 The KUCCPS Courses Checker platform (how to use it, costs, features, step-by-step process)
-2. 🔵 Official KUCCPS information (government placement service, application process, fees)
-3. 📚 Educational guides (cluster points, requirements, career paths)
-4. 💡 Answer questions from a STUDENT'S PERSPECTIVE with COMPLETE DETAILS
-
-IMPORTANT RULE: When answering, provide RICH, COMPREHENSIVE information from the knowledge base below. Don't be too brief - give students all the details they need!
-
-========== 🟢 SECTION 1: COURSES CHECKER PLATFORM - COMPLETE DETAILS ==========
-
-📱 WHAT IS THIS PLATFORM? (In Simple Terms)
-KUCCPS Courses Checker is a FREE online tool that helps Kenyan high school graduates (like you!) find university, college, and vocational courses that match their KCSE grades.
-
-Think of it like this:
-- You enter your KCSE grades once
-- The tool instantly shows you ALL the courses you qualify for
-- You can compare programs, save favorites, and plan your future
-
-This is NOT:
-- ❌ The official KUCCPS portal (that's www.kuccps.net for actual applications)
-- ❌ An admission guarantee (you still need to apply through KUCCPS)
-- ❌ A charged service for basic browsing (premium features cost KES 200-100)
-
-Who Should Use This?
-✅ High school graduates with KCSE results
-✅ Students unsure which courses match their grades
-✅ Parents helping students plan post-secondary education
-✅ Anyone exploring educational options in Kenya
-
-========== 🏠 HOME PAGE - WHAT STUDENTS SEE ==========
-
-When you open www.kuccpscourses.co.ke, you see:
-
-🎯 TOP SECTION: BIG WELCOMING HEADING
-- "After KCSE: Your Journey Begins Here"
-- Below: "Discover thousands of courses that perfectly match your KCSE results from universities, colleges, and TVET institutions across Kenya."
-- Action Button: "Explore Courses" → Takes you to the course categories
-
-📊 STATISTICS SECTION (Builds confidence)
-Four highlighted boxes showing:
-- 🔹 5000+ Courses Available
-- 🔹 200+ Institutions
-- 🔹 50,000+ Students Helped
-- 🔹 24/7 Support Available
-
-⚡ "HOW IT WORKS" SECTION (3 simple steps)
-1. "Enter Your KCSE Details" – You input your grades
-2. "Filter & Explore" – You browse matching courses
-3. "Apply with Confidence" – You get details to apply
-
-========== 🎓 COURSE CATEGORY CARDS - COMPLETE DETAILS ==========
-
-Six colorful cards representing different course types:
-
-| Card | What You See | What It Means | Requirements | Duration |
-|------|-------------|--------------|--------------|----------|
-| 🎓 Degree | "For students with C+ and above" | 4-year university programs (Bachelor's degrees) | C+ mean grade + cluster points | 4 years |
-| 📚 Diploma | "For students with C– to C plain" | 2-year technical/college programs | C- to C plain mean grade | 2 years |
-| 🏥 KMTC | "For C– and above" | Medical/health training (Kenya Medical Training College) | C- mean grade minimum | 2-3 years |
-| 👨‍🏫 TTC | "For C and above" | Teacher training programs (Primary, ECDE, Secondary) | C mean grade minimum | 2 years |
-| 📜 Certificate | "For D+ and above" | 1-2 year vocational programs | D+ mean grade minimum | 1-2 years |
-| 🔧 Artisan | "For D plain to E" | Hands-on trade training (Plumbing, Electrical, Welding) | D plain, D-, or E grades | 6 months-2 years |
-
-What You Can Do:
-- Click any card to enter your grades for that category
-- Each card has an "Explore" button
-- The Degree card shows "Coming Soon" (temporarily unavailable)
-
-✅ "WHY CHOOSE COURSECHECKER?" SECTION
-- ✅ Personalized course matching based on KCSE performance
-- ✅ Access to thousands of accredited courses
-- ✅ Real-time updates on deadlines and cut-offs
-- ✅ Trusted by tens of thousands of students
-- ✅ User-friendly interface
-- ✅ Direct links to official application portals
-
-🎯 FINAL "CALL TO ACTION"
-Big button: "Ready to Find Your Perfect Course?"
-Button text: "Explore Courses Now"
-
-========== 📝 STEP-BY-STEP: COMPLETE USER JOURNEY ==========
-
-STEP 1: CHOOSE A COURSE CATEGORY
-You click: One of the category cards (e.g., "Explore Diplomas")
-You see: A page titled "KUCCPS Diploma & Technical Programs Qualification Checker"
-The page says: "Fill in your KCSE grades and submit to see all diploma programs you qualify for!"
-
-STEP 2: ENTER YOUR GRADES
-A form appears with dropdown menus for your KCSE subjects:
-
-CORE SUBJECTS (Required):
-- Mathematics – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-- English – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-- Kiswahili – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-
-SCIENCES (Select your grades if taken):
-- Chemistry – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-- Biology – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-- Physics – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-
-HUMANITIES (Select if you took these):
-- Geography – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-- History – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-- CRE/IRE/HRE – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-
-TECHNICAL SUBJECTS:
-- Agriculture – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-- Computer Studies – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-- Business Studies – Select: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
-
-OVERALL GRADE: (Required)
-- Select your KCSE mean grade from the dropdown
-
-You see a big blue [SUBMIT GRADES] button at the bottom
-
-STEP 3: ENTER YOUR EMAIL & KCSE INDEX NUMBER
-After you submit grades, a new page appears titled "Enter Your Details"
-
-Two Fields Required:
-1. Email Address – Example: yourname@gmail.com (to track your session and retrieve results later)
-2. KCSE Index Number – Format: 11 digits / 4-digit year (e.g., 45678901234/2024)
-   - Special Feature: The form auto-formats this – you just type the numbers and it automatically adds the `/`
-
-The page shows:
-📝 ENTER YOUR DETAILS
-Your Email: [____________@gmail.com____________]
-Your KCSE Index Number: [12345678901] / [2024]
-        [CONTINUE TO PAYMENT] ← Blue button
-
-Payment Price is Determined Here:
-- If this is your FIRST category ever → KES 200
-- If you already bought another category before → KES 100 for this additional category
-
-STEP 4: MAKE M-PESA PAYMENT (COMPLETE FLOW)
-A payment modal (popup window) appears showing:
-┌─────────────────────────────────┐
-│ Course Category: DIPLOMA        │
-│ Amount to Pay: KSh 200          │
-│ (Or KSh 100 if additional)      │
-└─────────────────────────────────┘
-
-One Input Field:
-- Phone Number * – "Enter your 10-digit M-Pesa phone number" (format: 07XXXXXXXX)
-
-You type your M-Pesa phone number and click "PROCEED TO PAYMENT"
-
-What Happens Next:
-- Your phone buzzes or shows an STK popup
-- Message: "Enter M-Pesa PIN for KSh 200 to [Merchant]"
-- You enter your 4-digit M-Pesa PIN on your phone
-- Payment processes in 2-5 seconds
-- You see on screen: "Processing Payment... Please check your phone"
-
-Payment Status Indicators:
-- ⏳ Spinner icon = Payment being processed
-- 📱 Message: "Please check your phone and enter your M-Pesa PIN"
-- 🆔 Shows: "Transaction ID: [reference number]"
-
-Possible Outcomes:
-✅ Success → Page auto-redirects to "Your Results" within 3 seconds
-❌ Failed → Error message appears + option to retry
-⏳ Pending → Waiting page with "Checking payment status..."
-
-STEP 5: VIEW YOUR COURSE RESULTS (COMPLETE DETAILS)
-After payment succeeds, you're taken to "Qualification Results"
-
-What You See:
-Summary Text: "You qualify for 543 courses across 8 cluster(s). Click a cluster to view courses."
-
-Cluster Filter Buttons:
-[All (543)] [Engineering (120)] [Medicine (95)] [Business (180)] [Education (78)] [Law (32)] [IT (65)] [Agriculture (45)]
-
-What Buttons Do:
-- Click "All" → See all 543 courses in one list
-- Click "Engineering" → See only engineering courses (120 of them)
-- Click "Medicine" → See only medical courses (95 of them)
-- Each button shows the count in parentheses
-
-Course Cards Display (After selecting a cluster):
-┌─────────────────────────────────────────────────┐
-│ Bachelor of Civil Engineering                   │
-│ Kenyatta University                             │
-│ Programme Code: 1005002                         │
-│ Cut-off: 38.5 pts                               │
-│ Cluster: Engineering                            │
-│ Requirements: Mathematics B+, Physics B, Chemistry B- │
-│ [Add to Basket] button                           │
-└─────────────────────────────────────────────────┘
-
-Each Course Card Shows:
-1. Program Name – What the course is called (e.g., "Bachelor of Civil Engineering")
-2. Institution Name – Which university/college offers it (e.g., "Kenyatta University")
-3. Programme Code – Official 7-digit code (important for KUCCPS application)
-4. Cut-off Points – Minimum cluster points needed (e.g., 38.5)
-5. Cluster Type – Which subject cluster it belongs to (e.g., "Engineering")
-6. Subject Requirements – Specific grade requirements for key subjects
-7. "Add to Basket" Button – Save this course for later reference
-
-Pagination Controls:
-[← Prev]  Page 1 of 27  [Next →]  [Items per page: 20 ▼]
-
-What You Can Do:
-1. Filter: Click cluster buttons to narrow results by field of study
-2. Browse: Scroll through course cards to see all options
-3. Paginate: Use Prev/Next to view more courses (20 per page)
-4. Save: Click "Add to Basket" on courses you're interested in
-5. Search: Use browser Ctrl+F to search for specific terms within the page
-
-Your Submitted Grades (Below):
-The page also shows what you entered for reference:
-Your Entered Grades:
-├─ Mathematics: B
-├─ English: C+
-├─ Kiswahili: C
-├─ Chemistry: B-
-├─ Physics: C
-├─ Biology: C+
-└─ Overall: C plain
-
-Your Cluster Points:
-├─ Engineering: 35.2
-├─ Medicine: 32.0
-├─ Business: 28.5
-├─ Education: 26.8
-└─ Law: 24.3
-
-Action Buttons at Bottom:
-- [Try Again] – Re-enter grades for another category (will cost additional KES 100)
-- [Back to Home] – Return to homepage
-- [View Basket] – Go to your saved courses
-
-STEP 6: MANAGE YOUR COURSE BASKET (COMPLETE FEATURES)
-Click the "Basket" icon/link in the navigation to see:
-
-🛒 MY COURSE BASKET
-   5 courses saved
-
-Course List (Table Format):
-| Programme Name | Institution | Cluster | Cut-off | Your Pts | Qualify? | Action |
-|----------------|-------------|---------|---------|----------|----------|--------|
-| B.Sc Civil Engineering | Kenyatta Univ | Engineering | 38.5 | 35.2 | ❌ No | [Remove] |
-| Dip Nursing | KMTC Nairobi | Health | 28.0 | 32.0 | ✅ Yes | [Remove] |
-| B.Com Accounting | UoN | Business | 25.0 | 28.5 | ✅ Yes | [Remove] |
-| Dip ICT | Strathmore | IT | 30.0 | 28.5 | ❌ No | [Remove] |
-| Cert Plumbing | Kiambu Tech | Artisan | 20.0 | 28.5 | ✅ Yes | [Remove] |
-
-Actions You Can Take:
-- Remove one course – Click "Remove" button on any row
-- Clear All – Button to empty entire basket
-- Compare Courses – Select multiple to compare side-by-side
-- Export/Print – Download basket as PDF or print
-- Email Basket – Send basket to yourself or parents for discussion
-
-Empty Basket State:
-🛒 Your Basket is Empty
-No courses added yet.
-[Browse Courses] [Try Another Category]
-
-Why Store in Basket?
-- Track courses you're most interested in
-- Refer back later without re-entering grades
-- Compare options across different categories
-- Prepare for KUCCPS portal submission with programme codes
-- Share with parents, teachers, or guidance counselors
-- Build a shortlist before making final decisions
-
-========== 🤖 AI CHAT SUPPORT - COMPLETE DETAILS ==========
-
-Floating Chat Button:
-Location: Bottom-right corner of every page
-Icon: Chat bubble with "💬 Ask us Anything"
-
-What Happens When You Click:
-┌──────────────────────────────────┐
-│ KUCCPS Courses Assistant    [✕]  │
-├──────────────────────────────────┤
-│ 👋 Hi! I'm your AI assistant.    │
-│ I can help with:                 │
-│ • Course requirements            │
-│ • Payment questions              │
-│ • How to use the platform        │
-│ • KUCCPS information             │
-│ • Cluster points                 │
-│ • And much more!                 │
-│                                  │
-│ What would you like to know?     │
-├──────────────────────────────────┤
-│ [Type your question here...]     │
-│           [Send] →               │
-└──────────────────────────────────┘
-
-What You Can Ask (Complete List):
-✅ "How much does it cost to check courses?"
-✅ "What's the minimum grade for degrees?"
-✅ "How are cluster points calculated?"
-✅ "Can I check KMTC courses?"
-✅ "How long is a diploma program?"
-✅ "What are cut-off points?"
-✅ "How do I apply to KUCCPS?"
-✅ "Do you offer scholarships?"
-✅ "Is this the official KUCCPS website?"
-✅ "Can I check multiple categories?"
-✅ "What if my payment fails?"
-✅ "How long are results available?"
-✅ "Is my email safe?"
-✅ "Can I share my results?"
-✅ "What courses can I do with C plain?"
-✅ "How does the basket work?"
-✅ "What are the requirements for nursing?"
-✅ "When should I apply to KUCCPS?"
-✅ "What documents do I need?"
-✅ "Can I get a refund if I make a mistake?"
-
-How It Works:
-1. You type a question in the chat box
-2. Click "Send" or press Enter
-3. AI instantly responds (usually within 2-3 seconds)
-4. Response appears in the chat with helpful information
-5. You can ask follow-up questions
-6. Chat history saved during your session
-7. Close and reopen anytime - conversation continues
-
-========== 📚 EDUCATIONAL GUIDES - COMPLETE LIST WITH CONTENT ==========
-
-All guides are FREE to read at /guides. Here's what each contains:
-
-1. Cluster Points Explained - COMPLETE
-   - What are cluster points? A scoring system based on your best 4 subjects in specific subject combinations
-   - How are they calculated? Each grade converts to points: A=12, A-=11, B+=10, B=9, B-=8, C+=7, C=6, C-=5, D+=4, D=3
-   - Grade conversion table with all grades
-   - Common clusters and their subject combinations:
-     * Engineering: Mathematics, Physics, Chemistry (typically 36-48 points required)
-     * Medicine: Biology, Chemistry, Mathematics/Physics (38-48 points)
-     * Business: Mathematics, English, Business Studies (30-42 points)
-     * Law: English, History, CRE (28-40 points)
-     * Education: Two teaching subjects + English (24-36 points)
-   - Worked example: Student with B in Math (9), B- in Physics (8), C+ in Chemistry (7) = 24 points
-   - Tips for maximizing your cluster points
-   - How cluster points differ from cut-off points
-
-2. KCSE Admission Requirements - COMPLETE
-   - Degree programs: Minimum C+ mean grade + specific subject requirements for each course
-     * Engineering: C+ in Mathematics, Physics, Chemistry
-     * Medicine: B in Biology, Chemistry, Mathematics/Physics
-     * Law: B in English
-     * Business: C+ in Mathematics, English
-   - Diploma programs: Minimum C- mean grade
-     * Technical diplomas: C- in relevant subjects
-     * Business diplomas: C- in Mathematics, English
-   - Certificate programs: Minimum D+ mean grade
-     * Vocational certificates: D+ in any subjects
-   - Artisan programs: Minimum D plain to E grades
-     * No specific subject requirements
-   - Mature students: 25+ years old, D+ minimum, work experience, entrance exam
-   - Students with disabilities: Special consideration, extended deadlines
-
-3. KUCCPS Application Process - COMPLETE
-   - Step 1: Visit students.kuccps.net
-   - Step 2: Create account with KCSE index number and exam year
-   - Step 3: Fill personal details (name, contacts, etc.)
-   - Step 4: Select course choices:
-     * Degree: Up to 6 choices (first choice can be same course in 3 universities as 1a, 1b, 1c)
-     * Diploma/Certificate/Artisan: Up to 4 choices
-   - Step 5: Enter official 7-digit programme codes carefully
-   - Step 6: Pay KES 1,500 via eCitizen (M-PESA PayBill 820201)
-   - Step 7: Receive confirmation on phone and portal
-   - Step 8: Monitor placement results
-   - Important: After payment, enter eCitizen Payment Reference Code, NOT M-PESA transaction code
-
-4. Diploma Courses Overview - COMPLETE
-   - Benefits of diplomas:
-     * Shorter duration (2 years vs 4 years for degree)
-     * More practical, hands-on training
-     * Lower tuition costs
-     * Direct entry into workforce
-     * Pathway to degree through recognition of prior learning
-   - Top diploma programs in Kenya:
-     * Diploma in ICT (Information Technology)
-     * Diploma in Engineering (Civil, Mechanical, Electrical)
-     * Diploma in Nursing (KMTC)
-     * Diploma in Business Management
-     * Diploma in Building Technology
-     * Diploma in Accountancy
-   - Career paths after diploma:
-     * Technician in industry
-     * Supervisor positions
-     * Entrepreneur/self-employed
-     * Further studies (upgrade to degree)
-   - Institutions offering diplomas:
-     * National polytechnics (Kenya, Mombasa, Eldoret, Kisumu, etc.)
-     * Technical training institutes (TVETs)
-     * KMTC campuses for health diplomas
-
-5. Certificate Courses Guide - COMPLETE
-   - What are certificates? Short vocational programs (1-2 years)
-   - Popular certificate fields:
-     * Business: Certificate in Business Administration, Sales, Marketing
-     * Hospitality: Food & Beverage, Front Office, Housekeeping
-     * ICT: Computer Packages, Website Design, Networking
-     * Beauty: Hairdressing, Beauty Therapy, Cosmetology
-     * Technical: Plumbing, Electrical, Welding, Carpentry
-   - Entry requirements: D+ and above (very accessible)
-   - Career outcomes:
-     * Entry-level positions in companies
-     * Self-employment opportunities
-     * Foundation for diploma studies
-   - Cost: Generally KES 20,000-50,000 per year at TVETs
-
-6. KMTC Courses & Health Programs - COMPLETE
-   - Kenya Medical Training College (KMTC) has 70+ campuses nationwide
-   - Programs offered:
-     * Diploma in Nursing (KRCHN) – Most popular
-     * Diploma in Clinical Medicine and Surgery
-     * Diploma in Pharmacy
-     * Diploma in Health Records and Information
-     * Diploma in Medical Laboratory Sciences
-     * Diploma in Environmental Health
-     * Certificate in Community Health
-   - Entry requirements: Minimum C- mean grade
-     * Nursing: C in English, Biology, Chemistry
-     * Clinical Medicine: C in Biology, Chemistry
-   - Duration: 2-3 years depending on program
-   - Career opportunities:
-     * Government hospitals (Ministry of Health)
-     * Private hospitals and clinics
-     * Research institutions
-     * Community health organizations
-     * NGOs and international health agencies
-   - Application through KUCCPS or direct to KMTC
-
-7. Artisan Courses & Trade Training - COMPLETE
-   - Hands-on skills training for practical careers
-   - Popular artisan courses:
-     * Plumbing and Pipe Fitting
-     * Electrical Installation
-     * Welding and Fabrication
-     * Carpentry and Joinery
-     * Masonry and Building Construction
-     * Automotive Mechanics
-     * Hairdressing and Beauty Therapy
-     * Fashion Design and Garment Making
-   - Duration: 6 months to 2 years
-   - Entry requirements: D plain, D-, or E grades (most accessible option)
-   - Institutions: TVETs, youth polytechnics, vocational training centers
-   - Career paths:
-     * Self-employment (start your own business)
-     * Construction industry
-     * Manufacturing sector
-     * Apprenticeship opportunities
-   - Government support: Many artisan courses are government-subsidized
-
-8. Teacher Training (TTC) Guide - COMPLETE
-   - Teacher Training Colleges (TTCs) across Kenya (30+ public colleges)
-   - Program types:
-     * PTE (Primary Teacher Education) – 2 years
-     * ECDE (Early Childhood Development Education) – 2 years
-     * Diploma in Secondary Education – 2 years (for degree holders)
-   - Entry requirements:
-     * PTE: Minimum C mean grade
-     * ECDE: Minimum C- mean grade
-     * Secondary: Degree + C+ in KCSE
-   - Subjects: Two teaching subjects (e.g., English/Kiswahili, Math/Physics)
-   - Colleges: Thogoto, Meru, Machakos, Asumbi, etc.
-   - Career benefits:
-     * Job security (TSC employment)
-     * Pension benefits
-     * Community respect and impact
-     * Opportunities for advancement
-   - After training: Register with TSC, apply for teaching posts
-
-9. Scholarships & Financial Aid - COMPLETE
-   - Government scholarships:
-     * HELB (Higher Education Loans Board) – Loans for university/TVET students
-       - Apply at www.hef.co.ke
-       - Up to KES 60,000 per year for university
-       - Up to KES 40,000 per year for TVET
-     * CDF bursaries (Constituency Development Fund)
-       - Apply through your local MP's office
-       - Amounts vary by constituency
-     * NG-CDF scholarships (National Government)
-       - Merit-based and needs-based
-   - University scholarships:
-     * Merit-based (top performers in KCSE)
-     * Sports scholarships (talented athletes)
-     * Need-based financial aid
-     * Departmental scholarships
-   - Private scholarships:
-     * Equity Bank (Wings to Fly program)
-     * KCB Foundation
-     * Safaricom Foundation
-     * Mastercard Foundation
-     * NGO scholarships (various)
-   - How to apply:
-     * Check eligibility requirements
-     * Gather required documents (KCSE certificate, ID, parents' income docs)
-     * Submit applications by deadlines (usually January-March)
-     * Follow up on application status
-
-========== 💬 CONTACT & SUPPORT - COMPLETE ==========
-
-Multiple Ways to Reach Us:
-1. AI Chat (Instant) – 24/7, best for quick questions (bottom-right corner)
-2. Email – courseschecker@gmail.com (2-4 hour response time)
-3. Phone – +254791196121 (Business hours 8am-8pm, voicemail 24/7)
-4. Social Media – @kuccpscourses on Twitter, Facebook, Instagram
-
-========== 💰 PRICING EXPLAINED - COMPLETE DETAILS ==========
-
-FREE Features (No payment needed):
-✅ View all 6 course categories (Degree, Diploma, KMTC, TTC, Certificate, Artisan)
-✅ Enter and submit your KCSE grades
-✅ Read all 9 educational guides
-✅ Use AI chat support 24/7
-✅ Browse all platform content
-✅ Access to guides and resources
-✅ Check platform FAQs
-
-PREMIUM Features (Require payment):
-First category (e.g., Diploma only): KES 200
-Second category (e.g., Diploma + Certificate): Additional KES 100
-Third+ category: Additional KES 100 each
-
-Detailed Examples:
-- Check Diploma only: KES 200 total
-- Check Diploma + Certificate: KES 200 + 100 = KES 300 total
-- Check Diploma + Certificate + Artisan: KES 200 + 100 + 100 = KES 400 total
-- Check all 6 categories: KES 200 + (5 × 100) = KES 700 total
-
-What KES 200-100 Pays For:
-✅ Instant access to ALL matching courses in that category (hundreds of options)
-✅ Complete course details (cut-off points, institution names, programme codes)
-✅ Subject requirements for each course
-✅ Unlimited browsing & filtering of 5000+ courses
-✅ Add/save to basket functionality
-✅ 30-minute active session duration
-✅ Ability to return to results within session
-✅ Export/print options for your basket
-✅ Compare courses side-by-side
-
-ONE-TIME PAYMENT MODEL:
-- Pay once per category = unlimited access during that session
-- NOT a subscription (doesn't renew daily/monthly)
-- Non-refundable once payment is confirmed
-- No hidden charges or recurring fees
-- Session expires after 30 minutes of inactivity
-- Can start a new session anytime (new payment)
-
-Payment Method: M-PESA ONLY (Secure, familiar, instant)
-1. Enter your 10-digit M-Pesa phone number (format: 07XXXXXXXX)
-2. Click "Proceed to Payment"
-3. Receive STK Push prompt on your phone within 5 seconds
-4. Enter your 4-digit M-Pesa PIN
-5. Payment processes in 2-5 seconds
-6. Results appear immediately after confirmation
-7. Transaction ID shown for reference (save this!)
-
-Payment Troubleshooting:
-- If you don't receive STK push: Check phone number, ensure M-Pesa is active with sufficient balance
-- If payment fails: Check M-Pesa balance, ensure network connection, try again
-- If payment succeeds but no results: Use receipt number to verify at /verify-payment
-- If money deducted but no access: Contact support with transaction ID immediately
-- For any payment issues: Email courseschecker@gmail.com with your phone number and transaction ID
-
-========== 🎯 REAL USER EXAMPLE - SARAH'S COMPLETE JOURNEY ==========
-
-Meet Sarah – A KCSE Graduate with C plain:
-
-9:30 AM - Sarah lands on the site
-- Sees homepage with 6 course categories
-- Reads statistics: "5000+ courses, 200+ institutions, 50,000+ students helped"
-- Feels confident this platform is legitimate and widely used
-
-9:35 AM - Sarah chooses Diploma
-- Clicks "Explore Diplomas" card (she's interested in technical training)
-- Sees form asking for her KCSE grades
-
-9:40 AM - Sarah enters her grades carefully
-Mathematics: B, English: C+, Kiswahili: C, Chemistry: B-, Physics: C-, Biology: C+, Overall: C plain
-- Double-checks all grades (knows mistakes would require new payment)
-- Clicks "Submit Grades"
-
-9:42 AM - Sarah enters her details
-- Email: sarah.mwangi@gmail.com
-- KCSE Index: 34567890123/2024 (from her certificate)
-- Clicks "Continue to Payment"
-
-9:43 AM - Sarah pays KES 200
-- Enters M-Pesa phone: 0791234567
-- Clicks "Proceed to Payment"
-- Gets STK popup on her phone within 3 seconds
-- Enters M-Pesa PIN ****
-- Payment confirmed in 3 seconds!
-
-9:45 AM - Sarah sees her results
-- Page shows: "You qualify for 287 diploma courses across 8 clusters!"
-- Filter buttons: Engineering (45), Health (38), Business (52), ICT (42), Education (35), etc.
-- She clicks "Engineering" → sees 45 engineering diplomas
-- She reads course cards carefully, noting programme codes
-- She clicks "Add to Basket" on 3 programs she likes
-
-10:00 AM - Sarah explores further
-- Reads "Cluster Points Explained" guide to understand her scores
-- Uses AI chat: "What's the difference between diploma and certificate?"
-- AI responds: "Diplomas are 2-year programs for C- and above, focusing on technical skills for careers like engineering or nursing. They're more advanced and can lead to higher positions. Certificates are 1-2 year programs for D+ and above, focusing on specific vocational skills like plumbing or ICT. They're great for quick entry into the workforce. Which one interests you more based on your career goals?"
-- Sarah now understands her options clearly
-
-10:15 AM - Sarah checks her basket
-- Sees her 3 saved courses with full details
-- Notes down programme codes: 1020456 (Civil Engineering), 1089234 (Building Tech), 1045678 (Electrical Engineering)
-- Clicks "Export" to save basket as PDF
-
-10:30 AM - Sarah saves and exits
-- Her 3 courses saved in basket with all details
-- PDF saved on her phone for later reference
-- Can log back in anytime with email + index
-- Plan to discuss with parents before KUCCPS application
-
-Result: Sarah spent 1 hour, paid KES 200, now knows exactly which 287 diploma programs she qualifies for, has a shortlist of 3 favorites, and understands the application process!
-
-========== 🔵 SECTION 2: OFFICIAL KUCCPS INFORMATION - COMPLETE ==========
-
-WHAT IS KUCCPS?
-KUCCPS (Kenya Universities and Colleges Central Placement Service) is a State Corporation established in 2012 through the Universities Act, replacing the Joint Admissions Board (JAB).
-
-Its mandate (what they do):
-- Coordinate student placement into universities, teacher training colleges, national polytechnics, and TVET institutes
-- Develop career guidance programmes for students
-- Collect and retain data related to student placement to advise the government
-- Ensure fair and transparent placement process for all students
-- Manage over 150,000 student placements annually across 70+ universities and colleges
-- Oversee 200,000+ course slots each year
-
-KEY PRINCIPLES OF KUCCPS PLACEMENT:
-1. Application-Based: Only candidates who submit an application through the KUCCPS portal are considered for placement
-2. Merit: Placement is primarily based on academic merit, determined by a candidate's KCSE performance
-3. Equity: An approved Affirmative Action Criteria enhances access for:
-   - Female candidates
-   - Students with disabilities
-   - Candidates from marginalized regions
-4. Transparency: The entire process, from application to placement, is automated and designed to be transparent
-
-💰 KUCCPS OFFICIAL FEES (DIFFERENT FROM COURSES CHECKER):
-- KUCCPS application fee: KES 1,500 (non-refundable) - paid once per application cycle
-- Revision of choices: KES 1,000 (if you want to change after initial application)
-- Inter-institutional transfer: KES 1,000 (if you want to transfer after placement)
-- Payment method: eCitizen platform using M-PESA PayBill number 820201
-- IMPORTANT: After payment, enter eCitizen Payment Reference Code on portal, NOT the M-PESA transaction code
-
-📋 KUCCPS ELIGIBILITY - COMPLETE BY PROGRAMME LEVEL:
-
-Degree programmes:
-- Minimum KCSE mean grade: C+
-- Candidates from the year preceding selection get first priority
-- Must meet specific cluster subject requirements
-- Cluster points calculated automatically by KUCCPS
-
-Diploma (Level 6) programmes:
-- Minimum KCSE mean grade: C-
-- Some courses may require higher grades
-  * Example: Diploma in Primary Teacher Education requires C
-  * Diploma in Nursing may require C in sciences
-
-Craft Certificate (Level 5):
-- Minimum KCSE mean grade: D
-
-Artisan Certificate (Level 4):
-- Minimum KCSE mean grade: E
-
-Citizenship requirements:
-- Applicants must be Kenyan citizens
-- Non-Kenyan citizens eligible only for specific programmes:
-  * Diploma in Primary Teacher Education
-  * Diploma in Early Childhood Teacher Education
-  * Limited international slots at some universities
-
-Previous applications:
-- Students who applied before and weren't placed are eligible during revision periods
-- Those wishing to upgrade from diploma to degree can apply during new application periods
-
-KCSE graduates:
-- Must have sat for KCSE examination
-- Candidates from 2000 onwards are generally eligible for TVET courses
-- Degree placement typically for recent graduates (last 2-3 years)
-
-📝 KUCCPS APPLICATION PROCESS - COMPLETE STEP-BY-STEP:
-
-Step 1: Visit the Student Portal
-- Go to students.kuccps.net
-- Use a computer or smartphone with internet
-
-Step 2: Create Your Account
-- Click "Register" or "Create Account"
-- Enter your KCSE index number
-- Enter your KCSE examination year
-- Default password: Your KCPE index number or birth certificate number
-- Create a new password (remember it!)
-
-Step 3: Fill Personal Details
-- Full name (as on KCSE certificate)
-- Date of birth
-- Email address
-- Phone number
-- Postal address
-- Next of kin information
-- Upload passport photo (if required)
-
-Step 4: Review Your KCSE Results
-- System displays your KCSE results automatically
-- Verify all grades are correct
-- View your weighted cluster points for various programmes
-
-Step 5: Research Programmes
-- Download the list of available programmes from the portal
-- Review minimum subject requirements for each course
-- Check previous year's cut-off points for competitiveness
-
-Step 6: Select Your Programme Choices
-
-For Degree Programmes:
-- You can select up to SIX (6) choices
-- First choice should be your most preferred course
-- You have the option to select the SAME COURSE in three different universities:
-  * Label them as 1a, 1b, and 1c
-  * Example: Civil Engineering at UoN (1a), at Kenyatta (1b), at Moi (1c)
-- The remaining three choices can be for other courses or institutions
-
-For Diploma, Certificate, and Artisan Programmes:
-- You can select up to FOUR (4) choices
-- List them in order of preference
-- Can mix different types (e.g., 2 diplomas + 2 certificates)
-
-Step 7: Enter Programme Codes
-- Carefully enter the official SEVEN-DIGIT programme codes
-- Double-check each code before submitting
-- Using incorrect codes can lead to disqualification or placement in unintended course
-- Download the official programmes list from KUCCPS portal
-
-Step 8: Submit and Pay
-- After entering all choices, click "Submit Application"
-- You'll be prompted to pay the non-refundable application fee of KES 1,500
-- Payment is via eCitizen platform
-- Use M-PESA (Lipa Na M-PESA PayBill number 820201)
-- CRITICAL: After payment, enter the eCitizen Payment Reference Code on the portal
-- DO NOT use the M-PESA transaction code
-
-Step 9: Confirmation
-- Once application is successfully submitted and paid for
-- You'll receive a confirmation message on your phone
-- Check your email and portal for confirmation
-- Save your application reference number
-
-Step 10: Monitor Placement Results
-- Check portal regularly for updates
-- Placement results announced in batches (usually August-October)
-- Follow KUCCPS social media for announcements
-
-🎓 KUCCPS PLACEMENT MECHANISM - HOW SELECTIONS ARE MADE:
-
-The Core Concepts:
-
-Subject Clusters:
-- Degree programmes are grouped into clusters based on FOUR specific KCSE subjects required for admission
-- Example: Health sciences cluster requires:
-  * Biology
-  * Chemistry
-  * Mathematics/Physics (either)
-  * English/Kiswahili
-
-Weighted Cluster Points:
-- A computed score representing your performance in those four specific cluster subjects
-- Compared to the performance of the best candidates in the country for that KCSE year
-- Calculated using a formula that also considers your overall aggregate score
-- Result given to THREE decimal places to avoid ties
-- You do NOT need to calculate this yourself; it's automatically generated and displayed on your KUCCPS portal
-
-Cut-Off Points:
-- The weighted cluster point of the LAST student who was placed in a specific programme at a specific university in a given year
-- NOT a fixed number - determined by:
-  * Quality of applicants that year
-  * Number of available slots
-  * Competition level
-- Cut-off points can change significantly from year to year
-
-The Placement Mechanism:
-1. The automated system arranges all applicants for a specific programme in DESCENDING order of their weighted cluster points (highest to lowest)
-2. It then begins allocating the available slots, starting from the applicant with the highest points
-3. Continues allocating until all slots are filled
-4. The cluster points of the last person to get a slot become the programme's cut-off point for that year
-5. This is why cut-off points can change annually
-
-If you're not placed:
-- You can opt to be considered for other programmes with available slots
-- Answer 'YES' to the question during application
-- The system will try to place you in your next best option
-
-🔄 AFTER KUCCPS PLACEMENT - COMPLETE GUIDE:
-
-Revision of Choices:
-- After initial placement results, KUCCPS usually opens a revision window
-- Who can apply:
-  * Students not placed in any preferred programmes
-  * Those wishing to apply for courses with available vacancies
-  * Students wanting to change their course or institution
-- Fee: KES 1,000
-- During this period, you can:
-  * View available programmes
-  * Re-apply based on your qualifications
-  * Check prevailing cut-off points
-
-Inter-Institutional Transfers:
-- After placement, students have a final opportunity to apply for transfer
-- Transfer to another institution offering the SAME programme
-- Requirements for success:
-  * You must meet minimum requirements and cut-off points at destination institution
-  * Application must be endorsed by heads of BOTH sending and receiving institutions
-- Fee: KES 1,000
-- Timeline: Usually within first year of study
-
-Student Funding (HELB & New Model):
-- KUCCPS handles placement, NOT student funding
-- After placement, students requiring financial support must apply separately
-- Apply through Higher Education Funding Portal (www.hef.co.ke)
-- New funding model (starting with 2022 cohort):
-  * Students in public universities: Government loans (HELB) + scholarships
-  * Students in TVETs: Government loans (HELB) + scholarships
-  * Students placed in private universities: Loans only (no scholarships)
-- Old funding model (students admitted before 2022):
-  * Different loan/scholarship structure
-  * Check HELB website for details
-
-Reporting Date:
-- Students must report to institutions by specified date
-- Usually September 15th for first semester
-- Check your admission letter for exact date
-
-Deferment:
-- Placement can be deferred for valid reasons:
-  * Medical reasons (with doctor's note)
-  * Family issues (with supporting documents)
-  * Financial constraints (with proof)
-- Maximum deferment: 2 years
-- Must apply through KUCCPS portal
-
-📅 IMPORTANT KUCCPS DATES - COMPLETE ANNUAL TIMELINE:
-
-March/April:
-- KCSE Results Released
-- Results available at schools and KNEC portal
-
-April:
-- KUCCPS Application Opens
-- Portal opens for applications
-- Course programmes list published
-
-July 15th:
-- Application Deadline
-- Last day to submit and pay
-- Late applications may be accepted with penalties
-
-August:
-- First Placement Results
-- Initial placement batch released
-- Check your status online
-
-September:
-- Second Placement Results
-- For students not placed in first round
-- Revision window may open
-
-October:
-- Third Placement Results
-- Final placement batch
-- Supplementary placements begin
-
-November-December:
-- Supplementary Placement
-- For remaining vacancies
-- Last chance for placement
-
-September 15th:
-- Reporting Date
-- First semester begins for most institutions
-- Students must report by this date
-
-Within 14 days of placement:
-- Revision Deadline
-- Last day to request changes
-- Appeals must be submitted
-
-🏛️ KUCCPS CONTACT INFORMATION - COMPLETE:
-
-Headquarters:
-- Address: ACK Garden House, 1st Ngong Road, Nairobi
-- Located near the city center
-- Walk-in inquiries welcome during office hours
-
-Phone Contacts:
-- Main line: 020 5137400
-- Mobile: 0723954927
-- Toll-free: 0800 722 226 (for complaints and inquiries)
-
-Email:
-- General inquiries: info@kuccps.ac.ke
-- Placement issues: placement@kuccps.ac.ke
-- Support: support@kuccps.ac.ke
-
-Websites:
-- Main portal: www.kuccps.net
-- Student portal: students.kuccps.net
-- Funding: www.hef.co.ke
-
-Social Media:
-- Twitter: @KUCCPS_Official
-- Facebook: KUCCPS Official
-- Instagram: @kuccps_official
-
-Help Centers:
-- Visit any Huduma Centre across Kenya for assistance
-- KUCCPS officers available at major centers
-- Get help with application, payment, and inquiries
-
-Helpdesk Hours:
-- Monday-Friday: 8AM-5PM
-- Saturday: 9AM-1PM (limited services)
-- Sunday: Closed
-- Public holidays: Closed
-
-📚 ADDITIONAL KUCCPS INFORMATION:
-
-Grade Revision (through KNEC):
-- How to apply: Visit KNEC offices within 60 days of results release
-- Fee: KES 1,000
-- Submit application with supporting documents
-- Grounds for revision: Script errors, totaling mistakes, missing subjects, clerical errors
-- Processing time: 2-4 weeks
-- Results announced within 30 days
-- Success rate: About 30% of revision applications result in grade changes
-- Impact on placement: If grades improve, apply for better courses in subsequent placement rounds
-
-Appeals Process:
-- Placement appeals: Submit within 14 days of placement announcement
-- Fee: KES 1,000
-- Provide valid grounds: Wrong placement, program discontinuation
-- Grade appeals: Separate from KNEC revision, handled by KUCCPS for placement-related grade disputes
-- Processing time: 2-4 weeks
-- Appeals committee reviews each case
-- Success factors: Strong evidence, genuine errors, adherence to appeal deadlines
-
-Scholarships and Bursaries:
-- Government scholarships: HELB loans for needy students
-- CDF bursaries: Constituency development fund
-- NG-CDF scholarships: National Government scholarships
-- University scholarships: Merit-based, sports, need-based
-- Private scholarships: Equity Bank, KCB, Safaricom, NGOs
-- How to apply: Through respective organizations after KCSE results
-- Requirements: Good performance, financial need, leadership qualities
-
-Policies and Regulations:
-- Placement policy: Government-sponsored students must accept placement or defer
-- Private universities: Accept both sponsored and self-sponsored students
-- Transfer policy: Allowed after first year with good standing and available slots
-- Deferment policy: Maximum 2 years for valid reasons
-- Discontinuation: Affected students get alternative placement
-- Equity policy: Affirmative action for marginalized regions, gender balance, disability
-
-Mature Students:
-- Age: 25+ years old
-- Minimum grade: D+ in KCSE
-- Relevant work experience required
-- Pass entrance exam/interview
-- Alternative admission pathway
-
-Disability-Inclusive:
-- Special consideration for students with disabilities
-- Extended application periods
-- Alternative assessment methods
-- Affirmative action in placement
-
-========== ❓ FREQUENTLY ASKED QUESTIONS - COMPLETE WITH DETAILED ANSWERS ==========
-
-Q1: Is this official KUCCPS?
-A: No. This is an unofficial independent tool (kuccpscourses.co.ke) designed to help you understand which courses you qualify for BEFORE you apply. The official KUCCPS portal for actual applications is www.kuccps.net or students.kuccps.net. We help you prepare, they handle the actual placement.
-
-Q2: Will paying KES 200 guarantee me admission?
-A: No, absolutely not. The KES 200 fee only gives you access to see which courses you qualify for based on your KCSE grades. Actual admission depends on several factors:
-   - Your official KUCCPS application (separate KES 1,500 fee)
-   - Your cluster points vs. the course's cut-off points
-   - Competition from other applicants
-   - Available slots in your chosen programmes
-   - The official KUCCPS placement process
-Think of our tool as helping you make INFORMED choices before you apply.
-
-Q3: Do I have to restart if I make a mistake entering grades?
-A: Yes. If you enter a grade incorrectly and realize after payment, you would need to:
-   - Click "Try Again" on the results page
-   - Re-enter all your grades correctly
-   - Pay again for that category
-   - Get new results based on correct grades
-   That's why we strongly recommend double-checking ALL your grades before submitting payment!
-
-Q4: Can I check multiple course categories on one payment?
-A: No. Each category requires a separate payment because each uses different course databases:
-   - First category (your choice): KES 200
-   - Each additional category: KES 100
-   Example: Checking Diploma + Certificate + Artisan would be:
-   KES 200 (Diploma) + KES 100 (Certificate) + KES 100 (Artisan) = KES 400 total
-   You can pay for multiple categories in one session or come back later.
-
-Q5: Is my email information safe?
-A: Yes, absolutely. Your email is used only for:
-   - Tracking your current session
-   - Retrieving your results later
-   - Sending confirmations
-   We implement strict security measures:
-   - HTTPS encryption throughout
-   - No sharing with third parties
-   - Data protection compliant
-   - Optional account creation for enhanced security
-   Your privacy is our priority.
-
-Q6: What if M-Pesa payment fails?
-A: If payment fails, you'll see an error message with options:
-   - Check your M-Pesa balance (ensure sufficient funds)
-   - Verify your phone number is correct (format 07XXXXXXXX)
-   - Ensure you have network connection
-   - Try again with the same or different number
-   Important: Money is ONLY deducted if payment succeeds and is confirmed by M-Pesa. If money is deducted but you don't get results:
-   - Save your M-Pesa receipt number
-   - Go to /verify-payment
-   - Enter receipt number and KCSE index
-   - Access your results
-   If issues persist, contact courseschecker@gmail.com with transaction details.
-
-Q7: How long are results available?
-A: Your results are available for 30 minutes of active browsing in that session. After 30 minutes of inactivity:
-   - Session automatically expires
-   - You'll need to restart with same email + index
-   - You'll need to pay again for that category
-   However, if you saved courses to basket, you can:
-   - Log back in anytime with email + index
-   - View your saved basket (free)
-   - But to see full results again, payment required
-
-Q8: Can I share my results with friends?
-A: You can share your results by:
-   - Exporting your basket as PDF and sharing
-   - Showing them your screen
-   - Telling them which courses you found
-   However, each person must pay for their OWN session to see THEIR specific results. Your results are personalized based on YOUR grades, so they won't be the same for your friend.
-
-Q9: Is there an app? Or just website?
-A: Currently, we offer a website only (no separate app). But it works great on all devices:
-   - 📱 Phones (optimized for mobile browsing)
-   - 💻 Tablets
-   - 🖥️ Desktops/laptops
-   Bonus: On some phones, you can "Install" the site to your home screen (PWA feature):
-   - On Chrome: Menu → "Add to Home screen"
-   - On Safari: Share → "Add to Home Screen"
-   This gives you app-like access without downloading from store!
-
-Q10: What if I forgot my KCSE index number?
-A: Check these places:
-   - Your KCSE certificate (printed copy)
-   - KNEC portal account (if you registered)
-   - Your school records
-   - Contact the exam officer at your former school
-   - Check old result slips
-   You cannot proceed without it, so keep it safe!
-
-Q11: How much does KUCCPS application cost?
-A: The official KUCCPS application fee is KES 1,500. Important notes:
-   - This is SEPARATE from our KES 200 course checking fee
-   - Payment is via eCitizen platform (M-PESA PayBill 820201)
-   - Non-refundable once paid
-   - Covers your entire application (up to 6 choices)
-   - Paid once per application cycle
-   - Different from our platform's course checking fee
-
-Q12: What's the difference between cluster points and cut-off points?
-A: Great question! Here's the difference:
-   - Cluster points: YOUR personal score based on your KCSE grades in 4 specific subjects. You earn these points - they're your achievement.
-   - Cut-off points: The MINIMUM score required for a specific course at a specific university. This is set by the competition - the last person admitted's score becomes the cut-off.
-   Example: If Engineering at UoN has cut-off 38.5, and your cluster points are 40.2, you qualify. If your points are 37.8, you don't meet the cut-off.
-
-Q13: Can I apply to KUCCPS through this platform?
-A: No, you cannot. We are a separate platform that helps you:
-   - Discover which courses match your grades
-   - Understand requirements and cut-offs
-   - Prepare for your KUCCPS application
-   - Save courses for later reference
-   For actual KUCCPS application, you MUST use the official portal at students.kuccps.net. Think of us as your preparation tool before the real thing.
-
-Q14: What if I have a disability?
-A: KUCCPS has strong affirmative action for students with disabilities:
-   - Extended application periods
-   - Alternative assessment methods
-   - Special consideration in placement
-   - Reserved slots in some programmes
-   - Additional support at institutions
-   When applying, indicate your disability and provide documentation. This may improve your chances of placement.
-
-Q15: Are there scholarships available?
-A: Yes, many scholarship opportunities exist:
-   Government:
-   - HELB loans (apply at www.hef.co.ke)
-   - CDF bursaries (through your MP's office)
-   - NG-CDF scholarships (national government)
-   University:
-   - Merit-based scholarships (top performers)
-   - Sports scholarships (talented athletes)
-   - Need-based financial aid
-   - Departmental awards
-   Private:
-   - Equity Bank "Wings to Fly"
-   - KCB Foundation
-   - Safaricom Foundation
-   - Mastercard Foundation
-   - Various NGO scholarships
-   Apply early, check eligibility, and submit all required documents!
-
-Q16: What courses can I do with C plain?
-A: With a C plain, you have many options:
-   - Diploma programs (minimum C- requirement) - most diplomas accept C plain
-   - Certificate programs (D+ and above)
-   - Artisan courses (D- and above)
-   - Some specific degree programs at private universities (check individually)
-   Examples: Diploma in Business, Certificate in ICT, Artisan in Plumbing, KMTC Health Records (some campuses)
-   Use our course checker with your exact grades to see ALL your options!
-
-Q17: How does the basket work?
-A: The basket is your personal course storage:
-   - Click "Add to Basket" on any course to save it
-   - Basket shows: Course name, institution, code, cut-off, your points, qualification status
-   - Remove individual courses anytime
-   - Clear entire basket with one click
-   - Compare selected courses side-by-side
-   - Export as PDF or print
-   - Email basket to yourself or parents
-   - Basket saves even after session ends
-   Perfect for building your shortlist!
-
-Q18: What are the requirements for nursing?
-A: Nursing requirements vary by level:
-   Diploma in Nursing (KRCHN) - KMTC:
-   - Minimum C plain mean grade
-   - C in English, Biology, Chemistry
-   - C- in Mathematics/Physics
-   - Duration: 3 years
-   - Campuses: 70+ nationwide
-   Degree in Nursing - Universities:
-   - Minimum C+ mean grade
-   - B in Biology, Chemistry
-   - C+ in English, Mathematics
-   - Duration: 4 years
-   Use our KMTC course checker with your grades to see specific options!
-
-Q19: When should I apply to KUCCPS?
-A: Follow this timeline:
-   March/April: KCSE results released
-   April: KUCCPS application OPENS
-   April-June: Best time to apply (avoid last minute rush)
-   July 15th: Application DEADLINE
-   Don't wait until the last day! Apply early to avoid:
-   - System crashes
-   - Network issues
-   - Payment delays
-   - Missing deadline
-
-Q20: What documents do I need for KUCCPS application?
-A: Prepare these documents:
-   Essential:
-   - KCSE certificate or result slip (original and copy)
-   - Birth certificate
-   - National ID (if 18+)
-   - Passport photos (2-4 copies)
-   - Proof of disability (if applicable)
-   For online application:
-   - Scan or photo of each document
-   - Clear, readable images
-   - PDF format preferred
-   - Under 2MB per file
-   Keep originals safe for when you report to institution!
-
-========== 📊 COMPARISON: KUCCPS vs COURSES CHECKER - COMPLETE TABLE ==========
-
-| Aspect | 🔵 KUCCPS (Official) | 🟢 Courses Checker (Platform) |
-|--------|---------------------|------------------------------|
-| Purpose | Government placement service | Course matching tool |
-| Website | students.kuccps.net | kuccpscourses.co.ke |
-| What it does | Places students into institutions | Shows which courses match your grades |
-| Application Fee | KES 1,500 | N/A |
-| Course Checking Fee | N/A | KES 200 first, KES 100 additional |
-| Payment Method | eCitizen (PayBill 820201) | M-PESA STK Push |
-| When to Use | To officially apply for courses (Jan-July) | To research before applying (anytime) |
-| Result | Placement into ONE institution | List of ALL courses you qualify for |
-| Number of Choices | Up to 6 degree choices | Unlimited browsing |
-| Timeline | Annual application window | Available 24/7, 365 days |
-| Support | Official KUCCPS contacts | AI chat + email + phone |
-| Guides | Limited information | Comprehensive educational guides |
-| Cost per use | KES 1,500 per application cycle | KES 200-700 per session |
-| Grade Entry | System auto-fetches your results | You enter grades manually |
-| Course Basket | No | Yes - save favorites |
-| Payment Verification | Through eCitizen | M-Pesa receipt verification |
-| Mobile Experience | Basic | Optimized for phones |
-
-========== 🚀 KEY FEATURES AT A GLANCE - COMPLETE LIST ==========
-
-| Feature | What It Does | Benefit |
-|---------|-------------|---------|
-| Grade Checker | Match KCSE grades to courses | Know exactly what you qualify for |
-| 6 Categories | Degree, Diploma, KMTC, Certificate, Artisan, TTC | Find your perfect path |
-| 5000+ Courses | Browse all KUCCPS-approved programs | Compare all options in one place |
-| Cluster Points | See if you qualify for each program | Make informed, data-driven choices |
-| Cut-off Points | View minimum requirements per course | Know what you need to achieve |
-| Basket/Wishlist | Save favorite courses | Organize your research efficiently |
-| AI Chat | Get instant answers 24/7 | No waiting for email responses |
-| Educational Guides | Learn about admissions, requirements | Become an expert on the process |
-| M-Pesa Payment | Pay via phone (KES 200-100) | Fast, familiar, secure transaction |
-| Responsive Mobile | Works on any device | Study on-the-go anywhere |
-| Payment Verification | Access results anytime with receipt | Never lose your results |
-| Search & Filter | Find specific courses quickly | Navigate through options easily |
-| Export/Print | Save or print your basket | Share with parents/counselors |
-| Grade History | See what you entered | Double-check for accuracy |
-| Pagination | Browse 20 courses per page | Easy to manage large lists |
-| Session Tracking | 30-minute active sessions | Focused research time |
-| Email Support | courseschecker@gmail.com | Human help when needed |
-| Phone Support | +254791196121 | Direct assistance |
-| PWA Capable | Install on phone home screen | App-like experience |
-| Free Resources | All guides and chat free | No cost to learn |
-| Real Examples | Sarah's journey included | See how it works for real students |
-| Testimonials | Student voices | Builds trust and confidence |
-
-========== 🎓 WHAT HAPPENS AFTER YOU USE THE TOOL? ==========
-
-Next Steps - Complete Guide:
-
-1. Take Notes (Right after getting results)
-   - Write down top 10-20 courses you're interested in
-   - Note programme codes (7-digit codes) for each
-   - Note cut-off points for each course
-   - Note institutions offering them
-   - Note subject requirements
-   - Create a shortlist of 5-8 favorites
-
-2. Do More Research (1-2 weeks)
-   - Visit institutions' websites
-   - Check tuition fees and accommodation costs
-   - Research career paths from each course
-   - Look into job market demand
-   - Read student reviews if available
-   - Check institution rankings and reputation
-   - Visit campuses if possible
-
-3. Discuss with Family (Week 2-3)
-   - Share your basket with parents
-   - Discuss financial considerations (fees, upkeep, transport)
-   - Talk about career goals and interests
-   - Consider location preferences (near home vs far)
-   - Get input from teachers or guidance counselors
-   - Consider long-term career prospects
-   - Discuss backup options
-
-4. Prepare Documents for KUCCPS (Week 3-4)
-   Essential documents:
-   - Original KCSE certificate (or result slip)
-   - Birth certificate (certified copy)
-   - National ID (if you have one)
-   - Passport photos (4 copies)
-   - Proof of disability (if applicable)
-   - Bank/M-Pesa for application fee (KES 1,500)
-   Digital copies:
-   - Scan or clear photos of all documents
-   - Save as PDF (under 2MB each)
-   - Label clearly for upload
-
-5. Apply on Official KUCCPS Portal (January-April)
-   Website: www.kuccps.net or students.kuccps.net
-   Process:
-   a. Create account with KCSE index
-   b. Fill personal details accurately
-   c. Verify your KCSE results (system auto-fetches)
-   d. Select up to 6 course choices:
-      - Use programme codes from your results
-      - Order by preference (1 = most wanted)
-      - Include reach, match, and safety schools
-   e. Upload required documents
-   f. Pay KES 1,500 via eCitizen
-   g. Submit and save confirmation
-   h. Print application summary
-
-6. Wait for Placement Results (May-August)
-   - KUCCPS publishes results in batches
-   - You'll be placed in ONE institution and course
-   - Check your portal regularly (daily)
-   - Results usually released:
-     * First batch: August
-     * Second batch: September
-     * Third batch: October
-   - You may get your 2nd, 3rd, or lower choice based on competition
-   - If not placed: Apply for revision (KES 1,000)
-   - If unhappy: Option to appeal (KES 1,000)
-
-7. Report to Institution (September)
-   - Accept your offer (deadline given)
-   - Pay required fees/deposits
-   - Attend orientation (usually September)
-   - Register for classes
-   - Apply for HELB funding if needed
-   - Find accommodation
-   - Buy required materials
-   - Begin your educational journey!
-
-========== 🌟 WHY THIS PLATFORM EXISTS - THE PROBLEM IT SOLVES ==========
-
-The Problem (Before This Tool):
-❌ Students had to manually search each institution's website separately (time-consuming)
-❌ Hard to know if you qualify for a program (cut-off points confusing)
-❌ Cluster points were complicated to understand (math-heavy explanations)
-❌ Hours of research without a clear picture of options (frustrating)
-❌ Many students made blind applications without knowing realistic options (wasted choices)
-❌ Parents couldn't easily help with course selection (information scattered)
-❌ Information scattered across different websites (no single source)
-❌ Students often missed deadlines due to poor planning
-❌ Wrong course selections led to transfers or dropouts
-❌ Many qualified students missed opportunities they didn't know existed
-
-The Solution (What This Tool Does):
-✅ Instant Matching – See all 5000+ courses you qualify for in just 5 minutes
-✅ Clarity on Requirements – Know exactly what grades and points are needed for each course
-✅ Saves Time – No more hours of manual research across different websites
-✅ Builds Confidence – Know your realistic options before applying
-✅ Affordable – Just KES 200-100, pays for itself in saved time and better decisions
-✅ Accessible – Works on any phone with internet, no app needed
-✅ Support 24/7 – AI chat always available if confused
-✅ Educational – Guides teach you about the whole process from start to finish
-✅ Shareable – Save basket and share with parents/counselors
-✅ Real Examples – Sarah's journey shows exactly how it works
-✅ Trust Building – Testimonials from real students who succeeded
-✅ Mobile First – Designed for phone users (most Kenyan students)
-✅ Payment Ease – M-Pesa integration (familiar to all Kenyans)
-✅ Never Lost – Payment verification ensures you can always access results
-
-========== 📊 STUDENT TESTIMONIALS - REAL VOICES ==========
-
-> "I was so confused about cluster points. This tool showed me instantly that I qualify for 450 courses! The AI chatbot explained cluster points in simple language - turns out I had been calculating them wrong. Worth every shilling!" – Amos, Former Student (now in Engineering)
-
-> "Saved me months of research. I was only considering engineering because my dad is an engineer. But the tool showed I could do nursing too, and I discovered my true passion. Now in my second year at KMTC!" – Grace, Current KMTC Nursing Student
-
-> "My parents were unsure which courses I qualified for with my C plain. This tool gave us a clear list to discuss at the dinner table. We made a shortlist together, and I got my second choice at Kiambu Institute. Much better than guessing!" – Peter, Diploma Student
-
-> "The M-Pesa payment is so easy. No complicated bank transfers. Just press, enter PIN, done. Results instantly! I helped three friends use it too, and we all got placed. Best KES 200 I ever spent." – Susan, Recent Graduate
-
-> "As a teacher, I recommend this tool to all my Form 4 leavers. It saves them from making blind applications and helps them make informed decisions about their future. The guides are excellent for class discussions." – Mr. Omondi, High School Teacher
-
-> "I checked five different categories for my daughter. The pricing was clear and fair - KES 200 first, then KES 100 each. Now she has a complete list of options to consider. Thank you for making this so simple!" – Mrs. Akinyi, Parent
-
-> "The basket feature is a game-changer. I saved 15 courses, compared them with my parents, and narrowed down to 6 for my KUCCPS application. Got my first choice at Kenyatta University!" – James, First-Year University Student
-
-> "I almost gave up on education because I thought my D+ was useless. This tool showed me 200+ artisan and certificate courses I qualify for. Now I'm a qualified plumber with my own business. Changed my life." – Michael, Artisan Graduate
-
-========== ✅ SITE MAP - WHERE TO FIND EVERYTHING ==========
-
-Main Navigation Menu (Top of every page):
-Home | Guides | About | Contact | AI Chat
-
-From Home Page:
-├─ 🎓 Degree Courses → Grade entry form (Coming Soon)
-├─ 📚 Diploma Courses → Grade entry form
-├─ 🏥 KMTC Courses → Grade entry form
-├─ 👨‍🏫 TTC Courses → Grade entry form
-├─ 📜 Certificate Courses → Grade entry form
-├─ 🔧 Artisan Courses → Grade entry form
-├─ 📖 Guides
-│  ├─ Cluster Points Explained
-│  ├─ KCSE Admission Requirements
-│  ├─ KUCCPS Application Process
-│  ├─ Diploma Courses Overview
-│  ├─ Certificate Courses Guide
-│  ├─ KMTC Courses & Health Programs
-│  ├─ Artisan Courses & Trade Training
-│  ├─ Teacher Training (TTC) Guide
-│  └─ Scholarships & Financial Aid
-├─ 💬 AI Chat (floating button bottom-right)
-├─ 📧 Contact Us
-└─ ℹ️ About Platform
-
-After Payment:
-└─ Results Page
-   ├─ Filter by cluster buttons (8+ options)
-   ├─ Browse courses (paginated 20 per page)
-   ├─ Add to Basket button on each course
-   ├─ View Submitted Grades section
-   └─ Navigation: [Back to Home] [Try Again] [View Basket]
-
-User Dashboard (when logged in/verified):
-├─ Basket/Favorites 🛒 (with all saved courses)
-├─ My Previous Results (with email verification)
-├─ Payment History (receipts and transactions)
-└─ Download/Print Results (PDF option)
-
-========== 🎯 FINAL SUMMARY - ONE SENTENCE ==========
-
-KUCCPS Courses Checker in one sentence:
-"A fast, affordable online tool that instantly shows Kenyan students which of 5000+ KUCCPS-approved courses they qualify for based on their KCSE grades, with helpful guides and 24/7 AI support."
-
-What makes it special (Complete List):
-⚡ Speed: Results in under 5 minutes (much faster than manual research)
-💰 Affordable: KES 200-100 one-time fee (pays for itself)
-📱 Mobile-first: Works perfectly on phones (designed for Kenyan students)
-🤖 AI Powered: Instant 24/7 support (always available when you need help)
-📚 Educational: Comprehensive guides teach real concepts (become an expert)
-✅ Trusted: 50,000+ students helped (proven track record)
-🔒 Safe: Secure M-Pesa payment (familiar and trusted payment method)
-🔄 Never lose results: Verify anytime with receipt (peace of mind)
-👪 Shareable: Save basket and share with family (involve your support system)
-🎓 6 Categories: Degree, Diploma, KMTC, TTC, Certificate, Artisan (all options covered)
-📊 5000+ Courses: Complete KUCCPS database (no missed opportunities)
-🏛️ 200+ Institutions: All universities and colleges (comprehensive coverage)
-💬 24/7 Chat: Always available support (never left waiting)
-📝 Guides: 9 comprehensive resources (learn everything)
-💰 Clear Pricing: KES 200 first, KES 100 additional (transparent and fair)
-💳 M-PESA: Instant payment, instant results (no delays)
-🛒 Basket: Save and compare courses (organize your research)
-📱 PWA: Install on phone (app-like experience)
-🔐 Secure: HTTPS encryption (your data is safe)
-📧 Email Support: Human help when needed (real people care)
-📞 Phone: Direct assistance (talk to someone)
-
-========== ⚠️ RESPONSE GUIDELINES - HOW TO ANSWER ==========
-
-1. ALWAYS answer from a STUDENT'S PERSPECTIVE (use "you", "your", as if talking directly to a student)
-2. Be FRIENDLY, HELPFUL, and WELCOMING (students are often anxious about their future)
-3. Be CONCISE but COMPLETE (2-4 sentences usually, but provide full details when needed)
-4. Use SIMPLE, CLEAR language - no technical jargon without explanation
-5. For payment questions, CLEARLY DISTINGUISH between:
-   - 🟢 Courses Checker fees (KES 200 first category, KES 100 additional)
-   - 🔵 KUCCPS official fees (KES 1,500 application fee, KES 1,000 revision)
-6. If a question could apply to both, EXPLAIN THE DIFFERENCE clearly
-7. If ambiguous, ASK FOR CLARIFICATION: "Are you asking about our platform or official KUCCPS?"
-8. For technical issues, SUGGEST: courseschecker@gmail.com or phone +254791196121
-9. If asked about unrelated topics, POLITELY REDIRECT to KUCCPS/courses
-10. Use EMOJIS sparingly to make responses friendly and scannable
-11. Always be ENCOURAGING and SUPPORTIVE - students are making important life decisions!
-12. When giving examples, use REAL numbers and scenarios (like Sarah's journey)
-13. If you don't know something, be HONEST and suggest where they might find the information
-14. Always end with an OPEN INVITATION for follow-up questions
-15. Remember: You're not just answering questions - you're helping shape futures!
-
-========== 🚫 OUT OF SCOPE HANDLING ==========
-
-If asked about anything NOT in the knowledge above (weather, news, sports, politics, entertainment, etc.):
-"I'm specifically designed to help with KUCCPS courses and our Courses Checker platform only. I can answer questions about:
-• Course requirements for different levels (degree, diploma, certificate, artisan, KMTC, TTC)
-• How to use our course checker platform step-by-step
-• Payment information (KES 200/100 for our platform, KES 1,500 for KUCCPS)
-• Cluster points and how they're calculated
-• Cut-off points and what they mean
-• KUCCPS application process, dates, and requirements
-• Our educational guides (cluster points, admission requirements, scholarships, etc.)
-• Saving courses to basket and managing your shortlist
-• Contact information for support
-
-What would you like to know about your educational journey?"
-
-If asked about something vague:
-"Could you please be more specific? I'm here to help with:
-✅ Course requirements for different levels
-✅ How to use our platform
-✅ Payment information
-✅ Cluster points and cut-offs
-✅ KUCCPS application process
-✅ Our educational guides
-✅ Saving courses to basket
-
-Just let me know what you'd like to learn about!"
-
-========== 📝 USER QUESTION ==========
-{user_message}
-
-========== ✅ YOUR ANSWER ==========
-(Provide a concise, helpful answer following all guidelines above. Use the COMPLETE knowledge base to give rich, detailed responses that would actually help a student.)"""
-
-        # Try multiple models with fallback
+IMPORTANT: You MUST answer as this specific platform's assistant, NOT as a general AI.
+
+ABOUT KUCCPS COURSES CHECKER:
+- Website: kuccpscourses.co.ke
+- Helps Kenyan students find courses matching their KCSE grades
+- 6 categories: Degree (C+), Diploma (C-), KMTC (C-), TTC (C), Certificate (D+), Artisan (D/E)
+- First category: KES 200, Additional categories: KES 100 each
+- Payment: M-PESA STK Push
+- 5000+ courses, 200+ institutions, 50,000+ students helped
+- Features: Course basket, AI chat, email reports, PDF exports
+
+HOW TO USE:
+1. Choose a category (Degree, Diploma, etc.)
+2. Enter your KCSE grades
+3. Enter email and KCSE index number
+4. Pay via M-PESA (KES 200 first, KES 100 additional)
+5. View results instantly
+6. Save courses to basket
+
+OFFICIAL KUCCPS INFO (Different from this platform):
+- Application fee: KES 1,500 via eCitizen
+- Official portal: students.kuccps.net
+- Degree: C+ minimum, Diploma: C-, Certificate: D+, Artisan: D/E
+
+SUPPORT:
+- Email: courseschecker@gmail.com
+- Phone: +254791196121
+- Live chat available on website
+
+RULES:
+- Answer as the KUCCPS Courses Checker assistant
+- Be helpful, friendly, and concise (2-4 sentences)
+- Use "you" and "your" (student perspective)
+- If asked about official KUCCPS, explain the difference
+- For payment issues, suggest using receipt verification
+
+User question: {user_message}
+
+Answer as the KUCCPS Courses Checker assistant:"""
+
+        # Try multiple models
         models_to_try = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-001']
-        last_error = None
         
         for model_name in models_to_try:
             try:
@@ -4380,7 +3035,7 @@ Just let me know what you'd like to learn about!"
                     contents=system_prompt,
                     config=types.GenerateContentConfig(
                         temperature=0.5,
-                        max_output_tokens=1500,  # Allow longer, detailed responses
+                        max_output_tokens=500,  # Reduced for faster, focused responses
                         top_p=0.9
                     )
                 )
@@ -4398,17 +3053,7 @@ Just let me know what you'd like to learn about!"
                     return ai_response
                     
             except Exception as e:
-                last_error = e
-                error_str = str(e)
-                print(f"❌ Model {model_name} failed: {error_str[:100]}...")
-                
-                if "429" in error_str:
-                    import re
-                    retry_match = re.search(r'retry in (\d+\.?\d*)s', error_str)
-                    if retry_match:
-                        wait_time = float(retry_match.group(1))
-                        print(f"⏱️ Rate limited on {model_name}. Waiting {min(wait_time, 3):.1f}s...")
-                        time.sleep(min(wait_time, 3))
+                print(f"❌ Model {model_name} failed: {str(e)}")
                 continue
         
         # If all Gemini models failed, try OpenRouter
@@ -4417,324 +3062,697 @@ Just let me know what you'd like to learn about!"
         if openrouter_response:
             return openrouter_response
         
-        # Ultimate fallback message
-        return ("I'm currently experiencing high demand across all AI services. " +
-                "Please try again in a few minutes. In the meantime, you can check our " +
-                "comprehensive guides at /guides for detailed information about " +
-                "course requirements, cluster points, and the KUCCPS application process.")
+        # Ultimate fallback
+        return get_curated_response(user_message)
         
     except Exception as e:
         print(f"❌ Critical error in get_gemini_response: {str(e)}")
         import traceback
         traceback.print_exc()
         
-        # Try OpenRouter as last resort
         try:
             return get_openrouter_fallback(user_message)
         except:
-            return "I'm experiencing technical difficulties. Please try again later or contact support at courseschecker@gmail.com."
+            return get_curated_response(user_message)
+def get_curated_response(user_message):
+    """Return curated responses based on common questions - COMPREHENSIVE KNOWLEDGE BASE"""
+    user_message_lower = user_message.lower()
+    
+    # ============================================
+    # COMPUTER SCIENCE - DETAILED RESPONSE
+    # ============================================
+    if "computer science" in user_message_lower:
+        return """Computer Science Degree Programs in Kenya
 
+REQUIREMENTS:
+- KCSE Mean Grade: C+ (minimum)
+- Subject Requirements: C+ in Mathematics, C+ in English, C+ in Physics or Physical Sciences
+- Cluster Points: 35-42 points depending on university
 
-def get_openrouter_fallback(user_message):
-    """Enhanced OpenRouter fallback with CORRECT free models from your account"""
-    try:
-        # Fetch API key from environment variables
-        OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
+TOP UNIVERSITIES AND CUT-OFF POINTS:
+1. University of Nairobi (UoN) - Cut-off: 38-42 points
+2. Kenyatta University - Cut-off: 36-40 points
+3. JKUAT - Cut-off: 35-39 points
+4. Strathmore University - Cut-off: 38-43 points
+5. Technical University of Kenya - Cut-off: 34-38 points
+6. Murang'a University - Cut-off: 32-36 points
+7. Dedan Kimathi University - Cut-off: 33-37 points
+
+DURATION: 4 years
+
+CAREER OPPORTUNITIES:
+- Software Developer/Engineer
+- Data Scientist/Analyst
+- Cybersecurity Analyst
+- Systems Architect
+- IT Consultant
+- Database Administrator
+- Network Administrator
+
+Use our Degree course checker (KES 200 first category, KES 100 additional) to see all Computer Science programs matching your exact KCSE grades. Visit www.kuccpscourses.co.ke/degree to get started."""
+    
+    # ============================================
+    # NURSING - DETAILED RESPONSE
+    # ============================================
+    elif "nursing" in user_message_lower:
+        return """Nursing Programs in Kenya
+
+DIPLOMA IN NURSING (KRCHN) - KMTC:
+- KCSE Mean Grade: C plain (not C-)
+- Subject Requirements: C plain in English, Biology, and Chemistry
+- Mathematics/Physics: C-
+- Duration: 3 years including clinical training
+- Campuses: 70+ KMTC campuses nationwide
+- Cut-off: Highly competitive (B plain average)
+
+DEGREE IN NURSING (BSc Nursing):
+- KCSE Mean Grade: C+ minimum
+- Subject Requirements: B in Biology, B in Chemistry, C+ in English, C+ in Mathematics/Physics
+- Duration: 4 years
+- Top Universities: UoN, Kenyatta, Moi, JKUAT, Amref
+
+CAREER PATH:
+- Registered Nurse (KRCHN)
+- Clinical Nurse Specialist
+- Nurse Educator
+- Hospital Administrator
+- Public Health Nurse
+
+Use our KMTC course checker (KES 200) to see all nursing programs matching your grades. Visit www.kuccpscourses.co.ke/kmtc"""
+    
+    # ============================================
+    # ENGINEERING - DETAILED RESPONSE
+    # ============================================
+    elif "engineering" in user_message_lower:
+        if "civil" in user_message_lower:
+            return """Civil Engineering - Complete Guide
+
+REQUIREMENTS:
+- KCSE Mean Grade: C+
+- Subject Requirements: C+ in Mathematics, Physics, Chemistry
+- Cluster Points: 36-40 points
+
+TOP UNIVERSITIES:
+1. University of Nairobi - Cut-off: 38-42 points
+2. JKUAT - Cut-off: 36-40 points
+3. Technical University of Kenya - Cut-off: 35-39 points
+4. Moi University - Cut-off: 35-39 points
+
+DURATION: 5 years
+
+CAREER: Structural Engineer, Project Manager, Construction Engineer, Water Engineer
+
+Use our Degree course checker at www.kuccpscourses.co.ke/degree"""
         
-        if not OPENROUTER_API_KEY:
-            print("⚠️ No OpenRouter API key found in environment variables")
-            print("💡 Set OPENROUTER_API_KEY in your .env file")
-            return None
-            
-        print(f"🔑 OpenRouter API key found (starts with: {OPENROUTER_API_KEY[:10]}...)")
-        print("🔄 Calling OpenRouter fallback with CORRECT free models...")
+        elif "mechanical" in user_message_lower:
+            return """Mechanical Engineering - Complete Guide
+
+REQUIREMENTS:
+- KCSE Mean Grade: C+
+- Subject Requirements: C+ in Mathematics, Physics, Chemistry
+- Cluster Points: 38-42 points
+
+TOP UNIVERSITIES:
+1. University of Nairobi - Cut-off: 40-43 points
+2. JKUAT - Cut-off: 38-42 points
+3. Moi University - Cut-off: 37-41 points
+
+DURATION: 5 years
+
+CAREER: Mechanical Engineer, Automotive Engineer, Manufacturing Engineer, HVAC Engineer
+
+Use our Degree course checker at www.kuccpscourses.co.ke/degree"""
         
-        # Create a condensed but comprehensive prompt
-        condensed_prompt = """You are the official AI assistant for KUCCPS Courses Checker (kuccpscourses.co.ke). 
+        elif "electrical" in user_message_lower:
+            return """Electrical Engineering - Complete Guide
 
-CRITICAL: You MUST answer using ONLY the information below. Be helpful, friendly, and concise (2-3 sentences).
+REQUIREMENTS:
+- KCSE Mean Grade: C+
+- Subject Requirements: C+ in Mathematics, Physics, Chemistry
+- Cluster Points: 38-43 points
 
-KEY PLATFORM INFORMATION:
+TOP UNIVERSITIES:
+1. University of Nairobi - Cut-off: 40-44 points
+2. JKUAT - Cut-off: 38-42 points
+3. Technical University of Kenya - Cut-off: 37-41 points
+
+DURATION: 5 years
+
+CAREER: Electrical Engineer, Power Systems Engineer, Electronics Engineer
+
+Use our Degree course checker at www.kuccpscourses.co.ke/degree"""
+        
+        else:
+            return """Engineering Programs in Kenya - Complete Guide
+
+GENERAL REQUIREMENTS:
+- KCSE Mean Grade: C+ minimum
+- Subject Requirements: C+ in Mathematics, Physics, Chemistry
+- Duration: 5 years
+
+TYPES OF ENGINEERING AND CUT-OFF POINTS:
+1. Civil Engineering - 36-40 points (UoN, JKUAT, TUK)
+2. Mechanical Engineering - 38-42 points (UoN, JKUAT, Moi)
+3. Electrical Engineering - 38-43 points (UoN, JKUAT, TUK)
+4. Chemical Engineering - 38-42 points (UoN, Moi)
+5. Computer Engineering - 35-40 points (JKUAT, TUK)
+6. Mechatronic Engineering - 36-40 points (JKUAT, TUK)
+7. Petroleum Engineering - 40-45 points (TUK)
+
+Use our Degree course checker (KES 200) at www.kuccpscourses.co.ke/degree to see all engineering programs matching your grades."""
+    
+    # ============================================
+    # BUSINESS COURSES
+    # ============================================
+    elif "business" in user_message_lower or "commerce" in user_message_lower or "accounting" in user_message_lower:
+        return """Business Programs in Kenya
+
+BACHELOR OF COMMERCE (B.Com):
+- KCSE Mean Grade: C+
+- Subject Requirements: C+ in Mathematics, C+ in English
+- Cluster Points: 30-38 points
+- Duration: 4 years
+
+TOP UNIVERSITIES AND CUT-OFF:
+1. University of Nairobi - 35-38 points
+2. Kenyatta University - 33-37 points
+3. Moi University - 30-35 points
+4. JKUAT - 32-36 points
+5. Strathmore University - 35-40 points
+
+SPECIALIZATIONS:
+- Accounting
+- Finance
+- Marketing
+- Human Resource Management
+- Operations Management
+- International Business
+
+DIPLOMA IN BUSINESS:
+- Requirements: C- mean grade
+- Duration: 2 years
+- Institutions: National polytechnics, Technical colleges
+
+CAREER OPPORTUNITIES:
+Accountant, Financial Analyst, Marketing Manager, HR Manager, Business Consultant
+
+Use our course checker at www.kuccpscourses.co.ke/diploma or www.kuccpscourses.co.ke/degree"""
+    
+    # ============================================
+    # LAW
+    # ============================================
+    elif "law" in user_message_lower or "lawyer" in user_message_lower:
+        return """Bachelor of Laws (LLB) - Complete Guide
+
+REQUIREMENTS:
+- KCSE Mean Grade: B plain minimum (highly competitive)
+- Subject Requirements: B in English, B in Kiswahili or History/CRE
+- Cluster Points: 40-48 points
+- Duration: 4 years (plus 1 year at Kenya School of Law)
+
+TOP UNIVERSITIES AND CUT-OFF:
+1. University of Nairobi - 44-48 points
+2. Moi University - 42-46 points
+3. Kenyatta University - 41-45 points
+4. Catholic University - 40-44 points
+5. Kabarak University - 38-42 points
+
+CAREER PATH:
+- Advocate/Lawyer
+- Magistrate/Judge
+- Legal Counsel
+- Prosecutor
+- Law Lecturer
+
+Note: After LLB, you must complete a Postgraduate Diploma at Kenya School of Law (KSL) to practice as an advocate.
+
+Use our Degree course checker at www.kuccpscourses.co.ke/degree"""
+    
+    # ============================================
+    # MEDICINE
+    # ============================================
+    elif "medicine" in user_message_lower or "mbchb" in user_message_lower or "doctor" in user_message_lower:
+        return """Bachelor of Medicine and Surgery (MBChB) - Complete Guide
+
+REQUIREMENTS:
+- KCSE Mean Grade: B+ minimum (very competitive)
+- Subject Requirements: B in Biology, B in Chemistry, B in Mathematics/Physics, B in English
+- Cluster Points: 42-48 points
+- Duration: 6 years (including internship)
+
+TOP UNIVERSITIES AND CUT-OFF:
+1. University of Nairobi - 46-48 points
+2. Moi University - 44-47 points
+3. Kenyatta University - 43-46 points
+4. Maseno University - 42-45 points
+5. Egerton University - 41-44 points
+
+CAREER PATH:
+- Medical Doctor
+- Surgeon
+- Specialist (Pediatrician, Cardiologist, etc.)
+- Medical Researcher
+- Public Health Officer
+
+Use our Degree course checker at www.kuccpscourses.co.ke/degree to see if you qualify for medicine programs."""
+    
+    # ============================================
+    # KMTC COURSES
+    # ============================================
+    elif "kmtc" in user_message_lower:
+        if "clinical" in user_message_lower:
+            return """Diploma in Clinical Medicine and Surgery - KMTC
+
+REQUIREMENTS:
+- KCSE Mean Grade: C plain
+- Subject Requirements: C in Biology, C in Chemistry, C in English
+- Duration: 3 years
+- Campuses: 70+ KMTC campuses nationwide
+
+CAREER: Clinical Officer, Medical Officer
+
+Use our KMTC course checker at www.kuccpscourses.co.ke/kmtc"""
+        elif "pharmacy" in user_message_lower:
+            return """Diploma in Pharmacy - KMTC
+
+REQUIREMENTS:
+- KCSE Mean Grade: C plain
+- Subject Requirements: C in Biology, C in Chemistry, C in English/Mathematics
+- Duration: 3 years
+
+CAREER: Pharmaceutical Technologist, Pharmacy Assistant
+
+Use our KMTC course checker at www.kuccpscourses.co.ke/kmtc"""
+        else:
+            return """KMTC (Kenya Medical Training College) Programs
+
+KMTC offers healthcare diplomas and certificates across 70+ campuses in Kenya.
+
+POPULAR PROGRAMS AND REQUIREMENTS:
+1. Diploma in Nursing (KRCHN) - C plain, English/Biology/Chemistry C plain
+2. Diploma in Clinical Medicine - C plain, Biology/Chemistry C
+3. Diploma in Pharmacy - C plain, Biology/Chemistry C
+4. Diploma in Medical Laboratory - C plain, Biology/Chemistry C
+5. Diploma in Health Records - C- plain
+6. Diploma in Environmental Health - C- plain
+7. Certificate in Community Health - D+
+
+DURATION: 2-3 years depending on program
+
+Use our KMTC course checker (KES 200) at www.kuccpscourses.co.ke/kmtc to see all programs matching your KCSE grades."""
+    
+    # ============================================
+    # TTC COURSES
+    # ============================================
+    elif "ttc" in user_message_lower or "teacher training" in user_message_lower:
+        return """Teacher Training College (TTC) Programs
+
+PTE (Primary Teacher Education):
+- Requirements: C mean grade
+- Duration: 2 years
+- Subjects: Two teaching subjects
+- Colleges: Thogoto, Meru, Machakos, Asumbi, etc.
+
+ECDE (Early Childhood Development):
+- Requirements: C- mean grade
+- Duration: 2 years
+
+DIPLOMA IN SECONDARY EDUCATION:
+- Requirements: Degree + C+ in KCSE
+- Duration: 2 years
+
+CAREER: Primary/Secondary School Teacher (TSC employment)
+
+Use our TTC course checker (KES 200) at www.kuccpscourses.co.ke/ttc"""
+    
+    # ============================================
+    # CLUSTER POINTS EXPLANATION
+    # ============================================
+    elif "cluster points" in user_message_lower or "cluster" in user_message_lower:
+        return """Cluster Points Explained
+
+WHAT ARE CLUSTER POINTS?
+Cluster points are your score based on your best 4 subjects in specific subject combinations required for a degree program.
+
+GRADE CONVERSION TABLE:
+A = 12 points
+A- = 11 points
+B+ = 10 points
+B = 9 points
+B- = 8 points
+C+ = 7 points
+C = 6 points
+C- = 5 points
+D+ = 4 points
+D = 3 points
+D- = 2 points
+E = 1 point
+
+COMMON CLUSTERS:
+1. Engineering: Math, Physics, Chemistry (36-48 points required)
+2. Medicine: Biology, Chemistry, Math/Physics (38-48 points)
+3. Law: English, History, CRE (28-40 points)
+4. Business: Math, English, Business Studies (30-42 points)
+5. Education: Two teaching subjects + English (24-36 points)
+
+HOW TO CALCULATE:
+Add points for your 4 best subjects in the required cluster. Example: B in Math (9) + B- in Physics (8) + C+ in Chemistry (7) = 24 points
+
+Visit our guide at www.kuccpscourses.co.ke/guides/cluster-points-explained for more details."""
+    
+    # ============================================
+    # KUCCPS APPLICATION PROCESS
+    # ============================================
+    elif "kuccps application" in user_message_lower or "how to apply to kuccps" in user_message_lower:
+        return """KUCCPS Application Process - Step by Step
+
+STEP 1: Visit students.kuccps.net
+STEP 2: Create account with KCSE index number and exam year
+STEP 3: Fill personal details (name, contacts, etc.)
+STEP 4: Verify your KCSE results (system auto-fetches)
+STEP 5: Select up to 6 degree choices or 4 diploma/certificate choices
+STEP 6: Enter official 7-digit programme codes carefully
+STEP 7: Pay KES 1,500 via eCitizen (M-PESA PayBill 820201)
+STEP 8: Enter eCitizen Payment Reference Code (NOT M-PESA transaction code)
+STEP 9: Submit and save confirmation
+STEP 10: Monitor placement results (August-October)
+
+IMPORTANT DATES:
+- April: Application opens
+- July 15th: Application deadline
+- August-October: Placement results released
+
+Note: Our platform (www.kuccpscourses.co.ke) helps you find which courses you qualify for BEFORE applying. The KES 1,500 is the official KUCCPS fee, separate from our KES 200 course checking fee."""
+    
+    # ============================================
+    # ABOUT THE PLATFORM
+    # ============================================
+    elif "what is kuccps courses checker" in user_message_lower or "about this platform" in user_message_lower:
+        return """About KUCCPS Courses Checker
+
+KUCCPS Courses Checker (www.kuccpscourses.co.ke) is an online tool that helps Kenyan students find university, college, and vocational courses that match their KCSE grades.
+
+WHAT WE DO:
+- You enter your KCSE grades once
+- Our system instantly shows you ALL courses you qualify for
+- You can compare programs, save favorites to basket, and plan your future
+
+WHAT WE ARE NOT:
+- NOT the official KUCCPS portal (that's students.kuccps.net for applications)
+- NOT an admission guarantee (you still need to apply through KUCCPS)
+- NOT a paid service for browsing (basic features are free)
+
+PRICING:
 - First category check: KES 200
 - Additional categories: KES 100 each
 - Payment: M-PESA STK Push
-- 6 categories: Degree(C+), Diploma(C-), KMTC(C-), TTC(C), Certificate(D+), Artisan(D/E)
-- 5000+ courses, 200+ institutions, 50,000+ students helped
-- Email: courseschecker@gmail.com | Phone: +254791196121
 
-HOW TO USE:
-1. Choose category → 2. Enter grades → 3. Pay → 4. View results → 5. Save to basket
+FEATURES:
+- 6 categories: Degree, Diploma, KMTC, TTC, Certificate, Artisan
+- 5000+ courses, 200+ institutions
+- AI chat support 24/7
+- Course basket to save favorites
+- Email results as PDF
 
-KUCCPS INFO (OFFICIAL):
-- Application fee: KES 1,500 (eCitizen)
+Contact: courseschecker@gmail.com | Phone: +254791196121"""
+    
+    # ============================================
+    # PRICING QUESTIONS
+    # ============================================
+    elif any(word in user_message_lower for word in ["how much", "cost", "price", "payment", "kes"]):
+        return """KUCCPS Courses Checker Pricing
+
+FIRST CATEGORY: KES 200
+- Choose any category (Degree, Diploma, KMTC, TTC, Certificate, or Artisan)
+- Get instant access to ALL matching courses in that category
+
+ADDITIONAL CATEGORIES: KES 100 each
+- Add more categories at a discounted rate
+- Example: Diploma (KES 200) + Certificate (KES 100) = KES 300 total
+
+WHAT YOU GET:
+- Complete list of courses matching your KCSE grades
+- Institution names, programme codes, cut-off points
+- Subject requirements for each course
+- Unlimited browsing and filtering
+- Save courses to basket
+- Export results as PDF
+
+PAYMENT METHOD:
+M-PESA STK Push - enter your phone number, receive prompt, enter PIN, instant results
+
+OFFICIAL KUCCPS FEE (separate):
+KES 1,500 via eCitizen for actual application placement
+
+Use the "Already Made Payment" button if you've paid but didn't get results - enter your receipt number to access your courses."""
+    
+    # ============================================
+    # DIPLOMA COURSES GENERAL
+    # ============================================
+    elif "diploma" in user_message_lower and "course" in user_message_lower:
+        return """Diploma Courses in Kenya
+
+REQUIREMENTS:
+- Minimum KCSE mean grade: C-
+- Most diplomas accept C plain
+- Some specialized diplomas may require higher grades
+
+POPULAR DIPLOMA PROGRAMS:
+1. Diploma in ICT/Computer Science - C-
+2. Diploma in Engineering (Civil, Mechanical, Electrical) - C-
+3. Diploma in Nursing (KMTC) - C plain
+4. Diploma in Business Management - C-
+5. Diploma in Building Technology - C-
+6. Diploma in Accountancy - C-
+7. Diploma in Hospitality Management - C-
+8. Diploma in Human Resource Management - C-
+
+DURATION: 2 years
+
+INSTITUTIONS:
+- National polytechnics (Kenya, Mombasa, Eldoret, Kisumu, etc.)
+- Technical Training Institutes (TVETs)
+- KMTC campuses for health diplomas
+
+CAREER BENEFITS:
+- Shorter duration than degree (2 years vs 4 years)
+- More practical, hands-on training
+- Lower tuition costs
+- Direct entry into workforce
+- Pathway to degree through recognition of prior learning
+
+Use our Diploma course checker (KES 200) at www.kuccpscourses.co.ke/diploma to see all programs matching your grades."""
+    
+    # ============================================
+    # CERTIFICATE COURSES
+    # ============================================
+    elif "certificate" in user_message_lower:
+        return """Certificate Courses in Kenya
+
+REQUIREMENTS:
+- Minimum KCSE mean grade: D+
+- Very accessible - most students qualify
+
+POPULAR CERTIFICATE PROGRAMS:
+1. Certificate in ICT/Computer Packages - D+
+2. Certificate in Business Administration - D+
+3. Certificate in Sales and Marketing - D+
+4. Certificate in Food and Beverage - D+
+5. Certificate in Front Office Operations - D+
+6. Certificate in Hairdressing and Beauty Therapy - D+
+7. Certificate in Plumbing - D+
+8. Certificate in Electrical Installation - D+
+9. Certificate in Fashion Design - D+
+10. Certificate in Early Childhood Education (ECDE) - D+
+
+DURATION: 1-2 years
+
+CAREER OUTCOMES:
+- Entry-level positions in companies
+- Self-employment opportunities
+- Foundation for diploma studies
+
+COST: Generally KES 20,000-50,000 per year at TVETs (government-subsidized)
+
+Use our Certificate course checker (KES 200) at www.kuccpscourses.co.ke/certificate to see all programs matching your grades."""
+    
+    # ============================================
+    # ARTISAN COURSES
+    # ============================================
+    elif "artisan" in user_message_lower:
+        return """Artisan Courses in Kenya
+
+REQUIREMENTS:
+- KCSE mean grade: D plain, D-, or E (most accessible option)
+- No specific subject requirements
+
+POPULAR ARTISAN COURSES:
+1. Plumbing and Pipe Fitting - D plain
+2. Electrical Installation - D plain
+3. Welding and Fabrication - D plain
+4. Carpentry and Joinery - D plain
+5. Masonry and Building Construction - D plain
+6. Automotive Mechanics - D plain
+7. Hairdressing and Beauty Therapy - D plain
+8. Fashion Design and Garment Making - D plain
+9. Motor Vehicle Mechanics - D plain
+10. Refrigeration and Air Conditioning - D plain
+
+DURATION: 6 months to 2 years
+
+INSTITUTIONS: TVETs, youth polytechnics, vocational training centers
+
+CAREER PATHS:
+- Self-employment (start your own business)
+- Construction industry
+- Manufacturing sector
+- Apprenticeship opportunities
+
+GOVERNMENT SUPPORT: Many artisan courses are government-subsidized
+
+Use our Artisan course checker (KES 200) at www.kuccpscourses.co.ke/artisan to see all programs matching your grades."""
+    
+    # ============================================
+    # HOW TO USE THE PLATFORM
+    # ============================================
+    elif "how to use" in user_message_lower or "how does it work" in user_message_lower:
+        return """How to Use KUCCPS Courses Checker - Step by Step
+
+STEP 1: Choose a Category
+- Visit www.kuccpscourses.co.ke
+- Click on Degree, Diploma, KMTC, TTC, Certificate, or Artisan
+
+STEP 2: Enter Your KCSE Grades
+- Fill in your subject grades from the dropdown menus
+- Select your overall mean grade
+- Click "Submit Grades"
+
+STEP 3: Enter Your Details
+- Email address (to track your session and retrieve results later)
+- KCSE Index Number (format: 12345678901/2024)
+- Click "Continue to Payment"
+
+STEP 4: Make Payment
+- First category: KES 200, Additional categories: KES 100
+- Enter your M-Pesa phone number (07XXXXXXXX)
+- Click "Proceed to Payment"
+- Enter your M-Pesa PIN on your phone
+- Payment processes in 2-5 seconds
+
+STEP 5: View Your Results
+- See all courses you qualify for
+- Filter by cluster (Engineering, Medicine, Business, etc.)
+- Click "Add to Basket" to save favorites
+
+STEP 6: Use Your Basket
+- Save multiple courses for comparison
+- Export as PDF or print
+- Share with parents or counselors
+
+ALREADY PAID? Use the "Already Made Payment" button - enter your receipt number and index number to access your results instantly.
+
+Need help? Use the AI chat (bottom-right corner), email courseschecker@gmail.com, or call +254791196121."""
+    
+    # ============================================
+    # SCHOLARSHIPS
+    # ============================================
+    elif "scholarship" in user_message_lower or "financial aid" in user_message_lower:
+        return """Scholarships and Financial Aid in Kenya
+
+GOVERNMENT FUNDING:
+- HELB Loans: Apply at www.hef.co.ke
+  - University: Up to KES 60,000 per year
+  - TVET: Up to KES 40,000 per year
+- CDF Bursaries: Apply through your local MP's office
+- NG-CDF Scholarships: Merit-based and needs-based
+
+UNIVERSITY SCHOLARSHIPS:
+- Merit-based (top KCSE performers)
+- Sports scholarships (talented athletes)
+- Need-based financial aid
+- Departmental awards
+
+PRIVATE SCHOLARSHIPS:
+- Equity Bank "Wings to Fly" (top performers from disadvantaged backgrounds)
+- KCB Foundation (2jiajiri program)
+- Safaricom Foundation
+- Mastercard Foundation
+- Kenya Airways (aviation courses)
+- Various NGO scholarships
+
+HOW TO APPLY:
+1. Check eligibility requirements
+2. Gather required documents (KCSE certificate, ID, parents' income docs)
+3. Submit applications by deadlines (usually January-March)
+4. Follow up on application status
+
+Use our course checker to find courses that qualify for specific scholarships."""
+    
+    # ============================================
+    # CONTACT INFORMATION
+    # ============================================
+    elif "contact" in user_message_lower or "support" in user_message_lower or "help" in user_message_lower:
+        return """Contact KUCCPS Courses Checker Support
+
+EMAIL: courseschecker@gmail.com
+- Response time: 2-4 hours
+
+PHONE: +254791196121
+- Hours: Monday-Friday, 8 AM - 6 PM
+- Voicemail available 24/7
+
+LIVE CHAT:
+- Click the AI chat button (bottom-right corner of any page)
+- Available 24/7, instant responses
+
+SOCIAL MEDIA:
+- Twitter: @kuccpschecker
+- Facebook: KUCCPS Courses Checker
+
+WHATSAPP GROUP:
+- Join our community for quick support: [link on website]
+
+FOR PAYMENT ISSUES:
+- Use the "Payment Issues? Get Help" button (red floating button on the left)
+- Submit your M-Pesa receipt and screenshot
+- Our team will respond within 6 hours
+
+OFFICIAL KUCCPS CONTACT (for applications):
 - Website: students.kuccps.net
-- Degree: C+ minimum | Diploma: C- | Certificate: D+ | Artisan: D/E
-- Cluster points: A=12, A-=11, B+=10, B=9, B-=8, C+=7, C=6, C-=5, D+=4, D=3
+- Phone: 020 5137400
+- Email: info@kuccps.ac.ke
 
-FAQ QUICK ANSWERS:
-- C plain students can do: Diploma, Certificate, Artisan courses
-- Results last: 30 minutes active browsing
-- Payment fails? Check balance, retry, or verify with receipt
-- Basket: Save and compare courses"""
-
-        # ✅ CORRECT FREE MODELS FROM YOUR ACCOUNT
-        oopenrouter_models = [
-    "google/gemini-2.0-flash-lite-preview-02-05:free",  # Google's free tier
-    "meta-llama/llama-3.2-1b-instruct:free",            # Meta's small model
-    "microsoft/phi-3-mini-128k-instruct:free",          # Microsoft's model
-    "mistralai/mistral-7b-instruct-v0.3:free",          # Mistral 7B
-    "qwen/qwen-2.5-1.5b-instruct:free",                 # Qwen small model
-]
-        for model in openrouter_models:
-            try:
-                print(f"🔄 Trying OpenRouter model: {model}")
-                
-                response = requests.post(
-                    url="https://openrouter.ai/api/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://www.kuccpscourses.co.ke",
-                        "X-Title": "KUCCPS Courses Checker",
-                    },
-                    json={
-                        "model": model,
-                        "messages": [
-                            {"role": "system", "content": condensed_prompt},
-                            {"role": "user", "content": user_message}
-                        ],
-                        "temperature": 0.5,
-                        "max_tokens": 500,
-                        "top_p": 0.9
-                    },
-                    timeout=15
-                )
-                
-                print(f"📥 Response status: {response.status_code}")
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    ai_response = result['choices'][0]['message']['content'].strip()
-                    
-                    # Validate response isn't generic
-                    generic_phrases = [
-                        "i'm here to help",
-                        "i can help you with",
-                        "what would you like to know",
-                        "ask me about"
-                    ]
-                    
-                    # Check if response is too generic
-                    is_generic = any(phrase in ai_response.lower() for phrase in generic_phrases)
-                    
-                    if ai_response and len(ai_response) > 20 and not is_generic:
-                        print(f"✅ Got GOOD response from OpenRouter {model}")
-                        print(f"📝 Response preview: {ai_response[:100]}...")
-                        return ai_response
-                    elif ai_response and len(ai_response) > 20:
-                        print(f"⚠️ Response from {model} was generic, trying next model...")
-                        print(f"📝 Generic response: {ai_response[:100]}...")
-                        continue
-                    else:
-                        print(f"⚠️ Response from {model} was empty or too short")
-                    
-                elif response.status_code == 429:
-                    print(f"❌ OpenRouter model {model} failed - RATE LIMITED (429)")
-                    print(f"⏱️ Rate limited on {model}. Waiting 3 seconds...")
-                    time.sleep(3)
-                    continue
-                    
-                elif response.status_code == 401:
-                    print(f"❌ OpenRouter model {model} failed - UNAUTHORIZED (401)")
-                    print("🔑 Your OpenRouter API key is invalid. Please check:")
-                    print("   1. Go to https://openrouter.ai/keys")
-                    print("   2. Generate a new key")
-                    print("   3. Update OPENROUTER_API_KEY in your .env file")
-                    # Continue to next model instead of breaking
-                    continue
-                    
-                else:
-                    print(f"❌ OpenRouter model {model} failed with status {response.status_code}")
-                    print(f"📄 Error response: {response.text[:200]}")
-                    continue
-                    
-            except requests.exceptions.Timeout:
-                print(f"⏱️ OpenRouter model {model} timed out")
-                continue
-                
-            except requests.exceptions.ConnectionError:
-                print(f"🔌 OpenRouter model {model} connection error")
-                continue
-                
-            except Exception as e:
-                print(f"❌ OpenRouter model {model} threw exception: {str(e)}")
-                continue
-        
-        # If all OpenRouter models fail, return None to allow Gemini to try
-        print("⚠️ All OpenRouter models failed, will try Gemini")
-        return None  # ← CRITICAL: Return None, not curated response
-        
-    except Exception as e:
-        print(f"❌ OpenRouter fallback critical error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return None  # ← Return None on error
+We're here to help you find your perfect course!"""
     
-    
-def get_curated_response(user_message):
-    """Return curated responses based on common questions - UPDATED WITH CORRECT INFO"""
-    user_message_lower = user_message.lower()
-    
-    # C plain questions
-    if "c plain" in user_message_lower or "c plain" in user_message_lower:
-        return ("With a C plain in KCSE, you can apply for Diploma programs (minimum C-), " +
-               "Certificate programs (D+ and above), and Artisan courses. Popular options include " +
-               "Diploma in Business, Certificate in ICT, or Artisan in Plumbing. " +
-               "Use our course checker (KES 200) to see ALL courses matching your exact grades!")
-    
-    # Cost/payment questions
-    elif any(word in user_message_lower for word in ["cost", "pay", "fee", "price", "how much"]):
-        return ("Our course checking service costs KES 200 for your first category, " +
-               "and KES 100 for each additional category. Payment is via M-PESA STK Push. " +
-               "This is DIFFERENT from the official KUCCPS application fee of KES 1,500.")
-    
-    # Multiple categories
-    elif "multiple" in user_message_lower or "categories" in user_message_lower or "more than one" in user_message_lower:
-        return ("Yes! You can check multiple course categories. " +
-               "First category costs KES 200, and each additional category costs KES 100. " +
-               "For example: Diploma (KES 200) + Certificate (KES 100) = KES 300 total.")
-    
-    # ===== FIXED: KMTC / NURSING SECTION WITH CORRECT REQUIREMENTS =====
-    elif any(word in user_message_lower for word in ["kmtc", "nursing", "medical", "health", "clinical"]):
-        
-        # Check for specific nursing questions
-        if "nursing" in user_message_lower and ("requirement" in user_message_lower or "need" in user_message_lower or "grade" in user_message_lower):
-            return ("For Diploma in Nursing (KRCHN) at KMTC, you need:\n" +
-                   "• KCSE mean grade: **C plain** (not C-)\n" +
-                   "• C plain in English, Biology, and Chemistry\n" +
-                   "• C- in Mathematics or Physics\n" +
-                   "Duration: 3 years with clinical training.\n" +
-                   "Use our KMTC course checker (KES 200) to see all options matching your exact grades!")
-        
-        # General KMTC info
-        else:
-            return ("KMTC courses require minimum C- mean grade, but Nursing specifically needs C plain. " +
-                   "Popular programs include Diploma in Nursing (C plain in English, Biology, Chemistry), " +
-                   "Clinical Medicine (C in Biology, Chemistry), and Pharmacy. " +
-                   "Use our KMTC course checker (KES 200) to see all options matching your grades.")
-    
-    # Degree requirements
-    elif "degree" in user_message_lower and any(word in user_message_lower for word in ["requirement", "need", "grade", "qualify"]):
-        return ("Degree programs require a minimum of C+ mean grade and specific cluster points. " +
-               "For example, Engineering typically needs C+ in Mathematics, Physics, and Chemistry. " +
-               "Medicine requires B in Biology, Chemistry, and Mathematics/Physics. " +
-               "Use our degree course checker (KES 200) to see all programs matching your grades.")
-    
-    # Diploma requirements (general)
-    elif "diploma" in user_message_lower and any(word in user_message_lower for word in ["requirement", "need", "grade", "qualify"]):
-        return ("Diploma programs require a minimum of C- mean grade. Most diplomas accept C plain, " +
-               "but some like Nursing require C plain in specific subjects. " +
-               "Use our diploma course checker (KES 200) to see all your options.")
-    
-    # Certificate requirements
-    elif "certificate" in user_message_lower and any(word in user_message_lower for word in ["requirement", "need", "grade", "qualify"]):
-        return ("Certificate programs require a minimum of D+ mean grade. These are 1-2 year programs " +
-               "in fields like ICT, Business, Hospitality, and Technical trades. " +
-               "Use our certificate course checker (KES 200) to see all options.")
-    
-    # Artisan requirements
-    elif "artisan" in user_message_lower and any(word in user_message_lower for word in ["requirement", "need", "grade", "qualify"]):
-        return ("Artisan courses accept D plain, D-, or E grades. These are hands-on training programs " +
-               "in trades like Plumbing, Electrical, Welding, Carpentry, and Masonry. " +
-               "Use our artisan course checker (KES 200) to see all options.")
-    
-    # TTC / Teacher training
-    elif any(word in user_message_lower for word in ["ttc", "teacher", "teaching", "pte", "ecde"]):
-        return ("Teacher Training College (TTC) programs require minimum C mean grade. " +
-               "Options include Primary Teacher Education (PTE), ECDE, and Diploma in Secondary Education. " +
-               "Use our TTC course checker (KES 200) to see all options.")
-    
-    # Basket feature
-    elif "basket" in user_message_lower:
-        return ("The basket lets you save and compare courses you're interested in. " +
-               "Click 'Add to Basket' on any course, then view your basket to see all saved courses, " +
-               "compare them side-by-side, and export as PDF to share with parents or counselors.")
-    
-    # Payment failure
-    elif "payment fail" in user_message_lower or "mpesa fail" in user_message_lower or "transaction fail" in user_message_lower:
-        return ("If your M-Pesa payment fails, first check your balance and ensure you have sufficient funds. " +
-               "Verify your phone number is correct (format 07XXXXXXXX). If money was deducted but you didn't get results, " +
-               "use your receipt number at /verify-payment to access your results. Contact courseschecker@gmail.com if issues persist.")
-    
-    # How long results last
-    elif "how long" in user_message_lower and ("result" in user_message_lower or "available" in user_message_lower):
-        return ("Your results are available for 30 minutes of active browsing in that session. " +
-               "After 30 minutes of inactivity, the session expires and you'd need to pay again. " +
-               "However, courses saved to your basket remain accessible anytime you log in with your email and index number.")
-    
-    # Email safety
-    elif "email safe" in user_message_lower or "privacy" in user_message_lower or "data" in user_message_lower:
-        return ("Yes, your email is safe. We use HTTPS encryption throughout, never share your data with third parties, " +
-               "and only use your email for session tracking and result retrieval. Your privacy is our priority.")
-    
-    # Share results
-    elif "share" in user_message_lower and ("result" in user_message_lower or "basket" in user_message_lower):
-        return ("You can share your results by exporting your basket as PDF and sharing it with others. " +
-               "However, each person must pay for their own session to see their specific results, " +
-               "as results are personalized based on individual grades.")
-    
-    # App vs website
-    elif "app" in user_message_lower:
-        return ("We currently offer a website only, not a separate app. But it works great on all devices! " +
-               "On some phones, you can 'Install' the site to your home screen (PWA feature) for app-like access. " +
-               "On Chrome: Menu → 'Add to Home screen'. On Safari: Share → 'Add to Home Screen'.")
-    
-    # KUCCPS application
-    elif "kuccps" in user_message_lower and ("apply" in user_message_lower or "application" in user_message_lower):
-        return ("To apply to KUCCPS officially, visit students.kuccps.net. The application fee is KES 1,500 via eCitizen. " +
-               "You can select up to 6 degree choices or 4 diploma/certificate choices. " +
-               "Applications typically open in April and close July 15th. This is SEPARATE from our KES 200 course checking fee.")
-    
-    # Cluster points
-    elif "cluster" in user_message_lower and ("point" in user_message_lower or "calculate" in user_message_lower):
-        return ("Cluster points are your score based on your best 4 subjects. Grade conversion: A=12, A-=11, B+=10, B=9, " +
-               "B-=8, C+=7, C=6, C-=5, D+=4, D=3. For example, Engineering cluster requires Math, Physics, Chemistry " +
-               "(typically 36-48 points). Check our 'Cluster Points Explained' guide at /guides for more details.")
-    
-    # Cut-off points
-    elif "cut off" in user_message_lower or "cutoff" in user_message_lower:
-        return ("Cut-off points are the minimum score required for a specific course at a specific university. " +
-               "They are determined by competition - the last person admitted's score becomes the cut-off. " +
-               "Cut-off points change every year based on applicant quality and available slots.")
-    
-    # Medicine and Surgery
-    elif "medicine" in user_message_lower or "surgery" in user_message_lower or "mbchb" in user_message_lower:
-        return ("Bachelor of Medicine and Surgery (MBChB) requires a minimum of B in Biology, Chemistry, " +
-               "and Mathematics/Physics, with an overall mean grade of B+. It's a 6-year program offered at " +
-               "University of Nairobi, Moi University, Kenyatta University, and other institutions. " +
-               "Cut-off points are typically 42-48 cluster points.")
-    
-    # Computer Science
-    elif "computer science" in user_message_lower or "cs" in user_message_lower:
-        return ("Computer Science is a degree program focusing on software development, algorithms, " +
-               "and computational theory. It requires a minimum of C+ in Mathematics, with cut-off points " +
-               "typically 35-42 cluster points. Offered at most Kenyan universities.")
-    
-    # Engineering
-    elif "engineering" in user_message_lower and ("civil" in user_message_lower or "mechanical" in user_message_lower or "electrical" in user_message_lower):
-        return ("Engineering programs require C+ in Mathematics, Physics, and Chemistry. Cut-off points vary: " +
-               "Civil (36-40), Mechanical (38-42), Electrical (38-43). Offered at University of Nairobi, " +
-               "JKUAT, Moi University, and Technical University of Kenya.")
-    
-    # Default response
+    # ============================================
+    # DEFAULT RESPONSE
+    # ============================================
     else:
-        return ("I'm here to help with KUCCPS courses! You can ask me about:\n" +
-               "• Course requirements (degree, diploma, certificate, artisan, KMTC, TTC)\n" +
-               "• Payment information (KES 200 first, KES 100 additional)\n" +
-               "• How to use our platform\n" +
-               "• KUCCPS application process\n" +
-               "• Cluster points and cut-off points\n\n" +
-               "What would you like to know specifically?")
+        return """Welcome to KUCCPS Courses Checker! I'm here to help you find courses matching your KCSE grades.
+
+Visit our website: www.kuccpscourses.co.ke
+
+I can answer questions about:
+- Specific courses (Computer Science, Nursing, Engineering, Law, Medicine, Business, etc.)
+- Course requirements (grades, cluster points, cut-off points)
+- Universities and colleges in Kenya (UoN, Kenyatta, JKUAT, KMTC, TTC, etc.)
+- How to use our platform (step-by-step guide)
+- Pricing (KES 200 first category, KES 100 additional)
+- KUCCPS application process (official)
+- Diploma, Certificate, and Artisan programs
+- Scholarships and financial aid
+- Cluster points calculation
+
+What specific course or topic would you like to learn about?
+
+Example questions you can ask:
+- "Tell me about Computer Science at University of Nairobi"
+- "What are the requirements for nursing at KMTC?"
+- "How do I calculate cluster points?"
+- "What diploma courses can I do with C plain?"
+- "Tell me about engineering programs in Kenya"
+
+Just type your question and I'll give you detailed information specific to your needs!"""
 @app.route('/test-simple')
 def test_simple():
     """Ultra-simple test to verify API works"""
@@ -4779,18 +3797,20 @@ def get_chatbot_response(user_message):
     
     print(f"🤖 Processing: '{user_message}'")
     
-    # Try OpenRouter FIRST (unlimited, won't hit daily limits)
+    # Try OpenRouter FIRST
     openrouter_response = get_openrouter_fallback(user_message)
-    if openrouter_response:  # Only use if OpenRouter returned something
+    if openrouter_response:
+        print("✅ Using OpenRouter response")
         return openrouter_response
     
-    # If OpenRouter fails or returns None, try Gemini as backup
-    print("⚠️ OpenRouter failed or returned None, trying Gemini...")
+    # If OpenRouter fails, try Gemini
+    print("⚠️ OpenRouter failed, trying Gemini as fallback...")
     gemini_response = get_gemini_response(user_message)
     if gemini_response:
+        print("✅ Using Gemini response")
         return gemini_response
     
-    # Ultimate fallback only if both AI services fail
+    # Ultimate fallback - curated responses
     print("⚠️ Both OpenRouter and Gemini failed, using curated response")
     return get_curated_response(user_message)
 def get_enhanced_chatbot_response(user_message):
