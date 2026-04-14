@@ -14,8 +14,8 @@ from flask import send_from_directory
 from requests.auth import HTTPBasicAuth
 import json
 import re
-import google.generativeai as genai
-from google.generativeai import types   
+import google.genai as genai
+from google.genai import types
 import random                           
 import time
 import hashlib
