@@ -3,210 +3,294 @@
 {% block title %}Payment Issues Management | Admin{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid mt-4">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>
-            <i class="fas fa-headset me-2"></i>
+            <i class="fas fa-headset me-2 text-primary"></i>
             Payment Issues Management
         </h1>
         <div>
             <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
             </a>
+            <button onclick="location.reload()" class="btn btn-outline-primary">
+                <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
         </div>
     </div>
     
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ stats.total|default(0) }}</h3>
-                    <p class="mb-0">Total Issues</p>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-gradient-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Total Issues</h6>
+                            <h2 class="mb-0">{{ stats.total|default(0) }}</h2>
+                        </div>
+                        <i class="fas fa-tasks fa-2x text-white-50"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ stats.pending|default(0) }}</h3>
-                    <p class="mb-0">Pending</p>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-gradient-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Pending</h6>
+                            <h2 class="mb-0" id="pendingCount">{{ stats.pending|default(0) }}</h2>
+                        </div>
+                        <i class="fas fa-clock fa-2x text-white-50"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ stats.approved|default(0) }}</h3>
-                    <p class="mb-0">Approved</p>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-gradient-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Approved</h6>
+                            <h2 class="mb-0">{{ stats.approved|default(0) }}</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x text-white-50"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-danger text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ stats.deleted|default(0) }}</h3>
-                    <p class="mb-0">Deleted</p>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-gradient-danger text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Deleted</h6>
+                            <h2 class="mb-0">{{ stats.deleted|default(0) }}</h2>
+                        </div>
+                        <i class="fas fa-trash-alt fa-2x text-white-50"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Batch Actions Bar -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white border-0">
             <h5 class="mb-0">
-                <i class="fas fa-tools me-2"></i>Batch Actions
+                <i class="fas fa-tools me-2 text-primary"></i>Batch Actions
             </h5>
         </div>
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <p class="mb-2"><strong>Auto-Resolve Existing Issues</strong></p>
-                    <p class="text-muted small mb-0">This will check all pending payment issues against the database. Issues with valid payments and existing courses will be automatically resolved, and users will receive email notifications with access instructions.</p>
+                    <p class="mb-2"><strong>Batch Payment Verification</strong></p>
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        This will check ALL pending payment issues against the database to verify if the payment exists.
+                        Issues with valid confirmed payments will be marked as verified. No course checking involved.
+                    </p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button type="button" class="btn btn-warning btn-lg" onclick="batchResolveExistingIssues()" id="batchResolveBtn">
-                        <i class="fas fa-magic me-2"></i>Auto-Resolve All Issues
+                    <button type="button" class="btn btn-gradient-warning btn-lg" onclick="batchVerifyPayments()" id="batchVerifyBtn">
+                        <i class="fas fa-search-dollar me-2"></i>Verify All Payments
                     </button>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Pending Issues Table -->
-    <div class="card">
-        <div class="card-header bg-primary text-white">
+    <!-- Filter Bar -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Filter by Status</label>
+                    <select class="form-select" id="statusFilter" onchange="filterIssues()">
+                        <option value="pending" selected>Pending Issues</option>
+                        <option value="approved">Approved Issues</option>
+                        <option value="deleted">Deleted Issues</option>
+                        <option value="verified">Verified Issues</option>
+                        <option value="all">All Issues</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Search</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Email, Index or Receipt..." onkeyup="searchIssues()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Date Range</label>
+                    <select class="form-select" id="dateFilter" onchange="filterByDate()">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">Last 7 Days</option>
+                        <option value="month">Last 30 Days</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Issues Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
-                    <i class="fas fa-clock me-2"></i>Pending Payment Issues
-                    <span class="badge bg-light text-dark ms-2">{{ total_pending|default(0) }}</span>
+                    <i class="fas fa-list me-2 text-primary"></i>Payment Issues
+                    <span class="badge bg-primary ms-2" id="totalBadge">{{ total_pending|default(0) }}</span>
                 </h5>
                 {% if total_pages > 1 %}
-                <span class="badge bg-light text-dark">Page {{ page }} of {{ total_pages }}</span>
+                <span class="badge bg-secondary">Page {{ page }} of {{ total_pages }}</span>
                 {% endif %}
             </div>
         </div>
         <div class="card-body">
-            {% if issues %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Date</th>
-                                <th>Email</th>
-                                <th>Index Number</th>
-                                <th>M-Pesa Receipt</th>
-                                <th>Screenshot</th>
-                                <th>Quick Check</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for issue in issues %}
-                            <tr id="issue-row-{{ issue._id }}">
-                                <td>
-                                    {% if issue.created_at %}
-                                        {% if issue.created_at is string %}
-                                            {{ issue.created_at[:16] }}
+            <div id="issuesContainer">
+                {% if issues %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="issuesTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Email</th>
+                                    <th>Index Number</th>
+                                    <th>M-Pesa Receipt</th>
+                                    <th>Payment Status</th>
+                                    <th>Screenshot</th>
+                                    <th>Verify Payment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="issuesTableBody">
+                                {% for issue in issues %}
+                                <tr id="issue-row-{{ issue._id }}" data-status="{{ issue.status }}" data-created="{{ issue.created_at }}" data-email="{{ issue.email }}" data-receipt="{{ issue.mpesa_receipt }}">
+                                    <td class="text-nowrap">
+                                        {% if issue.created_at %}
+                                            {% if issue.created_at is string %}
+                                                {{ issue.created_at[:16] }}
+                                            {% else %}
+                                                {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {% endif %}
                                         {% else %}
-                                            {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            N/A
                                         {% endif %}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </td>
-                                <td>{{ issue.email|truncate(25) if issue.email else 'N/A' }}</td>
-                                <td>{{ issue.index_number if issue.index_number else 'N/A' }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <code class="bg-light p-1 rounded">{{ issue.mpesa_receipt }}</code>
-                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ issue.mpesa_receipt }}', event)" title="Copy receipt">
-                                            <i class="fas fa-copy"></i>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 200px;" title="{{ issue.email }}">
+                                            {{ issue.email|truncate(25) if issue.email else 'N/A' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code class="small">{{ issue.index_number if issue.index_number else 'N/A' }}</code>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <code class="bg-light p-1 rounded small">{{ issue.mpesa_receipt }}</code>
+                                            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ issue.mpesa_receipt }}', event)" title="Copy receipt">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td id="payment-status-{{ issue._id }}">
+                                        {% if issue.payment_verified %}
+                                            <span class="badge bg-success">✓ Payment Verified</span>
+                                        {% elif issue.status == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif issue.status == 'deleted' %}
+                                            <span class="badge bg-danger">Deleted</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Pending Verification</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if issue.screenshot_url %}
+                                            <button class="btn btn-sm btn-info" onclick="viewScreenshot('{{ issue._id }}')">
+                                                <i class="fas fa-image me-1"></i>View
+                                            </button>
+                                            {% if issue.screenshot_info %}
+                                                <small class="text-muted d-block mt-1">
+                                                    {{ (issue.screenshot_info.bytes / 1024)|round(1) if issue.screenshot_info.bytes else '0' }} KB
+                                                </small>
+                                            {% endif %}
+                                        {% elif issue.screenshot %}
+                                            <button class="btn btn-sm btn-warning" onclick="migrateScreenshot('{{ issue._id }}')">
+                                                <i class="fas fa-cloud-upload-alt me-1"></i>Migrate
+                                            </button>
+                                        {% else %}
+                                            <span class="text-muted">No screenshot</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" onclick="verifyPaymentOnly('{{ issue._id }}')" id="verify-btn-{{ issue._id }}">
+                                            <i class="fas fa-search-dollar me-1"></i>Verify Payment
                                         </button>
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if issue.screenshot %}
-                                    <button class="btn btn-sm btn-primary" onclick="viewScreenshot('{{ issue.screenshot }}')">
-                                        <i class="fas fa-image me-1"></i>View
-                                    </button>
-                                    {% else %}
-                                    <span class="text-muted">No screenshot</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-info" onclick="checkAndResolveIssue('{{ issue._id }}')" id="check-btn-{{ issue._id }}">
-                                        <i class="fas fa-search me-1"></i>Check
-                                    </button>
-                                    <div id="check-status-{{ issue._id }}" class="small mt-1"></div>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-success" onclick="processIssue('{{ issue._id }}', 'approve')" title="Approve">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-danger" onclick="processIssue('{{ issue._id }}', 'delete')" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Pagination Controls -->
-                {% if total_pages > 1 %}
-                <nav aria-label="Page navigation" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item {% if page == 1 %}disabled{% endif %}">
-                            <a class="page-link" href="{{ url_for('admin_payment_issues', page=page-1, per_page=per_page) }}">
-                                <i class="fas fa-chevron-left"></i> Previous
-                            </a>
-                        </li>
-                        
-                        {% set start_page = [page - 2, 1]|max %}
-                        {% set end_page = [start_page + 4, total_pages]|min %}
-                        
-                        {% for p in range(start_page, end_page + 1) %}
-                            <li class="page-item {% if p == page %}active{% endif %}">
-                                <a class="page-link" href="{{ url_for('admin_payment_issues', page=p, per_page=per_page) }}">{{ p }}</a>
-                            </li>
-                        {% endfor %}
-                        
-                        <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-                            <a class="page-link" href="{{ url_for('admin_payment_issues', page=page+1, per_page=per_page) }}">
-                                Next <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-                
-                <!-- Per page selector -->
-                <div class="text-center mt-3">
-                    <div class="btn-group btn-group-sm" role="group">
-                        <a href="{{ url_for('admin_payment_issues', page=1, per_page=10) }}" class="btn btn-outline-secondary {% if per_page == 10 %}active{% endif %}">10</a>
-                        <a href="{{ url_for('admin_payment_issues', page=1, per_page=20) }}" class="btn btn-outline-secondary {% if per_page == 20 %}active{% endif %}">20</a>
-                        <a href="{{ url_for('admin_payment_issues', page=1, per_page=50) }}" class="btn btn-outline-secondary {% if per_page == 50 %}active{% endif %}">50</a>
-                        <a href="{{ url_for('admin_payment_issues', page=1, per_page=100) }}" class="btn btn-outline-secondary {% if per_page == 100 %}active{% endif %}">100</a>
+                                        <div id="verify-status-{{ issue._id }}" class="small mt-1"></div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-success" onclick="processIssue('{{ issue._id }}', 'approve')" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger" onclick="processIssue('{{ issue._id }}', 'delete')" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    <span class="ms-2 text-muted small">items per page</span>
-                </div>
+                    
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center" id="pagination">
+                            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                                <a class="page-link" href="#" onclick="changePage({{ page-1 }})">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                            
+                            {% set start_page = [page - 2, 1]|max %}
+                            {% set end_page = [start_page + 4, total_pages]|min %}
+                            
+                            {% for p in range(start_page, end_page + 1) %}
+                                <li class="page-item {% if p == page %}active{% endif %}">
+                                    <a class="page-link" href="#" onclick="changePage({{ p }})">{{ p }}</a>
+                                </li>
+                            {% endfor %}
+                            
+                            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                                <a class="page-link" href="#" onclick="changePage({{ page+1 }})">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    
+                    <!-- Per page selector -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary {% if per_page == 10 %}active{% endif %}" onclick="changePerPage(10)">10</button>
+                            <button class="btn btn-outline-secondary {% if per_page == 20 %}active{% endif %}" onclick="changePerPage(20)">20</button>
+                            <button class="btn btn-outline-secondary {% if per_page == 50 %}active{% endif %}" onclick="changePerPage(50)">50</button>
+                            <button class="btn btn-outline-secondary {% if per_page == 100 %}active{% endif %}" onclick="changePerPage(100)">100</button>
+                        </div>
+                        <span class="text-muted small">Showing {{ issues|length }} of {{ total_pending }} issues</span>
+                    </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                        <h4>No Pending Issues</h4>
+                        <p class="text-muted">All payment issues have been processed. Great job!</p>
+                    </div>
                 {% endif %}
-                
-                <div class="text-center text-muted small mt-3">
-                    Showing {{ issues|length }} of {{ total_pending }} pending issues
-                </div>
-                
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                    <h5>No Pending Issues</h5>
-                    <p class="text-muted">All payment issues have been processed.</p>
-                </div>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>
@@ -218,7 +302,7 @@
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
                     <i class="fas fa-spinner fa-spin me-2"></i>
-                    Processing Issues
+                    Verifying Payments
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -227,7 +311,7 @@
                     <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p id="progressMessage">Checking payment issues against database...</p>
+                    <p id="progressMessage">Checking payment records in database...</p>
                     <div class="progress mt-3">
                         <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
                     </div>
@@ -239,12 +323,12 @@
 
 <!-- Result Modal -->
 <div class="modal fade" id="resultModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-chart-bar me-2"></i>
-                    Batch Processing Results
+                    Batch Verification Results
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -259,32 +343,135 @@
     </div>
 </div>
 
-<!-- Screenshot Modal -->
+<!-- Screenshot Modal with Cloudinary -->
 <div class="modal fade" id="screenshotModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Payment Screenshot</h5>
+                <h5 class="modal-title">
+                    <i class="fas fa-image me-2"></i>Payment Screenshot
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
-                <img id="screenshotImage" src="" alt="Screenshot" class="img-fluid">
+                <div id="screenshotLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading screenshot from Cloudinary...</p>
+                </div>
+                <img id="screenshotImage" src="" alt="Payment Screenshot" class="img-fluid rounded" style="display: none;">
+                <div id="screenshotInfo" class="mt-3 text-muted small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="downloadScreenshotBtn" onclick="downloadScreenshot()">
+                    <i class="fas fa-download me-2"></i>Download
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.btn-gradient-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+}
+
+.btn-gradient-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+    color: white;
+}
+
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .card-header h5 {
+        font-size: 1rem;
+    }
+}
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-// Global variables
 let autoRefreshInterval = null;
+let currentScreenshotUrl = null;
+let per_page = {{ per_page|default(20) }};
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Payment Issues page loaded');
+    console.log('Payment Issues Management System - Payment Only Verification');
     startAutoRefresh();
+    initializeEventListeners();
 });
+
+function initializeEventListeners() {
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'r') {
+            e.preventDefault();
+            location.reload();
+        }
+        if (e.ctrlKey && e.key === 'f') {
+            e.preventDefault();
+            document.getElementById('searchInput').focus();
+        }
+    });
+}
 
 function startAutoRefresh() {
     if (autoRefreshInterval) {
@@ -304,9 +491,11 @@ function refreshPendingCount() {
     fetch('/api/pending-issues-count')
         .then(response => response.json())
         .then(data => {
-            const pendingBadge = document.querySelector('.badge.bg-light.text-dark');
-            if (pendingBadge && data.count !== undefined) {
-                pendingBadge.textContent = data.count;
+            const pendingCount = document.getElementById('pendingCount');
+            const totalBadge = document.getElementById('totalBadge');
+            if (pendingCount && data.count !== undefined) {
+                pendingCount.textContent = data.count;
+                totalBadge.textContent = data.count;
             }
         })
         .catch(error => console.log('Error refreshing count:', error));
@@ -317,32 +506,33 @@ function copyToClipboard(text, event) {
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
-            showTempMessage('Copied!', 'success');
+            showNotification('Copied!', 'success');
         }).catch(err => {
             console.error('Failed to copy:', err);
-            alert('Failed to copy receipt number');
+            showNotification('Failed to copy', 'error');
         });
     } else {
-        // Fallback
         const textarea = document.createElement('textarea');
         textarea.value = text;
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        showTempMessage('Copied!', 'success');
+        showNotification('Copied!', 'success');
     }
 }
 
-function showTempMessage(message, type) {
+function showNotification(message, type) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
     alertDiv.style.position = 'fixed';
     alertDiv.style.top = '20px';
     alertDiv.style.right = '20px';
     alertDiv.style.zIndex = '9999';
-    alertDiv.style.minWidth = '200px';
+    alertDiv.style.minWidth = '300px';
+    alertDiv.style.animation = 'fadeIn 0.3s ease-out';
     alertDiv.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
@@ -350,20 +540,180 @@ function showTempMessage(message, type) {
     
     setTimeout(() => {
         if (alertDiv.parentNode) alertDiv.remove();
-    }, 2000);
+    }, 3000);
 }
 
-function viewScreenshot(screenshotData) {
+function viewScreenshot(issueId) {
     const modalElement = document.getElementById('screenshotModal');
     const modal = new bootstrap.Modal(modalElement);
     const imgElement = document.getElementById('screenshotImage');
-    imgElement.src = screenshotData;
+    const loadingDiv = document.getElementById('screenshotLoading');
+    const infoDiv = document.getElementById('screenshotInfo');
+    const downloadBtn = document.getElementById('downloadScreenshotBtn');
+    
+    imgElement.style.display = 'none';
+    loadingDiv.style.display = 'block';
+    infoDiv.innerHTML = '';
+    downloadBtn.style.display = 'none';
     modal.show();
+    
+    fetch(`/admin/get-screenshot-url/${issueId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.url) {
+                currentScreenshotUrl = data.url;
+                imgElement.src = data.url;
+                imgElement.onload = () => {
+                    loadingDiv.style.display = 'none';
+                    imgElement.style.display = 'block';
+                    downloadBtn.style.display = 'inline-block';
+                    
+                    if (data.storage === 'cloudinary') {
+                        infoDiv.innerHTML = `
+                            <i class="fas fa-cloud-upload-alt me-1"></i> 
+                            Stored in Cloudinary | 
+                            Format: ${data.format || 'PNG'} | 
+                            Size: ${data.size ? (data.size / 1024).toFixed(1) : '0'} KB
+                            ${data.width ? ` | Dimensions: ${data.width}x${data.height}` : ''}
+                        `;
+                    } else {
+                        infoDiv.innerHTML = `
+                            <i class="fas fa-database me-1"></i> 
+                            Stored in Database (Base64) | 
+                            ${data.size ? `Size: ${(data.size / 1024).toFixed(1)} KB` : ''}
+                            <br><small class="text-muted">Consider migrating to Cloudinary for better performance</small>
+                        `;
+                    }
+                };
+                imgElement.onerror = () => {
+                    loadingDiv.innerHTML = `
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <p>Failed to load image</p>
+                        <p class="small text-muted">The image file may be corrupted or inaccessible</p>
+                    `;
+                    loadingDiv.style.display = 'block';
+                };
+            } else {
+                loadingDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <p>No screenshot available</p>
+                    <p class="small text-muted">${data.error || 'Unknown error'}</p>
+                `;
+            }
+        })
+        .catch(error => {
+            loadingDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                <p>Error loading screenshot</p>
+                <p class="small text-muted">${error}</p>
+            `;
+        });
+}
+
+function downloadScreenshot() {
+    if (currentScreenshotUrl) {
+        const link = document.createElement('a');
+        link.href = currentScreenshotUrl;
+        link.download = `payment_screenshot_${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showNotification('Download started', 'success');
+    }
+}
+
+function migrateScreenshot(issueId) {
+    if (!confirm('This will migrate the screenshot to Cloudinary for better performance. Continue?')) {
+        return;
+    }
+    
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Migrating...';
+    
+    fetch(`/admin/migrate-screenshot/${issueId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Screenshot migrated to Cloudinary!', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Migration failed: ' + data.error, 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        showNotification('Error: ' + error, 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+
+function verifyPaymentOnly(issueId) {
+    const verifyBtn = document.getElementById('verify-btn-' + issueId);
+    const statusDiv = document.getElementById('verify-status-' + issueId);
+    
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Verifying...';
+    statusDiv.innerHTML = '<span class="text-info">Checking payment in database...</span>';
+    
+    fetch('/admin/verify-payment-only/' + issueId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.payment_found) {
+                statusDiv.innerHTML = '<span class="text-success">✓ ' + data.message + '</span>';
+                const statusBadge = document.getElementById('payment-status-' + issueId);
+                if (statusBadge) {
+                    statusBadge.innerHTML = '<span class="badge bg-success">✓ Payment Verified</span>';
+                }
+                const row = document.getElementById('issue-row-' + issueId);
+                if (row) {
+                    row.style.backgroundColor = '#d4edda';
+                    row.classList.add('fade-in');
+                    setTimeout(() => {
+                        row.style.transition = 'opacity 0.5s';
+                        row.style.opacity = '0';
+                        setTimeout(() => location.reload(), 500);
+                    }, 2000);
+                }
+                showNotification('Payment verified!', 'success');
+            } else {
+                statusDiv.innerHTML = '<span class="text-warning">⚠️ ' + data.message + '</span>';
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = '<i class="fas fa-search-dollar me-1"></i>Verify Payment';
+                showNotification(data.message, 'warning');
+            }
+        } else {
+            statusDiv.innerHTML = '<span class="text-danger">✗ ' + data.error + '</span>';
+            verifyBtn.disabled = false;
+            verifyBtn.innerHTML = '<i class="fas fa-search-dollar me-1"></i>Verify Payment';
+            showNotification(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        statusDiv.innerHTML = '<span class="text-danger">✗ Error: ' + error + '</span>';
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = '<i class="fas fa-search-dollar me-1"></i>Verify Payment';
+        showNotification('Error: ' + error, 'error');
+    });
 }
 
 function processIssue(issueId, action) {
     const actionText = action === 'approve' ? 'approve' : 'delete';
-    if (!confirm(`Are you sure you want to ${actionText} this issue?`)) {
+    const confirmMsg = action === 'approve' 
+        ? 'This will approve the payment issue and mark it as resolved. Continue?'
+        : 'This will delete the payment issue and remove any associated screenshot from Cloudinary. This action cannot be undone. Continue?';
+    
+    if (!confirm(confirmMsg)) {
         return;
     }
     
@@ -381,155 +731,81 @@ function processIssue(issueId, action) {
     form.submit();
 }
 
-function checkAndResolveIssue(issueId) {
-    const checkBtn = document.getElementById('check-btn-' + issueId);
-    const statusDiv = document.getElementById('check-status-' + issueId);
-    
-    // Disable button and show loading
-    checkBtn.disabled = true;
-    checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking...';
-    statusDiv.innerHTML = '<span class="text-info">Checking database...</span>';
-    
-    fetch('/admin/check-resolve-issue/' + issueId, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            statusDiv.innerHTML = '<span class="text-success">✓ ' + data.message + '</span>';
-            // Highlight the row and fade out
-            const row = document.getElementById('issue-row-' + issueId);
-            if (row) {
-                row.style.backgroundColor = '#d4edda';
-                setTimeout(() => {
-                    row.style.transition = 'opacity 0.5s';
-                    row.style.opacity = '0';
-                    setTimeout(() => {
-                        location.reload();
-                    }, 500);
-                }, 2000);
-            }
-        } else {
-            statusDiv.innerHTML = '<span class="text-danger">✗ ' + data.error + '</span>';
-            checkBtn.disabled = false;
-            checkBtn.innerHTML = '<i class="fas fa-search me-1"></i>Check';
-        }
-    })
-    .catch(error => {
-        statusDiv.innerHTML = '<span class="text-danger">✗ Error: ' + error + '</span>';
-        checkBtn.disabled = false;
-        checkBtn.innerHTML = '<i class="fas fa-search me-1"></i>Check';
-    });
-}
-
-function batchResolveExistingIssues() {
+function batchVerifyPayments() {
     if (!confirm('⚠️ WARNING: This will check ALL pending payment issues against the database.\n\n' +
-                 'Issues with valid payments AND existing courses will be automatically resolved.\n\n' +
-                 'Users will receive email notifications with access instructions.\n\n' +
+                 'Issues with valid confirmed payments will be marked as verified.\n\n' +
+                 'This only checks for payment existence, NOT courses.\n\n' +
                  'Do you want to continue?')) {
         return;
     }
     
-    // Stop auto-refresh temporarily
     stopAutoRefresh();
     
-    // Show progress modal
     const progressModalElement = document.getElementById('progressModal');
     const progressModal = new bootstrap.Modal(progressModalElement);
     progressModal.show();
     
-    // Update progress
     const progressBar = document.getElementById('progressBar');
     const progressMessage = document.getElementById('progressMessage');
     
     progressBar.style.width = '30%';
-    progressMessage.textContent = 'Fetching pending issues...';
+    progressMessage.textContent = 'Fetching pending payment issues...';
     
-    // Call the batch resolve API
-    fetch('/admin/batch-resolve-issues', {
+    fetch('/admin/batch-verify-payments', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
     })
     .then(response => response.json())
     .then(data => {
-        // Close progress modal
         progressModal.hide();
         
-        // Show results in modal
         const resultModalElement = document.getElementById('resultModal');
         const resultModal = new bootstrap.Modal(resultModalElement);
         const resultBody = document.getElementById('resultModalBody');
         
         if (data.success) {
-            let statusIcon = '';
-            let statusColor = '';
-            if (data.resolved > 0) {
-                statusIcon = '✅';
-                statusColor = 'success';
-            } else if (data.pending > 0) {
-                statusIcon = '⚠️';
-                statusColor = 'warning';
-            } else {
-                statusIcon = 'ℹ️';
-                statusColor = 'info';
-            }
-            
             resultBody.innerHTML = `
-                <div class="text-center">
-                    <div class="display-1 mb-3">${statusIcon}</div>
-                    <h4>Batch Processing Complete</h4>
+                <div class="text-center fade-in">
+                    <div class="display-1 mb-3">${data.verified > 0 ? '✅' : 'ℹ️'}</div>
+                    <h4>Batch Verification Complete</h4>
                     <div class="row mt-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card bg-light">
                                 <div class="card-body">
-                                    <h5 class="card-title">Processed</h5>
-                                    <p class="card-text display-6">${data.processed}</p>
+                                    <h6>Processed</h6>
+                                    <h3 class="mb-0">${data.processed}</h3>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card bg-${statusColor} text-white">
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white">
                                 <div class="card-body">
-                                    <h5 class="card-title">Resolved</h5>
-                                    <p class="card-text display-6">${data.resolved}</p>
+                                    <h6>Verified</h6>
+                                    <h3 class="mb-0">${data.verified}</h3>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card bg-warning">
                                 <div class="card-body">
-                                    <h5 class="card-title">Still Pending</h5>
-                                    <p class="card-text display-6">${data.pending}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card bg-info text-white">
-                                <div class="card-body">
-                                    <h5 class="card-title">Emails Sent</h5>
-                                    <p class="card-text display-6">${data.emails_sent}</p>
+                                    <h6>Not Found</h6>
+                                    <h3 class="mb-0">${data.not_found}</h3>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <hr class="my-4">
                     <p class="text-muted">${data.message}</p>
-                    <div class="alert alert-info mt-3">
-                        <small>💡 Tip: Resolved issues have been removed from the pending list. Users have received email notifications with access instructions.</small>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>Verified payments have been marked as resolved. Issues without matching payments remain pending.</small>
                     </div>
                 </div>
             `;
         } else {
             resultBody.innerHTML = `
                 <div class="text-center">
-                    <div class="display-1 mb-3">❌</div>
+                    <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
                     <h4>Error Processing Issues</h4>
                     <p class="text-danger">${data.error}</p>
                     <button class="btn btn-primary mt-3" onclick="location.reload()">Refresh Page</button>
@@ -538,77 +814,79 @@ function batchResolveExistingIssues() {
         }
         
         resultModal.show();
-        
-        // Restart auto-refresh
         startAutoRefresh();
     })
     .catch(error => {
         progressModal.hide();
-        alert('Error processing issues: ' + error);
+        showNotification('Error processing issues: ' + error, 'error');
         startAutoRefresh();
     });
 }
-</script>
 
-<style>
-.card {
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
+function filterIssues() {
+    const status = document.getElementById('statusFilter').value;
+    window.location.href = `/admin/payment-issues?status=${status}&page=1&per_page=${per_page}`;
 }
 
-.card-header {
-    border-radius: 10px 10px 0 0;
+function searchIssues() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#issuesTableBody tr');
+    
+    rows.forEach(row => {
+        const email = row.getAttribute('data-email') || '';
+        const receipt = row.getAttribute('data-receipt') || '';
+        const index = row.querySelector('td:nth-child(3) code')?.innerText || '';
+        
+        if (email.includes(searchTerm) || receipt.includes(searchTerm) || index.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
 }
 
-.table th {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    vertical-align: middle;
-}
-
-.progress {
-    height: 10px;
-    border-radius: 5px;
-}
-
-.display-6 {
-    font-size: 2rem;
-    font-weight: 600;
-}
-
-.pagination .page-link {
-    color: #0d6efd;
-}
-
-.pagination .active .page-link {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-}
-
-.btn-group-sm .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-}
-
-.btn-info:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-@media (max-width: 768px) {
-    .table-responsive {
-        font-size: 0.85rem;
+function filterByDate() {
+    const filter = document.getElementById('dateFilter').value;
+    const rows = document.querySelectorAll('#issuesTableBody tr');
+    const now = new Date();
+    let cutoffDate = new Date(0);
+    
+    switch(filter) {
+        case 'today':
+            cutoffDate = new Date(now.setHours(0,0,0,0));
+            break;
+        case 'week':
+            cutoffDate = new Date(now.setDate(now.getDate() - 7));
+            break;
+        case 'month':
+            cutoffDate = new Date(now.setMonth(now.getMonth() - 1));
+            break;
+        default:
+            cutoffDate = new Date(0);
     }
     
-    .btn-group-sm .btn {
-        padding: 0.2rem 0.4rem;
-    }
+    rows.forEach(row => {
+        const dateStr = row.querySelector('td:first-child')?.innerText;
+        if (dateStr && dateStr !== 'N/A') {
+            const rowDate = new Date(dateStr);
+            if (rowDate >= cutoffDate) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
 }
-</style>
+
+function changePage(page) {
+    const status = document.getElementById('statusFilter').value;
+    window.location.href = `/admin/payment-issues?page=${page}&per_page=${per_page}&status=${status}`;
+}
+
+function changePerPage(newPerPage) {
+    per_page = newPerPage;
+    const status = document.getElementById('statusFilter').value;
+    window.location.href = `/admin/payment-issues?page=1&per_page=${newPerPage}&status=${status}`;
+}
+</script>
 {% endblock %}

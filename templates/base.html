@@ -2013,6 +2013,10 @@
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
+     {% if show_flash_messages %}
+        {% include 'includes/flash_messages.html' %}
+    {% endif %}
+    
     <!-- ============================================
         BACK TO TOP BUTTON
     ============================================= -->
@@ -2225,35 +2229,7 @@
     ============================================= -->
     <div class="main-wrapper">
         <div class="main-content container">
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-custom alert-dismissible fade show" role="alert">
-                            <div class="d-flex align-items-center">
-                                {% set icon = {
-                                    'success': 'check-circle',
-                                    'warning': 'exclamation-triangle',
-                                    'info': 'info-circle',
-                                    'danger': 'exclamation-circle'
-                                }[category] or 'info-circle' %}
-                                <i class="fas fa-{{ icon }} me-3" style="font-size: 1.2rem;"></i>
-                                <div>
-                                    <h5 class="alert-heading mb-1" style="font-size: 0.95rem;">{{ message }}</h5>
-                                    {% if category == 'warning' %}
-                                        <div class="mt-2">
-                                            <button class="btn btn-yellow-custom btn-sm" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
-                                                <i class="fas fa-credit-card me-1"></i>Already Made Payment?
-                                            </button>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+          
 
             <!-- KUCCPS Logo -->
             <div class="text-center mb-4 animate__animated animate__fadeIn">

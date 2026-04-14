@@ -24,6 +24,7 @@ import threading
 import gzip
 from io import BytesIO
 from queue import Queue
+from cloudinary_config import init_cloudinary, upload_screenshot, delete_screenshot, get_screenshot_url
 from pdf_generator import generate_courses_pdf
 from email_service import send_courses_report, send_manual_activation_email, queue_courses_report
 
@@ -172,6 +173,18 @@ else:
     print(f"✅ Gemini API key loaded successfully from environment")
     print(f"🔑 Key preview: {GEMINI_API_KEY[:10]}... (first 10 chars only)")
     print(f"📊 Daily limit: 1500 requests (free tier)")
+if os.getenv('CLOUDINARY_CLOUD_NAME'):
+    try:
+        init_cloudinary()
+        CLOUDINARY_ENABLED = True
+        print("✅ Cloudinary is enabled and configured")
+    except Exception as e:
+        print(f"⚠️ Cloudinary initialization failed: {e}")
+        CLOUDINARY_ENABLED = False
+else:
+    CLOUDINARY_ENABLED = False
+    print("⚠️ Cloudinary not configured, screenshots will not be saved")
+
 
 # Gemini model configuration
 GEMINI_MODEL = "gemini-1.5-flash"  # Fast, free, reliable
@@ -200,7 +213,148 @@ logging.basicConfig(filename='ai_calls.log', level=logging.INFO, format='%(ascti
 # ============================================
 # PERFORMANCE OPTIMIZATION MIDDLEWARE
 # ============================================
-
+@app.route('/admin/get-screenshot-url/<issue_id>')
+def get_screenshot_url_route(issue_id):
+    """Get screenshot URL for an issue"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        from bson import ObjectId
+        
+        # Find the issue
+        issue = payment_issues_collection.find_one({'_id': ObjectId(issue_id)})
+        
+        if not issue:
+            return jsonify({'success': False, 'error': 'Issue not found'}), 404
+        
+        # Check for Cloudinary URL first
+        screenshot_url = issue.get('screenshot_url')
+        if screenshot_url:
+            # Validate the URL is accessible
+            import requests
+            try:
+                # Quick check if URL is valid
+                response = requests.head(screenshot_url, timeout=5)
+                if response.status_code == 200:
+                    return jsonify({
+                        'success': True,
+                        'url': screenshot_url,
+                        'public_id': issue.get('screenshot_public_id'),
+                        'storage': 'cloudinary',
+                        'valid': True
+                    })
+                else:
+                    print(f"⚠️ Cloudinary URL returned status {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ Could not verify Cloudinary URL: {e}")
+            
+            # Return URL anyway, let frontend handle
+            return jsonify({
+                'success': True,
+                'url': screenshot_url,
+                'storage': 'cloudinary',
+                'valid': True
+            })
+        
+        # Check for base64 screenshot
+        screenshot_data = issue.get('screenshot')
+        if screenshot_data:
+            # Validate base64 data
+            if screenshot_data.startswith('data:image'):
+                # Check if the base64 data is complete
+                try:
+                    # Extract the base64 part
+                    if ',' in screenshot_data:
+                        base64_part = screenshot_data.split(',')[1]
+                        # Try to decode first few bytes to validate
+                        import base64
+                        test_decode = base64.b64decode(base64_part[:100])
+                        if test_decode:
+                            return jsonify({
+                                'success': True,
+                                'url': screenshot_data,  # Return base64 directly
+                                'storage': 'base64',
+                                'size': len(screenshot_data)
+                            })
+                except Exception as e:
+                    print(f"❌ Invalid base64 data: {e}")
+                    return jsonify({
+                        'success': False,
+                        'error': 'Invalid screenshot data - corrupted',
+                        'needs_migration': True
+                    }), 400
+            
+            return jsonify({
+                'success': True,
+                'url': screenshot_data,
+                'storage': 'base64'
+            })
+        
+        return jsonify({'success': False, 'error': 'No screenshot available'}), 404
+        
+    except Exception as e:
+        print(f"❌ Error getting screenshot URL: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+@app.route('/admin/migrate-screenshot/<issue_id>', methods=['POST'])
+def migrate_screenshot_route(issue_id):
+    """Migrate a single screenshot to Cloudinary"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        from bson import ObjectId
+        
+        issue = payment_issues_collection.find_one({'_id': ObjectId(issue_id)})
+        
+        if not issue:
+            return jsonify({'success': False, 'error': 'Issue not found'}), 404
+        
+        # Check if already migrated
+        if issue.get('screenshot_url'):
+            return jsonify({'success': True, 'message': 'Already migrated', 'url': issue['screenshot_url']})
+        
+        # Get base64 screenshot
+        screenshot_data = issue.get('screenshot')
+        if not screenshot_data or not screenshot_data.startswith('data:image'):
+            return jsonify({'success': False, 'error': 'No valid screenshot to migrate'}), 400
+        
+        # Migrate to Cloudinary
+        email = issue.get('email', 'unknown')
+        receipt = issue.get('mpesa_receipt', 'unknown')
+        index_number = issue.get('index_number', 'unknown')
+        
+        screenshot_url, public_id, info = upload_screenshot(
+            screenshot_data, email, receipt, index_number
+        )
+        
+        if screenshot_url:
+            # Update database
+            payment_issues_collection.update_one(
+                {'_id': ObjectId(issue_id)},
+                {'$set': {
+                    'screenshot_url': screenshot_url,
+                    'screenshot_public_id': public_id,
+                    'screenshot_info': info,
+                    'migrated_to_cloudinary': True,
+                    'migrated_at': datetime.now()
+                },
+                '$unset': {'screenshot': ''}}
+            )
+            
+            return jsonify({
+                'success': True,
+                'url': screenshot_url,
+                'message': 'Screenshot migrated to Cloudinary'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Migration failed'}), 500
+        
+    except Exception as e:
+        print(f"❌ Error migrating screenshot: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 @app.route('/debug-models')
 def debug_models():
     """List all available models and test them"""
@@ -1105,33 +1259,56 @@ def get_user_paid_categories_strict(email, index_number):
     
     return paid_categories 
 def save_payment_issue(email, index_number, mpesa_receipt, screenshot_data=None):
-    """Save payment issue submitted by user"""
+    """Save payment issue - store screenshot in Cloudinary"""
     print(f"💾 Saving payment issue for {email}")
     
+    # Upload screenshot to Cloudinary if provided
+    screenshot_url = None
+    screenshot_public_id = None
+    screenshot_info = None
+    
+    if screenshot_data and CLOUDINARY_ENABLED:
+        screenshot_url, screenshot_public_id, screenshot_info = upload_screenshot(
+            screenshot_data, email, mpesa_receipt, index_number
+        )
+    
+    # Create issue record (without base64 screenshot)
     issue_record = {
         'email': email,
         'index_number': index_number,
         'mpesa_receipt': mpesa_receipt,
-        'screenshot': screenshot_data,  # Base64 encoded screenshot
-        'status': 'pending',  # pending, approved, deleted
+        'screenshot_url': screenshot_url,
+        'screenshot_public_id': screenshot_public_id,  # Store for deletion
+        'screenshot_info': screenshot_info,  # Store metadata
+        'status': 'pending',
         'created_at': datetime.now(),
         'updated_at': datetime.now(),
         'processed_by': None,
         'processed_at': None,
-        'notes': None
+        'notes': None,
+        'has_screenshot': bool(screenshot_url),
+        'storage_type': 'cloudinary' if screenshot_url else None
     }
     
     if database_connected and payment_issues_collection is not None:
         try:
             result = payment_issues_collection.insert_one(issue_record)
             print(f"✅ Payment issue saved with ID: {result.inserted_id}")
+            if screenshot_url:
+                print(f"   📸 Screenshot in Cloudinary: {screenshot_url}")
+                print(f"   📊 Size: {screenshot_info.get('bytes', 0) if screenshot_info else 0} bytes")
             return result.inserted_id
         except Exception as e:
             print(f"❌ Error saving payment issue: {str(e)}")
+            # Clean up Cloudinary upload if database save fails
+            if screenshot_public_id:
+                delete_screenshot(screenshot_public_id)
             return None
     else:
         # Session fallback
         session_key = f'payment_issue_{int(datetime.now().timestamp())}'
+        # Don't store screenshot data in session
+        issue_record['screenshot'] = None
         session[session_key] = issue_record
         print(f"✅ Payment issue saved to session: {session_key}")
         return session_key
@@ -1228,7 +1405,7 @@ def approve_payment_issue(issue_id, admin_username):
         if result.modified_count > 0:
             print(f"✅ Payment issue approved: {issue_id}")
             
-            # Create manual activation for the user
+            # Create manual activation
             email = issue.get('email')
             index_number = issue.get('index_number')
             mpesa_receipt = issue.get('mpesa_receipt')
@@ -1245,7 +1422,8 @@ def approve_payment_issue(issue_id, admin_username):
                     'status': 'active',
                     'used_for_flow': None,
                     'used_at': None,
-                    'issue_id': str(issue_id)
+                    'issue_id': str(issue_id),
+                    'screenshot_url': issue.get('screenshot_url')  # Keep reference
                 }
                 
                 if admin_activations_collection is not None:
@@ -1260,13 +1438,21 @@ def approve_payment_issue(issue_id, admin_username):
         print(f"❌ Error approving payment issue: {str(e)}")
         return False
 
-
 def delete_payment_issue(issue_id, admin_username):
-    """Delete a payment issue (mark as deleted)"""
+    """Delete a payment issue and remove screenshot from Cloudinary"""
     if not database_connected or payment_issues_collection is None:
         return False
     
     try:
+        # Get the issue to get screenshot public_id
+        issue = payment_issues_collection.find_one({'_id': issue_id})
+        
+        # Delete screenshot from Cloudinary if exists
+        if issue and issue.get('screenshot_public_id') and CLOUDINARY_ENABLED:
+            delete_screenshot(issue['screenshot_public_id'])
+            print(f"🗑️ Deleted screenshot from Cloudinary: {issue['screenshot_public_id']}")
+        
+        # Update or delete database record
         result = payment_issues_collection.update_one(
             {'_id': issue_id},
             {'$set': {
@@ -1274,7 +1460,7 @@ def delete_payment_issue(issue_id, admin_username):
                 'processed_by': admin_username,
                 'processed_at': datetime.now(),
                 'updated_at': datetime.now(),
-                'notes': 'Details not found - payment issue deleted'
+                'notes': 'Payment issue deleted - screenshot removed from Cloudinary'
             }}
         )
         
@@ -1287,8 +1473,6 @@ def delete_payment_issue(issue_id, admin_username):
     except Exception as e:
         print(f"❌ Error deleting payment issue: {str(e)}")
         return False
-
-
 def get_cached_payment_stats():
     """Get cached payment statistics"""
     cache_key = 'payment_stats'
@@ -1691,7 +1875,27 @@ def admin_payment_issues():
                          per_page=per_page,
                          total_pages=total_pages,
                          total_pending=total_pending)
-
+def get_screenshot_thumbnail(issue):
+    """Get thumbnail URL for screenshot (for admin panel)"""
+    public_id = issue.get('screenshot_public_id')
+    if not public_id or not CLOUDINARY_ENABLED:
+        return None
+    
+    # Generate thumbnail transformation
+    try:
+        from cloudinary.utils import cloudinary_url
+        url, _ = cloudinary_url(
+            public_id,
+            width=150,
+            height=150,
+            crop='thumb',
+            gravity='auto',
+            format='jpg',
+            quality='auto'
+        )
+        return url
+    except:
+        return issue.get('screenshot_url')
 def get_sample_payment_issues():
     """Return sample payment issues for testing when database is not connected"""
     return [
@@ -1874,7 +2078,36 @@ def api_manual_activation_advanced():
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
-
+@app.route('/admin/view-screenshot/<issue_id>')
+def admin_view_screenshot(issue_id):
+    """View screenshot in admin panel"""
+    if not session.get('admin_logged_in'):
+        flash("Please login as administrator", "error")
+        return redirect(url_for('admin_login'))
+    
+    try:
+        from bson import ObjectId
+        
+        issue = payment_issues_collection.find_one({'_id': ObjectId(issue_id)})
+        
+        if not issue:
+            flash("Issue not found", "error")
+            return redirect(url_for('admin_payment_issues'))
+        
+        screenshot_url = issue.get('screenshot_url')
+        
+        if not screenshot_url:
+            flash("No screenshot available for this issue", "warning")
+            return redirect(url_for('admin_payment_issues'))
+        
+        return render_template('admin_view_screenshot.html', 
+                             issue=issue, 
+                             screenshot_url=screenshot_url)
+    
+    except Exception as e:
+        print(f"❌ Error viewing screenshot: {str(e)}")
+        flash("Error loading screenshot", "error")
+        return redirect(url_for('admin_payment_issues'))
 
 @app.route('/api/deactivate-activation', methods=['POST'])
 def api_deactivate_activation():
@@ -5398,6 +5631,59 @@ def inject_global_vars():
         'twitter_image_url': f"{base_url}{url_for('static', filename='images/twitter-card.jpg')}",
         'get_canonical_url': get_canonical_url
     }
+@app.context_processor
+def inject_flash_visibility():
+    """Control flash message visibility based on route - PREVENTS flashes on payment pages"""
+    
+    # Routes where flash messages should NEVER appear
+    FLASH_BLOCKED_ROUTES = {
+        # Payment flow - CRITICAL: These pages should never show flashes
+        'payment', 'payment_wait', 'check_payment_status', 
+        'ultra_fast_check', 'goto_results', 'check_courses_ready',
+        
+        # MPesa endpoints
+        'mpesa_callback', 'mpesa_confirmation', 'mpesa_validation',
+        
+        # API endpoints
+        'chat_api', 'submit_payment_issue', 'verify_payment',
+        'api_manual_activation_advanced', 'api_deactivate_activation',
+        
+        # Debug endpoints
+        'debug_session', 'debug_database', 'debug_basket_status',
+        'debug_admin_activations', 'debug_user_courses',
+        
+        # System endpoints
+        'robots', 'sitemap_main', 'sitemap_guides', 'sitemap_news',
+        'sitemap_courses', 'sitemap_index', 'manifest', 
+        'serve_service_worker', 'offline', 'health', 'ping', 'keep_alive',
+        
+        # Admin API endpoints
+        'api_pending_issues_count', 'api_recent_activity', 'api_system_stats',
+        'api_missing_courses_count', 'api_confirmed_missing_courses',
+        'api_missing_courses_send_email', 'api_missing_courses_activate_and_notify',
+        'api_missing_courses_regenerate', 'api_missing_courses_delete',
+        'api_missing_courses_fix_notified_user'
+    }
+    
+    current_endpoint = request.endpoint
+    
+    # Special handling for payment paths
+    if request.path.startswith('/payment') or request.path.startswith('/payment-wait'):
+        show_flash = False
+    # Special handling for M-Pesa paths
+    elif request.path.startswith('/mpesa'):
+        show_flash = False
+    # Special handling for API paths
+    elif request.path.startswith('/api/') or request.path.startswith('/debug/'):
+        show_flash = False
+    # Check by endpoint name
+    elif current_endpoint in FLASH_BLOCKED_ROUTES:
+        show_flash = False
+    else:
+        # Show flashes on all other GET requests (user-facing pages)
+        show_flash = request.method == 'GET'
+    
+    return {'show_flash_messages': show_flash}
 @app.before_request
 def manage_session():
     """Manage session state and handle page refreshes"""
@@ -7951,7 +8237,151 @@ def check_payment_status(flow):
         'message':     'Waiting for M-Pesa confirmation on your phone…',
         'check_delay': 1200
     })
- 
+@app.route('/admin/verify-payment-only/<issue_id>', methods=['POST'])
+def verify_payment_only(issue_id):
+    """Verify ONLY if payment exists in database - no course checking"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        if not database_connected or user_payments_collection is None:
+            return jsonify({'success': False, 'error': 'Database not connected'})
+        
+        from bson import ObjectId
+        obj_id = ObjectId(issue_id)
+        
+        issue = payment_issues_collection.find_one({'_id': obj_id, 'status': 'pending'})
+        
+        if not issue:
+            return jsonify({'success': False, 'error': 'Issue not found or already processed'})
+        
+        email = issue.get('email')
+        index_number = issue.get('index_number')
+        mpesa_receipt = issue.get('mpesa_receipt')
+        
+        # Check if payment exists in database
+        payment_found = False
+        payment_data = None
+        
+        if user_payments_collection is not None:
+            payment_data = user_payments_collection.find_one({
+                '$or': [
+                    {'mpesa_receipt': mpesa_receipt},
+                    {'email': email, 'index_number': index_number}
+                ],
+                'payment_confirmed': True
+            })
+            payment_found = payment_data is not None
+        
+        if payment_found:
+            # Update the issue status
+            payment_issues_collection.update_one(
+                {'_id': obj_id},
+                {'$set': {
+                    'status': 'verified',
+                    'payment_verified': True,
+                    'payment_verified_at': datetime.now(),
+                    'payment_verified_by': session.get('admin_username', 'admin'),
+                    'verified_payment_data': {
+                        'level': payment_data.get('level'),
+                        'amount': payment_data.get('payment_amount'),
+                        'payment_date': str(payment_data.get('payment_date')) if payment_data.get('payment_date') else None
+                    }
+                }}
+            )
+            
+            return jsonify({
+                'success': True,
+                'payment_found': True,
+                'message': f'Payment verified! Found in database (Receipt: {mpesa_receipt})',
+                'payment_details': {
+                    'level': payment_data.get('level'),
+                    'amount': payment_data.get('payment_amount')
+                }
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'payment_found': False,
+                'message': f'No payment found with receipt {mpesa_receipt}'
+            })
+            
+    except Exception as e:
+        print(f"❌ Error verifying payment: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/admin/batch-verify-payments', methods=['POST'])
+def batch_verify_payments():
+    """Batch verify all pending payment issues - payment only, no courses"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        if not database_connected or payment_issues_collection is None:
+            return jsonify({'success': False, 'error': 'Database not connected'})
+        
+        # Get all pending issues
+        pending_issues = list(payment_issues_collection.find({'status': 'pending'}))
+        
+        processed_count = 0
+        verified_count = 0
+        not_found_count = 0
+        
+        for issue in pending_issues:
+            processed_count += 1
+            email = issue.get('email')
+            index_number = issue.get('index_number')
+            mpesa_receipt = issue.get('mpesa_receipt')
+            
+            if not email or not index_number or not mpesa_receipt:
+                not_found_count += 1
+                continue
+            
+            # Check if payment exists in database
+            payment_found = False
+            
+            if user_payments_collection is not None:
+                payment = user_payments_collection.find_one({
+                    '$or': [
+                        {'mpesa_receipt': mpesa_receipt},
+                        {'email': email, 'index_number': index_number}
+                    ],
+                    'payment_confirmed': True
+                })
+                payment_found = payment is not None
+            
+            if payment_found:
+                # Update issue status
+                payment_issues_collection.update_one(
+                    {'_id': issue['_id']},
+                    {'$set': {
+                        'status': 'verified',
+                        'payment_verified': True,
+                        'payment_verified_at': datetime.now(),
+                        'payment_verified_by': 'batch_processor'
+                    }}
+                )
+                verified_count += 1
+                print(f"✅ Verified payment for {email} - Receipt: {mpesa_receipt}")
+            else:
+                not_found_count += 1
+                print(f"⚠️ No payment found for {email} - Receipt: {mpesa_receipt}")
+        
+        return jsonify({
+            'success': True,
+            'processed': processed_count,
+            'verified': verified_count,
+            'not_found': not_found_count,
+            'message': f'Processed {processed_count} issues. Verified {verified_count}. No payment found for {not_found_count}.'
+        })
+        
+    except Exception as e:
+        print(f"❌ Error in batch verify: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)})
 @app.route('/ultra-fast-check/<flow>')
 def ultra_fast_check(flow):
     """ULTRA-FAST endpoint for instant payment confirmation"""
