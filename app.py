@@ -1310,27 +1310,33 @@ def validate_user_uniqueness(email, index_number, flow):
         return True, "Validation error, proceeding with caution"
 
 def has_user_paid_for_category_strict(email, index_number, category):
-    """Strict check - user cannot view same category twice"""
-    # Check if email+index pair already paid for this category
+    """Strict check - user cannot view category unless they actually paid for it"""
+    
+    # Check real payments in database (exclude manual activations)
     if database_connected and user_payments_collection is not None:
         try:
-            existing_payment = user_payments_collection.find_one({
+            real_payment = user_payments_collection.find_one({
                 'email': email,
                 'index_number': index_number,
                 'level': category,
-                'payment_confirmed': True
+                'payment_confirmed': True,
+                'is_manual_activation': {'$ne': True}  # 🔥 Exclude manual activations
             })
             
-            if existing_payment:
-                print(f"⚠️ User {email} already paid for {category} on {existing_payment.get('payment_date')}")
+            if real_payment:
+                print(f"✅ User {email} has REAL payment for {category}")
                 return True
+            else:
+                print(f"⚠️ User {email} has NO real payment for {category}")
+                return False
+                
         except Exception as e:
             print(f"❌ Error checking category payment: {str(e)}")
     
     # Check session as fallback
     if session.get(f'paid_{category}'):
-        print(f"⚠️ Session shows already paid for {category}")
-        return True
+        print(f"⚠️ Session shows paid for {category} but no DB record")
+        return False  # 🔥 Return False to force re-verification
     
     return False
 
@@ -1621,7 +1627,33 @@ def get_cached_payment_stats():
     cache.set(cache_key, stats, timeout=300)
     
     return stats
-
+def check_legitimate_payment_only(email, index_number, requested_level):
+    """
+    Verify user only has access to categories they actually paid for
+    Returns: (is_allowed, list_of_paid_categories, error_message)
+    """
+    if not database_connected:
+        return True, [], None
+    
+    try:
+        # Get ALL real payments for this user (confirmed, not manual)
+        real_payments = list(user_payments_collection.find({
+            'index_number': index_number,
+            'payment_confirmed': True,
+            'is_manual_activation': {'$ne': True}  # Exclude manual activations
+        }))
+        
+        paid_categories = [p.get('level') for p in real_payments if p.get('level')]
+        
+        # Check if requested level is actually paid for
+        if requested_level in paid_categories:
+            return True, paid_categories, None
+        else:
+            return False, paid_categories, f"You have only paid for: {', '.join(paid_categories).upper()}. To access {requested_level.upper()}, please pay KES 100."
+            
+    except Exception as e:
+        print(f"❌ Error checking legitimate payment: {e}")
+        return True, [], None  # Allow on error to avoid blocking legitimate users
 def get_all_payment_issues(status=None):
     """Get all payment issues with optional status filter"""
     if not database_connected or payment_issues_collection is None:
@@ -7673,33 +7705,8 @@ def _process_mpesa_callback(data):
         # ── Queue processing (deduplication handled inside) ──
         process_courses_after_payment(email, index_number, flow, mpesa_receipt)
  
-        # ── Backup activation record ──
-        if admin_activations_collection is not None:
-            try:
-                exists = admin_activations_collection.find_one(
-                    {
-                        '$or': [
-                            {'index_number': index_number},
-                            {'mpesa_receipt': mpesa_receipt}
-                        ]
-                    },
-                    {'_id': 1}
-                )
-                if not exists:
-                    admin_activations_collection.insert_one({
-                        'email':           email,
-                        'index_number':    index_number,
-                        'mpesa_receipt':   mpesa_receipt,
-                        'activation_type': 'callback_auto',
-                        'activated_by':    'system',
-                        'activated_at':    datetime.now(),
-                        'is_active':       True,
-                        'status':          'active',
-                        'used_for_flow':   None,
-                        'used_at':         None
-                    })
-            except Exception as act_err:
-                print(f"⚠️ Could not create backup activation: {act_err}")
+        # 🔥 REMOVED: Backup activation record block
+        # Users will ONLY get access to the specific category they paid for
  
     except Exception as e:
         print(f"❌ Callback processing error: {e}")
@@ -11557,14 +11564,15 @@ def admin_manual_activation():
                 'email': email,
                 'index_number': index_number,
                 'mpesa_receipt': mpesa_receipt,
-                'activation_type': activation_type,
+                'activation_type': 'admin_manual',
                 'activated_by': session.get('admin_username', 'admin'),
                 'activated_at': datetime.now(),
                 'is_active': True,
                 'status': 'active',  # Important: Set to 'active'
                 'used_for_flow': None,
                 'used_at': None,
-                'email_sent': send_email
+                'email_sent': send_email,
+                'is_legitimate_manual': True 
             }
             
             # Save to database
