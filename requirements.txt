@@ -95,3 +95,4 @@ brevo-python==1.0.0
 reportlab==4.0.9
 PyPDF2==3.0.0
 flask-session
+cloudinary==1.36.0
