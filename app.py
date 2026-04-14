@@ -4478,16 +4478,13 @@ FAQ QUICK ANSWERS:
 - Basket: Save and compare courses"""
 
         # ✅ CORRECT FREE MODELS FROM YOUR ACCOUNT
-        openrouter_models = [
-            "arcee-ai/trinity-large-preview:free",
-            "stepfun/step-3.5-flash:free",
-            "upstage/solar-pro-3:free",
-            "liquid/lfm-2.5-1.2b-thinking:free",
-            "liquid/lfm-2.5-1.2b-instruct:free",
-            "nvidia/nemotron-3-nano-30b-a3b:free",
-            "arcee-ai/trinity-mini:free"
-        ]
-        
+        oopenrouter_models = [
+    "google/gemini-2.0-flash-lite-preview-02-05:free",  # Google's free tier
+    "meta-llama/llama-3.2-1b-instruct:free",            # Meta's small model
+    "microsoft/phi-3-mini-128k-instruct:free",          # Microsoft's model
+    "mistralai/mistral-7b-instruct-v0.3:free",          # Mistral 7B
+    "qwen/qwen-2.5-1.5b-instruct:free",                 # Qwen small model
+]
         for model in openrouter_models:
             try:
                 print(f"🔄 Trying OpenRouter model: {model}")
