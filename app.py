@@ -260,8 +260,9 @@ def is_legitimate_manual_activation(email, index_number):
         activation_type = activation.get('activation_type', '')
         is_legitimate = activation.get('is_legitimate_manual', False)
         
-        if activation_type == 'admin_manual' or is_legitimate:
-            print(f"✅ Legitimate manual activation found for {email}")
+        # 🔥 FIX: Accept 'manual' AND 'admin_manual' as legitimate
+        if activation_type in ['admin_manual', 'manual'] or is_legitimate:
+            print(f"✅ Legitimate manual activation found for {email} (type: {activation_type})")
             return True
         else:
             print(f"⚠️ Found automatic activation (type: {activation_type}) - IGNORING")
@@ -1348,22 +1349,23 @@ def validate_user_uniqueness(email, index_number, flow):
 def has_user_paid_for_category_strict(email, index_number, category):
     """Strict check - user cannot view category unless they actually paid for it"""
     
-    # Check real payments in database (exclude manual activations)
+    # Check payments in database (INCLUDE manual activations)
     if database_connected and user_payments_collection is not None:
         try:
+            # 🔥 FIX: Remove the exclusion of manual activations
             real_payment = user_payments_collection.find_one({
                 'email': email,
                 'index_number': index_number,
                 'level': category,
-                'payment_confirmed': True,
-                'is_manual_activation': {'$ne': True}  # 🔥 Exclude manual activations
+                'payment_confirmed': True
+                # Removed: 'is_manual_activation': {'$ne': True}
             })
             
             if real_payment:
-                print(f"✅ User {email} has REAL payment for {category}")
+                print(f"✅ User {email} has payment (or manual activation) for {category}")
                 return True
             else:
-                print(f"⚠️ User {email} has NO real payment for {category}")
+                print(f"⚠️ User {email} has NO payment for {category}")
                 return False
                 
         except Exception as e:
@@ -1372,12 +1374,12 @@ def has_user_paid_for_category_strict(email, index_number, category):
     # Check session as fallback
     if session.get(f'paid_{category}'):
         print(f"⚠️ Session shows paid for {category} but no DB record")
-        return False  # 🔥 Return False to force re-verification
+        return False
     
     return False
 
 def get_user_paid_categories_strict(email, index_number):
-    """Get all categories user has already paid for with this email-index pair"""
+    """Get all categories user has already paid for (including manual activations)"""
     paid_categories = []
     
     if not database_connected:
@@ -1387,10 +1389,12 @@ def get_user_paid_categories_strict(email, index_number):
         return paid_categories
     
     try:
+        # 🔥 FIX: Include ALL payments (both normal and manual)
         payments = user_payments_collection.find({
             'email': email,
             'index_number': index_number,
             'payment_confirmed': True
+            # Removed the manual activation exclusion
         })
         
         for payment in payments:
@@ -1401,7 +1405,7 @@ def get_user_paid_categories_strict(email, index_number):
     except Exception as e:
         print(f"❌ Error getting paid categories: {str(e)}")
     
-    return paid_categories 
+    return paid_categories
 def save_payment_issue(email, index_number, mpesa_receipt, screenshot_data=None):
     """Save payment issue - store screenshot in Cloudinary"""
     print(f"💾 Saving payment issue for {email}")
@@ -2099,7 +2103,7 @@ def api_manual_activation_advanced():
         email = data.get('email', '').strip().lower()
         index_number = data.get('index_number', '').strip()
         mpesa_receipt = data.get('mpesa_receipt', '').strip().upper()
-        activation_type = data.get('activation_type', 'manual')
+        activation_type = data.get('activation_type', 'admin_manual')  # Default to admin_manual
         send_email = data.get('send_email', True)
         
         # Validation
@@ -2147,8 +2151,10 @@ def api_manual_activation_advanced():
             except Exception as e:
                 print(f"⚠️ Error deleting courses: {e}")
         
-        # STEP 3: Create new activation record
+        # STEP 3: Create new activation record with CORRECT activation_type
         activation_saved = False
+        activation_id = None
+        
         if database_connected and admin_activations_collection is not None:
             try:
                 # Deactivate any existing activations
@@ -2157,13 +2163,13 @@ def api_manual_activation_advanced():
                     {'$set': {'is_active': False, 'status': 'superseded'}}
                 )
                 
-                # Create new activation
+                # Create new activation with 'admin_manual' type
                 activation_record = {
                     'email': email,
                     'index_number': index_number,
                     'mpesa_receipt': mpesa_receipt,
                     'original_receipt': mpesa_receipt,
-                    'activation_type': activation_type,
+                    'activation_type': 'admin_manual',  # 🔥 CRITICAL: Changed from 'manual' to 'admin_manual'
                     'activated_by': session.get('admin_username', 'admin'),
                     'activated_at': datetime.now(),
                     'is_active': True,
@@ -2172,18 +2178,75 @@ def api_manual_activation_advanced():
                     'used_at': None,
                     'payment_deleted': payment_deleted,
                     'courses_deleted': courses_deleted,
-                    'email_sent': False
+                    'email_sent': False,
+                    'is_legitimate_manual': True  # 🔥 CRITICAL: Mark as legitimate
                 }
                 
                 result = admin_activations_collection.insert_one(activation_record)
                 if result.inserted_id:
                     activation_saved = True
-                    print(f"✅ Manual activation created with receipt: {mpesa_receipt}")
+                    activation_id = result.inserted_id
+                    print(f"✅ Manual activation created with receipt: {mpesa_receipt} (type: admin_manual, legitimate: True)")
+                    
+                    # Verify the record was saved correctly
+                    saved_record = admin_activations_collection.find_one({'_id': result.inserted_id})
+                    if saved_record:
+                        print(f"   Verified - activation_type: {saved_record.get('activation_type')}")
+                        print(f"   Verified - is_legitimate_manual: {saved_record.get('is_legitimate_manual')}")
+                else:
+                    print(f"❌ Failed to create activation record")
+                    
             except Exception as e:
                 print(f"❌ Error creating activation: {e}")
                 return jsonify({'success': False, 'error': f'Failed to create activation: {str(e)}'})
         
-        # STEP 4: Send email if requested
+        # STEP 4: Create payment record for the user (so they don't need to pay)
+        payment_created = False
+        if activation_saved:
+            try:
+                # Create a payment record for the user
+                payment_record = {
+                    'email': email,
+                    'index_number': index_number,
+                    'level': None,  # Will be set when user chooses category
+                    'mpesa_receipt': mpesa_receipt,
+                    'transaction_ref': f"MANUAL_{mpesa_receipt}",
+                    'payment_amount': 0,  # No charge for manual activation
+                    'payment_confirmed': True,  # 🔥 CRITICAL: Set to True
+                    'payment_method': 'manual_activation',
+                    'activated_by': session.get('admin_username', 'admin'),
+                    'created_at': datetime.now(),
+                    'payment_date': datetime.now(),
+                    'is_manual_activation': True,
+                    'original_receipt': mpesa_receipt
+                }
+                
+                # Check if payment record already exists
+                existing_payment = user_payments_collection.find_one({
+                    'email': email,
+                    'index_number': index_number
+                })
+                
+                if existing_payment:
+                    # Update existing payment record
+                    result = user_payments_collection.update_one(
+                        {'_id': existing_payment['_id']},
+                        {'$set': payment_record}
+                    )
+                    if result.modified_count > 0:
+                        payment_created = True
+                        print(f"✅ Updated existing payment record for {email}")
+                else:
+                    # Create new payment record
+                    result = user_payments_collection.insert_one(payment_record)
+                    if result.inserted_id:
+                        payment_created = True
+                        print(f"✅ Created new payment record for {email}")
+                        
+            except Exception as e:
+                print(f"⚠️ Error creating payment record: {e}")
+        
+        # STEP 5: Send email if requested
         email_sent = False
         if activation_saved and send_email:
             try:
@@ -2209,10 +2272,11 @@ def api_manual_activation_advanced():
                         <p><strong>To access your courses:</strong></p>
                         <ol>
                             <li>Go to <a href="https://www.kuccpscourses.co.ke">www.kuccpscourses.co.ke</a></li>
-                            <li>Select your course category</li>
-                            <li>Enter your grades</li>
-                            <li>Use the "Already Made Payment" option</li>
-                            <li>Enter your receipt: <strong>{mpesa_receipt}</strong></li>
+                            <li>Select your course category (Degree, Diploma, KMTC, etc.)</li>
+                            <li>Enter your KCSE grades</li>
+                            <li>Enter your email: <strong>{email}</strong></li>
+                            <li>Enter your KCSE Index Number: <strong>{index_number}</strong></li>
+                            <li>The system will detect your manual activation and generate your courses instantly!</li>
                         </ol>
                         <p>You will NOT be charged again.</p>
                         <hr>
@@ -2225,22 +2289,28 @@ def api_manual_activation_advanced():
                 email_sent = send_brevo_email(email, "Student", subject, html_content)
                 if email_sent:
                     admin_activations_collection.update_one(
-                        {'_id': result.inserted_id},
+                        {'_id': activation_id},
                         {'$set': {'email_sent': True, 'email_sent_at': datetime.now()}}
                     )
                     print(f"✅ Email sent to {email}")
+                else:
+                    print(f"⚠️ Email failed to send to {email}")
+                    
             except Exception as e:
-                print(f"⚠️ Email failed: {e}")
+                print(f"⚠️ Email error: {e}")
         
         return jsonify({
             'success': True,
             'email': email,
             'index_number': index_number,
             'mpesa_receipt': mpesa_receipt,
+            'activation_type': 'admin_manual',
+            'is_legitimate_manual': True,
             'payment_deleted': payment_deleted,
             'courses_deleted': courses_deleted,
+            'payment_created': payment_created,
             'email_sent': email_sent,
-            'message': f'User {email} activated successfully'
+            'message': f'User {email} activated successfully with admin_manual type'
         })
         
     except Exception as e:
@@ -5771,7 +5841,7 @@ def check_manual_activation(email, index_number, flow=None):
         print(f"❌ Error checking manual activation in database: {str(e)}")
         return False
 def create_manual_activation_payment(email, index_number, flow, mpesa_receipt):
-    """Create a payment record for manual activations using ORIGINAL receipt"""
+    """Create a payment record for manual activations using ORIGINAL receipt with payment_confirmed=True"""
     print(f"💰 Creating payment record for manual activation: {email}, {index_number}, {flow}")
     print(f"💰 Using original receipt: {mpesa_receipt}")
     
@@ -5790,14 +5860,15 @@ def create_manual_activation_payment(email, index_number, flow, mpesa_receipt):
         except Exception as e:
             print(f"⚠️ Error checking existing payment: {e}")
     
+    # 🔥 CRITICAL: payment_confirmed MUST be True for manual activations
     payment_record = {
         'email': email,
         'index_number': index_number,
         'level': flow,
         'transaction_ref': f"MANUAL_{mpesa_receipt}",
-        'mpesa_receipt': mpesa_receipt,  # Store the ORIGINAL receipt
+        'mpesa_receipt': mpesa_receipt,
         'payment_amount': existing_payment.get('payment_amount', 100) if existing_payment else 100,
-        'payment_confirmed': True,
+        'payment_confirmed': True,  # 🔥 FIXED: Set to True
         'payment_method': 'manual_activation',
         'activated_by': 'admin',
         'created_at': existing_payment.get('created_at', datetime.now()) if existing_payment else datetime.now(),
@@ -5815,14 +5886,14 @@ def create_manual_activation_payment(email, index_number, flow, mpesa_receipt):
                     {'$set': payment_record}
                 )
                 if result.modified_count > 0:
-                    print(f"✅ Updated existing payment record with receipt: {mpesa_receipt}")
+                    print(f"✅ Updated existing payment record - Receipt: {mpesa_receipt}, payment_confirmed=True")
                 else:
                     print(f"⚠️ No changes made to existing payment record")
             else:
                 # Insert new record
                 result = user_payments_collection.insert_one(payment_record)
                 if result.inserted_id:
-                    print(f"✅ Created new payment record with receipt: {mpesa_receipt}")
+                    print(f"✅ Created new payment record - Receipt: {mpesa_receipt}, payment_confirmed=True")
                 else:
                     print(f"❌ Failed to create payment record")
             return True
