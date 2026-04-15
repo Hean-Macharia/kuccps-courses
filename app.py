@@ -233,7 +233,43 @@ def clear_cdn_cache_headers(response):
 search_cache = {}
 search_cache_timestamps = {}
 SEARCH_CACHE_DURATION = 3600  # Cache search results for 1 hour
-
+def is_legitimate_manual_activation(email, index_number):
+    """
+    Check if a manual activation is legitimate (created by admin)
+    Returns True only for activations created via admin panel
+    """
+    if not database_connected or admin_activations_collection is None:
+        return False
+    
+    try:
+        activation = admin_activations_collection.find_one({
+            '$or': [
+                {'email': email},
+                {'index_number': index_number}
+            ],
+            'is_active': True,
+            'status': 'active'
+        })
+        
+        if not activation:
+            return False
+        
+        # Only allow activations that are:
+        # 1. Created by admin (not 'callback_auto' or 'system')
+        # 2. Have is_legitimate_manual flag set to True
+        activation_type = activation.get('activation_type', '')
+        is_legitimate = activation.get('is_legitimate_manual', False)
+        
+        if activation_type == 'admin_manual' or is_legitimate:
+            print(f"✅ Legitimate manual activation found for {email}")
+            return True
+        else:
+            print(f"⚠️ Found automatic activation (type: {activation_type}) - IGNORING")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error checking activation legitimacy: {e}")
+        return False
 def get_cached_or_search(query):
     """Get cached search results or perform new search"""
     
@@ -6507,7 +6543,7 @@ def submit_kmtc_grades():
 # --- User Details and Payment Routes ---
 @app.route('/enter-details/<flow>', methods=['GET', 'POST'])
 def enter_details(flow):
-    """Handle user details entry with strict validation and manual activation support."""
+    """Handle user details entry with strict validation and legitimate manual activation support."""
  
     # ── GET ──
     if request.method == 'GET':
@@ -6578,7 +6614,7 @@ def enter_details(flow):
             )
  
         # ══════════════════════════════════════════════════════
-        # NEW: User verified payment but had no grades stored.
+        # User verified payment but had no grades stored.
         # Grades just submitted → go straight to results, skip payment.
         # ══════════════════════════════════════════════════════
         if session.get(f'verified_no_grades_{flow}') and session.get(f'paid_{flow}'):
@@ -6593,25 +6629,26 @@ def enter_details(flow):
             return redirect(url_for('show_results', flow=flow))
  
         # ══════════════════════════════════════════════════════
-        # STEP 1: Check manual activation
+        # STEP 1: Check for LEGITIMATE manual activation only
         # ══════════════════════════════════════════════════════
         activation_record    = None
         original_mpesa_receipt = None
  
-        if database_connected and admin_activations_collection is not None:
-            try:
-                activation_record = admin_activations_collection.find_one({
-                    '$or': [{'email': email}, {'index_number': index_number}],
-                    'is_active': True,
-                    'status': 'active'
-                })
-                if activation_record:
-                    original_mpesa_receipt = activation_record.get('mpesa_receipt')
-            except Exception as e:
-                print(f"⚠️ Activation check error: {e}")
+        if is_legitimate_manual_activation(email, index_number):
+            if database_connected and admin_activations_collection is not None:
+                try:
+                    activation_record = admin_activations_collection.find_one({
+                        '$or': [{'email': email}, {'index_number': index_number}],
+                        'is_active': True,
+                        'status': 'active'
+                    })
+                    if activation_record:
+                        original_mpesa_receipt = activation_record.get('mpesa_receipt')
+                except Exception as e:
+                    print(f"⚠️ Activation check error: {e}")
  
         if activation_record and original_mpesa_receipt:
-            print(f"🎯 Manual activation found — bypassing payment for {flow}")
+            print(f"🎯 Legitimate manual activation found — bypassing payment for {flow}")
             session['manual_activation_active']  = True
             session['manual_activation_receipt'] = original_mpesa_receipt
             session['manual_activation_id']      = str(activation_record['_id'])
@@ -6643,7 +6680,7 @@ def enter_details(flow):
             return redirect(url_for('payment_wait', flow=flow, transaction_ref='manual'))
  
         # ══════════════════════════════════════════════════════
-        # STEP 2: Already paid?
+        # STEP 2: Already paid? (Strict check - real payments only)
         # ══════════════════════════════════════════════════════
         if has_user_paid_for_category_strict(email, index_number, flow):
             paid = get_user_paid_categories_strict(email, index_number)
@@ -6684,8 +6721,6 @@ def enter_details(flow):
         traceback.print_exc()
         flash("An error occurred while processing your request", "error")
         return redirect(url_for('enter_details', flow=flow))
- 
-
 @app.route('/debug/session')
 def debug_session():
     """Debug route to check session status"""
@@ -6925,24 +6960,15 @@ def check_courses_ready(flow):
         except Exception as e:
             print(f"⚠️ check_courses_ready DB: {e}")
  
-    # ── TIER 3: Manual activation ──
-    if database_connected and admin_activations_collection is not None:
-        try:
-            act = admin_activations_collection.find_one(
-                {'$or': [{'email': email}, {'index_number': index_number}],
-                 'is_active': True, 'status': 'active'},
-                {'_id': 1}
-            )
-            if act:
-                session[f'paid_{flow}'] = True
-                session.modified = True
-                process_courses_after_payment(email, index_number, flow)
-                return jsonify({
-                    'ready': False, 'message': 'Access confirmed. Generating courses…',
-                    'processing': True, 'status': 'manual_activation_queued'
-                })
-        except Exception as e:
-            print(f"⚠️ check_courses_ready activation: {e}")
+    # ── TIER 3: LEGITIMATE manual activation only (not automatic) ──
+    if is_legitimate_manual_activation(email, index_number):
+        session[f'paid_{flow}'] = True
+        session.modified = True
+        process_courses_after_payment(email, index_number, flow)
+        return jsonify({
+            'ready': False, 'message': 'Access confirmed. Generating courses…',
+            'processing': True, 'status': 'manual_activation_queued'
+        })
  
     # ── TIER 4: Session paid flag ──
     if session.get(f'paid_{flow}'):
@@ -7014,26 +7040,16 @@ def goto_results(flow):
         session.modified = True
         return redirect(url_for('show_results', flow=flow))
  
-    # ── Manual activation ──
-    if database_connected and admin_activations_collection is not None:
-        try:
-            act = admin_activations_collection.find_one(
-                {'$or': [{'email': email}, {'index_number': index_number}],
-                 'is_active': True},
-                {'_id': 1}
-            )
-            if act:
-                session[f'paid_{flow}']  = True
-                session['current_flow']  = flow
-                session['current_level'] = flow
-                session.modified = True
-                return redirect(url_for('show_results', flow=flow))
-        except Exception as e:
-            print(f"⚠️  goto_results activation: {e}")
+    # ── LEGITIMATE manual activation only (not automatic) ──
+    if is_legitimate_manual_activation(email, index_number):
+        session[f'paid_{flow}']  = True
+        session['current_flow']  = flow
+        session['current_level'] = flow
+        session.modified = True
+        return redirect(url_for('show_results', flow=flow))
  
     flash("Payment not confirmed yet. Please complete the M-Pesa payment.", "warning")
     return redirect(url_for('payment', flow=flow))
- 
  
 @app.route('/test-gemini')
 def test_gemini():
@@ -7222,31 +7238,19 @@ def check_payment_status(flow):
         except Exception as e:
             print(f"⚠️ check_payment_status DB: {e}")
  
-    # ── 4. Manual activation ──
-    if database_connected and admin_activations_collection is not None:
-        try:
-            act = admin_activations_collection.find_one(
-                {
-                    '$or': [{'email': email}, {'index_number': index_number}],
-                    'is_active': True,
-                    'status': 'active'
-                },
-                {'_id': 1}
-            )
-            if act:
-                session[f'paid_{flow}']  = True
-                session['current_flow']  = flow
-                session['current_level'] = flow
-                session.modified = True
-                process_courses_after_payment(email, index_number, flow)
-                return jsonify({
-                    'paid':         True,
-                    'redirect_url': url_for('goto_results', flow=flow),
-                    'status':       'manual_activation',
-                    'message':      'Access confirmed! Processing courses…'
-                })
-        except Exception as e:
-            print(f"⚠️ check_payment_status activation: {e}")
+    # ── 4. LEGITIMATE manual activation only (not automatic) ──
+    if is_legitimate_manual_activation(email, index_number):
+        session[f'paid_{flow}']  = True
+        session['current_flow']  = flow
+        session['current_level'] = flow
+        session.modified = True
+        process_courses_after_payment(email, index_number, flow)
+        return jsonify({
+            'paid':         True,
+            'redirect_url': url_for('goto_results', flow=flow),
+            'status':       'manual_activation',
+            'message':      'Access confirmed! Processing courses…'
+        })
  
     # ── 5. Pending transaction timeout check ──
     if database_connected and user_payments_collection is not None:
@@ -7816,7 +7820,7 @@ def show_results(flow):
         if manual_id and database_connected and admin_activations_collection is not None:
             try:
                 activation = admin_activations_collection.find_one({'_id': ObjectId(manual_id)})
-                if activation:
+                if activation and activation.get('is_legitimate_manual', False):
                     email        = activation.get('email')
                     index_number = activation.get('index_number')
                     session.clear()
@@ -7839,12 +7843,14 @@ def show_results(flow):
             flash("Session expired. Please start again.", "error")
             return redirect(url_for('index'))
  
-    # ── Access verification (same as before) ──
+    # ── Access verification with LEGITIMATE manual activation only ──
     has_access = False
  
+    # Check 1: Session paid flag
     if session.get(f'paid_{flow}'):
         has_access = True
  
+    # Check 2: Database confirmed payment (real payment)
     if not has_access and database_connected and user_payments_collection is not None:
         try:
             payment = user_payments_collection.find_one({
@@ -7859,22 +7865,26 @@ def show_results(flow):
         except Exception as e:
             print(f"⚠️ Error checking payment: {e}")
  
-    if not has_access and database_connected and admin_activations_collection is not None:
-        try:
-            activation = admin_activations_collection.find_one({
-                '$or': [{'email': email}, {'index_number': index_number}],
-                'is_active': True,
-                'status': 'active'
-            })
-            if activation:
-                has_access = True
-                session[f'paid_{flow}']          = True
-                session['manual_activation_id']  = str(activation['_id'])
-                session['manual_activation_receipt'] = activation.get('mpesa_receipt')
-                session.modified = True
-        except Exception as e:
-            print(f"⚠️ Error checking activation: {e}")
+    # Check 3: LEGITIMATE manual activation only (not automatic)
+    if not has_access and is_legitimate_manual_activation(email, index_number):
+        has_access = True
+        session[f'paid_{flow}'] = True
+        # Get activation details for session
+        if database_connected and admin_activations_collection is not None:
+            try:
+                activation = admin_activations_collection.find_one({
+                    '$or': [{'email': email}, {'index_number': index_number}],
+                    'is_active': True,
+                    'status': 'active'
+                })
+                if activation:
+                    session['manual_activation_id'] = str(activation['_id'])
+                    session['manual_activation_receipt'] = activation.get('mpesa_receipt')
+            except Exception as e:
+                print(f"⚠️ Error getting activation details: {e}")
+        session.modified = True
  
+    # Check 4: Verified payment from "Already Made Payment" button
     if not has_access and session.get('verified_payment') and session.get('verified_index') == index_number:
         has_access = True
         session[f'paid_{flow}'] = True
@@ -7884,12 +7894,12 @@ def show_results(flow):
         flash('Please complete payment to view your results.', 'error')
         return redirect(url_for('payment', flow=flow) if flow else url_for('index'))
  
-    # ── Mark manual activation as used (once) ──
+    # ── Mark manual activation as used (once) - ONLY for legitimate ones ──
     activation_id = session.get('manual_activation_id')
     if activation_id and database_connected and admin_activations_collection is not None:
         try:
             act = admin_activations_collection.find_one({'_id': ObjectId(activation_id)})
-            if act and act.get('is_active') and act.get('status') == 'active':
+            if act and act.get('is_active') and act.get('status') == 'active' and act.get('is_legitimate_manual', False):
                 admin_activations_collection.update_one(
                     {'_id': ObjectId(activation_id)},
                     {'$set': {
@@ -7905,7 +7915,7 @@ def show_results(flow):
             print(f"⚠️ Error marking activation used: {e}")
  
     # ══════════════════════════════════════════════════════
-    # CORE CHANGE: get courses from memory → re-generate if needed
+    # CORE: get courses from memory → re-generate if needed
     # NEVER reads user_courses_collection
     # ══════════════════════════════════════════════════════
     qualifying_courses = []
@@ -8003,7 +8013,6 @@ def show_results(flow):
         flow=flow,
         cluster_names=CLUSTER_NAMES
     )
- 
 # --- Collection-based Results Routes ---
 @app.route('/collection-courses/<flow>/<collection_name>')
 def show_collection_courses(flow, collection_name):
@@ -11559,20 +11568,20 @@ def admin_manual_activation():
             print(f"🔧 Database connected: {database_connected}")
             print(f"🔧 Admin activations collection: {admin_activations_collection is not None}")
             
-            # Create manual activation record
+            # Create manual activation record with LEGITIMATE flag
             activation_record = {
                 'email': email,
                 'index_number': index_number,
                 'mpesa_receipt': mpesa_receipt,
-                'activation_type': 'admin_manual',
+                'activation_type': 'admin_manual',  # 🔥 CRITICAL: Not 'callback_auto'
                 'activated_by': session.get('admin_username', 'admin'),
                 'activated_at': datetime.now(),
                 'is_active': True,
-                'status': 'active',  # Important: Set to 'active'
+                'status': 'active',
                 'used_for_flow': None,
                 'used_at': None,
                 'email_sent': send_email,
-                'is_legitimate_manual': True 
+                'is_legitimate_manual': True  # 🔥 CRITICAL: Marks as legitimate
             }
             
             # Save to database
@@ -11601,8 +11610,9 @@ def admin_manual_activation():
                                     'used_at': None,
                                     'mpesa_receipt': mpesa_receipt,
                                     'email': email,
-                                    'activation_type': activation_type,
-                                    'email_sent': send_email
+                                    'activation_type': 'admin_manual',
+                                    'email_sent': send_email,
+                                    'is_legitimate_manual': True  # 🔥 CRITICAL
                                 }}
                             )
                             if result.modified_count > 0:
@@ -11628,8 +11638,9 @@ def admin_manual_activation():
                                     'used_at': None,
                                     'mpesa_receipt': mpesa_receipt,
                                     'email': email,
-                                    'activation_type': activation_type,
-                                    'email_sent': send_email
+                                    'activation_type': 'admin_manual',
+                                    'email_sent': send_email,
+                                    'is_legitimate_manual': True  # 🔥 CRITICAL
                                 }}
                             )
                             if result.modified_count > 0:
@@ -11652,6 +11663,8 @@ def admin_manual_activation():
                             saved_record = admin_activations_collection.find_one({'_id': result.inserted_id})
                             if saved_record:
                                 print(f"✅ Record verified in database: {saved_record}")
+                                print(f"   - is_legitimate_manual: {saved_record.get('is_legitimate_manual')}")
+                                print(f"   - activation_type: {saved_record.get('activation_type')}")
                             else:
                                 print(f"❌ Record not found after insertion")
                         else:
@@ -11673,7 +11686,6 @@ def admin_manual_activation():
             # Send email notification if requested
             if activation_saved and send_email:
                 try:
-                    # Prepare email content
                     subject = "Your KUCCPS Account Has Been Activated - Complete Your Course Selection"
                     
                     html_content = f"""
@@ -11736,7 +11748,6 @@ def admin_manual_activation():
                     </html>
                     """
                     
-                    # Send email via Brevo
                     email_sent = send_brevo_email(email, "Student", subject, html_content)
                     
                     if email_sent:
@@ -11766,7 +11777,7 @@ def admin_manual_activation():
             flash("An error occurred during activation", "error")
             return redirect(url_for('admin_manual_activation'))
     
-    # Get recent activations for display
+    # GET request - display manual activation page
     recent_activations = []
     if database_connected and admin_activations_collection is not None:
         try:
