@@ -141,7 +141,7 @@ KEY PLATFORM INFORMATION:
 - Payment: M-PESA STK Push
 - 6 categories: Degree(C+), Diploma(C-), KMTC(C-), TTC(C), Certificate(D+), Artisan(D/E)
 - 5000+ courses, 200+ institutions
-- Email: courseschecker@gmail.com | Phone: +254791196121
+- Email: kuccpscourses@gmail.com | Phone: +254750732841
 
 OFFICIAL KUCCPS INFO:
 - Application fee: KES 1,500 (eCitizen)
@@ -1951,8 +1951,8 @@ def send_payment_issue_resolution_email(email, index_number, mpesa_receipt, paid
                 
                 <p>Need help? Contact our support team:</p>
                 <ul>
-                    <li>Email: courseschecker@gmail.com</li>
-                    <li>Phone: +254791196121</li>
+                    <li>Email: kuccpscourses@gmail.com</li>
+                    <li>Phone: +254750732841</li>
                 </ul>
                 
                 <hr style="margin: 20px 0;">
@@ -2613,7 +2613,7 @@ def send_issue_resolution_email(email, index_number, mpesa_receipt, paid_levels)
                 <hr style="margin: 20px 0;">
                 
                 <p style="font-size: 12px; color: #666; text-align: center;">
-                    Need help? Contact us: courseschecker@gmail.com | +254791196121<br>
+                    Need help? Contact us: kuccpscourses@gmail.com | +254750732841<br>
                     © 2025 KUCCPS Courses Checker. All rights reserved.
                 </p>
             </div>
@@ -3146,8 +3146,8 @@ OFFICIAL KUCCPS INFO (Different from this platform):
 - Degree: C+ minimum, Diploma: C-, Certificate: D+, Artisan: D/E
 
 SUPPORT:
-- Email: courseschecker@gmail.com
-- Phone: +254791196121
+- Email: kuccpscourses@gmail.com
+- Phone: +254750732841
 - Live chat available on website
 
 RULES:
@@ -3612,7 +3612,7 @@ FEATURES:
 - Course basket to save favorites
 - Email results as PDF
 
-Contact: courseschecker@gmail.com | Phone: +254791196121"""
+Contact: kuccpscourses@gmail.com | Phone: +254750732841"""
     
     # ============================================
     # PRICING QUESTIONS
@@ -3789,7 +3789,7 @@ STEP 6: Use Your Basket
 
 ALREADY PAID? Use the "Already Made Payment" button - enter your receipt number and index number to access your results instantly.
 
-Need help? Use the AI chat (bottom-right corner), email courseschecker@gmail.com, or call +254791196121."""
+Need help? Use the AI chat (bottom-right corner), email kuccpscourses@gmail.com, or call +254750732841."""
     
     # ============================================
     # SCHOLARSHIPS
@@ -3832,10 +3832,10 @@ Use our course checker to find courses that qualify for specific scholarships.""
     elif "contact" in user_message_lower or "support" in user_message_lower or "help" in user_message_lower:
         return """Contact KUCCPS Courses Checker Support
 
-EMAIL: courseschecker@gmail.com
+EMAIL: kuccpscourses@gmail.com
 - Response time: 2-4 hours
 
-PHONE: +254791196121
+PHONE: +254750732841
 - Hours: Monday-Friday, 8 AM - 6 PM
 - Voicemail available 24/7
 
@@ -10669,7 +10669,7 @@ def api_fix_notified_user():
                     </p>
                 </div>
                 
-                <p>Need help? Contact us: courseschecker@gmail.com | +254791196121</p>
+                <p>Need help? Contact us: kuccpscourses@gmail.com | +254750732841</p>
                 
                 <hr style="margin: 20px 0;">
                 
@@ -11105,7 +11105,7 @@ def api_send_missing_courses_email():
                     </p>
                 </div>
                 
-                <p>If you need any assistance, please contact our support team at courseschecker@gmail.com or +254791196121.</p>
+                <p>If you need any assistance, please contact our support team at kuccpscourses@gmail.com or +254750732841.</p>
                 
                 <hr style="margin: 20px 0;">
                 
@@ -11320,7 +11320,7 @@ def api_activate_and_notify():
                     <hr style="margin: 20px 0;">
                     
                     <p style="font-size: 12px; color: #666; text-align: center;">
-                        Need help? Contact us: courseschecker@gmail.com | +254791196121<br>
+                        Need help? Contact us: kuccpscourses@gmail.com | +254750732841<br>
                         © 2025 KUCCPS Courses Checker. All rights reserved.
                     </p>
                 </div>
@@ -11803,8 +11803,8 @@ def admin_manual_activation():
                             
                             <p>If you need any assistance, please contact our support team:</p>
                             <ul>
-                                <li>Email: courseschecker@gmail.com</li>
-                                <li>Phone: +254791196121</li>
+                                <li>Email: kuccpscourses@gmail.com</li>
+                                <li>Phone: +254750732841</li>
                                 <li>Live Chat: Available on our website</li>
                             </ul>
                             

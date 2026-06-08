@@ -326,8 +326,8 @@
    - Understand KUCCPS placement process
 
 4. **Contact Support:**
-   - Email: courseschecker@gmail.com
-   - Phone: +254791196121
+   - Email: kuccpscourses@gmail.com
+   - Phone: +254750732841
    - Embedded chat bot (AI-powered via Gemini)
 
 ---
@@ -643,8 +643,8 @@ User Input Phone → STK Push Sent → User Enters PIN → Payment Processed →
 ### 9. **Contact & Support**
 
 **Methods:**
-1. **Email:** courseschecker@gmail.com
-2. **Phone:** +254791196121 (24/7 support)
+1. **Email:** kuccpscourses@gmail.com
+2. **Phone:** +254750732841 (24/7 support)
 3. **Chat:** AI-powered bot (integrated on all pages)
 4. **Contact Form:** `contact.html` (submit inquiries)
 
@@ -1334,5 +1334,5 @@ kuccps-courses/
 
 ---
 
-**For questions or more details, contact:** courseschecker@gmail.com | +254791196121
+**For questions or more details, contact:** kuccpscourses@gmail.com | +254750732841
 

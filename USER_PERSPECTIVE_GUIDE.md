@@ -517,12 +517,12 @@ A chat window opens at the bottom-right with:
 - **Best For:** Quick questions, instant answers
 
 #### **2. Email (Professional)**
-- **Address:** courseschecker@gmail.com
+- **Address:** kuccpscourses@gmail.com
 - **Time:** Usually 2-4 hours response
 - **Best For:** Detailed issues, complaints, official matters
 
 #### **3. Phone (Direct)**
-- **Number:** +254791196121
+- **Number:** +254750732841
 - **Time:** Business hours (24/7 with voicemail)
 - **Best For:** Urgent issues, payment problems
 

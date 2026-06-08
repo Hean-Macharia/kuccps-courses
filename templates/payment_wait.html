@@ -280,7 +280,7 @@
         if (pollTimer) clearInterval(pollTimer);
         if (spinnerEl) spinnerEl.style.display = 'none';
         if (errorBox) {
-            errorBox.textContent = msg || '❌ Payment verification failed. Please contact support: courseschecker@gmail.com';
+            errorBox.textContent = msg || '❌ Payment verification failed. Please contact support: kuccpscourses@gmail.com';
             errorBox.style.display = 'block';
         }
         setStatusMessage('⚠️ Verification failed. See details below.', true);
@@ -386,7 +386,7 @@
         if (!redirectDone && !errorShown) {
             var elapsed = (Date.now() - startedAt) / 1000;
             if (elapsed > 70) {
-                var manualMsg = "⌛ Payment is taking longer than usual. Please check your M-Pesa messages. If deducted, contact courseschecker@gmail.com with your index number.";
+                var manualMsg = "⌛ Payment is taking longer than usual. Please check your M-Pesa messages. If deducted, contact kuccpscourses@gmail.com with your index number.";
                 if (errorBox && errorBox.style.display !== 'block') {
                     errorBox.textContent = manualMsg;
                     errorBox.style.display = 'block';

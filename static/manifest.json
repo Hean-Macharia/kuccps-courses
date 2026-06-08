@@ -1,11 +1,11 @@
 {
-  "name": "KUCCPS Courses",
-  "short_name": "KUCCPS",
-  "description": "Course Qualification and Selection System",
+  "name": "Eligibility Checker - KUCCPS Courses",
+  "short_name": "Eligibility Checker",
+  "description": "Find KUCCPS courses matching your KCSE grades. Search degree, diploma, certificate, KMTC, artisan, TTC, and short courses across Kenyan institutions.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1e40af",
+  "background_color": "#F5F4F2",
+  "theme_color": "#FF5A00",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -50,27 +50,111 @@
       "type": "image/png"
     }
   ],
-  "categories": ["education", "utilities"],
+  "categories": [
+    "education",
+    "utilities"
+  ],
   "scope": "/",
   "prefer_related_applications": false,
   "shortcuts": [
     {
       "name": "Degree Courses",
       "short_name": "Degree",
-      "description": "View degree courses",
-      "url": "/degree"
+      "description": "Browse degree programs",
+      "url": "/degree",
+      "icons": [
+        {
+          "src": "/static/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Diploma Courses",
       "short_name": "Diploma",
-      "description": "View diploma courses",
-      "url": "/diploma"
+      "description": "Browse diploma courses",
+      "url": "/diploma",
+      "icons": [
+        {
+          "src": "/static/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Certificate Courses",
+      "short_name": "Certificate",
+      "description": "Browse certificate courses",
+      "url": "/certificate",
+      "icons": [
+        {
+          "src": "/static/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "KMTC Programs",
+      "short_name": "KMTC",
+      "description": "Browse KMTC healthcare courses",
+      "url": "/kmtc",
+      "icons": [
+        {
+          "src": "/static/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "TTC Programs",
+      "short_name": "TTC",
+      "description": "Browse teacher training courses",
+      "url": "/ttc",
+      "icons": [
+        {
+          "src": "/static/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Artisan Courses",
+      "short_name": "Artisan",
+      "description": "Browse artisan and vocational courses",
+      "url": "/artisan",
+      "icons": [
+        {
+          "src": "/static/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Short Courses",
+      "short_name": "Short Courses",
+      "description": "Tech skills: Web Dev, Cyber Security, Graphic Design",
+      "url": "https://short-courses.onrender.com/",
+      "icons": [
+        {
+          "src": "/static/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "My Basket",
       "short_name": "Basket",
       "description": "View saved courses",
-      "url": "/basket"
+      "url": "/basket",
+      "icons": [
+        {
+          "src": "/static/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
-  ]
+  ],
+  "related_applications": [],
+  "lang": "en",
+  "dir": "ltr"
 }

@@ -1,57 +1,54 @@
 {% extends "./base.html" %}
-{% block title %} KUCCPS Artisan Courses | Skills Training in Kenya {% endblock %}
+{% block title %}Find Artisan & Vocational Training Programs Matching Your Grades{% endblock %}
 
 {% block links %}
 <link rel="canonical" href="{{ get_canonical_url('artisan') }}" />
-<meta name="description" content="Find KUCCPS artisan courses and vocational skills training programs in Kenya. Match your KCSE grades with practical trade programs in plumbing, electrical, carpentry, and more.">
+<meta name="description" content="Find artisan courses and vocational skills training programs in Kenya. Match your KCSE grades with practical trade programs in plumbing, electrical, carpentry, welding, and more.">
+<meta name="keywords" content="KUCCPS artisan courses, KUCCPS artisan D-, KUCCPS trade programs, KUCCPS vocational training, KUCCPS plumbing course, KUCCPS electrical course, KUCCPS carpentry course, KUCCPS welding course, KUCCPS motor vehicle, KUCCPS hairdressing, KUCCPS catering course, KUCCPS artisan requirements, artisan eligibility checker, KUCCPS artisan D plain, KUCCPS artisan certificate, KUCCPS artisan to diploma, KUCCPS artisan 2026, KUCCPS skills training, KUCCPS vocational college, KUCCPS trade school, KUCCPS artisan placement, KUCCPS artisan fees, KUCCPS artisan courses list, KUCCPS artisan grade requirements, KUCCPS artisan mechanic, KUCCPS artisan masonry, KUCCPS artisan tailoring, KUCCPS artisan electronics">
 <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
-    "@type": "Course",
-    "name": "KUCCPS Artisan Trade Programs",
-    "description": "Explore KUCCPS artisan programs for vocational skills training in Kenya. Practical courses in trades like plumbing, electrical, carpentry, welding, and automotive repair.",
-    "provider": {
-        "@type": "Organization",
-        "name": "KUCCPS Courses Checker",
-        "url": "https://www.kuccpscourses.co.ke/"
-    },
-    "courseCode": "KUCCPS-ARTISAN",
-    "educationalCredentialAwarded": "Artisan Certificate",
-    "timeToComplete": "P1Y",
-    "hasCourseInstance": {
-        "@type": "CourseInstance",
-        "courseMode": ["full-time", "apprenticeship"],
-        "courseWorkload": "Practical skills training focused"
-    }
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "Artisan & Vocational Training Eligibility Checker",
+  "description": "Explore artisan and vocational training programs across Kenya. Practical trade courses in plumbing, electrical, carpentry, welding, motor vehicle mechanics, and hospitality skills.",
+  "provider": {
+    "@type": "Organization",
+    "name": "Eligibility Checker",
+    "url": "https://www.kuccpscourses.co.ke/"
+  },
+  "courseCode": "ARTISAN",
+  "educationalCredentialAwarded": "Artisan Certificate",
+  "timeToComplete": "P1Y",
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "courseMode": "full-time",
+    "courseWorkload": "1-year intensive practical training with workshop practice"
+  }
 }
 </script>
-
 <!-- Microdata Schema for EducationalOccupationalProgram -->
 <div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
-    <meta itemprop="educationalProgramMode" content="hands-on training"/>
+    <meta itemprop="educationalProgramMode" content="workshop practice"/>
+    <meta itemprop="numberOfCredits" content="120"/>
     <meta itemprop="occupationalCategory" content="Vocational Training"/>
-    <meta itemprop="skills" content="practical trades, technical skills, hands-on competencies, craft mastery"/>
+    <meta itemprop="skills" content="practical trade skills, workshop techniques, tool mastery, technical craftsmanship"/>
 </div>
-
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
-
-<!-- Enhanced Artisan Page Styling - Modern UI/UX -->
+<!-- Enhanced Artisan Page Styling - Modern Vocational Theme -->
 <style>
-    /* Modern Color Scheme for Artisan */
-    :root {
-        --artisan-primary: #00b4d8;
-        --artisan-primary-dark: #0096c7;
-        --artisan-secondary: #48cae4;
-        --artisan-accent: #f4a261;
-        --artisan-success: #2a9d8f;
-        --artisan-warning: #e9c46a;
-        --artisan-dark: #264653;
-        --artisan-light-bg: #f0f8ff;
-        --artisan-card-shadow: 0 10px 30px -8px rgba(0,0,0,0.08);
-        --artisan-hover-shadow: 0 20px 35px -12px rgba(0,180,216,0.15);
+:root {
+        --artprimary: #e67e22;
+        --artprimary-dark: #d35400;
+        --artsecondary: #f39c12;
+        --artaccent: #e74c3c;
+        --artsuccess: #27ae60;
+        --artwarning: #f1c40f;
+        --artdark: #2c3e50;
+        --artlight-bg: #fef5e7;
+        --artcard-shadow: 0 10px 30px -8px rgba(0,0,0,0.1);
+        --arthover-shadow: 0 20px 35px -12px rgba(e67e22,0.15);
     }
 
-    /* Animations */
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
@@ -63,9 +60,8 @@
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     .animate-fade-up { animation: fadeInUp 0.5s ease-out; }
 
-    /* Hero Section */
-    .artisan-hero {
-        background: linear-gradient(135deg, #023e8a 0%, #0077b6 50%, #00b4d8 100%);
+    .arthero {
+        background: linear-gradient(135deg, #d35400 0%, #e67e22 50%, #f39c12 100%);
         border-radius: 28px;
         padding: 2.5rem 2rem;
         margin-bottom: 2rem;
@@ -74,48 +70,46 @@
         position: relative;
         overflow: hidden;
     }
-    .artisan-hero::before {
+    .arthero::before {
         content: "🔧";
         position: absolute;
         font-size: 8rem;
-        opacity: 0.08;
+        opacity: 0.1;
         bottom: -20px;
         right: -20px;
         transform: rotate(-15deg);
     }
-    .artisan-hero h1 {
+    .arthero h1 {
         font-size: 1.8rem;
         margin-bottom: 0.75rem;
         font-weight: 700;
     }
-    .artisan-hero p {
+    .arthero p {
         font-size: 1rem;
         opacity: 0.92;
         max-width: 750px;
         margin: 0 auto;
     }
 
-    /* Form Cards */
-    .artisan-card {
+    .artcard {
         background: white;
         border-radius: 24px;
-        box-shadow: var(--artisan-card-shadow);
+        box-shadow: var(--artcard-shadow);
         padding: 1.8rem;
         margin-bottom: 2rem;
         border: none;
         transition: all 0.3s ease;
     }
-    .artisan-card:hover {
-        box-shadow: var(--artisan-hover-shadow);
+    .artcard:hover {
+        box-shadow: var(--arthover-shadow);
         transform: translateY(-2px);
     }
 
-    /* Section Titles */
-    .artisan-section-title {
+    .artsection-title {
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--artisan-dark);
-        border-left: 5px solid var(--artisan-primary);
+        color: var(--artdark);
+        border-left: 5px solid var(--artprimary);
         padding-left: 1rem;
         margin-bottom: 1.5rem;
         margin-top: 0.5rem;
@@ -123,55 +117,53 @@
         align-items: center;
         gap: 10px;
     }
-    .artisan-section-title i {
-        color: var(--artisan-primary);
+    .artsection-title i {
+        color: var(--artprimary);
         font-size: 1.3rem;
     }
 
-    /* Subject Group Headers */
-    .artisan-subject-group {
-        background: var(--artisan-light-bg);
+    .artsubject-group {
+        background: var(--artlight-bg);
         border-radius: 20px;
         padding: 1.2rem 1.5rem;
         margin-bottom: 1.5rem;
         transition: all 0.2s ease;
-        border: 1px solid rgba(0,180,216,0.1);
+        border: 1px solid rgba(e67e22,0.1);
     }
-    .artisan-subject-group:hover {
-        background: #e6f4ff;
-        border-color: var(--artisan-primary);
+    .artsubject-group:hover {
+        background: #e8ebf0;
+        border-color: var(--artprimary);
     }
-    .artisan-subject-group h2 {
+    .artsubject-group h2 {
         font-size: 1.2rem;
         font-weight: 600;
-        color: var(--artisan-primary-dark);
+        color: var(--artprimary-dark);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 8px;
     }
-    .artisan-subject-group h2 i {
+    .artsubject-group h2 i {
         font-size: 1.2rem;
     }
 
-    /* Form Grid Layout */
-    .artisan-form-grid {
+    .artform-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
         gap: 1rem;
     }
-    .artisan-form-group {
+    .artform-group {
         margin-bottom: 0;
     }
-    .artisan-form-group label {
+    .artform-group label {
         font-weight: 600;
-        color: #2c3e50;
+        color: #2d3436;
         margin-bottom: 0.4rem;
         display: block;
         font-size: 0.85rem;
         letter-spacing: 0.3px;
     }
-    .artisan-select {
+    .artselect {
         border-radius: 12px;
         border: 1px solid #e0e0e0;
         padding: 0.6rem 0.8rem;
@@ -180,18 +172,17 @@
         font-size: 0.9rem;
         width: 100%;
     }
-    .artisan-select:focus {
-        border-color: var(--artisan-primary);
-        box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
+    .artselect:focus {
+        border-color: var(--artprimary);
+        box-shadow: 0 0 0 3px rgba(e67e22,0.15);
         outline: none;
     }
-    .artisan-select:hover {
-        border-color: var(--artisan-primary);
+    .artselect:hover {
+        border-color: var(--artprimary);
     }
 
-    /* Overall Grade Special Styling */
     .overall-grade-section {
-        background: linear-gradient(135deg, #e6f4ff 0%, #d4eaff 100%);
+        background: linear-gradient(135deg, #f8f4ff 0%, #f0ebff 100%);
         border-radius: 20px;
         padding: 1.2rem 1.8rem;
         margin-bottom: 1.5rem;
@@ -204,21 +195,20 @@
     .overall-grade-section label {
         font-size: 1.2rem;
         font-weight: 700;
-        color: var(--artisan-primary-dark);
+        color: var(--artprimary-dark);
         margin-bottom: 0;
         display: flex;
         align-items: center;
         gap: 10px;
     }
-    .overall-grade-section .artisan-select {
+    .overall-grade-section .artselect {
         width: 220px;
         font-weight: 500;
         background: white;
     }
 
-    /* Submit Button */
-    .artisan-submit-btn {
-        background: linear-gradient(135deg, var(--artisan-primary) 0%, var(--artisan-primary-dark) 100%);
+    .artsubmit-btn {
+        background: linear-gradient(135deg, var(--artprimary) 0%, var(--artsecondary) 100%);
         border: none;
         padding: 14px 32px;
         font-size: 1.1rem;
@@ -234,118 +224,122 @@
         justify-content: center;
         gap: 12px;
     }
-    .artisan-submit-btn:hover {
+    .artsubmit-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,180,216,0.35);
-        background: linear-gradient(135deg, var(--artisan-primary-dark) 0%, var(--artisan-primary) 100%);
+        box-shadow: 0 8px 25px rgba(e67e22,0.35);
+        background: linear-gradient(135deg, var(--artsecondary) 0%, var(--artprimary) 100%);
     }
 
-    /* Info Cards */
-    .artisan-info-card {
+    .artinfo-card {
         border-radius: 20px;
         border: none;
-        box-shadow: var(--artisan-card-shadow);
+        box-shadow: var(--artcard-shadow);
         height: 100%;
         transition: all 0.2s ease;
         overflow: hidden;
     }
-    .artisan-info-card:hover {
+    .artinfo-card:hover {
         transform: translateY(-3px);
-        box-shadow: var(--artisan-hover-shadow);
+        box-shadow: var(--arthover-shadow);
     }
-    .artisan-info-card .card-body {
+    .artinfo-card .card-body {
         padding: 1.5rem;
     }
-    .artisan-info-card h5 {
+    .artinfo-card h5 {
         font-weight: 700;
         margin-bottom: 1rem;
-        color: var(--artisan-primary-dark);
+        color: var(--artprimary-dark);
     }
-    .artisan-info-card ul {
+    .artinfo-card ul {
         padding-left: 1.2rem;
         margin-bottom: 0;
     }
-    .artisan-info-card li {
+    .artinfo-card li {
         margin-bottom: 0.6rem;
         line-height: 1.4;
     }
 
-    /* Alert Boxes */
-    .artisan-alert {
+    .artalert {
         border-radius: 20px;
         border: none;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
     }
-    .artisan-alert h2 {
+    .artalert h2 {
         font-size: 1.4rem;
         margin-bottom: 0.75rem;
         font-weight: 700;
     }
-    .artisan-alert-info {
-        background: linear-gradient(135deg, #e6f4ff 0%, #d4eaff 100%);
-        color: #023e8a;
+    .artalert-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdef5 100%);
+        color: #1565c0;
     }
-    .artisan-alert-success {
+    .artalert-success {
         background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        color: #1b5e20;
+        color: #2e7d32;
+    }
+    .artalert-warning {
+        background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+        color: #e65100;
+    }
+    .artalert-dark {
+        background: linear-gradient(135deg, #e8ecf1 0%, #d5dbe3 100%);
+        color: #2c3e50;
     }
 
-    /* Accordion Styling */
-    .artisan-accordion-item {
+    .artaccordion-item {
         border: none;
         margin-bottom: 0.75rem;
         border-radius: 16px !important;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .artisan-accordion-button {
+    .artaccordion-button {
         font-weight: 600;
         background-color: white;
         padding: 1rem 1.2rem;
-        color: var(--artisan-dark);
+        color: var(--artdark);
     }
-    .artisan-accordion-button:not(.collapsed) {
-        background-color: var(--artisan-light-bg);
-        color: var(--artisan-primary);
+    .artaccordion-button:not(.collapsed) {
+        background-color: var(--artlight-bg);
+        color: var(--artprimary);
     }
-    .artisan-accordion-button:focus {
+    .artaccordion-button:focus {
         box-shadow: none;
         border-color: rgba(0,0,0,0.1);
     }
-    .artisan-accordion-body {
+    .artaccordion-body {
         padding: 1.2rem;
         background-color: #fefefe;
     }
 
-    /* Success Story Cards */
-    .artisan-story-card {
+    .artstory-card {
         border-radius: 20px;
         border: none;
-        box-shadow: var(--artisan-card-shadow);
+        box-shadow: var(--artcard-shadow);
         height: 100%;
         transition: all 0.2s ease;
         background: white;
     }
-    .artisan-story-card:hover {
+    .artstory-card:hover {
         transform: translateY(-3px);
-        box-shadow: var(--artisan-hover-shadow);
+        box-shadow: var(--arthover-shadow);
     }
-    .artisan-story-card .card-body {
+    .artstory-card .card-body {
         padding: 1.5rem;
     }
-    .artisan-story-card h5 {
+    .artstory-card h5 {
         font-weight: 700;
-        color: var(--artisan-primary-dark);
+        color: var(--artprimary-dark);
         margin-bottom: 0.75rem;
     }
-    .artisan-story-card .story-quote {
+    .artstory-card .story-quote {
         font-style: italic;
         color: #555;
         line-height: 1.5;
     }
-    .artisan-story-card .story-badge {
-        background: var(--artisan-success);
+    .artstory-card .story-badge {
+        background: var(--artsuccess);
         color: white;
         padding: 4px 12px;
         border-radius: 20px;
@@ -355,8 +349,7 @@
         margin-top: 0.75rem;
     }
 
-    /* Feature Cards */
-    .artisan-feature-card {
+    .artfeature-card {
         background: white;
         border-radius: 18px;
         padding: 1.2rem;
@@ -364,25 +357,24 @@
         transition: all 0.2s ease;
         border: 1px solid #eef2f7;
     }
-    .artisan-feature-card:hover {
-        background: linear-gradient(135deg, #fff 0%, #e6f4ff 100%);
-        border-color: var(--artisan-primary);
+    .artfeature-card:hover {
+        background: linear-gradient(135deg, #fff 0%, #fef5e7 100%);
+        border-color: var(--artprimary);
         transform: translateY(-2px);
     }
-    .artisan-feature-card h5 {
+    .artfeature-card h5 {
         font-weight: 700;
-        color: var(--artisan-primary);
+        color: var(--artprimary);
         margin-bottom: 0.5rem;
     }
-    .artisan-feature-card p {
+    .artfeature-card p {
         color: #666;
         margin-bottom: 0;
         font-size: 0.9rem;
         line-height: 1.5;
     }
 
-    /* Intro Text */
-    .artisan-intro-text {
+    .artintro-text {
         font-size: 1.1rem;
         color: #555;
         display: block;
@@ -391,97 +383,167 @@
         text-align: center;
     }
 
-    /* Responsive Adjustments */
     @media (max-width: 768px) {
-        .artisan-hero {
-            padding: 1.5rem;
-        }
-        .artisan-hero h1 {
-            font-size: 1.4rem;
-        }
-        .artisan-card {
-            padding: 1.2rem;
-        }
-        .artisan-section-title {
-            font-size: 1.3rem;
-        }
-        .overall-grade-section {
-            flex-direction: column;
-            align-items: stretch;
-            text-align: center;
-        }
-        .overall-grade-section .artisan-select {
-            width: 100%;
-        }
-        .artisan-form-grid {
-            grid-template-columns: 1fr;
-            gap: 0.8rem;
-        }
-        .artisan-subject-group {
-            padding: 1rem;
-        }
-        .artisan-submit-btn {
-            padding: 12px 20px;
-            font-size: 1rem;
-        }
-        .artisan-intro-text {
-            font-size: 1rem;
-        }
+        .arthero { padding: 1.5rem; }
+        .arthero h1 { font-size: 1.4rem; }
+        .artcard { padding: 1.2rem; }
+        .artsection-title { font-size: 1.3rem; }
+        .overall-grade-section { flex-direction: column; align-items: stretch; text-align: center; }
+        .overall-grade-section .artselect { width: 100%; }
+        .artform-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+        .artsubject-group { padding: 1rem; }
+        .artsubmit-btn { padding: 12px 20px; font-size: 1rem; }
+        .artintro-text { font-size: 1rem; }
     }
 
-    /* Print Styles */
     @media print {
-        .artisan-submit-btn, .artisan-card, .artisan-hero {
+        .artsubmit-btn, .artcard, .arthero {
             break-inside: avoid;
         }
     }
-
-    /* Additional Styling */
-    .badge-artisan {
-        background: var(--artisan-primary);
-        color: white;
-        padding: 6px 14px;
-        border-radius: 30px;
-        font-size: 0.8rem;
-    }
-    .trade-tag {
-        background: var(--artisan-light-bg);
-        border: 1px solid var(--artisan-primary);
-        border-radius: 40px;
-        padding: 6px 16px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: var(--artisan-primary-dark);
-        transition: all 0.2s ease;
-        display: inline-block;
-    }
-    .trade-tag:hover {
-        background: var(--artisan-primary);
-        color: white;
-        transform: translateY(-2px);
-    }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What KUCCPS artisan can I do with D- grade?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS artisan programs accept D- grades for all trades including plumbing, electrical, carpentry, welding, and motor vehicle mechanics. D- is the minimum requirement for artisan courses."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are KUCCPS artisan requirements for plumbing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS plumbing artisan requires D- overall with basic literacy and numeracy. No specific subject requirements - practical aptitude and willingness to learn are most important."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS electrical course requirements?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS electrical artisan requires D- overall. Color vision and basic mathematics are helpful but not mandatory. Training covers all necessary technical knowledge from fundamentals."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS carpentry and joinery course?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS carpentry artisan accepts D- grades. Students learn woodwork, furniture making, and construction carpentry. No prior experience needed - all skills taught from basics."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS motor vehicle mechanics requirements?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS motor vehicle mechanic artisan requires D- overall. Mechanical aptitude is helpful but training starts from fundamentals. Graduates can work in garages or start their own repair business."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS welding and fabrication course?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS welding artisan accepts D- grades. Students learn arc welding, gas welding, and metal fabrication. Safety training is comprehensive and certification includes NITA trade tests."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS hairdressing and beauty course?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS hairdressing artisan requires D- overall. Students learn hair styling, braiding, beauty therapy, and salon management. Popular for self-employment and entrepreneurship."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS catering and food production?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS catering artisan accepts D- grades. Training covers food preparation, kitchen management, and hospitality basics. Graduates work in hotels, restaurants, or start catering businesses."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS artisan to diploma upgrade?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS artisan graduates can upgrade to craft certificate (1 year) then diploma (2 years) in the same trade. This progressive pathway builds qualifications while maintaining employment."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS artisan certificate vs NITA trade test?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS artisan certificate is the academic qualification from college training. NITA trade test is the practical skills certification. Both are valuable; many graduates pursue both for maximum employability."
+      }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to check artisan courses",
+  "description": "Step-by-step guide to find artisan programs matching your KCSE grades",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "position": 1,
+      "name": "Enter your KCSE overall grade",
+      "text": "Select your overall KCSE grade from the dropdown to establish your baseline qualification level.",
+      "url": "https://www.kuccpscourses.co.ke/artisan#overall"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 2,
+      "name": "Input your subject grades",
+      "text": "Fill in the grades for each KCSE subject you took, especially core subjects and those relevant to your desired artisan program.",
+      "url": "https://www.kuccpscourses.co.ke/artisan#subjects"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 3,
+      "name": "Submit and view results",
+      "text": "Click the submit button to see all artisan programs you qualify for based on your KCSE performance and cluster requirements.",
+      "url": "https://www.kuccpscourses.co.ke/artisan#submit"
+    }
+  ]
+}
+</script>
 {% endblock %}
 
-{% block displaytext %}Find Artisan Programs Matching Your Grades{% endblock %}
+{% block displaytext %}Find Artisan & Vocational Programs Matching Your Grades{% endblock %}
 
 {% block content %}
 
+<div class="arthero">
+    <h1>Find Artisan & Vocational Training Programs Matching Your Grades</h1>
+    <p>Discover hands-on trade and vocational programs you qualify for. Enter your KCSE grades to match with practical training in plumbing, electrical, carpentry, welding, and more.</p>
+</div>
+
 <div class="container">
-    <span class="artisan-intro-text animate-fade-up">✨ Fill in your KCSE grades and submit to see all artisan programs you qualify for!</span>
-    
-    <form action="{{ url_for('submit_artisan_grades') }}" method="POST">
-        
-        <!-- Artisan Program Qualifications Card -->
-        <div class="artisan-card animate-fade-up">
-            <div class="artisan-section-title">
-                <i>📋</i> Artisan Training Qualifications
+    <span class="artintro-text animate-fade-up">✨ Fill in your KCSE grades and submit to see all artisan and vocational training programs you qualify for!</span>
+
+    <form action="{{ url_for('submit_artisan_grades') }}" method="post" id="artForm">
+        <div class="artcard animate-fade-up">
+            <div class="artsection-title">
+                <i>📋</i> Artisan Program Qualifications
             </div>
-            
-            <!-- Overall Grade Section - Styled -->
+
             <div class="overall-grade-section">
                 <label for="overall">🎯 Overall KCSE Grade:</label>
-                <select id="overall" name="overall" class="artisan-select" required>
+                <select id="overall" name="overall" class="artselect" required>
                     <option value="">Select Grade</option>
                     <option value="A">A</option>
                     <option value="A-">A-</option>
@@ -500,20 +562,20 @@
         </div>
 
         <!-- KCSE Grades Entry Card -->
-        <div class="artisan-card animate-fade-up">
-            <div class="artisan-section-title">
+        <div class="artcard animate-fade-up">
+            <div class="artsection-title">
                 <i>📝</i> Enter Your KCSE Subject Grades
             </div>
-            <p class="text-muted mb-4" style="font-size: 0.9rem;">Select the grades you achieved in each subject. Artisan programs have flexible entry requirements focused on practical aptitude.</p>
-            
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">Select the grades you achieved in each subject. Artisan programs focus on practical skills and have flexible entry requirements.</p>
+
             <div class="subjects">
                 <!-- Core Subjects -->
-                <div class="artisan-subject-group">
+                <div class="artsubject-group">
                     <h2><i>⭐</i> Core Subjects</h2>
-                    <div class="artisan-form-grid">
-                        <div class="artisan-form-group">
+                    <div class="artform-grid">
+                        <div class="artform-group">
                             <label for="mathematics">Mathematics</label>
-                            <select id="mathematics" name="mathematics" class="artisan-select" required>
+                            <select id="mathematics" name="mathematics" class="artselect" required>
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -521,9 +583,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="english">English</label>
-                            <select id="english" name="english" class="artisan-select" required>
+                            <select id="english" name="english" class="artselect" required>
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -531,9 +593,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="kiswahili">Kiswahili</label>
-                            <select id="kiswahili" name="kiswahili" class="artisan-select" required>
+                            <select id="kiswahili" name="kiswahili" class="artselect" required>
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -545,12 +607,12 @@
                 </div>
 
                 <!-- Sciences -->
-                <div class="artisan-subject-group">
-                    <h2><i>🔬</i> Sciences</h2>
-                    <div class="artisan-form-grid">
-                        <div class="artisan-form-group">
+                <div class="artsubject-group">
+                    <h2><i>🔬</i> Sciences </h2>
+                    <div class="artform-grid">
+                        <div class="artform-group">
                             <label for="chemistry">Chemistry</label>
-                            <select id="chemistry" name="chemistry" class="artisan-select">
+                            <select id="chemistry" name="chemistry" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -558,9 +620,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="biology">Biology</label>
-                            <select id="biology" name="biology" class="artisan-select">
+                            <select id="biology" name="biology" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -568,9 +630,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="physics">Physics</label>
-                            <select id="physics" name="physics" class="artisan-select">
+                            <select id="physics" name="physics" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -582,12 +644,12 @@
                 </div>
 
                 <!-- Humanities -->
-                <div class="artisan-subject-group">
+                <div class="artsubject-group">
                     <h2><i>📖</i> Humanities</h2>
-                    <div class="artisan-form-grid">
-                        <div class="artisan-form-group">
+                    <div class="artform-grid">
+                        <div class="artform-group">
                             <label for="geography">Geography</label>
-                            <select id="geography" name="geography" class="artisan-select">
+                            <select id="geography" name="geography" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -595,9 +657,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="history">History</label>
-                            <select id="history" name="history" class="artisan-select">
+                            <select id="history" name="history" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -605,9 +667,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="cre">Christian Religious Education (CRE)</label>
-                            <select id="cre" name="cre" class="artisan-select">
+                            <select id="cre" name="cre" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -615,9 +677,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="ire">Islamic Religious Education (IRE)</label>
-                            <select id="ire" name="ire" class="artisan-select">
+                            <select id="ire" name="ire" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -625,9 +687,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="hre">Hindu Religious Education (HRE)</label>
-                            <select id="hre" name="hre" class="artisan-select">
+                            <select id="hre" name="hre" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -639,12 +701,12 @@
                 </div>
 
                 <!-- Technical Subjects -->
-                <div class="artisan-subject-group">
+                <div class="artsubject-group">
                     <h2><i>⚙️</i> Technical Subjects</h2>
-                    <div class="artisan-form-grid">
-                        <div class="artisan-form-group">
+                    <div class="artform-grid">
+                        <div class="artform-group">
                             <label for="agriculture">Agriculture</label>
-                            <select id="agriculture" name="agriculture" class="artisan-select">
+                            <select id="agriculture" name="agriculture" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -652,9 +714,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="computer_studies">Computer Studies</label>
-                            <select id="computer_studies" name="computer_studies" class="artisan-select">
+                            <select id="computer_studies" name="computer_studies" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -662,9 +724,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="art_design">Art and Design</label>
-                            <select id="art_design" name="art_design" class="artisan-select">
+                            <select id="art_design" name="art_design" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -672,9 +734,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="woodwork">Woodwork</label>
-                            <select id="woodwork" name="woodwork" class="artisan-select">
+                            <select id="woodwork" name="woodwork" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -682,9 +744,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="home_science">Home Science</label>
-                            <select id="home_science" name="home_science" class="artisan-select">
+                            <select id="home_science" name="home_science" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -692,9 +754,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="business_studies">Business Studies</label>
-                            <select id="business_studies" name="business_studies" class="artisan-select">
+                            <select id="business_studies" name="business_studies" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -702,9 +764,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="music">Music</label>
-                            <select id="music" name="music" class="artisan-select">
+                            <select id="music" name="music" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -716,12 +778,12 @@
                 </div>
 
                 <!-- Other Subjects -->
-                <div class="artisan-subject-group">
+                <div class="artsubject-group">
                     <h2><i>➕</i> Other Subjects</h2>
-                    <div class="artisan-form-grid">
-                        <div class="artisan-form-group">
+                    <div class="artform-grid">
+                        <div class="artform-group">
                             <label for="general_science">General Science</label>
-                            <select id="general_science" name="general_science" class="artisan-select">
+                            <select id="general_science" name="general_science" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -729,9 +791,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="building_construction">Building and Construction</label>
-                            <select id="building_construction" name="building_construction" class="artisan-select">
+                            <select id="building_construction" name="building_construction" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -739,9 +801,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="electricity">Electricity and Electronics</label>
-                            <select id="electricity" name="electricity" class="artisan-select">
+                            <select id="electricity" name="electricity" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -749,29 +811,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
-                            <label for="drawing_design">Drawing and Design</label>
-                            <select id="drawing_design" name="drawing_design" class="artisan-select">
-                                <option value="">Select Grade</option>
-                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
-                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
-                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
-                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
-                            </select>
-                        </div>
-                        <div class="artisan-form-group">
-                            <label for="arabic">Arabic</label>
-                            <select id="arabic" name="arabic" class="artisan-select">
-                                <option value="">Select Grade</option>
-                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
-                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
-                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
-                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
-                            </select>
-                        </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="metalwork">Metalwork</label>
-                            <select id="metalwork" name="metalwork" class="artisan-select">
+                            <select id="metalwork" name="metalwork" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -779,9 +821,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="french">French</label>
-                            <select id="french" name="french" class="artisan-select">
+                            <select id="french" name="french" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -789,9 +831,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="german">German</label>
-                            <select id="german" name="german" class="artisan-select">
+                            <select id="german" name="german" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -799,9 +841,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="kenya_sign_language">Kenya Sign Language</label>
-                            <select id="kenya_sign_language" name="kenya_sign_language" class="artisan-select">
+                            <select id="kenya_sign_language" name="kenya_sign_language" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -809,9 +851,29 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
+                            <label for="drawing_design">Drawing and Design</label>
+                            <select id="drawing_design" name="drawing_design" class="artselect">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artform-group">
+                            <label for="arabic">Arabic</label>
+                            <select id="arabic" name="arabic" class="artselect">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="artform-group">
                             <label for="aviation">Aviation</label>
-                            <select id="aviation" name="aviation" class="artisan-select">
+                            <select id="aviation" name="aviation" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -819,9 +881,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="artisan-form-group">
+                        <div class="artform-group">
                             <label for="power_mechanics">Power Mechanics</label>
-                            <select id="power_mechanics" name="power_mechanics" class="artisan-select">
+                            <select id="power_mechanics" name="power_mechanics" class="artselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -835,228 +897,318 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="artisan-submit-btn animate-fade-up">
+        <button type="submit" class="artsubmit-btn animate-fade-up">
             🔍 Find Artisan Programs I Qualify For
         </button>
     </form>
 </div>
 
-<!-- Artisan Programs Information Section -->
 <div class="container mt-5 mb-4">
-    <div class="artisan-alert artisan-alert-info animate-fade-up">
-        <h2 class="alert-heading">🛠️ KUCCPS Artisan Programs Overview</h2>
+    <div class="artalert artalert-warning animate-fade-up">
+        <h2 class="alert-heading">🔧 Artisan & Vocational Training Programs</h2>
         <p class="mb-2">
-            <strong>Artisan programs</strong> are 1-2 year practical trade courses focused on hands-on skills development.
-            These programs prepare students for immediate employment or entrepreneurship in various trades.
+            <strong>Artisan programs</strong> are 1-year intensive practical courses in skilled trades. 
+            These programs prepare students for immediate self-employment or technical employment.
         </p>
         <ul class="mb-0">
-            <li><strong>Duration:</strong> 1-2 years (fastest path to employment)</li>
-            <li><strong>Focus:</strong> Practical, job-ready trade skills for immediate application</li>
-            <li><strong>Entry:</strong> Minimum D- or D in KCSE - very accessible</li>
-            <li><strong>Outcome:</strong> Artisan Certificate recognized by trade bodies and employers</li>
+            <li><strong>Duration:</strong> 1 year (2 semesters)</li>
+            <li><strong>Entry:</strong> Minimum D- in KCSE - very accessible</li>
+            <li><strong>Outcome:</strong> Artisan Certificate (Grade I, II, or III)</li>
+            <li><strong>Career:</strong> Self-employment, technical employment, diploma upgrade</li>
         </ul>
     </div>
-    
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="artisan-info-card card animate-fade-up">
-                <div class="card-body">
-                    <h5 class="card-title">🔧 Popular Artisan Trades</h5>
-                    <ul>
-                        <li>Electrical Installation</li>
-                        <li>Plumbing & Pipe Fitting</li>
-                        <li>Carpentry & Joinery</li>
-                        <li>Welding & Fabrication</li>
-                        <li>Motor Vehicle Mechanics</li>
-                        <li>Masonry & Bricklaying</li>
-                        <li>Hairdressing & Beauty Therapy</li>
-                        <li>Catering & Food Production</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="artisan-info-card card animate-fade-up">
-                <div class="card-body">
-                    <h5 class="card-title">💪 Career Opportunities</h5>
-                    <ul>
-                        <li>Self-employment / Start your own business</li>
-                        <li>Employment in construction companies</li>
-                        <li>Work in manufacturing industries</li>
-                        <li>Join maintenance departments</li>
-                        <li>Work as independent contractor</li>
-                        <li>Opportunities in hospitality industry</li>
-                        <li>Pathway to diploma programs</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<!-- Why Choose Artisan Programs -->
 <div class="container my-5">
-    <div class="artisan-card animate-fade-up">
+    <div class="artcard animate-fade-up">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4" style="color: var(--artisan-dark);">📚 Why Choose Artisan Trade Programs?</h2>
+            <h2 class="card-title mb-4" style="color: var(--artdark);">🔧 Why Choose Artisan & Vocational Training</h2>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="artisan-feature-card">
-                        <h5>⚡ Quick Skills Development</h5>
-                        <p>Complete your training in 1-2 years and be job-ready immediately with skills employers desperately need in the trades.</p>
+                    <div class="art-feature-card">
+                        <h5>🛠️ Immediate Self-Employment</h5>
+                        <p>Start your own business immediately after graduation. Artisan skills like plumbing, electrical, and carpentry are always in demand for independent contracting.</p>
                     </div>
-                    <div class="artisan-feature-card mt-3">
-                        <h5>🛠️ Hands-On Practical Learning</h5>
-                        <p>Learn by doing - develop real trade skills through intensive practical training in workshops and actual work environments.</p>
+                    <div class="art-feature-card mt-3">
+                        <h5>💰 Low Cost, High Return</h5>
+                        <p>Affordable training with minimal fees. Artisan trades offer excellent income potential with skilled workers earning KES 30,000-80,000+ monthly.</p>
                     </div>
+                    
                 </div>
                 <div class="col-md-6">
-                    <div class="artisan-feature-card">
-                        <h5>💼 Self-Employment Opportunity</h5>
-                        <p>Start your own business immediately - artisan skills are always in demand, from plumbing to electrical work to carpentry.</p>
+                    <div class="art-feature-card">
+                        <h5>🏗️ Essential Trade Skills</h5>
+                        <p>Learn critical building and maintenance trades that power Kenya's construction and infrastructure sectors. Skilled artisans are in constant demand.</p>
                     </div>
-                    <div class="artisan-feature-card mt-3">
-                        <h5>💰 High Income Potential</h5>
-                        <p>Skilled tradespeople earn excellent incomes, with many earning more than degree holders, especially as business owners.</p>
+                    <div class="art-feature-card mt-3">
+                        <h5>📈 Upgrade Pathway</h5>
+                        <p>Artisan certificates can be upgraded to Craft Certificates and then Diplomas. Build your qualifications progressively while earning from your trade.</p>
                     </div>
+                    
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Artisan Program FAQs -->
 <div class="container my-5">
-    <h2 class="mb-4" style="color: var(--artisan-dark);">❓ Frequently Asked Questions About Artisan Programs</h2>
-    <div class="accordion" id="artisanFAQ">
-        <div class="artisan-accordion-item accordion-item">
+    <h2 class="mb-4" style="color: var(--artdark);">❓ Frequently Asked Questions About Artisan & Vocational Training</h2>
+    <div class="accordion" id="artFAQ">
+        <div class="art-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq1">
-                    What trades are available in artisan programs?
+                <button class="accordion-button art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq1">
+                    What artisan courses are available?
                 </button>
             </h2>
-            <div id="artisanfaq1" class="accordion-collapse collapse show" data-bs-parent="#artisanFAQ">
-                <div class="accordion-body artisan-accordion-body">
-                    Popular artisan trades include plumbing, electrical installation, carpentry, welding, motor mechanics, masonry, hairdressing, catering, and beauty therapy. Each provides specific technical skills for job placement or self-employment.
+            <div id="artfaq1" class="accordion-collapse collapse show" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Available artisan courses include Plumbing, Electrical Installation, Carpentry and Joinery, Welding and Fabrication, Motor Vehicle Mechanics, Masonry and Bricklaying, Hairdressing and Beauty, Catering and Food Production, Tailoring and Dressmaking, and Electronics Repair.
                 </div>
             </div>
         </div>
-        <div class="artisan-accordion-item accordion-item">
+        <div class="art-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq2">
-                    Can I start my own business after artisan training?
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq2">
+                    What is the minimum KCSE grade for artisan programs?
                 </button>
             </h2>
-            <div id="artisanfaq2" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
-                <div class="accordion-body artisan-accordion-body">
-                    Absolutely. Artisan training is specifically designed for self-employment. Many graduates start their own workshops, businesses, or work as independent contractors with excellent earning potential.
+            <div id="artfaq2" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Artisan programs require a minimum D- (minus) overall KCSE grade. Some programs accept E grade with demonstrated aptitude. This makes artisan training the most accessible post-secondary pathway for all KCSE graduates.
                 </div>
             </div>
         </div>
-        <div class="artisan-accordion-item accordion-item">
+        <div class="art-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq3">
-                    What are entry requirements for artisan programs?
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq3">
+                    Can I do an artisan course with D plain or D-?
                 </button>
             </h2>
-            <div id="artisanfaq3" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
-                <div class="accordion-body artisan-accordion-body">
-                    Artisan programs have flexible entry requirements, typically minimum D- or D grade in KCSE. The focus is on practical aptitude and willingness to learn rather than high academic grades.
+            <div id="artfaq3" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Yes! D plain and D- grades qualify for all artisan programs. These courses focus on practical skills rather than academic grades. Your willingness to learn and work hard matters more than your KCSE performance.
                 </div>
             </div>
         </div>
-        <div class="artisan-accordion-item accordion-item">
+        <div class="art-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq4">
-                    How long does artisan training take?
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq4">
+                    What is the difference between artisan and craft certificate?
                 </button>
             </h2>
-            <div id="artisanfaq4" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
-                <div class="accordion-body artisan-accordion-body">
-                    Most artisan programs take 1-2 years. Some trades may offer accelerated programs or apprenticeships. The duration varies by trade and institution offering the training.
+            <div id="artfaq4" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Artisan is the entry-level (1 year, D- minimum). Craft Certificate is intermediate (1-2 years, D+ minimum). Diploma is advanced (2-3 years, C- minimum). You can progress through all levels, upgrading your skills and qualifications.
                 </div>
             </div>
         </div>
-        <div class="artisan-accordion-item accordion-item">
+        <div class="art-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed artisan-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artisanfaq5">
-                    What qualifications will I earn?
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq5">
+                    How much can I earn as an artisan?
                 </button>
             </h2>
-            <div id="artisanfaq5" class="accordion-collapse collapse" data-bs-parent="#artisanFAQ">
-                <div class="accordion-body artisan-accordion-body">
-                    You will earn an Artisan Certificate or Trade Certificate recognized by relevant trade bodies and employers. These qualifications allow you to practice your trade, register as a tradesperson, and operate your own business.
+            <div id="artfaq5" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Self-employed artisans earn KES 30,000-80,000+ monthly depending on skill level and location. Employed artisans start at KES 15,000-25,000. Specialized trades like electrical and plumbing command premium rates in urban areas.
+                </div>
+            </div>
+        </div>
+        <div class="art-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq6">
+                    What tools and equipment will I use?
+                </button>
+            </h2>
+            <div id="artfaq6" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Training includes hands-on use of industry-standard tools and equipment. Workshops have modern machinery for each trade. Students learn proper tool handling, maintenance, and safety procedures essential for professional work.
+                </div>
+            </div>
+        </div>
+        <div class="art-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq7">
+                    Can I upgrade from artisan to diploma?
+                </button>
+            </h2>
+            <div id="artfaq7" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Yes, through the progressive pathway: Artisan → Craft Certificate → Diploma. Each level builds on the previous one. Many successful diploma graduates started as artisan students and worked their way up while gaining experience.
+                </div>
+            </div>
+        </div>
+        <div class="art-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq8">
+                    What are the fees for artisan courses?
+                </button>
+            </h2>
+            <div id="artfaq8" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Government artisan programs cost KES 5,000-15,000 per year. Some are free in public vocational centers. Private colleges charge KES 20,000-50,000. County bursaries and NITA funding often cover costs completely.
+                </div>
+            </div>
+        </div>
+        <div class="art-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq9">
+                    Are there NITA certifications for artisans?
+                </button>
+            </h2>
+            <div id="artfaq9" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    Yes, NITA (National Industrial Training Authority) offers trade test certifications for artisans. These nationally recognized certificates validate your skills and are required for government contracts and formal employment in many trades.
+                </div>
+            </div>
+        </div>
+        <div class="art-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed art-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#artfaq10">
+                    What is KUCCPS artisan placement 2026?
+                </button>
+            </h2>
+            <div id="artfaq10" class="accordion-collapse collapse" data-bs-parent="#artFAQ">
+                <div class="accordion-body art-accordion-body">
+                    KUCCPS artisan placement allocates students to government-sponsored artisan slots in vocational training centers. Applications are open to all KCSE graduates with D- and above. Placement is based on preference and availability.
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Artisan Success Stories -->
 <div class="container my-5">
-    <h2 class="mb-4" style="color: var(--artisan-dark);">🌟 Success Stories: Artisan Graduates</h2>
+    <h2 class="mb-4" style="color: var(--artdark);">🌟 Success Stories from Artisan Graduates</h2>
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="artisan-story-card card h-100 animate-fade-up">
+            <div class="art-story-card card h-100 animate-fade-up">
                 <div class="card-body">
-                    <h5 class="card-title">John Kipchoge - Electrical Installation</h5>
-                    <p class="story-quote">"After completing my electrical installation artisan course, John started his own electrical business. He now employs 6 technicians and handles major commercial projects across Nairobi."</p>
+                    <h5 class="card-title">John Mwangi - Electrical Installation</h5>
+                    <p class="story-quote">"John completed his artisan electrical course and started his own contracting business. He now employs 6 electricians and handles major wiring projects for residential and commercial buildings."</p>
                     <span class="story-badge">✓ Business Owner</span>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="artisan-story-card card h-100 animate-fade-up">
+            <div class="art-story-card card h-100 animate-fade-up">
                 <div class="card-body">
-                    <h5 class="card-title">Miriam Omondi - Hairdressing</h5>
-                    <p class="story-quote">"Miriam completed her hairdressing and beauty therapy artisan course and opened a salon. Five years later, her salon employs 4 stylists and she trains apprentices."</p>
-                    <span class="story-badge">✓ Salon Owner</span>
+                    <h5 class="card-title">Mary Kipchoge - Hairdressing & Beauty</h5>
+                    <p class="story-quote">"Mary trained as a hairdresser and opened her salon in her hometown. She has expanded to 3 branches and now trains new stylists, creating jobs for young women in her community."</p>
+                    <span class="story-badge">✓ Salon Chain Owner</span>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="artisan-story-card card h-100 animate-fade-up">
+            <div class="art-story-card card h-100 animate-fade-up">
                 <div class="card-body">
-                    <h5 class="card-title">David Kipkorir - Motor Vehicle Mechanics</h5>
-                    <p class="story-quote">"David's mechanics artisan certificate helped him establish a successful workshop that serves a whole district. He now contracts with local transport companies."</p>
-                    <span class="story-badge">✓ Workshop Owner</span>
+                    <h5 class="card-title">Peter Ochieng - Motor Vehicle Mechanics</h5>
+                    <p class="story-quote">"Peter's motor vehicle mechanic artisan certificate led him to work at a major garage. He now runs his own auto repair shop specializing in Japanese vehicles and mentors 4 apprentice mechanics."</p>
+                    <span class="story-badge">✓ Garage Owner</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Artisan Prerequisites & Requirements -->
 <div class="container my-5 mb-5">
-    <div class="artisan-card animate-fade-up">
+    <div class="artcard animate-fade-up">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4" style="color: var(--artisan-dark);">📋 Artisan Program Prerequisites & Requirements</h2>
+            <h2 class="card-title mb-4" style="color: var(--artdark);">📋 Artisan Program Prerequisites and Requirements</h2>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <h5 class="mb-3" style="color: var(--artisan-primary);">Minimum Academic Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--artprimary);">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum D- or D grade - flexible requirements</li>
-                        <li class="mb-2"><strong>🎓 Form 4 Completion:</strong> Basic secondary school education</li>
-                        <li class="mb-2"><strong>📖 Entry Score:</strong> Very flexible, low cluster point requirements</li>
+                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum D- (1 point) - most accessible</li>
+                        <li class="mb-2"><strong>🎓 Education Level:</strong> KCSE completion or equivalent</li>
+                        <li class="mb-2"><strong>📖 Basic Literacy:</strong> Ability to read and write</li>
                         <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 16+ years at entry</li>
-                        <li class="mb-2"><strong>✅ Additional:</strong> Basic literacy and numeracy skills helpful</li>
+                        <li class="mb-2"><strong>✅ Physical Ability:</strong> Some trades require manual dexterity</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h5 class="mb-3" style="color: var(--artisan-primary);">Program-Specific Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--artprimary);">Program-Specific Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>🔧 All Trades:</strong> Physical fitness and ability to perform manual work</li>
-                        <li class="mb-2"><strong>⚡ Electrical/Plumbing:</strong> Safety awareness, attention to detail important</li>
-                        <li class="mb-2"><strong>🚗 Mechanical Trades:</strong> Problem-solving ability and mechanical aptitude</li>
-                        <li class="mb-2"><strong>💇 Beauty/Hairdressing:</strong> Interpersonal skills, creativity, patience</li>
-                        <li class="mb-2"><strong>🏥 Health Requirements:</strong> Good health and ability to work in trade environments</li>
+                        <li class="mb-2"><strong>🔧 Construction Trades:</strong> Physical fitness, spatial awareness, tool handling</li>
+                        <li class="mb-2"><strong>⚡ Electrical Trades:</strong> Color vision, safety consciousness, math basics</li>
+                        <li class="mb-2"><strong>🚗 Mechanical Trades:</strong> Mechanical aptitude, problem-solving ability</li>
+                        <li class="mb-2"><strong>💇 Service Trades:</strong> Customer service skills, creativity, hygiene awareness</li>
+                        <li class="mb-2"><strong>✅ All Programs:</strong> Commitment, punctuality, and willingness to learn</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);">
+<h2>KUCCPS Artisan Courses Eligibility Checker 2026</h2>
+<p>Comprehensive guide to KUCCPS artisan courses and vocational training programs available through the national placement system. KUCCPS artisan courses cover all skilled trades including KUCCPS plumbing courses, KUCCPS electrical courses, KUCCPS carpentry courses, KUCCPS welding courses, KUCCPS motor vehicle mechanics, KUCCPS masonry courses, KUCCPS hairdressing courses, KUCCPS catering courses, KUCCPS tailoring courses, and KUCCPS electronics repair courses. The KUCCPS artisan placement system provides government-sponsored training slots in vocational centers across Kenya. KUCCPS artisan requirements are the most accessible with minimum D- grade for all programs. KUCCPS artisan D plain holders qualify for all trade courses and can progress to craft certificates. KUCCPS artisan D- students can access all vocational training programs regardless of specific subject performance. KUCCPS artisan courses 2026 include modernized curricula with digital skills and green technology components. KUCCPS vocational training prepares students for immediate self-employment and technical careers. KUCCPS trade programs are recognized by NITA and industry employers nationwide. KUCCPS artisan fees are minimal with many free options in public centers. KUCCPS artisan to diploma pathways enable career progression for motivated graduates. KUCCPS skills training is essential for Kenya's industrial development and youth employment.</p>
 </div>
 
 {% endblock %}
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('artForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = form.querySelector('.artsubmit-btn');
+                if (submitBtn) {
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
+                    submitBtn.disabled = true;
+                    setTimeout(function() {
+                        if (submitBtn.disabled) {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }
+                    }, 30000);
+                }
+            });
+        }
+        const requiredSubjects = ['mathematics', 'english', 'kiswahili'];
+        requiredSubjects.forEach(subject => {
+            const select = document.getElementById(subject);
+            if (select) {
+                select.addEventListener('change', function() {
+                    if (this.value === '') {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
+        });
+        function saveFormData() {
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            localStorage.setItem('artFormData', JSON.stringify(data));
+        }
+        function restoreFormData() {
+            const savedData = localStorage.getItem('artFormData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                for (const [key, value] of Object.entries(data)) {
+                    const element = document.querySelector(`[name="${key}"]`);
+                    if (element && value) {
+                        element.value = value;
+                    }
+                }
+                localStorage.removeItem('artFormData');
+            }
+        }
+        if (form) {
+            const inputs = form.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', saveFormData);
+                input.addEventListener('blur', saveFormData);
+            });
+            restoreFormData();
+        }
+    });
+</script>
+{% endblock %}

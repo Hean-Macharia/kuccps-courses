@@ -1,159 +1,190 @@
 {% extends "./base.html" %}
-{% block title %} KUCCPS Diploma Courses | Technical Programs in Kenya {% endblock %}
+{% block title %}Find Diploma & Technical Programs Matching Your KCSE Grades{% endblock %}
 
 {% block links %}
 <link rel="canonical" href="{{ get_canonical_url('diploma') }}" />
-<meta name="description" content="Find KUCCPS diploma courses and technical programs in Kenya. Match your KCSE grades with 2-year diploma programs in engineering, business, IT, hospitality, and more.">
+<meta name="description" content="Find diploma courses and technical programs in Kenya. Match your KCSE grades with 2-3 year diploma programs in engineering, business, IT, hospitality, nursing, and more.">
+<meta name="keywords" content="KUCCPS diploma courses, KUCCPS diploma C-, KUCCPS technical programs, KUCCPS college courses, KUCCPS diploma in engineering, KUCCPS diploma in nursing, KUCCPS diploma in IT, KUCCPS diploma in business, KUCCPS diploma requirements, KUCCPS TVET courses, KUCCPS diploma cut off, KUCCPS diploma placement, diploma eligibility checker, KUCCPS diploma C plain, KUCCPS diploma D+, KUCCPS diploma 2026, KUCCPS diploma cluster points, KUCCPS diploma fees, KUCCPS diploma upgrade, KUCCPS diploma vs degree, KUCCPS diploma placement 2026, KUCCPS diploma selection, KUCCPS technical diploma, KUCCPS diploma in education, KUCCPS diploma in agriculture, KUCCPS diploma in hospitality, KUCCPS diploma in building, KUCCPS diploma in pharmacy, KUCCPS diploma in medical lab">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Course",
-  "name": "KUCCPS Diploma & Technical Programs",
-  "description": "Explore KUCCPS diploma programs in Kenyan colleges and technical institutions. 2-year practical programs in engineering, business, IT, hospitality, and specialized technical fields.",
+  "name": "Diploma & Technical Program Eligibility Checker",
+  "description": "Explore diploma and technical programs in Kenyan colleges. 2-3 year programs in engineering, business, IT, hospitality, nursing, and applied sciences with practical training.",
   "provider": {
     "@type": "Organization",
-    "name": "KUCCPS Courses Checker",
+    "name": "Eligibility Checker",
     "url": "https://www.kuccpscourses.co.ke/"
   },
-  "courseCode": "KUCCPS-DIPLOMA",
+  "courseCode": "DIPLOMA",
   "educationalCredentialAwarded": "Diploma",
-  "timeToComplete": "P2Y",
+  "timeToComplete": "P3Y",
   "hasCourseInstance": {
     "@type": "CourseInstance",
-    "courseMode": ["full-time", "part-time"],
-    "courseWorkload": "Practical technical training with industry focus"
+    "courseMode": "full-time",
+    "courseWorkload": "3-year technical program with practical training and industrial attachment"
   }
 }
 </script>
-
 <!-- Microdata Schema for EducationalOccupationalProgram -->
 <div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
-    <meta itemprop="educationalProgramMode" content="classroom"/>
-    <meta itemprop="numberOfCredits" content="120"/>
+    <meta itemprop="educationalProgramMode" content="technical training"/>
+    <meta itemprop="numberOfCredits" content="360"/>
     <meta itemprop="occupationalCategory" content="Technical Education"/>
-    <meta itemprop="skills" content="practical technical skills, industry-specific competencies, hands-on training"/>
+    <meta itemprop="skills" content="technical expertise, practical skills, industrial knowledge, professional competency"/>
 </div>
-
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
-
-<!-- Enhanced Diploma Page Styling - Improved UI/UX -->
+<!-- Enhanced Diploma Page Styling - Modern Technical Theme -->
 <style>
-    /* Modern Color Scheme */
-    :root {
-        --diploma-primary: #2c3e50;
-        --diploma-secondary: #3498db;
-        --diploma-accent: #e67e22;
-        --diploma-success: #27ae60;
-        --diploma-light-bg: #f8f9fa;
-        --diploma-card-shadow: 0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.02);
+:root {
+        --dipprimary: #e17055;
+        --dipprimary-dark: #d63031;
+        --dipsecondary: #fab1a0;
+        --dipaccent: #fdcb6e;
+        --dipsuccess: #00b894;
+        --dipwarning: #fdcb6e;
+        --dipdark: #2d3436;
+        --diplight-bg: #fff0ee;
+        --dipcard-shadow: 0 10px 30px -8px rgba(0,0,0,0.1);
+        --diphover-shadow: 0 20px 35px -12px rgba(e17055,0.15);
     }
 
-    /* Hero Section */
-    .diploma-hero {
-        background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
-        border-radius: 24px;
-        padding: 2rem 2rem;
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    .animate-fade-up { animation: fadeInUp 0.5s ease-out; }
+
+    .diphero {
+        background: linear-gradient(135deg, #d63031 0%, #e17055 50%, #fab1a0 100%);
+        border-radius: 28px;
+        padding: 2.5rem 2rem;
         margin-bottom: 2rem;
         color: white;
         text-align: center;
+        position: relative;
+        overflow: hidden;
     }
-    .diploma-hero h1 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
+    .diphero::before {
+        content: "📜";
+        position: absolute;
+        font-size: 8rem;
+        opacity: 0.1;
+        bottom: -20px;
+        right: -20px;
+        transform: rotate(-15deg);
     }
-    .diploma-hero p {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        max-width: 800px;
+    .diphero h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+    }
+    .diphero p {
+        font-size: 1rem;
+        opacity: 0.92;
+        max-width: 750px;
         margin: 0 auto;
     }
 
-    /* Form Cards */
-    .form-card {
+    .dipcard {
         background: white;
-        border-radius: 20px;
-        box-shadow: var(--diploma-card-shadow);
+        border-radius: 24px;
+        box-shadow: var(--dipcard-shadow);
         padding: 1.8rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(0,0,0,0.05);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: none;
+        transition: all 0.3s ease;
     }
-    .form-card:hover {
+    .dipcard:hover {
+        box-shadow: var(--diphover-shadow);
         transform: translateY(-2px);
-        box-shadow: 0 20px 30px -12px rgba(0,0,0,0.12);
     }
 
-    /* Section Titles */
-    .section-title {
+    .dipsection-title {
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--diploma-primary);
-        border-left: 5px solid var(--diploma-secondary);
+        color: var(--dipdark);
+        border-left: 5px solid var(--dipprimary);
         padding-left: 1rem;
         margin-bottom: 1.5rem;
         margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    .section-title i {
-        margin-right: 10px;
-        color: var(--diploma-secondary);
+    .dipsection-title i {
+        color: var(--dipprimary);
+        font-size: 1.3rem;
     }
 
-    /* Subject Group Headers */
-    .subject-group {
-        background: var(--diploma-light-bg);
-        border-radius: 16px;
-        padding: 1.2rem;
+    .dipsubject-group {
+        background: var(--diplight-bg);
+        border-radius: 20px;
+        padding: 1.2rem 1.5rem;
         margin-bottom: 1.5rem;
-        border-left: 4px solid var(--diploma-secondary);
+        transition: all 0.2s ease;
+        border: 1px solid rgba(e17055,0.1);
     }
-    .subject-group h2 {
-        font-size: 1.3rem;
+    .dipsubject-group:hover {
+        background: #e8ebf0;
+        border-color: var(--dipprimary);
+    }
+    .dipsubject-group h2 {
+        font-size: 1.2rem;
         font-weight: 600;
-        color: var(--diploma-primary);
+        color: var(--dipprimary-dark);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 8px;
     }
-    .subject-group h2 i {
-        font-size: 1.3rem;
+    .dipsubject-group h2 i {
+        font-size: 1.2rem;
     }
 
-    /* Form Grid Layout */
-    .form-grid {
+    .dipform-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
         gap: 1rem;
     }
-    .form-group {
+    .dipform-group {
         margin-bottom: 0;
     }
-    .form-group label {
+    .dipform-group label {
         font-weight: 600;
-        color: #2c3e50;
+        color: #2d3436;
         margin-bottom: 0.4rem;
         display: block;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.3px;
     }
-    .form-select {
+    .dipselect {
         border-radius: 12px;
-        border: 1px solid #dee2e6;
+        border: 1px solid #e0e0e0;
         padding: 0.6rem 0.8rem;
         background-color: white;
         transition: all 0.2s ease;
         font-size: 0.9rem;
+        width: 100%;
     }
-    .form-select:focus {
-        border-color: var(--diploma-secondary);
-        box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+    .dipselect:focus {
+        border-color: var(--dipprimary);
+        box-shadow: 0 0 0 3px rgba(e17055,0.15);
         outline: none;
     }
+    .dipselect:hover {
+        border-color: var(--dipprimary);
+    }
 
-    /* Overall Grade Special Styling */
-    .overall-grade-card {
-        background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
-        border-radius: 16px;
-        padding: 1rem 1.5rem;
+    .overall-grade-section {
+        background: linear-gradient(135deg, #f8f4ff 0%, #f0ebff 100%);
+        border-radius: 20px;
+        padding: 1.2rem 1.8rem;
         margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
@@ -161,20 +192,23 @@
         flex-wrap: wrap;
         gap: 1rem;
     }
-    .overall-grade-card label {
+    .overall-grade-section label {
         font-size: 1.2rem;
         font-weight: 700;
-        color: var(--diploma-primary);
+        color: var(--dipprimary-dark);
         margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    .overall-grade-card .form-select {
-        width: 200px;
+    .overall-grade-section .dipselect {
+        width: 220px;
         font-weight: 500;
+        background: white;
     }
 
-    /* Submit Button */
-    .submit-btn {
-        background: linear-gradient(135deg, var(--diploma-success) 0%, #219653 100%);
+    .dipsubmit-btn {
+        background: linear-gradient(135deg, var(--dipprimary) 0%, var(--dipsecondary) 100%);
         border: none;
         padding: 14px 32px;
         font-size: 1.1rem;
@@ -185,202 +219,331 @@
         margin-top: 1rem;
         color: white;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
     }
-    .submit-btn:hover {
+    .dipsubmit-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(39,174,96,0.3);
-        background: linear-gradient(135deg, #219653 0%, #1e8449 100%);
+        box-shadow: 0 8px 25px rgba(e17055,0.35);
+        background: linear-gradient(135deg, var(--dipsecondary) 0%, var(--dipprimary) 100%);
     }
 
-    /* Info Cards */
-    .info-card {
+    .dipinfo-card {
         border-radius: 20px;
         border: none;
-        box-shadow: var(--diploma-card-shadow);
+        box-shadow: var(--dipcard-shadow);
         height: 100%;
-        transition: transform 0.2s ease;
+        transition: all 0.2s ease;
+        overflow: hidden;
     }
-    .info-card:hover {
+    .dipinfo-card:hover {
         transform: translateY(-3px);
+        box-shadow: var(--diphover-shadow);
     }
-    .info-card .card-body {
+    .dipinfo-card .card-body {
         padding: 1.5rem;
     }
-    .info-card h5 {
+    .dipinfo-card h5 {
         font-weight: 700;
         margin-bottom: 1rem;
-        color: var(--diploma-primary);
+        color: var(--dipprimary-dark);
     }
-    .info-card ul {
+    .dipinfo-card ul {
         padding-left: 1.2rem;
         margin-bottom: 0;
     }
-    .info-card li {
-        margin-bottom: 0.5rem;
+    .dipinfo-card li {
+        margin-bottom: 0.6rem;
         line-height: 1.4;
     }
 
-    /* Alert Boxes */
-    .custom-alert {
+    .dipalert {
         border-radius: 20px;
         border: none;
         padding: 1.5rem;
+        margin-bottom: 1.5rem;
     }
-    .custom-alert h2 {
+    .dipalert h2 {
         font-size: 1.4rem;
         margin-bottom: 0.75rem;
+        font-weight: 700;
+    }
+    .dipalert-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdef5 100%);
+        color: #1565c0;
+    }
+    .dipalert-success {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        color: #2e7d32;
+    }
+    .dipalert-warning {
+        background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+        color: #e65100;
+    }
+    .dipalert-dark {
+        background: linear-gradient(135deg, #e8ecf1 0%, #d5dbe3 100%);
+        color: #2c3e50;
     }
 
-    /* Accordion Styling */
-    .accordion-item {
+    .dipaccordion-item {
         border: none;
         margin-bottom: 0.75rem;
         border-radius: 16px !important;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .accordion-button {
+    .dipaccordion-button {
         font-weight: 600;
         background-color: white;
         padding: 1rem 1.2rem;
+        color: var(--dipdark);
     }
-    .accordion-button:not(.collapsed) {
-        background-color: var(--diploma-light-bg);
-        color: var(--diploma-secondary);
+    .dipaccordion-button:not(.collapsed) {
+        background-color: var(--diplight-bg);
+        color: var(--dipprimary);
     }
-    .accordion-button:focus {
+    .dipaccordion-button:focus {
         box-shadow: none;
         border-color: rgba(0,0,0,0.1);
     }
-    .accordion-body {
+    .dipaccordion-body {
         padding: 1.2rem;
         background-color: #fefefe;
     }
 
-    /* Success Story Cards */
-    .story-card {
+    .dipstory-card {
         border-radius: 20px;
         border: none;
-        box-shadow: var(--diploma-card-shadow);
+        box-shadow: var(--dipcard-shadow);
         height: 100%;
         transition: all 0.2s ease;
+        background: white;
     }
-    .story-card:hover {
+    .dipstory-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 30px -12px rgba(0,0,0,0.15);
+        box-shadow: var(--diphover-shadow);
     }
-    .story-card .card-body {
+    .dipstory-card .card-body {
         padding: 1.5rem;
     }
-    .story-card h5 {
+    .dipstory-card h5 {
         font-weight: 700;
-        color: var(--diploma-primary);
+        color: var(--dipprimary-dark);
         margin-bottom: 0.75rem;
     }
-    .story-card .text-success {
+    .dipstory-card .story-quote {
+        font-style: italic;
+        color: #555;
+        line-height: 1.5;
+    }
+    .dipstory-card .story-badge {
+        background: var(--dipsuccess);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
         font-weight: 600;
         display: inline-block;
         margin-top: 0.75rem;
     }
 
-    /* Feature Cards */
-    .feature-card {
-        background: var(--diploma-light-bg);
-        border-radius: 16px;
+    .dipfeature-card {
+        background: white;
+        border-radius: 18px;
         padding: 1.2rem;
         height: 100%;
         transition: all 0.2s ease;
+        border: 1px solid #eef2f7;
     }
-    .feature-card:hover {
-        background: white;
-        box-shadow: var(--diploma-card-shadow);
+    .dipfeature-card:hover {
+        background: linear-gradient(135deg, #fff 0%, #fff0ee 100%);
+        border-color: var(--dipprimary);
+        transform: translateY(-2px);
     }
-    .feature-card h5 {
+    .dipfeature-card h5 {
         font-weight: 700;
-        color: var(--diploma-secondary);
+        color: var(--dipprimary);
         margin-bottom: 0.5rem;
     }
-    .feature-card p {
-        color: #555;
+    .dipfeature-card p {
+        color: #666;
         margin-bottom: 0;
         font-size: 0.9rem;
+        line-height: 1.5;
     }
 
-    /* Animation */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    .form-card, .info-card, .story-card {
-        animation: fadeInUp 0.4s ease-out forwards;
+    .dipintro-text {
+        font-size: 1.1rem;
+        color: #555;
+        display: block;
+        margin-bottom: 1.8rem;
+        font-weight: 500;
+        text-align: center;
     }
 
-    /* Responsive Adjustments */
     @media (max-width: 768px) {
-        .diploma-hero {
-            padding: 1.5rem;
-        }
-        .diploma-hero h1 {
-            font-size: 1.5rem;
-        }
-        .form-card {
-            padding: 1rem;
-        }
-        .section-title {
-            font-size: 1.3rem;
-        }
-        .overall-grade-card {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .overall-grade-card .form-select {
-            width: 100%;
-        }
-        .form-grid {
-            grid-template-columns: 1fr;
-            gap: 0.8rem;
-        }
-        .subject-group {
-            padding: 1rem;
-        }
-        .submit-btn {
-            padding: 12px 20px;
-            font-size: 1rem;
-        }
+        .diphero { padding: 1.5rem; }
+        .diphero h1 { font-size: 1.4rem; }
+        .dipcard { padding: 1.2rem; }
+        .dipsection-title { font-size: 1.3rem; }
+        .overall-grade-section { flex-direction: column; align-items: stretch; text-align: center; }
+        .overall-grade-section .dipselect { width: 100%; }
+        .dipform-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+        .dipsubject-group { padding: 1rem; }
+        .dipsubmit-btn { padding: 12px 20px; font-size: 1rem; }
+        .dipintro-text { font-size: 1rem; }
     }
 
-    /* Print Styles */
     @media print {
-        .submit-btn, .form-card {
+        .dipsubmit-btn, .dipcard, .diphero {
             break-inside: avoid;
         }
     }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What KUCCPS diploma can I do with C- grade?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS offers numerous diploma programs for C- holders including Engineering, Business, IT, Hospitality, and Agriculture. C- meets the minimum requirement for most technical diploma courses."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are KUCCPS diploma requirements for nursing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS diploma nursing requires C- overall with Biology and Chemistry at D+ minimum. Some campuses require C plain for competitive nursing diploma placement."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS diploma vs degree - which is better?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS diplomas offer faster entry (2-3 years) with practical skills, while degrees provide deeper academic training (4 years). Both lead to good careers; diplomas can upgrade to degrees later."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS diploma C plain requirements?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS diploma programs for C plain holders include all technical and business courses. C plain exceeds minimum requirements and qualifies for competitive programs like Health Sciences and Engineering."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS diploma in engineering cut off?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS engineering diploma cut-off points range from 25-35 depending on the specific engineering branch and college. Civil and Electrical Engineering are most competitive."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS diploma IT requirements?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS IT diploma requires C- overall with Mathematics and Physics/Computer Studies at D+ minimum. Software and Networking diplomas are popular choices."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS diploma business requirements?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS business diploma requires C- overall with Mathematics and English at D+ minimum. Options include Marketing, HR, Supply Chain, and Accounting diplomas."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS diploma fees 2026?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS government-sponsored diploma fees range from KES 20,000-40,000 per year. HELB loans cover most costs for eligible students. Private colleges charge higher fees."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS diploma upgrade to degree pathway?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS diploma holders can upgrade to degrees through credit transfer programs, entering year 2 or 3 of related degree courses. This saves time and costs while gaining work experience."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "KUCCPS diploma placement 2026 timeline?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "KUCCPS diploma placement applications open after KCSE results release in January/February. Students have 2-3 weeks to apply, with results announced in March/April for September intake."
+      }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to check diploma courses",
+  "description": "Step-by-step guide to find diploma programs matching your KCSE grades",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "position": 1,
+      "name": "Enter your KCSE overall grade",
+      "text": "Select your overall KCSE grade from the dropdown to establish your baseline qualification level.",
+      "url": "https://www.kuccpscourses.co.ke/diploma#overall"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 2,
+      "name": "Input your subject grades",
+      "text": "Fill in the grades for each KCSE subject you took, especially core subjects and those relevant to your desired diploma program.",
+      "url": "https://www.kuccpscourses.co.ke/diploma#subjects"
+    },
+    {
+      "@type": "HowToStep",
+      "position": 3,
+      "name": "Submit and view results",
+      "text": "Click the submit button to see all diploma programs you qualify for based on your KCSE performance and cluster requirements.",
+      "url": "https://www.kuccpscourses.co.ke/diploma#submit"
+    }
+  ]
+}
+</script>
 {% endblock %}
 
-{% block displaytext %}Find Diploma Programs Matching Your Grades{% endblock %}
+{% block displaytext %}Find Diploma & Technical Programs Matching Your Grades{% endblock %}
 
 {% block content %}
 
+<div class="diphero">
+    <h1>Find Diploma & Technical Programs Matching Your KCSE Grades</h1>
+    <p>Discover diploma and technical college programs you qualify for. Enter your KCSE grades to match with 2-3 year programs in engineering, business, IT, hospitality, and health sciences.</p>
+</div>
+
 <div class="container">
-    <form action="{{ url_for('submit_diploma_grades') }}" method="post" id="diplomaForm">
-        
-        <!-- Diploma Program Qualifications Card -->
-        <div class="form-card">
-            <div class="section-title">
-                <i>📋</i> Diploma Program Qualification
+    <span class="dipintro-text animate-fade-up">✨ Fill in your KCSE grades and submit to see all diploma and technical programs you qualify for!</span>
+
+    <form action="{{ url_for('submit_diploma_grades') }}" method="post" id="dipForm">
+        <div class="dipcard animate-fade-up">
+            <div class="dipsection-title">
+                <i>📋</i> Diploma Program Qualifications
             </div>
-            
-            <!-- Overall Grade Section - Styled -->
-            <div class="overall-grade-card">
-                <label for="overall">📊 Overall KCSE Grade:</label>
-                <select id="overall" name="overall" class="form-select" required>
+
+            <div class="overall-grade-section">
+                <label for="overall">🎯 Overall KCSE Grade:</label>
+                <select id="overall" name="overall" class="dipselect" required>
                     <option value="">Select Grade</option>
                     <option value="A">A</option>
                     <option value="A-">A-</option>
@@ -399,20 +562,20 @@
         </div>
 
         <!-- KCSE Grades Entry Card -->
-        <div class="form-card">
-            <div class="section-title">
+        <div class="dipcard animate-fade-up">
+            <div class="dipsection-title">
                 <i>📝</i> Enter Your KCSE Subject Grades
             </div>
-            <p class="text-muted mb-4">Select the grades you achieved in each subject. Only subjects you took will be considered for program matching.</p>
-            
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">Select the grades you achieved in each subject. Diploma programs require good performance in core subjects and relevant technical subjects.</p>
+
             <div class="subjects">
                 <!-- Core Subjects -->
-                <div class="subject-group">
+                <div class="dipsubject-group">
                     <h2><i>⭐</i> Core Subjects</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
+                    <div class="dipform-grid">
+                        <div class="dipform-group">
                             <label for="mathematics">Mathematics</label>
-                            <select id="mathematics" name="mathematics" class="form-select" required>
+                            <select id="mathematics" name="mathematics" class="dipselect" required>
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -420,9 +583,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="english">English</label>
-                            <select id="english" name="english" class="form-select" required>
+                            <select id="english" name="english" class="dipselect" required>
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -430,9 +593,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="kiswahili">Kiswahili</label>
-                            <select id="kiswahili" name="kiswahili" class="form-select" required>
+                            <select id="kiswahili" name="kiswahili" class="dipselect" required>
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -444,12 +607,12 @@
                 </div>
 
                 <!-- Sciences -->
-                <div class="subject-group">
-                    <h2><i>🔬</i> Sciences</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
+                <div class="dipsubject-group">
+                    <h2><i>🔬</i> Sciences </h2>
+                    <div class="dipform-grid">
+                        <div class="dipform-group">
                             <label for="chemistry">Chemistry</label>
-                            <select id="chemistry" name="chemistry" class="form-select">
+                            <select id="chemistry" name="chemistry" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -457,9 +620,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="biology">Biology</label>
-                            <select id="biology" name="biology" class="form-select">
+                            <select id="biology" name="biology" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -467,9 +630,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="physics">Physics</label>
-                            <select id="physics" name="physics" class="form-select">
+                            <select id="physics" name="physics" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -481,12 +644,12 @@
                 </div>
 
                 <!-- Humanities -->
-                <div class="subject-group">
+                <div class="dipsubject-group">
                     <h2><i>📖</i> Humanities</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
+                    <div class="dipform-grid">
+                        <div class="dipform-group">
                             <label for="geography">Geography</label>
-                            <select id="geography" name="geography" class="form-select">
+                            <select id="geography" name="geography" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -494,9 +657,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="history">History</label>
-                            <select id="history" name="history" class="form-select">
+                            <select id="history" name="history" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -504,9 +667,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="cre">Christian Religious Education (CRE)</label>
-                            <select id="cre" name="cre" class="form-select">
+                            <select id="cre" name="cre" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -514,9 +677,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="ire">Islamic Religious Education (IRE)</label>
-                            <select id="ire" name="ire" class="form-select">
+                            <select id="ire" name="ire" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -524,9 +687,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="hre">Hindu Religious Education (HRE)</label>
-                            <select id="hre" name="hre" class="form-select">
+                            <select id="hre" name="hre" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -538,12 +701,12 @@
                 </div>
 
                 <!-- Technical Subjects -->
-                <div class="subject-group">
+                <div class="dipsubject-group">
                     <h2><i>⚙️</i> Technical Subjects</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
+                    <div class="dipform-grid">
+                        <div class="dipform-group">
                             <label for="agriculture">Agriculture</label>
-                            <select id="agriculture" name="agriculture" class="form-select">
+                            <select id="agriculture" name="agriculture" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -551,9 +714,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="computer_studies">Computer Studies</label>
-                            <select id="computer_studies" name="computer_studies" class="form-select">
+                            <select id="computer_studies" name="computer_studies" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -561,9 +724,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="art_design">Art and Design</label>
-                            <select id="art_design" name="art_design" class="form-select">
+                            <select id="art_design" name="art_design" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -571,9 +734,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="woodwork">Woodwork</label>
-                            <select id="woodwork" name="woodwork" class="form-select">
+                            <select id="woodwork" name="woodwork" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -581,9 +744,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="home_science">Home Science</label>
-                            <select id="home_science" name="home_science" class="form-select">
+                            <select id="home_science" name="home_science" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -591,9 +754,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="business_studies">Business Studies</label>
-                            <select id="business_studies" name="business_studies" class="form-select">
+                            <select id="business_studies" name="business_studies" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -601,9 +764,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="music">Music</label>
-                            <select id="music" name="music" class="form-select">
+                            <select id="music" name="music" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -615,12 +778,12 @@
                 </div>
 
                 <!-- Other Subjects -->
-                <div class="subject-group">
+                <div class="dipsubject-group">
                     <h2><i>➕</i> Other Subjects</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
+                    <div class="dipform-grid">
+                        <div class="dipform-group">
                             <label for="general_science">General Science</label>
-                            <select id="general_science" name="general_science" class="form-select">
+                            <select id="general_science" name="general_science" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -628,9 +791,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="building_construction">Building and Construction</label>
-                            <select id="building_construction" name="building_construction" class="form-select">
+                            <select id="building_construction" name="building_construction" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -638,9 +801,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="electricity">Electricity and Electronics</label>
-                            <select id="electricity" name="electricity" class="form-select">
+                            <select id="electricity" name="electricity" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -648,9 +811,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="metalwork">Metalwork</label>
-                            <select id="metalwork" name="metalwork" class="form-select">
+                            <select id="metalwork" name="metalwork" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -658,9 +821,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="french">French</label>
-                            <select id="french" name="french" class="form-select">
+                            <select id="french" name="french" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -668,9 +831,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="german">German</label>
-                            <select id="german" name="german" class="form-select">
+                            <select id="german" name="german" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -678,29 +841,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="drawing_design">Drawing and Design</label>
-                            <select id="drawing_design" name="drawing_design" class="form-select">
-                                <option value="">Select Grade</option>
-                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
-                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
-                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
-                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="arabic">Arabic</label>
-                            <select id="arabic" name="arabic" class="form-select">
-                                <option value="">Select Grade</option>
-                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
-                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
-                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
-                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="kenya_sign_language">Kenya Sign Language</label>
-                            <select id="kenya_sign_language" name="kenya_sign_language" class="form-select">
+                            <select id="kenya_sign_language" name="kenya_sign_language" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -708,9 +851,29 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
+                            <label for="drawing_design">Drawing and Design</label>
+                            <select id="drawing_design" name="drawing_design" class="dipselect">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="dipform-group">
+                            <label for="arabic">Arabic</label>
+                            <select id="arabic" name="arabic" class="dipselect">
+                                <option value="">Select Grade</option>
+                                <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
+                                <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
+                                <option value="C">C</option><option value="C-">C-</option><option value="D+">D+</option>
+                                <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
+                            </select>
+                        </div>
+                        <div class="dipform-group">
                             <label for="aviation">Aviation</label>
-                            <select id="aviation" name="aviation" class="form-select">
+                            <select id="aviation" name="aviation" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -718,9 +881,9 @@
                                 <option value="D">D</option><option value="D-">D-</option><option value="E">E</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="dipform-group">
                             <label for="power_mechanics">Power Mechanics</label>
-                            <select id="power_mechanics" name="power_mechanics" class="form-select">
+                            <select id="power_mechanics" name="power_mechanics" class="dipselect">
                                 <option value="">Select Grade</option>
                                 <option value="A">A</option><option value="A-">A-</option><option value="B+">B+</option>
                                 <option value="B">B</option><option value="B-">B-</option><option value="C+">C+</option>
@@ -734,244 +897,267 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="submit-btn">
+        <button type="submit" class="dipsubmit-btn animate-fade-up">
             🔍 Find Diploma Programs I Qualify For
         </button>
     </form>
 </div>
 
-<!-- Diploma Programs Information Section -->
 <div class="container mt-5 mb-4">
-    <div class="custom-alert alert alert-secondary mb-4">
-        <h2 class="alert-heading">📚 KUCCPS Diploma Programs Overview</h2>
+    <div class="dipalert dipalert-info animate-fade-up">
+        <h2 class="alert-heading">📜 Diploma & Technical Programs Overview</h2>
         <p class="mb-2">
-            <strong>Diploma programs</strong> are 3-year technical and professional courses offered by colleges and technical institutions across Kenya.
-            These programs combine theoretical knowledge with practical skills for career-focused training.
+            <strong>Diploma programs</strong> are 2-3 year technical courses offered by colleges and polytechnics. 
+            These programs combine theory with extensive practical training for immediate employment.
         </p>
         <ul class="mb-0">
-            <li><strong>Duration:</strong> 3 years (accelerated career entry)</li>
-            <li><strong>Focus:</strong> Practical skills and professional competency</li>
-            <li><strong>Entry:</strong> Typically C- and above in KCSE overall</li>
-            <li><strong>Outcome:</strong> National Diploma recognized by employers nationwide</li>
+            <li><strong>Duration:</strong> 2-3 years (4-6 semesters)</li>
+            <li><strong>Entry:</strong> Minimum C- in KCSE with relevant subjects</li>
+            <li><strong>Outcome:</strong> National Diploma with professional certification</li>
+            <li><strong>Career:</strong> Technical employment, self-employment, degree upgrade</li>
         </ul>
     </div>
-    
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="info-card card">
-                <div class="card-body">
-                    <h5 class="card-title">⚙️ Popular Diploma Programs</h5>
-                    <ul>
-                        <li>Engineering & Technology (Civil, Electrical, Mechanical)</li>
-                        <li>Information Technology & Computer Science</li>
-                        <li>Business & Accounting (CPA, CIFA, ATD pathway)</li>
-                        <li>Hospitality & Tourism Management</li>
-                        <li>Health Sciences (Nursing, Clinical Medicine)</li>
-                        <li>Agriculture & Environmental Studies</li>
-                        <li>Automotive & Mechanical Engineering</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="info-card card">
-                <div class="card-body">
-                    <h5 class="card-title">💼 Employment Pathways</h5>
-                    <ul>
-                        <li>Direct entry into skilled technical jobs</li>
-                        <li>Fast-track career progression to supervisory roles</li>
-                        <li>Self-employment and entrepreneurship opportunities</li>
-                        <li>Pathway to bachelor's degree programs (credit transfer)</li>
-                        <li>Specialized professional roles in various industries</li>
-                        <li>Technical supervisory and management positions</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<!-- Why Choose Diploma Programs -->
 <div class="container my-5">
-    <div class="info-card card border-0 shadow-sm">
+    <div class="dipcard animate-fade-up">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4" style="color: var(--diploma-primary);">📚 Why Choose Diploma & Technical Programs?</h2>
+            <h2 class="card-title mb-4" style="color: var(--dipdark);">📜 Why Choose Diploma & Technical Programs</h2>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="feature-card">
-                        <h5>⏱️ 3-Year Fast Track</h5>
-                        <p>Complete your qualification in just 3 years compared to 4-year degrees, entering the workforce faster and starting your career earlier.</p>
+                    <div class="dip-feature-card">
+                        <h5>⚙️ Practical Skills Focus</h5>
+                        <p>70% practical training with workshops, labs, and industrial attachments. Graduate with hands-on skills employers demand immediately.</p>
                     </div>
-                    <div class="feature-card mt-3">
-                        <h5>🛠️ Practical Skills Focus</h5>
-                        <p>Heavy emphasis on hands-on training and practical assignments directly applicable to your chosen career field.</p>
+                    <div class="dip-feature-card mt-3">
+                        <h5>💰 Affordable Pathway</h5>
+                        <p>Lower fees than degrees with HELB funding available. Start earning sooner and upgrade to degree later through credit transfer.</p>
                     </div>
+                    
                 </div>
                 <div class="col-md-6">
-                    <div class="feature-card">
-                        <h5>💰 Affordable Education</h5>
-                        <p>Lower fees than university degree programs while providing quality technical education and industry-recognized certifications.</p>
+                    <div class="dip-feature-card">
+                        <h5>🏭 Industry Connections</h5>
+                        <p>Strong partnerships with industries for attachments, apprenticeships, and job placement. Many students get hired during industrial training.</p>
                     </div>
-                    <div class="feature-card mt-3">
-                        <h5>🎯 Career Ready</h5>
-                        <p>Job placement partnerships with industries ensure you enter the employment market with relevant, in-demand certifications.</p>
+                    <div class="dip-feature-card mt-3">
+                        <h5>🚀 Quick Career Entry</h5>
+                        <p>Enter the workforce in 2-3 years with job-ready skills. Diplomas are highly valued in technical and supervisory roles across all sectors.</p>
                     </div>
+                    
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Diploma Program FAQs -->
 <div class="container my-5">
-    <h2 class="mb-4" style="color: var(--diploma-primary);">❓ Frequently Asked Questions About Diploma Programs</h2>
-    <div class="accordion" id="diplomaFAQ">
-        <div class="accordion-item">
+    <h2 class="mb-4" style="color: var(--dipdark);">❓ Frequently Asked Questions About Diploma & Technical Programs</h2>
+    <div class="accordion" id="dipFAQ">
+        <div class="dip-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq1">
-                    What's the difference between a diploma and a degree?
+                <button class="accordion-button dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq1">
+                    What diploma programs are available?
                 </button>
             </h2>
-            <div id="dfaq1" class="accordion-collapse collapse show" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">
-                    Diplomas are 2-year programs focused on practical, hands-on skills, while degrees are 4-year programs with more theoretical depth. Diploma graduates enter the workforce faster with technical expertise; degree holders have a broader academic foundation and higher long-term earning potential. Many diploma holders later upgrade to degrees through articulation programs.
+            <div id="dipfaq1" class="accordion-collapse collapse show" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Available diploma programs include Engineering (Civil, Electrical, Mechanical), Business (Marketing, HR, Supply Chain), IT (Software, Networking, Database), Hospitality (Hotel Management, Tourism), Health Sciences (Nursing, Pharmacy, Medical Lab), and Education (Technical, Early Childhood).
                 </div>
             </div>
         </div>
-        <div class="accordion-item">
+        <div class="dip-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq2">
-                    Can I upgrade my diploma to a degree later?
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq2">
+                    What is the minimum KCSE grade for diploma programs?
                 </button>
             </h2>
-            <div id="dfaq2" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">
-                    Yes, many universities offer degree upgrade programs specifically for diploma holders. You typically complete 2 additional years to earn a full bachelor's degree, and credits from your diploma may be recognized, reducing the total time needed.
+            <div id="dipfaq2" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Most diploma programs require a minimum C- (minus) overall KCSE grade. Some technical programs accept D+ with strong performance in relevant subjects. Competitive programs like Nursing and Engineering may require C plain or higher.
                 </div>
             </div>
         </div>
-        <div class="accordion-item">
+        <div class="dip-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq3">
-                    What job prospects exist after completing a diploma?
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq3">
+                    Can I upgrade from diploma to degree?
                 </button>
             </h2>
-            <div id="dfaq3" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">
-                    Diploma graduates find immediate employment in industries like engineering, nursing, IT, hospitality, agriculture, and construction. Many start earning within weeks of graduation and can progress to supervisory and management roles with experience and additional certifications.
+            <div id="dipfaq3" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Yes! Many universities offer diploma-to-degree credit transfer programs. You can join year 2 or 3 of a degree program after completing your diploma, saving time and money while gaining work experience.
                 </div>
             </div>
         </div>
-        <div class="accordion-item">
+        <div class="dip-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq4">
-                    Is internship included in diploma programs?
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq4">
+                    What is the difference between diploma and degree?
                 </button>
             </h2>
-            <div id="dfaq4" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">
-                    Yes, most diploma programs include 6-12 months of industrial attachment or internship where you work in real companies. This provides invaluable practical experience and often leads to permanent employment offers upon graduation.
+            <div id="dipfaq4" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Diplomas are 2-3 years with practical focus, offered by colleges. Degrees are 4 years with academic focus, offered by universities. Diplomas lead to technical roles; degrees to professional roles. Both are valuable and complementary.
                 </div>
             </div>
         </div>
-        <div class="accordion-item">
+        <div class="dip-accordion-item accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dfaq5">
-                    What certifications do I get with a diploma?
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq5">
+                    What are the fees for diploma programs?
                 </button>
             </h2>
-            <div id="dfaq5" class="accordion-collapse collapse" data-bs-parent="#diplomaFAQ">
-                <div class="accordion-body">
-                    Besides the national diploma certificate, you often earn industry-recognized certifications like KNEC, KASNEB, or international certifications (CompTIA, Cisco, etc.) depending on your field. These certifications are directly valued by employers and enhance your job prospects.
+            <div id="dipfaq5" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Government-sponsored diploma programs cost approximately KES 20,000-40,000 per year. Private colleges charge KES 50,000-150,000 per year. HELB loans and county bursaries are available for eligible students.
+                </div>
+            </div>
+        </div>
+        <div class="dip-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq6">
+                    Can I do a diploma with a D+ grade?
+                </button>
+            </h2>
+            <div id="dipfaq6" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Yes, many diploma programs accept D+ overall with strong performance in relevant subjects. Technical and vocational diplomas often have flexible entry requirements. Certificate-to-diploma pathways are also available.
+                </div>
+            </div>
+        </div>
+        <div class="dip-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq7">
+                    What is industrial attachment?
+                </button>
+            </h2>
+            <div id="dipfaq7" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Industrial attachment is mandatory workplace training (3-6 months) in real companies. Students apply classroom knowledge, gain experience, and often receive job offers. It is a graduation requirement for all diploma programs.
+                </div>
+            </div>
+        </div>
+        <div class="dip-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq8">
+                    What salary can I earn with a diploma?
+                </button>
+            </h2>
+            <div id="dipfaq8" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Diploma graduates earn KES 25,000-50,000 monthly in entry-level technical roles. With experience, salaries reach KES 60,000-100,000+. Self-employed diploma holders in trades and services can earn significantly more.
+                </div>
+            </div>
+        </div>
+        <div class="dip-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq9">
+                    Are diploma qualifications recognized internationally?
+                </button>
+            </h2>
+            <div id="dipfaq9" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    Kenyan national diplomas are recognized across East Africa and Commonwealth countries. Many professional bodies (IEK, KASNEB, NITA) accredit diploma programs, enabling international career mobility and further studies abroad.
+                </div>
+            </div>
+        </div>
+        <div class="dip-accordion-item accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed dip-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dipfaq10">
+                    What is KUCCPS diploma placement 2026?
+                </button>
+            </h2>
+            <div id="dipfaq10" class="accordion-collapse collapse" data-bs-parent="#dipFAQ">
+                <div class="accordion-body dip-accordion-body">
+                    KUCCPS diploma placement matches students with government-sponsored diploma slots in public colleges. Applications open after KCSE results release. Students select preferred programs and are placed based on merit and availability.
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Diploma Success Stories -->
 <div class="container my-5">
-    <h2 class="mb-4" style="color: var(--diploma-primary);">🌟 Success Stories: Diploma Graduates</h2>
+    <h2 class="mb-4" style="color: var(--dipdark);">🌟 Success Stories from Diploma Graduates</h2>
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="story-card card h-100">
+            <div class="dip-story-card card h-100 animate-fade-up">
                 <div class="card-body">
-                    <h5 class="card-title">Moses Kariuki - Engineering Technician</h5>
-                    <p class="card-text"><em>"After my 3-year diploma in Mechanical Engineering, I got hired immediately at a manufacturing company. Within 5 years, I'm now a senior technician supervising 20 staff members."</em></p>
-                    <small class="text-success">✓ Now earning KES 120,000+ monthly</small>
+                    <h5 class="card-title">Peter Kamau - Electrical Engineering</h5>
+                    <p class="story-quote">"Peter completed his diploma in Electrical Engineering and was hired immediately by a power company. He now supervises installation teams and is pursuing a part-time degree upgrade."</p>
+                    <span class="story-badge">✓ Engineering Supervisor</span>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="story-card card h-100">
+            <div class="dip-story-card card h-100 animate-fade-up">
                 <div class="card-body">
-                    <h5 class="card-title">Grace Kipchoge - Registered Nurse</h5>
-                    <p class="card-text"><em>"My nursing diploma gave me immediate employment at a private hospital. The practical training was excellent, and I've built a successful healthcare career while pursuing my degree part-time."</em></p>
-                    <small class="text-success">✓ Now pursuing Degree in Nursing</small>
+                    <h5 class="card-title">Alice Wanjiku - Hospitality Management</h5>
+                    <p class="story-quote">"Alice's diploma in Hotel Management led to a management trainee position at an international hotel chain. She is now an Assistant General Manager overseeing 120 staff."</p>
+                    <span class="story-badge">✓ Assistant GM</span>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="story-card card h-100">
+            <div class="dip-story-card card h-100 animate-fade-up">
                 <div class="card-body">
-                    <h5 class="card-title">David Mwangi - IT Technician</h5>
-                    <p class="card-text"><em>"My IT diploma included hands-on training with real equipment. I started at an IT firm, gained valuable experience, and now I run my own computer services business with 5 employees."</em></p>
-                    <small class="text-success">✓ Successful Business Owner</small>
+                    <h5 class="card-title">David Ochieng - IT Networking</h5>
+                    <p class="story-quote">"David graduated with a diploma in IT Networking and started his own tech support company. He now employs 5 technicians and serves over 50 corporate clients in Nairobi."</p>
+                    <span class="story-badge">✓ Tech Entrepreneur</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Diploma Prerequisites & Requirements -->
 <div class="container my-5 mb-5">
-    <div class="info-card card border-0 shadow-sm">
+    <div class="dipcard animate-fade-up">
         <div class="card-body p-4">
-            <h2 class="card-title mb-4" style="color: var(--diploma-primary);">📋 Diploma Program Prerequisites & Requirements</h2>
+            <h2 class="card-title mb-4" style="color: var(--dipdark);">📋 Diploma Program Prerequisites and Requirements</h2>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <h5 class="mb-3" style="color: var(--diploma-secondary);">Minimum Academic Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--dipprimary);">Minimum Academic Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum C- (5 points) or equivalent</li>
-                        <li class="mb-2"><strong>🎯 Cluster Points:</strong> Generally lower than degrees (10-40 points)</li>
-                        <li class="mb-2"><strong>📖 Core Subjects:</strong> English required; Mathematics required for most technical courses</li>
-                        <li class="mb-2"><strong>✅ Entry Requirements:</strong> Form 4 completion with reasonable grades</li>
-                        <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 17+ years old at time of entry</li>
+                        <li class="mb-2"><strong>📊 Overall KCSE Grade:</strong> Minimum C- (4 points) for most programs</li>
+                        <li class="mb-2"><strong>🔬 Relevant Subjects:</strong> Minimum D+ in 3 related subjects</li>
+                        <li class="mb-2"><strong>📖 English Language:</strong> Minimum D+ for communication</li>
+                        <li class="mb-2"><strong>🎯 Cluster Points:</strong> Typically 20-35 points depending on course</li>
+                        <li class="mb-2"><strong>👤 Age Requirement:</strong> Usually 16+ years at entry</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h5 class="mb-3" style="color: var(--diploma-secondary);">Program-Specific Requirements</h5>
+                    <h5 class="mb-3" style="color: var(--dipprimary);">Program-Specific Requirements</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><strong>🔧 Engineering Diplomas:</strong> Physics, Chemistry, Mathematics required</li>
-                        <li class="mb-2"><strong>🏥 Nursing/Health Diplomas:</strong> Biology and Chemistry requirements</li>
-                        <li class="mb-2"><strong>💻 IT/Computing Diplomas:</strong> Mathematics and Computer Studies helpful</li>
-                        <li class="mb-2"><strong>📈 Business Diplomas:</strong> English and Mathematics; accounting subjects beneficial</li>
-                        <li class="mb-2"><strong>🍽️ Hospitality Diplomas:</strong> No strict subject requirements; practical aptitude important</li>
+                        <li class="mb-2"><strong>⚙️ Engineering Diplomas:</strong> Mathematics, Physics, Chemistry at D+ minimum</li>
+                        <li class="mb-2"><strong>💼 Business Diplomas:</strong> Mathematics and English at D+ minimum</li>
+                        <li class="mb-2"><strong>🏥 Health Diplomas:</strong> Biology and Chemistry at C- minimum</li>
+                        <li class="mb-2"><strong>💻 IT Diplomas:</strong> Mathematics and Physics/Computer at D+ minimum</li>
+                        <li class="mb-2"><strong>✅ All Programs:</strong> Good character, medical fitness, and interview (some)</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);">
+<h2>KUCCPS Diploma Courses Eligibility Checker 2026</h2>
+<p>Comprehensive guide to KUCCPS diploma courses and technical programs available through the national placement system. KUCCPS diploma courses cover all major technical fields including KUCCPS engineering diplomas, KUCCPS business diplomas, KUCCPS IT diplomas, KUCCPS nursing diplomas, KUCCPS hospitality diplomas, and KUCCPS agriculture diplomas. The KUCCPS diploma placement system matches students with government-sponsored slots in public colleges. KUCCPS diploma requirements vary by program with minimum C- for most technical courses and D+ for some vocational programs. KUCCPS diploma C plain holders qualify for all standard diploma programs including competitive health and engineering courses. KUCCPS diploma C- students can access engineering, business, IT, and hospitality programs. KUCCPS diploma cut off points are lower than degree programs, making diplomas accessible to more students. KUCCPS diploma fees are affordable with HELB loan support. KUCCPS diploma to degree upgrade pathways allow graduates to pursue bachelor degrees with credit transfers. KUCCPS diploma programs 2026 include expanded offerings in renewable energy, digital technology, and healthcare fields. KUCCPS technical programs prepare students for immediate employment and professional certification. KUCCPS diploma placement results determine college and program allocation based on merit and student preferences.</p>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Form validation and enhancement script
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('diplomaForm');
-        
+        const form = document.getElementById('dipForm');
         if (form) {
             form.addEventListener('submit', function(e) {
-                // Show loading state on submit
-                const submitBtn = form.querySelector('.submit-btn');
+                const submitBtn = form.querySelector('.dipsubmit-btn');
                 if (submitBtn) {
                     const originalText = submitBtn.innerHTML;
                     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
                     submitBtn.disabled = true;
-                    
-                    // Re-enable after timeout (in case of errors)
                     setTimeout(function() {
                         if (submitBtn.disabled) {
                             submitBtn.innerHTML = originalText;
@@ -981,8 +1167,6 @@
                 }
             });
         }
-        
-        // Add validation for required core subjects
         const requiredSubjects = ['mathematics', 'english', 'kiswahili'];
         requiredSubjects.forEach(subject => {
             const select = document.getElementById(subject);
@@ -996,20 +1180,16 @@
                 });
             }
         });
-        
-        // Auto-save form data to localStorage
         function saveFormData() {
             const formData = new FormData(form);
             const data = {};
             formData.forEach((value, key) => {
                 data[key] = value;
             });
-            localStorage.setItem('diplomaFormData', JSON.stringify(data));
+            localStorage.setItem('dipFormData', JSON.stringify(data));
         }
-        
-        // Function to restore form data from localStorage
         function restoreFormData() {
-            const savedData = localStorage.getItem('diplomaFormData');
+            const savedData = localStorage.getItem('dipFormData');
             if (savedData) {
                 const data = JSON.parse(savedData);
                 for (const [key, value] of Object.entries(data)) {
@@ -1018,20 +1198,15 @@
                         element.value = value;
                     }
                 }
-                // Clear saved data after restore
-                localStorage.removeItem('diplomaFormData');
+                localStorage.removeItem('dipFormData');
             }
         }
-        
-        // Auto-save on input change
         if (form) {
             const inputs = form.querySelectorAll('input, select');
             inputs.forEach(input => {
                 input.addEventListener('change', saveFormData);
                 input.addEventListener('blur', saveFormData);
             });
-            
-            // Restore saved data if any
             restoreFormData();
         }
     });

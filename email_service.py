@@ -49,7 +49,7 @@ class EmailService:
         self.api_key = os.getenv('BREVO_API_KEY')
         self.sender_email = os.getenv('BREVO_SENDER_EMAIL', 'info@kuccpscourses.co.ke')
         self.sender_name = os.getenv('BREVO_SENDER_NAME', 'KUCCPS Courses Checker')
-        self.cc_email = os.getenv('BREVO_CC_EMAIL', 'courseschecker@gmail.com')
+        self.cc_email = os.getenv('BREVO_CC_EMAIL', 'kuccpscourses@gmail.com')
         
         # Initialize Brevo API client
         self.api_instance = None
@@ -300,8 +300,8 @@ class EmailService:
         
         <p><strong>Need help?</strong> Contact us:</p>
         <ul>
-            <li>📧 Email: courseschecker@gmail.com</li>
-            <li>📞 Phone: +254791196121</li>
+            <li>📧 Email: kuccpscourses@gmail.com</li>
+            <li>📞 Phone: +254750732841</li>
             <li>💬 Live chat: Available on our website</li>
         </ul>
     </div>
@@ -385,8 +385,8 @@ Important Information:
 - Official KUCCPS application fee: KES 1,500
 
 Need help? Contact us:
-- Email: courseschecker@gmail.com
-- Phone: +254791196121
+- Email: kuccpscourses@gmail.com
+- Phone: +254750732841
 - Live chat: Available on our website
 
 ---
@@ -459,7 +459,7 @@ def send_manual_activation_email(email, index_number, flow, mpesa_receipt):
                     </p>
                 </div>
                 
-                <p>If you need any assistance, please contact our support team at courseschecker@gmail.com or +254791196121.</p>
+                <p>If you need any assistance, please contact our support team at kuccpscourses@gmail.com or +254750732841.</p>
                 
                 <hr style="margin: 20px 0;">
                 
@@ -498,7 +498,7 @@ To get your course results now:
 
 🎉 You will NOT be charged again.
 
-Need help? Contact: courseschecker@gmail.com or +254791196121
+Need help? Contact: kuccpscourses@gmail.com or +254750732841
 
 ---
 © 2025 KUCCPS Courses Checker. All rights reserved.

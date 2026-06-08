@@ -161,7 +161,7 @@ def main():
     # Test 3: Send test email
     recipient = input("\n📧 Enter email address to send test email: ").strip()
     if not recipient:
-        recipient = "courseschecker@gmail.com"
+        recipient = "kuccpscourses@gmail.com"
         print(f"⚠️ Using default email: {recipient}")
     
     if send_test_email(recipient):
