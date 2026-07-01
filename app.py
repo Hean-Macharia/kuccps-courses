@@ -1216,38 +1216,25 @@ def _generate_courses_for_flow(flow, user_grades, user_mean_grade, user_cluster_
     return []
  
 def process_courses_after_payment(email, index_number, flow, mpesa_receipt=None):
-    """
-    Queue course processing after payment confirmation.
-    Guards against duplicate queuing using in-memory status map.
-    """
+    """Submit course processing immediately to the pool — no queue wait."""
     cache_key = f"{email}_{index_number}_{flow}"
- 
-    # Skip if already in any active state
+
     existing = course_processing_status.get(cache_key, {})
-    if isinstance(existing, dict):
-        status = existing.get('status')
-        if status in ('pending', 'processing', 'completed'):
-            print(f"✅ {flow} courses already {status} for {email}")
-            return
- 
-    # Mark as pending immediately to prevent duplicate queuing
-    course_processing_status[cache_key] = {
-        'status': 'pending',
-        'queued_at': datetime.now()
-    }
- 
-    course_processing_queue.put({
-        'email': email,
-        'index_number': index_number,
-        'flow': flow,
-        'mpesa_receipt': mpesa_receipt
-    })
-    print(f"✅ {flow} queued for {email}")
- 
+    if isinstance(existing, dict) and existing.get('status') in ('pending', 'processing', 'completed'):
+        print(f"✅ {flow} already {existing.get('status')} for {email}")
+        return
+
+    course_processing_status[cache_key] = {'status': 'pending', 'queued_at': datetime.now()}
+    course_processing_executor.submit(_run_course_job, email, index_number, flow, mpesa_receipt)
+    print(f"⚡ {flow} submitted immediately for {email}")
 # ============================================
 # USER VALIDATION & DUPLICATE PREVENTION
 # ============================================
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
+
+# Replaces course_processing_queue / background_course_processor
+course_processing_executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix="course_proc")
  
 COURSE_PROJECTION = {
     "_id": 1,
@@ -7128,7 +7115,7 @@ def check_courses_ready(flow):
                         'ready': False,
                         'status': 'pending',
                         'message': 'Waiting for M-Pesa confirmation...',
-                        'check_again': 1500,
+                        'check_again': 700,
                         'redirect_url': get_redirect_url()
                     })
             except Exception as e:
@@ -7138,7 +7125,7 @@ def check_courses_ready(flow):
             'ready': False,
             'status': 'waiting',
             'message': 'Waiting for payment confirmation on your phone...',
-            'check_again': 1500,
+            'check_again': 700,
             'redirect_url': get_redirect_url()  # Always include URL
         })
 
@@ -7150,7 +7137,7 @@ def check_courses_ready(flow):
             'ready': False,
             'status': 'error',
             'message': 'Retrying...',
-            'check_again': 2000,
+            'check_again': 700,
             'redirect_url': url_for('index')
         }), 200
 @app.route('/force-check-payment/<flow>')
@@ -7493,7 +7480,7 @@ def check_payment_status(flow):
                     'status':      'pending',
                     'message':     'Waiting for M-Pesa confirmation…',
                     'check_again': True,
-                    'check_delay': 1200
+                    'check_delay': 700
                 })
         except Exception:
             pass
@@ -7502,7 +7489,7 @@ def check_payment_status(flow):
         'paid':        False,
         'status':      'not_found',
         'message':     'Waiting for M-Pesa confirmation on your phone…',
-        'check_delay': 1200
+        'check_delay': 700
     })
 @app.route('/admin/verify-payment-only/<issue_id>', methods=['POST'])
 def verify_payment_only(issue_id):
@@ -12044,6 +12031,40 @@ def admin_manual_activation():
                          total_count=stats['total_count'],
                          today_count=stats['today_count'],
                          recent_activations=recent_activations)
+def _run_course_job(email, index_number, flow, mpesa_receipt=None):
+    cache_key = f"{email}_{index_number}_{flow}"
+    try:
+        course_processing_status[cache_key] = {'status': 'processing', 'started_at': datetime.now()}
+        start_time = time.time()
+
+        user_grades, user_mean_grade, user_cluster_points = get_user_grades_from_db(email, index_number, flow)
+        if not user_grades:
+            course_processing_status[cache_key] = {'status': 'failed', 'error': 'No grades found', 'failed_at': datetime.now()}
+            return
+
+        qualifying_courses = _generate_courses_for_flow(flow, user_grades, user_mean_grade, user_cluster_points)
+        elapsed = time.time() - start_time
+        print(f"✅ {flow} generated {len(qualifying_courses)} courses in {elapsed:.2f}s")
+
+        course_processing_status[cache_key] = {
+            'status': 'completed',
+            'courses': qualifying_courses,
+            'courses_count': len(qualifying_courses),
+            'completed_at': datetime.now(),
+            'elapsed_seconds': elapsed
+        }
+
+        if email and mpesa_receipt:
+            threading.Thread(
+                target=send_results_email_background,
+                args=(email, index_number, flow, qualifying_courses, mpesa_receipt),
+                daemon=True
+            ).start()
+
+    except Exception as e:
+        print(f"❌ _run_course_job error for {flow}/{email}: {e}")
+        import traceback; traceback.print_exc()
+        course_processing_status[cache_key] = {'status': 'failed', 'error': str(e), 'failed_at': datetime.now()}
 if __name__ == "__main__":
     # Check if running on Render
     is_render = os.environ.get('RENDER') == 'true'
