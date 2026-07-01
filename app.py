@@ -2823,7 +2823,7 @@ def clear_session_data(partial=False):
 @app.route('/sitemap-index.xml')
 @cache.cached(timeout=86400)
 def sitemap_index():
-    """Generate sitemap index"""
+    """Generate sitemap index with all sitemaps"""
     today = datetime.now().strftime('%Y-%m-%d')
     
     xml = f'''<?xml version="1.0" encoding="UTF-8"?>
@@ -2849,6 +2849,7 @@ def sitemap_index():
     response = make_response(xml)
     response.headers['Content-Type'] = 'application/xml; charset=utf-8'
     return response
+
 
 
 @app.before_request
@@ -4531,42 +4532,38 @@ from flask import make_response
 @app.route('/sitemap.xml')
 @cache.cached(timeout=86400)
 def sitemap_main():
-    """Generate main sitemap"""
+    """Generate main sitemap with all public pages"""
     base_url = 'https://www.studentsplacement.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
+    
+    # All public pages
+    pages = [
+        # Homepage
+        {'loc': '/', 'priority': '1.0', 'freq': 'daily'},
+        
+        # Course Category Pages
+        {'loc': '/degree', 'priority': '0.95', 'freq': 'weekly'},
+        {'loc': '/diploma', 'priority': '0.95', 'freq': 'weekly'},
+        {'loc': '/certificate', 'priority': '0.95', 'freq': 'weekly'},
+        {'loc': '/artisan', 'priority': '0.95', 'freq': 'weekly'},
+        {'loc': '/kmtc', 'priority': '0.95', 'freq': 'weekly'},
+        {'loc': '/ttc', 'priority': '0.95', 'freq': 'weekly'},
+        
+        # Information Pages
+        {'loc': '/about', 'priority': '0.7', 'freq': 'monthly'},
+        {'loc': '/contact', 'priority': '0.6', 'freq': 'monthly'},
+        {'loc': '/user-guide', 'priority': '0.7', 'freq': 'monthly'},
+        {'loc': '/news', 'priority': '0.8', 'freq': 'daily'},
+        {'loc': '/chat', 'priority': '0.6', 'freq': 'weekly'},
+    ]
     
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     
-    # All main URLs with priorities
-    pages = [
-        # Homepage
-        {'path': '/', 'lastmod': today, 'freq': 'daily', 'priority': '1.0'},
-        
-        # Primary Course Pages
-        {'path': '/degree', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
-        {'path': '/diploma', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
-        {'path': '/certificate', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
-        {'path': '/artisan', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
-        {'path': '/kmtc', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
-        {'path': '/ttc', 'lastmod': today, 'freq': 'weekly', 'priority': '0.95'},
-        
-        # Information Pages
-        {'path': '/about', 'lastmod': today, 'freq': 'monthly', 'priority': '0.7'},
-        {'path': '/contact', 'lastmod': today, 'freq': 'monthly', 'priority': '0.6'},
-        {'path': '/user-guide', 'lastmod': today, 'freq': 'monthly', 'priority': '0.7'},
-        
-        # News & Updates
-        {'path': '/news', 'lastmod': today, 'freq': 'daily', 'priority': '0.8'},
-        
-        # Other Public Pages
-        {'path': '/offline', 'lastmod': today, 'freq': 'never', 'priority': '0.4'},
-    ]
-    
     for page in pages:
         xml_parts.append('  <url>')
-        xml_parts.append(f'    <loc>{base_url}{page["path"]}</loc>')
-        xml_parts.append(f'    <lastmod>{page["lastmod"]}</lastmod>')
+        xml_parts.append(f'    <loc>{base_url}{page["loc"]}</loc>')
+        xml_parts.append(f'    <lastmod>{today}</lastmod>')
         xml_parts.append(f'    <changefreq>{page["freq"]}</changefreq>')
         xml_parts.append(f'    <priority>{page["priority"]}</priority>')
         xml_parts.append('  </url>')
@@ -4578,6 +4575,7 @@ def sitemap_main():
     return response
 
 
+
 @app.route('/sitemap-guides.xml')
 @cache.cached(timeout=86400)
 def sitemap_guides():
@@ -4585,28 +4583,28 @@ def sitemap_guides():
     base_url = 'https://www.studentsplacement.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
     
-    guides_pages = [
-        {'path': '/guides/', 'priority': '0.9', 'freq': 'monthly'},
-        {'path': '/guides/cluster-points-explained', 'priority': '0.85', 'freq': 'monthly'},
-        {'path': '/guides/kcse-admission-requirements', 'priority': '0.85', 'freq': 'monthly'},
-        {'path': '/guides/diploma-courses-kenya', 'priority': '0.85', 'freq': 'monthly'},
-        {'path': '/guides/certificate-courses-requirements', 'priority': '0.85', 'freq': 'monthly'},
-        {'path': '/guides/kmtc-courses-admission', 'priority': '0.85', 'freq': 'monthly'},
-        {'path': '/guides/artisan-courses-kenya', 'priority': '0.85', 'freq': 'monthly'},
-        {'path': '/guides/ttc-teacher-training-courses', 'priority': '0.85', 'freq': 'monthly'},
-        {'path': '/guides/kuccps-application-process', 'priority': '0.85', 'freq': 'monthly'},
-        {'path': '/guides/scholarships-opportunities', 'priority': '0.85', 'freq': 'monthly'},
+    guides = [
+        {'path': '/guides/how-to-check-kuccps-courses-2026', 'priority': '0.85'},
+        {'path': '/guides/kuccps-cluster-points-explained', 'priority': '0.85'},
+        {'path': '/guides/kcse-grades-university-admission', 'priority': '0.85'},
+        {'path': '/guides/diploma-courses-kenya-2026', 'priority': '0.85'},
+        {'path': '/guides/certificate-courses-requirements', 'priority': '0.85'},
+        {'path': '/guides/kmtc-courses-admission-2026', 'priority': '0.85'},
+        {'path': '/guides/artisan-courses-2026', 'priority': '0.85'},
+        {'path': '/guides/ttc-teacher-training-courses', 'priority': '0.85'},
+        {'path': '/guides/kuccps-application-process', 'priority': '0.85'},
+        {'path': '/guides/scholarships-opportunities-2026', 'priority': '0.85'},
     ]
     
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     
-    for page in guides_pages:
+    for guide in guides:
         xml_parts.append('  <url>')
-        xml_parts.append(f'    <loc>{base_url}{page["path"]}</loc>')
+        xml_parts.append(f'    <loc>{base_url}{guide["path"]}</loc>')
         xml_parts.append(f'    <lastmod>{today}</lastmod>')
-        xml_parts.append(f'    <changefreq>{page["freq"]}</changefreq>')
-        xml_parts.append(f'    <priority>{page["priority"]}</priority>')
+        xml_parts.append('    <changefreq>monthly</changefreq>')
+        xml_parts.append(f'    <priority>{guide["priority"]}</priority>')
         xml_parts.append('  </url>')
     
     xml_parts.append('</urlset>')
@@ -4626,13 +4624,12 @@ def sitemap_news():
     xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     
     try:
-        if 'news_collection' in locals() or 'news_collection' in globals():
+        if news_collection is not None:
             # Get published articles
             articles = news_collection.find({'is_published': True}).sort('published_at', -1).limit(100)
             
             for article in articles:
                 article_id = str(article.get('_id', ''))
-                article_title = article.get('title', '').lower().replace(' ', '-')[:50]
                 published_date = article.get('published_at', datetime.now())
                 if isinstance(published_date, datetime):
                     published_date = published_date.strftime('%Y-%m-%d')
@@ -4642,12 +4639,43 @@ def sitemap_news():
                 xml_parts.append('  <url>')
                 xml_parts.append(f'    <loc>{base_url}/news/{article_id}</loc>')
                 xml_parts.append(f'    <lastmod>{published_date}</lastmod>')
-                xml_parts.append(f'    <changefreq>never</changefreq>')
-                xml_parts.append(f'    <priority>0.7</priority>')
+                xml_parts.append('    <changefreq>never</changefreq>')
+                xml_parts.append('    <priority>0.7</priority>')
                 xml_parts.append('  </url>')
     except Exception as e:
         print(f"Error generating news sitemap: {e}")
     
+    xml_parts.append('</urlset>')
+    
+    response = make_response('\n'.join(xml_parts))
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return response
+
+
+@app.route('/sitemap-courses.xml')
+@cache.cached(timeout=86400)
+def sitemap_courses():
+    """Generate sitemap for course pages"""
+    # This is intentionally minimal since main course pages are in sitemap.xml
+    base_url = 'https://www.studentsplacement.co.ke'
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    xml_parts.append(f'''
+  <url>
+    <loc>{base_url}/results</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>{base_url}/basket</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+    ''')
     xml_parts.append('</urlset>')
     
     response = make_response('\n'.join(xml_parts))
@@ -4697,7 +4725,6 @@ def robots():
     """Generate robots.txt"""
     robots_content = '''User-agent: *
 Allow: /
-
 
 Disallow: /admin/
 Disallow: /debug/
@@ -6346,30 +6373,7 @@ def results():
                          meta_description='View your KUCCPS qualified courses based on your KCSE grades. See degree, diploma, certificate, and artisan courses that match your results.',
                          canonical_url=canonical)
 
-@app.route('/sitemap-courses.xml')
-@cache.cached(timeout=86400)
-def sitemap_courses():
-    """Generate sitemap for course-related content (NOT main category pages)
-    
-    NOTE: Main course category pages (/degree, /diploma, /certificate, /artisan, /kmtc, /ttc)
-    are already included in sitemap.xml to avoid duplication.
-    This sitemap is reserved for course-specific subpages if needed in the future.
-    """
-    base_url = 'https://www.studentsplacement.co.ke'
-    today = datetime.now().strftime('%Y-%m-%d')
-    
-    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
-    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
-    
-    # This sitemap is intentionally minimal to avoid duplicates with sitemap.xml
-    # The main course category pages are in sitemap.xml
-    # Add only course-specific subpages here if they are created in the future
-    
-    xml_parts.append('</urlset>')
-    
-    response = make_response('\n'.join(xml_parts))
-    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
-    return response
+
 @app.route('/user-guide')
 def userguide():
     canonical = get_canonical_url('userguide')
