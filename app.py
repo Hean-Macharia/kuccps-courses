@@ -6993,8 +6993,8 @@ def payment_wait(flow):
                 # Queue course processing
                 process_courses_after_payment(email, index_number, flow, payment.get('mpesa_receipt'))
                 
-                # Redirect to results immediately
-                return redirect(url_for('goto_results', flow=flow))
+                # 🔥 CRITICAL: Use redirect with 302 status to force browser to actually navigate
+                return redirect(url_for('goto_results', flow=flow), code=302)
         except Exception as e:
             print(f"⚠️ payment_wait DB check error: {e}")
     
@@ -7005,11 +7005,11 @@ def payment_wait(flow):
         session['current_level'] = flow
         session.modified = True
         process_courses_after_payment(email, index_number, flow)
-        return redirect(url_for('goto_results', flow=flow))
+        return redirect(url_for('goto_results', flow=flow), code=302)
     
     # If already confirmed in session, redirect
     if session.get(f'paid_{flow}'):
-        return redirect(url_for('goto_results', flow=flow))
+        return redirect(url_for('goto_results', flow=flow), code=302)
     
     return render_template(
         'payment_wait.html',
@@ -7019,8 +7019,6 @@ def payment_wait(flow):
         transaction_ref=transaction_ref,
         amount=amount
     )
- 
-
 @app.route('/check-courses-ready/<flow>')
 def check_courses_ready(flow):
     email = session.get('email')
