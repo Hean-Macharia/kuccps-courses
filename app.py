@@ -6939,7 +6939,6 @@ def payment(flow):
         return {'success': False, 'error': error_message}, 400
 @app.route('/payment-wait/<flow>')
 def payment_wait(flow):
-    """Payment wait page - enhanced with better status checking"""
     email = session.get('email')
     index_number = session.get('index_number')
     
@@ -6952,7 +6951,6 @@ def payment_wait(flow):
     
     # If no transaction_ref in URL, try to get from session or DB
     if not transaction_ref:
-        # Check session first
         session_ref = session.get('transaction_ref')
         if session_ref:
             transaction_ref = session_ref
@@ -6965,13 +6963,13 @@ def payment_wait(flow):
                 }, {'transaction_ref': 1})
                 if payment and payment.get('transaction_ref'):
                     transaction_ref = payment['transaction_ref']
-                    # Store in session for future use
                     session['transaction_ref'] = transaction_ref
             except Exception:
                 pass
     
-    # Check if payment is already confirmed BEFORE rendering
-    payment_confirmed = False
+    # ============================================
+    # CHECK DATABASE FOR CONFIRMED PAYMENT
+    # ============================================
     if database_connected and user_payments_collection is not None:
         try:
             payment = user_payments_collection.find_one({
@@ -6981,73 +6979,9 @@ def payment_wait(flow):
                 'payment_confirmed': True
             })
             if payment:
-                payment_confirmed = True
+                print(f"✅ Payment already confirmed in DB, redirecting to results for {email}")
+                
                 # Update session
-                session[f'paid_{flow}'] = True
-                session['current_flow'] = flow
-                session['current_level'] = flow
-                if payment.get('mpesa_receipt'):
-                    session['mpesa_receipt'] = payment['mpesa_receipt']
-                    session['verified_receipt'] = payment['mpesa_receipt']
-                session.modified = True
-                
-                # Process courses
-                process_courses_after_payment(email, index_number, flow, payment.get('mpesa_receipt'))
-                
-                # Redirect to results immediately
-                return redirect(url_for('show_results', flow=flow))
-        except Exception as e:
-            print(f"⚠️ payment_wait pre-check error: {e}")
-    
-    # Also check manual activation
-    if is_legitimate_manual_activation(email, index_number):
-        payment_confirmed = True
-        session[f'paid_{flow}'] = True
-        session['current_flow'] = flow
-        session['current_level'] = flow
-        session.modified = True
-        process_courses_after_payment(email, index_number, flow)
-        return redirect(url_for('show_results', flow=flow))
-    
-    # If already confirmed in session, redirect
-    if session.get(f'paid_{flow}'):
-        return redirect(url_for('show_results', flow=flow))
-    
-    return render_template(
-        'payment_wait.html',
-        flow=flow,
-        email=email,
-        index_number=index_number,
-        transaction_ref=transaction_ref,
-        amount=amount,
-        payment_confirmed=payment_confirmed
-    )
- 
-
-@app.route('/check-courses-ready/<flow>')
-def check_courses_ready(flow):
-    email        = session.get('email')
-    index_number = session.get('index_number')
- 
-    if not email or not index_number:
-        return jsonify({
-            'ready': False, 'error': 'Session missing',
-            'should_redirect': True, 'redirect_url': url_for('index')
-        })
- 
-    # ── STEP 1: Check database FIRST (most reliable) ──
-    if database_connected and user_payments_collection is not None:
-        try:
-            payment = user_payments_collection.find_one({
-                'email': email,
-                'index_number': index_number,
-                'level': flow,
-                'payment_confirmed': True
-            }, {'mpesa_receipt': 1})
-            
-            if payment:
-                # Payment confirmed in DB!
-                print(f"✅ Found confirmed payment in DB for {email}")
                 session[f'paid_{flow}'] = True
                 session['current_flow'] = flow
                 session['current_level'] = flow
@@ -7059,6 +6993,75 @@ def check_courses_ready(flow):
                 # Queue course processing
                 process_courses_after_payment(email, index_number, flow, payment.get('mpesa_receipt'))
                 
+                # Redirect to results immediately
+                return redirect(url_for('goto_results', flow=flow))
+        except Exception as e:
+            print(f"⚠️ payment_wait DB check error: {e}")
+    
+    # Check manual activation
+    if is_legitimate_manual_activation(email, index_number):
+        session[f'paid_{flow}'] = True
+        session['current_flow'] = flow
+        session['current_level'] = flow
+        session.modified = True
+        process_courses_after_payment(email, index_number, flow)
+        return redirect(url_for('goto_results', flow=flow))
+    
+    # If already confirmed in session, redirect
+    if session.get(f'paid_{flow}'):
+        return redirect(url_for('goto_results', flow=flow))
+    
+    return render_template(
+        'payment_wait.html',
+        flow=flow,
+        email=email,
+        index_number=index_number,
+        transaction_ref=transaction_ref,
+        amount=amount
+    )
+ 
+
+@app.route('/check-courses-ready/<flow>')
+def check_courses_ready(flow):
+    email = session.get('email')
+    index_number = session.get('index_number')
+ 
+    if not email or not index_number:
+        return jsonify({
+            'ready': False, 
+            'error': 'Session missing',
+            'should_redirect': True, 
+            'redirect_url': url_for('index')
+        })
+ 
+    # ============================================
+    # STEP 1: CHECK DATABASE FIRST (Most reliable)
+    # ============================================
+    if database_connected and user_payments_collection is not None:
+        try:
+            # Check for confirmed payment in database
+            payment = user_payments_collection.find_one({
+                'email': email,
+                'index_number': index_number,
+                'level': flow,
+                'payment_confirmed': True
+            }, {'mpesa_receipt': 1, 'transaction_ref': 1})
+            
+            if payment:
+                print(f"✅ Found confirmed payment in DB for {email} - {flow}")
+                
+                # Update session
+                session[f'paid_{flow}'] = True
+                session['current_flow'] = flow
+                session['current_level'] = flow
+                if payment.get('mpesa_receipt'):
+                    session['mpesa_receipt'] = payment['mpesa_receipt']
+                    session['verified_receipt'] = payment['mpesa_receipt']
+                session.modified = True
+                
+                # Queue course processing if not already done
+                process_courses_after_payment(email, index_number, flow, payment.get('mpesa_receipt'))
+                
                 return jsonify({
                     'ready': True,
                     'redirect_url': url_for('goto_results', flow=flow),
@@ -7067,8 +7070,10 @@ def check_courses_ready(flow):
         except Exception as e:
             print(f"⚠️ check_courses_ready DB error: {e}")
  
-    # ── STEP 2: Check memory status map ──
-    cache_key   = f"{email}_{index_number}_{flow}"
+    # ============================================
+    # STEP 2: Check memory status map
+    # ============================================
+    cache_key = f"{email}_{index_number}_{flow}"
     status_data = course_processing_status.get(cache_key)
  
     if isinstance(status_data, dict):
@@ -7077,34 +7082,53 @@ def check_courses_ready(flow):
         if status == 'completed':
             _sync_session_after_completion(email, index_number, flow)
             return jsonify({
-                'ready':         True,
+                'ready': True,
                 'courses_count': status_data.get('courses_count', 0),
-                'redirect_url':  url_for('goto_results', flow=flow),
-                'status':        'memory_completed'
+                'redirect_url': url_for('goto_results', flow=flow),
+                'status': 'memory_completed'
             })
  
         if status == 'processing':
             elapsed = (datetime.now() - status_data.get('started_at', datetime.now())).total_seconds()
             return jsonify({
-                'ready': False, 'message': f'Generating your courses… ({int(elapsed)}s)',
-                'processing': True, 'elapsed': int(elapsed), 'status': 'processing'
+                'ready': False, 
+                'message': f'Generating your courses… ({int(elapsed)}s)',
+                'processing': True, 
+                'elapsed': int(elapsed), 
+                'status': 'processing'
             })
  
         if status in ('pending', 'queued'):
-            return jsonify({'ready': False, 'message': 'Queued…', 'processing': True, 'status': 'queued'})
+            return jsonify({
+                'ready': False, 
+                'message': 'Queued…', 
+                'processing': True, 
+                'status': 'queued'
+            })
  
         if status == 'failed':
-            return jsonify({'ready': False, 'message': 'Processing failed.', 'error': True, 'status': 'failed'})
+            return jsonify({
+                'ready': False, 
+                'message': 'Processing failed.', 
+                'error': True, 
+                'status': 'failed'
+            })
  
-    # ── STEP 3: Check session paid flag ──
+    # ============================================
+    # STEP 3: Check session paid flag
+    # ============================================
     if session.get(f'paid_{flow}'):
         process_courses_after_payment(email, index_number, flow)
         return jsonify({
-            'ready': False, 'message': 'Starting course processing…',
-            'processing': True, 'status': 'starting'
+            'ready': False, 
+            'message': 'Starting course processing…',
+            'processing': True, 
+            'status': 'starting'
         })
  
-    # ── STEP 4: Check for pending transaction (for UI updates) ──
+    # ============================================
+    # STEP 4: Check for pending transaction
+    # ============================================
     if database_connected and user_payments_collection is not None:
         try:
             pending = user_payments_collection.find_one({
@@ -7114,6 +7138,7 @@ def check_courses_ready(flow):
                 'transaction_ref': {'$exists': True, '$ne': None},
                 'payment_confirmed': False
             }, {'created_at': 1})
+            
             if pending:
                 created_at = pending.get('created_at')
                 if created_at and (datetime.now() - created_at).total_seconds() > 90:
