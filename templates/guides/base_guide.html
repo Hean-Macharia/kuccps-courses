@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block extra_styles %}
+<style>
+.guide-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.guide-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+}
+
+.guide-header h1 {
+    font-size: 2rem;
+    color: var(--text-1);
+    margin-bottom: 10px;
+}
+
+.guide-header .meta {
+    color: var(--text-3);
+    font-size: 0.9rem;
+}
+
+.guide-content {
+    line-height: 1.8;
+    color: var(--text-2);
+}
+
+.guide-content h2 {
+    color: var(--text-1);
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.guide-content h3 {
+    color: var(--text-1);
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.guide-content ul, .guide-content ol {
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+.guide-content li {
+    margin: 8px 0;
+}
+
+.guide-content .highlight-box {
+    background: var(--orange-pale);
+    border-left: 4px solid var(--orange);
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+}
+
+.guide-content .highlight-box h4 {
+    color: var(--orange);
+    margin-bottom: 8px;
+}
+
+.back-to-guides {
+    display: inline-block;
+    margin-top: 30px;
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.back-to-guides:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="guide-container">
+    <div class="guide-header">
+        <h1>{{ guide_title }}</h1>
+        <p class="meta">Last updated: {{ last_updated }}</p>
+    </div>
+
+    <div class="guide-content">
+        {% block guide_content %}
+        <p>{{ guide_description }}</p>
+        {% endblock %}
+    </div>
+
+    <a href="{{ url_for('all_guides') }}" class="back-to-guides">← Back to All Guides</a>
+</div>
+{% endblock %}
