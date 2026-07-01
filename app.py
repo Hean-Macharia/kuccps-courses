@@ -37,7 +37,7 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key_not_for_produ
 
 # Set SERVER_NAME for proper URL generation
 # This is critical for url_for() to work correctly with _external=True
-PRODUCTION_DOMAIN = 'www.kuccpscourses.co.ke'
+PRODUCTION_DOMAIN = 'www.studentsplacement.co.ke'
 if os.getenv('FLASK_ENV') == 'production':
     app.config['SERVER_NAME'] = PRODUCTION_DOMAIN
 
@@ -133,7 +133,7 @@ def get_openrouter_fallback(user_message):
             "openai/gpt-oss-120b:free",
         ]
         
-        condensed_prompt = """You are the official AI assistant for KUCCPS Courses Checker (kuccpscourses.co.ke). 
+        condensed_prompt = """You are the official AI assistant for KUCCPS Courses Checker (studentsplacement.co.ke). 
 
 KEY PLATFORM INFORMATION:
 - First category check: KES 200
@@ -2271,7 +2271,7 @@ def api_manual_activation_advanced():
                         </div>
                         <p><strong>To access your courses:</strong></p>
                         <ol>
-                            <li>Go to <a href="https://www.studentsplacement.co.ke">www.kuccpscourses.co.ke</a></li>
+                            <li>Go to <a href="https://www.studentsplacement.co.ke">www.studentsplacement.co.ke</a></li>
                             <li>Select your course category (Degree, Diploma, KMTC, etc.)</li>
                             <li>Enter your KCSE grades</li>
                             <li>Enter your email: <strong>{email}</strong></li>
@@ -2878,8 +2878,8 @@ def enforce_www_and_https():
     if host.endswith('.fly.dev') or host == 'localhost' or host == '127.0.0.1':
         return None
     
-    # Only apply www redirect to production domain (kuccpscourses.co.ke -> www.kuccpscourses.co.ke)
-    if host == 'kuccpscourses.co.ke':
+    # Only apply www redirect to production domain (studentsplacement.co.ke -> www.studentsplacement.co.ke)
+    if host == 'studentsplacement.co.ke':
         # Redirect non-www to www
         scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
         url = f'{scheme}://www.{host}{request.full_path}'
@@ -2909,7 +2909,7 @@ def get_canonical_url(route_name, **kwargs):
         url = url.replace('http://', 'https://')
         
         # Ensure www subdomain for production domain
-        if 'kuccpscourses.co.ke' in url and not 'www.' in url:
+        if 'studentsplacement.co.ke' in url and not 'www.' in url:
             url = url.replace('https://www.studentsplacement.co.ke', 'https://www.studentsplacement.co.ke')
         
         # Remove trailing slash for consistency (except for root)
@@ -3119,12 +3119,12 @@ def get_gemini_response(user_message):
         client = genai.Client(api_key=GEMINI_API_KEY)
         
         # ========== CONCISE SYSTEM PROMPT - FIXED VERSION ==========
-        system_prompt = f"""You are the official AI assistant for KUCCPS Courses Checker (kuccpscourses.co.ke). 
+        system_prompt = f"""You are the official AI assistant for KUCCPS Courses Checker (studentsplacement.co.ke). 
 
 IMPORTANT: You MUST answer as this specific platform's assistant, NOT as a general AI.
 
 ABOUT KUCCPS COURSES CHECKER:
-- Website: kuccpscourses.co.ke
+- Website: studentsplacement.co.ke
 - Helps Kenyan students find courses matching their KCSE grades
 - 6 categories: Degree (C+), Diploma (C-), KMTC (C-), TTC (C), Certificate (D+), Artisan (D/E)
 - First category: KES 200, Additional categories: KES 100 each
@@ -3247,7 +3247,7 @@ CAREER OPPORTUNITIES:
 - Database Administrator
 - Network Administrator
 
-Use our Degree course checker (KES 200 first category, KES 100 additional) to see all Computer Science programs matching your exact KCSE grades. Visit www.kuccpscourses.co.ke/degree to get started."""
+Use our Degree course checker (KES 200 first category, KES 100 additional) to see all Computer Science programs matching your exact KCSE grades. Visit www.studentsplacement.co.ke/degree to get started."""
     
     # ============================================
     # NURSING - DETAILED RESPONSE
@@ -3276,7 +3276,7 @@ CAREER PATH:
 - Hospital Administrator
 - Public Health Nurse
 
-Use our KMTC course checker (KES 200) to see all nursing programs matching your grades. Visit www.kuccpscourses.co.ke/kmtc"""
+Use our KMTC course checker (KES 200) to see all nursing programs matching your grades. Visit www.studentsplacement.co.ke/kmtc"""
     
     # ============================================
     # ENGINEERING - DETAILED RESPONSE
@@ -3300,7 +3300,7 @@ DURATION: 5 years
 
 CAREER: Structural Engineer, Project Manager, Construction Engineer, Water Engineer
 
-Use our Degree course checker at www.kuccpscourses.co.ke/degree"""
+Use our Degree course checker at www.studentsplacement.co.ke/degree"""
         
         elif "mechanical" in user_message_lower:
             return """Mechanical Engineering - Complete Guide
@@ -3319,7 +3319,7 @@ DURATION: 5 years
 
 CAREER: Mechanical Engineer, Automotive Engineer, Manufacturing Engineer, HVAC Engineer
 
-Use our Degree course checker at www.kuccpscourses.co.ke/degree"""
+Use our Degree course checker at www.studentsplacement.co.ke/degree"""
         
         elif "electrical" in user_message_lower:
             return """Electrical Engineering - Complete Guide
@@ -3338,7 +3338,7 @@ DURATION: 5 years
 
 CAREER: Electrical Engineer, Power Systems Engineer, Electronics Engineer
 
-Use our Degree course checker at www.kuccpscourses.co.ke/degree"""
+Use our Degree course checker at www.studentsplacement.co.ke/degree"""
         
         else:
             return """Engineering Programs in Kenya - Complete Guide
@@ -3357,7 +3357,7 @@ TYPES OF ENGINEERING AND CUT-OFF POINTS:
 6. Mechatronic Engineering - 36-40 points (JKUAT, TUK)
 7. Petroleum Engineering - 40-45 points (TUK)
 
-Use our Degree course checker (KES 200) at www.kuccpscourses.co.ke/degree to see all engineering programs matching your grades."""
+Use our Degree course checker (KES 200) at www.studentsplacement.co.ke/degree to see all engineering programs matching your grades."""
     
     # ============================================
     # BUSINESS COURSES
@@ -3394,7 +3394,7 @@ DIPLOMA IN BUSINESS:
 CAREER OPPORTUNITIES:
 Accountant, Financial Analyst, Marketing Manager, HR Manager, Business Consultant
 
-Use our course checker at www.kuccpscourses.co.ke/diploma or www.kuccpscourses.co.ke/degree"""
+Use our course checker at www.studentsplacement.co.ke/diploma or www.studentsplacement.co.ke/degree"""
     
     # ============================================
     # LAW
@@ -3424,7 +3424,7 @@ CAREER PATH:
 
 Note: After LLB, you must complete a Postgraduate Diploma at Kenya School of Law (KSL) to practice as an advocate.
 
-Use our Degree course checker at www.kuccpscourses.co.ke/degree"""
+Use our Degree course checker at www.studentsplacement.co.ke/degree"""
     
     # ============================================
     # MEDICINE
@@ -3452,7 +3452,7 @@ CAREER PATH:
 - Medical Researcher
 - Public Health Officer
 
-Use our Degree course checker at www.kuccpscourses.co.ke/degree to see if you qualify for medicine programs."""
+Use our Degree course checker at www.studentsplacement.co.ke/degree to see if you qualify for medicine programs."""
     
     # ============================================
     # KMTC COURSES
@@ -3469,7 +3469,7 @@ REQUIREMENTS:
 
 CAREER: Clinical Officer, Medical Officer
 
-Use our KMTC course checker at www.kuccpscourses.co.ke/kmtc"""
+Use our KMTC course checker at www.studentsplacement.co.ke/kmtc"""
         elif "pharmacy" in user_message_lower:
             return """Diploma in Pharmacy - KMTC
 
@@ -3480,7 +3480,7 @@ REQUIREMENTS:
 
 CAREER: Pharmaceutical Technologist, Pharmacy Assistant
 
-Use our KMTC course checker at www.kuccpscourses.co.ke/kmtc"""
+Use our KMTC course checker at www.studentsplacement.co.ke/kmtc"""
         else:
             return """KMTC (Kenya Medical Training College) Programs
 
@@ -3497,7 +3497,7 @@ POPULAR PROGRAMS AND REQUIREMENTS:
 
 DURATION: 2-3 years depending on program
 
-Use our KMTC course checker (KES 200) at www.kuccpscourses.co.ke/kmtc to see all programs matching your KCSE grades."""
+Use our KMTC course checker (KES 200) at www.studentsplacement.co.ke/kmtc to see all programs matching your KCSE grades."""
     
     # ============================================
     # TTC COURSES
@@ -3521,7 +3521,7 @@ DIPLOMA IN SECONDARY EDUCATION:
 
 CAREER: Primary/Secondary School Teacher (TSC employment)
 
-Use our TTC course checker (KES 200) at www.kuccpscourses.co.ke/ttc"""
+Use our TTC course checker (KES 200) at www.studentsplacement.co.ke/ttc"""
     
     # ============================================
     # CLUSTER POINTS EXPLANATION
@@ -3556,7 +3556,7 @@ COMMON CLUSTERS:
 HOW TO CALCULATE:
 Add points for your 4 best subjects in the required cluster. Example: B in Math (9) + B- in Physics (8) + C+ in Chemistry (7) = 24 points
 
-Visit our guide at www.kuccpscourses.co.ke/guides/cluster-points-explained for more details."""
+Visit our guide at www.studentsplacement.co.ke/guides/cluster-points-explained for more details."""
     
     # ============================================
     # KUCCPS APPLICATION PROCESS
@@ -3580,7 +3580,7 @@ IMPORTANT DATES:
 - July 15th: Application deadline
 - August-October: Placement results released
 
-Note: Our platform (www.kuccpscourses.co.ke) helps you find which courses you qualify for BEFORE applying. The KES 1,500 is the official KUCCPS fee, separate from our KES 200 course checking fee."""
+Note: Our platform (www.studentsplacement.co.ke) helps you find which courses you qualify for BEFORE applying. The KES 1,500 is the official KUCCPS fee, separate from our KES 200 course checking fee."""
     
     # ============================================
     # ABOUT THE PLATFORM
@@ -3588,7 +3588,7 @@ Note: Our platform (www.kuccpscourses.co.ke) helps you find which courses you qu
     elif "what is kuccps courses checker" in user_message_lower or "about this platform" in user_message_lower:
         return """About KUCCPS Courses Checker
 
-KUCCPS Courses Checker (www.kuccpscourses.co.ke) is an online tool that helps Kenyan students find university, college, and vocational courses that match their KCSE grades.
+KUCCPS Courses Checker (www.studentsplacement.co.ke) is an online tool that helps Kenyan students find university, college, and vocational courses that match their KCSE grades.
 
 WHAT WE DO:
 - You enter your KCSE grades once
@@ -3679,7 +3679,7 @@ CAREER BENEFITS:
 - Direct entry into workforce
 - Pathway to degree through recognition of prior learning
 
-Use our Diploma course checker (KES 200) at www.kuccpscourses.co.ke/diploma to see all programs matching your grades."""
+Use our Diploma course checker (KES 200) at www.studentsplacement.co.ke/diploma to see all programs matching your grades."""
     
     # ============================================
     # CERTIFICATE COURSES
@@ -3712,7 +3712,7 @@ CAREER OUTCOMES:
 
 COST: Generally KES 20,000-50,000 per year at TVETs (government-subsidized)
 
-Use our Certificate course checker (KES 200) at www.kuccpscourses.co.ke/certificate to see all programs matching your grades."""
+Use our Certificate course checker (KES 200) at www.studentsplacement.co.ke/certificate to see all programs matching your grades."""
     
     # ============================================
     # ARTISAN COURSES
@@ -3748,7 +3748,7 @@ CAREER PATHS:
 
 GOVERNMENT SUPPORT: Many artisan courses are government-subsidized
 
-Use our Artisan course checker (KES 200) at www.kuccpscourses.co.ke/artisan to see all programs matching your grades."""
+Use our Artisan course checker (KES 200) at www.studentsplacement.co.ke/artisan to see all programs matching your grades."""
     
     # ============================================
     # HOW TO USE THE PLATFORM
@@ -3757,7 +3757,7 @@ Use our Artisan course checker (KES 200) at www.kuccpscourses.co.ke/artisan to s
         return """How to Use KUCCPS Courses Checker - Step by Step
 
 STEP 1: Choose a Category
-- Visit www.kuccpscourses.co.ke
+- Visit www.studentsplacement.co.ke
 - Click on Degree, Diploma, KMTC, TTC, Certificate, or Artisan
 
 STEP 2: Enter Your KCSE Grades
@@ -3868,7 +3868,7 @@ We're here to help you find your perfect course!"""
     else:
         return """Welcome to KUCCPS Courses Checker! I'm here to help you find courses matching your KCSE grades.
 
-Visit our website: www.kuccpscourses.co.ke
+Visit our website: www.studentsplacement.co.ke
 
 I can answer questions about:
 - Specific courses (Computer Science, Nursing, Engineering, Law, Medicine, Business, etc.)
@@ -7022,128 +7022,125 @@ def payment_wait(flow):
 
 @app.route('/check-courses-ready/<flow>')
 def check_courses_ready(flow):
-    """Poll endpoint — returns ready=True the MOMENT payment is confirmed anywhere"""
-    email = session.get('email')
-    index_number = session.get('index_number')
+    """Poll endpoint — returns ready=True the MOMENT payment is confirmed anywhere.
+       GUARANTEED to always return a valid JSON response."""
+    try:
+        email = session.get('email')
+        index_number = session.get('index_number')
 
-    if not email or not index_number:
-        return jsonify({
-            'ready': False,
-            'error': True,
-            'message': 'Session expired',
-            'should_redirect': True,
-            'redirect_url': url_for('index')
-        })
+        if not email or not index_number:
+            return jsonify({
+                'ready': False, 'error': True,
+                'message': 'Session expired', 'should_redirect': True,
+                'redirect_url': url_for('index')
+            })
 
-    cache_key = f"{email}_{index_number}_{flow}"
+        def safe_redirect_url():
+            try:
+                return url_for('goto_results', flow=flow)
+            except Exception as e:
+                print(f"⚠️ url_for failed, using fallback path: {e}")
+                return f"/goto-results/{flow}"
 
-    # ══════════════════════════════════════════════════════
-    # PRIORITY 1: Database confirmed payment (MOST RELIABLE)
-    # ══════════════════════════════════════════════════════
-    if database_connected and user_payments_collection is not None:
-        try:
-            # Look for ANY confirmed payment for this user+level
-            payment = user_payments_collection.find_one({
-                '$or': [
-                    {'email': email, 'index_number': index_number, 'level': flow},
-                    {'index_number': index_number, 'level': flow}  # fallback
-                ],
-                'payment_confirmed': True
-            }, {'mpesa_receipt': 1, 'transaction_ref': 1})
+        cache_key = f"{email}_{index_number}_{flow}"
 
-            if payment:
-                # PAYMENT IS CONFIRMED — always return ready, no exceptions
-                session[f'paid_{flow}'] = True
-                session['current_flow'] = flow
-                session['current_level'] = flow
-                if payment.get('mpesa_receipt'):
-                    session['mpesa_receipt'] = payment['mpesa_receipt']
-                    session['verified_receipt'] = payment['mpesa_receipt']
-                session.modified = True
+        # PRIORITY 1: DB confirmed payment
+        if database_connected and user_payments_collection is not None:
+            try:
+                payment = user_payments_collection.find_one({
+                    '$or': [
+                        {'email': email, 'index_number': index_number, 'level': flow},
+                        {'index_number': index_number, 'level': flow}
+                    ],
+                    'payment_confirmed': True
+                }, {'mpesa_receipt': 1, 'transaction_ref': 1})
 
-                # Queue course generation (idempotent — won't duplicate)
-                process_courses_after_payment(
-                    email, index_number, flow, payment.get('mpesa_receipt')
-                )
+                if payment:
+                    session[f'paid_{flow}'] = True
+                    session['current_flow'] = flow
+                    session['current_level'] = flow
+                    if payment.get('mpesa_receipt'):
+                        session['mpesa_receipt'] = payment['mpesa_receipt']
+                        session['verified_receipt'] = payment['mpesa_receipt']
+                    session.modified = True
 
-                return jsonify({
-                    'ready': True,
-                    'paid': True,
-                    'redirect_url': url_for('goto_results', flow=flow),
-                    'status': 'db_confirmed',
-                    'message': 'Payment confirmed! Redirecting...'
-                })
-        except Exception as e:
-            print(f"⚠️ check_courses_ready DB error: {e}")
+                    process_courses_after_payment(
+                        email, index_number, flow, payment.get('mpesa_receipt')
+                    )
 
-    # ══════════════════════════════════════════════════════
-    # PRIORITY 2: Memory cache — courses already generated
-    # ══════════════════════════════════════════════════════
-    status_data = course_processing_status.get(cache_key, {})
-    if isinstance(status_data, dict) and status_data.get('status') == 'completed':
-        _sync_session_after_completion(email, index_number, flow)
-        return jsonify({
-            'ready': True,
-            'paid': True,
-            'redirect_url': url_for('goto_results', flow=flow),
-            'status': 'memory_completed',
-            'message': 'Courses ready! Redirecting...'
-        })
-
-    # ══════════════════════════════════════════════════════
-    # PRIORITY 3: Session says paid but DB doesn't confirm yet
-    # ══════════════════════════════════════════════════════
-    if session.get(f'paid_{flow}'):
-        return jsonify({
-            'ready': False,
-            'processing': True,
-            'message': 'Payment confirmed, generating courses...',
-            'status': 'session_paid_processing'
-        })
-
-    # ══════════════════════════════════════════════════════
-    # PRIORITY 4: Pending transaction still waiting for callback
-    # ══════════════════════════════════════════════════════
-    if database_connected and user_payments_collection is not None:
-        try:
-            pending = user_payments_collection.find_one({
-                '$or': [
-                    {'email': email, 'index_number': index_number, 'level': flow},
-                    {'index_number': index_number, 'level': flow}
-                ],
-                'transaction_ref': {'$exists': True, '$ne': None},
-                'payment_confirmed': False
-            }, {'created_at': 1})
-
-            if pending:
-                created_at = pending.get('created_at')
-                elapsed = (datetime.now() - created_at).total_seconds() if created_at else 0
-                
-                if elapsed > 120:
                     return jsonify({
-                        'ready': False,
-                        'status': 'timeout',
-                        'message': 'Payment is taking longer than expected. Check your M-Pesa messages.',
-                        'should_retry': True
+                        'ready': True, 'paid': True,
+                        'redirect_url': safe_redirect_url(),
+                        'status': 'db_confirmed',
+                        'message': 'Payment confirmed! Redirecting...'
                     })
-                
-                return jsonify({
-                    'ready': False,
-                    'status': 'pending',
-                    'message': 'Waiting for M-Pesa confirmation...',
-                    'check_again': 1800
-                })
-        except Exception as e:
-            print(f"⚠️ Pending check error: {e}")
+            except Exception as e:
+                print(f"⚠️ check_courses_ready DB error: {e}")
 
-    # ══════════════════════════════════════════════════════
-    # FALLBACK: Nothing found yet
-    # ══════════════════════════════════════════════════════
-    return jsonify({
-        'ready': False,
-        'status': 'waiting',
-        'message': 'Waiting for payment confirmation on your phone...',
-        'check_again': 1800
+        # PRIORITY 2: Memory cache
+        status_data = course_processing_status.get(cache_key, {})
+        if isinstance(status_data, dict) and status_data.get('status') == 'completed':
+            _sync_session_after_completion(email, index_number, flow)
+            return jsonify({
+                'ready': True, 'paid': True,
+                'redirect_url': safe_redirect_url(),
+                'status': 'memory_completed',
+                'message': 'Courses ready! Redirecting...'
+            })
+
+        # PRIORITY 3: session says paid
+        if session.get(f'paid_{flow}'):
+            return jsonify({
+                'ready': False, 'processing': True,
+                'message': 'Payment confirmed, generating courses...',
+                'status': 'session_paid_processing'
+            })
+
+        # PRIORITY 4: pending transaction
+        if database_connected and user_payments_collection is not None:
+            try:
+                pending = user_payments_collection.find_one({
+                    '$or': [
+                        {'email': email, 'index_number': index_number, 'level': flow},
+                        {'index_number': index_number, 'level': flow}
+                    ],
+                    'transaction_ref': {'$exists': True, '$ne': None},
+                    'payment_confirmed': False
+                }, {'created_at': 1})
+
+                if pending:
+                    created_at = pending.get('created_at')
+                    elapsed = (datetime.now() - created_at).total_seconds() if created_at else 0
+                    if elapsed > 120:
+                        return jsonify({
+                            'ready': False, 'status': 'timeout',
+                            'message': 'Payment is taking longer than expected. Check your M-Pesa messages.',
+                            'should_retry': True
+                        })
+                    return jsonify({
+                        'ready': False, 'status': 'pending',
+                        'message': 'Waiting for M-Pesa confirmation...',
+                        'check_again': 1800
+                    })
+            except Exception as e:
+                print(f"⚠️ Pending check error: {e}")
+
+        return jsonify({
+            'ready': False, 'status': 'waiting',
+            'message': 'Waiting for payment confirmation on your phone...',
+            'check_again': 1800
+        })
+
+    except Exception as fatal_err:
+        print(f"❌ FATAL check_courses_ready error: {fatal_err}")
+        import traceback
+        traceback.print_exc()
+        # ABSOLUTE SAFETY NET — never let Flask see a None return
+        return jsonify({
+            'ready': False, 'status': 'error',
+            'message': 'Retrying...',
+            'check_again': 2000
+        }), 200'check_again': 1800
     })
 @app.route('/force-check-payment/<flow>')
 def force_check_payment(flow):
@@ -11133,7 +11130,7 @@ import json
 
 # Brevo (Sendinblue) Configuration
 BREVO_API_KEY = os.getenv('BREVO_API_KEY')  # Add this to your .env file
-BREVO_SENDER_EMAIL = os.getenv('BREVO_SENDER_EMAIL', 'support@kuccpscourses.co.ke')
+BREVO_SENDER_EMAIL = os.getenv('BREVO_SENDER_EMAIL', 'support@studentsplacement.co.ke')
 BREVO_SENDER_NAME = os.getenv('BREVO_SENDER_NAME', 'KUCCPS Courses Checker')
 
 def send_brevo_email(to_email, to_name, subject, html_content):
@@ -11225,7 +11222,7 @@ def api_send_missing_courses_email():
                 
                 <p><strong>To get your course results (at no additional cost):</strong></p>
                 <ol>
-                    <li>Visit <a href="https://www.studentsplacement.co.ke">www.kuccpscourses.co.ke</a></li>
+                    <li>Visit <a href="https://www.studentsplacement.co.ke">www.studentsplacement.co.ke</a></li>
                     <li>Click on the <strong>{level.upper()}</strong> course category</li>
                     <li>Re-enter your KCSE grades for that category</li>
                     <li>When prompted for payment, use the <strong>"Already Made Payment"</strong> option</li>
@@ -11921,7 +11918,7 @@ def admin_manual_activation():
                             
                             <p><strong>To get your course results:</strong></p>
                             <ol>
-                                <li>Visit <a href="https://www.studentsplacement.co.ke">www.kuccpscourses.co.ke</a></li>
+                                <li>Visit <a href="https://www.studentsplacement.co.ke">www.studentsplacement.co.ke</a></li>
                                 <li>Click on the course category you originally selected</li>
                                 <li>Re-enter your KCSE grades for that category</li>
                                 <li>When prompted for payment, use the <strong>"Already Made Payment"</strong> option</li>
