@@ -7022,24 +7022,25 @@ def payment_wait(flow):
 
 @app.route('/check-courses-ready/<flow>')
 def check_courses_ready(flow):
-    """Poll endpoint — returns ready=True the MOMENT payment is confirmed anywhere.
-       GUARANTEED to always return a valid JSON response."""
+    """Poll endpoint with guaranteed redirect_url"""
     try:
         email = session.get('email')
         index_number = session.get('index_number')
 
         if not email or not index_number:
             return jsonify({
-                'ready': False, 'error': True,
-                'message': 'Session expired', 'should_redirect': True,
+                'ready': False,
+                'error': True,
+                'message': 'Session expired',
+                'should_redirect': True,
                 'redirect_url': url_for('index')
             })
 
-        def safe_redirect_url():
+        # Helper to get redirect URL
+        def get_redirect_url():
             try:
                 return url_for('goto_results', flow=flow)
-            except Exception as e:
-                print(f"⚠️ url_for failed, using fallback path: {e}")
+            except Exception:
                 return f"/goto-results/{flow}"
 
         cache_key = f"{email}_{index_number}_{flow}"
@@ -7069,8 +7070,9 @@ def check_courses_ready(flow):
                     )
 
                     return jsonify({
-                        'ready': True, 'paid': True,
-                        'redirect_url': safe_redirect_url(),
+                        'ready': True,
+                        'paid': True,
+                        'redirect_url': get_redirect_url(),
                         'status': 'db_confirmed',
                         'message': 'Payment confirmed! Redirecting...'
                     })
@@ -7082,8 +7084,9 @@ def check_courses_ready(flow):
         if isinstance(status_data, dict) and status_data.get('status') == 'completed':
             _sync_session_after_completion(email, index_number, flow)
             return jsonify({
-                'ready': True, 'paid': True,
-                'redirect_url': safe_redirect_url(),
+                'ready': True,
+                'paid': True,
+                'redirect_url': get_redirect_url(),
                 'status': 'memory_completed',
                 'message': 'Courses ready! Redirecting...'
             })
@@ -7091,9 +7094,11 @@ def check_courses_ready(flow):
         # PRIORITY 3: session says paid
         if session.get(f'paid_{flow}'):
             return jsonify({
-                'ready': False, 'processing': True,
+                'ready': False,
+                'processing': True,
                 'message': 'Payment confirmed, generating courses...',
-                'status': 'session_paid_processing'
+                'status': 'session_paid_processing',
+                'redirect_url': get_redirect_url()  # Include URL even when not ready
             })
 
         # PRIORITY 4: pending transaction
@@ -7113,22 +7118,28 @@ def check_courses_ready(flow):
                     elapsed = (datetime.now() - created_at).total_seconds() if created_at else 0
                     if elapsed > 120:
                         return jsonify({
-                            'ready': False, 'status': 'timeout',
+                            'ready': False,
+                            'status': 'timeout',
                             'message': 'Payment is taking longer than expected. Check your M-Pesa messages.',
-                            'should_retry': True
+                            'should_retry': True,
+                            'redirect_url': get_redirect_url()
                         })
                     return jsonify({
-                        'ready': False, 'status': 'pending',
+                        'ready': False,
+                        'status': 'pending',
                         'message': 'Waiting for M-Pesa confirmation...',
-                        'check_again': 1800
+                        'check_again': 1500,
+                        'redirect_url': get_redirect_url()
                     })
             except Exception as e:
                 print(f"⚠️ Pending check error: {e}")
 
         return jsonify({
-            'ready': False, 'status': 'waiting',
+            'ready': False,
+            'status': 'waiting',
             'message': 'Waiting for payment confirmation on your phone...',
-            'check_again': 1800
+            'check_again': 1500,
+            'redirect_url': get_redirect_url()  # Always include URL
         })
 
     except Exception as fatal_err:
@@ -7136,9 +7147,11 @@ def check_courses_ready(flow):
         import traceback
         traceback.print_exc()
         return jsonify({
-            'ready': False, 'status': 'error',
+            'ready': False,
+            'status': 'error',
             'message': 'Retrying...',
-            'check_again': 2000
+            'check_again': 2000,
+            'redirect_url': url_for('index')
         }), 200
 @app.route('/force-check-payment/<flow>')
 def force_check_payment(flow):
@@ -11488,7 +11501,39 @@ def api_activate_and_notify():
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
 
-
+@app.route('/force-redirect/<flow>')
+def force_redirect(flow):
+    """Emergency endpoint to force redirect after payment"""
+    email = session.get('email')
+    index_number = session.get('index_number')
+    
+    if not email or not index_number:
+        return jsonify({'success': False, 'error': 'No session'})
+    
+    # Check if payment is confirmed
+    if database_connected and user_payments_collection is not None:
+        payment = user_payments_collection.find_one({
+            'email': email,
+            'index_number': index_number,
+            'level': flow,
+            'payment_confirmed': True
+        })
+        
+        if payment:
+            session[f'paid_{flow}'] = True
+            session['current_flow'] = flow
+            session['current_level'] = flow
+            session.modified = True
+            
+            # Queue processing if not already done
+            process_courses_after_payment(email, index_number, flow, payment.get('mpesa_receipt'))
+            
+            return jsonify({
+                'success': True,
+                'redirect_url': url_for('show_results', flow=flow)
+            })
+    
+    return jsonify({'success': False, 'message': 'Payment not found'})
 @app.route('/api/missing-courses/delete/<payment_id>', methods=['POST'])
 def api_delete_missing_payment(payment_id):
     """Delete a payment record that has no associated courses"""
