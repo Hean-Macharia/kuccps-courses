@@ -162,7 +162,7 @@ User question: {user_message}"""
                     headers={
                         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                         "Content-Type": "application/json",
-                        "HTTP-Referer": "https://www.kuccpscourses.co.ke",
+                        "HTTP-Referer": "https://www.studentsplacement.co.ke",
                         "X-Title": "KUCCPS Courses Checker",
                     },
                     json={
@@ -1934,7 +1934,7 @@ def send_payment_issue_resolution_email(email, index_number, mpesa_receipt, paid
                 
                 <p><strong>To access your courses:</strong></p>
                 <ol>
-                    <li>Go to <a href="https://www.kuccpscourses.co.ke">https://www.kuccpscourses.co.ke</a></li>
+                    <li>Go to <a href="https://www.studentsplacement.co.ke">https://www.studentsplacement.co.ke</a></li>
                     <li>Click the <strong>"Already Made Payment"</strong> button on the homepage</li>
                     <li>Enter your M-Pesa receipt number: <strong>{mpesa_receipt}</strong></li>
                     <li>Enter your KCSE index number: <strong>{index_number}</strong></li>
@@ -2271,7 +2271,7 @@ def api_manual_activation_advanced():
                         </div>
                         <p><strong>To access your courses:</strong></p>
                         <ol>
-                            <li>Go to <a href="https://www.kuccpscourses.co.ke">www.kuccpscourses.co.ke</a></li>
+                            <li>Go to <a href="https://www.studentsplacement.co.ke">www.kuccpscourses.co.ke</a></li>
                             <li>Select your course category (Degree, Diploma, KMTC, etc.)</li>
                             <li>Enter your KCSE grades</li>
                             <li>Enter your email: <strong>{email}</strong></li>
@@ -2597,7 +2597,7 @@ def send_issue_resolution_email(email, index_number, mpesa_receipt, paid_levels)
                 
                 <p><strong>To access your courses now:</strong></p>
                 <ol>
-                    <li>Go to <a href="https://www.kuccpscourses.co.ke">https://www.kuccpscourses.co.ke</a></li>
+                    <li>Go to <a href="https://www.studentsplacement.co.ke">https://www.studentsplacement.co.ke</a></li>
                     <li>Click the <strong>"Already Made Payment"</strong> button</li>
                     <li>Enter your M-Pesa receipt: <strong>{mpesa_receipt}</strong></li>
                     <li>Enter your index number: <strong>{index_number}</strong></li>
@@ -2842,19 +2842,19 @@ def sitemap_index():
     xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
-    <loc>https://www.kuccpscourses.co.ke/sitemap.xml</loc>
+    <loc>https://www.studentsplacement.co.ke/sitemap.xml</loc>
     <lastmod>{today}</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://www.kuccpscourses.co.ke/sitemap-guides.xml</loc>
+    <loc>https://www.studentsplacement.co.ke/sitemap-guides.xml</loc>
     <lastmod>{today}</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://www.kuccpscourses.co.ke/sitemap-news.xml</loc>
+    <loc>https://www.studentsplacement.co.ke/sitemap-news.xml</loc>
     <lastmod>{today}</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://www.kuccpscourses.co.ke/sitemap-courses.xml</loc>
+    <loc>https://www.studentsplacement.co.ke/sitemap-courses.xml</loc>
     <lastmod>{today}</lastmod>
   </sitemap>
 </sitemapindex>'''
@@ -2910,10 +2910,10 @@ def get_canonical_url(route_name, **kwargs):
         
         # Ensure www subdomain for production domain
         if 'kuccpscourses.co.ke' in url and not 'www.' in url:
-            url = url.replace('https://kuccpscourses.co.ke', 'https://www.kuccpscourses.co.ke')
+            url = url.replace('https://www.studentsplacement.co.ke', 'https://www.studentsplacement.co.ke')
         
         # Remove trailing slash for consistency (except for root)
-        if url != 'https://www.kuccpscourses.co.ke/' and url.endswith('/'):
+        if url != 'https://www.studentsplacement.co.ke/' and url.endswith('/'):
             url = url.rstrip('/')
         
         print(f"✅ Generated canonical URL for {route_name}: {url}")
@@ -2921,8 +2921,8 @@ def get_canonical_url(route_name, **kwargs):
     except Exception as e:
         print(f"⚠️ Error generating canonical URL for {route_name}: {str(e)}")
         # Fallback to explicit URL construction
-        fallback_url = f"https://www.kuccpscourses.co.ke{url_for(route_name, **kwargs)}"
-        if fallback_url.endswith('/') and fallback_url != 'https://www.kuccpscourses.co.ke/':
+        fallback_url = f"https://www.studentsplacement.co.ke{url_for(route_name, **kwargs)}"
+        if fallback_url.endswith('/') and fallback_url != 'https://www.studentsplacement.co.ke/':
             fallback_url = fallback_url.rstrip('/')
         print(f"⚠️ Using fallback canonical URL: {fallback_url}")
         return fallback_url
@@ -4454,7 +4454,7 @@ def debug_user_courses():
 
 def generate_sitemap():
     """Generate accurate sitemap with only existing routes"""
-    base_url = 'https://www.kuccpscourses.co.ke'
+    base_url = 'https://www.studentsplacement.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
     
     # ONLY include routes that actually exist in your Flask app
@@ -4491,7 +4491,7 @@ def generate_sitemap():
 
 def generate_comprehensive_sitemap():
     """Generate comprehensive sitemap with ONLY crawlable pages"""
-    base_url = 'https://www.kuccpscourses.co.ke'
+    base_url = 'https://www.studentsplacement.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
     
     # ONLY public, accessible pages
@@ -4545,7 +4545,7 @@ from flask import make_response
 @cache.cached(timeout=86400)
 def sitemap_main():
     """Generate main sitemap"""
-    base_url = 'https://www.kuccpscourses.co.ke'
+    base_url = 'https://www.studentsplacement.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
     
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -4595,7 +4595,7 @@ def sitemap_main():
 @cache.cached(timeout=86400)
 def sitemap_guides():
     """Generate sitemap for guides"""
-    base_url = 'https://www.kuccpscourses.co.ke'
+    base_url = 'https://www.studentsplacement.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
     
     guides_pages = [
@@ -4632,7 +4632,7 @@ def sitemap_guides():
 @cache.cached(timeout=86400)
 def sitemap_news():
     """Generate sitemap for news articles"""
-    base_url = 'https://www.kuccpscourses.co.ke'
+    base_url = 'https://www.studentsplacement.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
     
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -4745,11 +4745,11 @@ Disallow: /submit-artisan-grades
 Disallow: /submit-kmtc-grades
 Disallow: /submit-ttc-grades
 
-Sitemap: https://www.kuccpscourses.co.ke/sitemap-index.xml
-Sitemap: https://www.kuccpscourses.co.ke/sitemap.xml
-Sitemap: https://www.kuccpscourses.co.ke/sitemap-guides.xml
-Sitemap: https://www.kuccpscourses.co.ke/sitemap-news.xml
-Sitemap: https://www.kuccpscourses.co.ke/sitemap-courses.xml
+Sitemap: https://www.studentsplacement.co.ke/sitemap-index.xml
+Sitemap: https://www.studentsplacement.co.ke/sitemap.xml
+Sitemap: https://www.studentsplacement.co.ke/sitemap-guides.xml
+Sitemap: https://www.studentsplacement.co.ke/sitemap-news.xml
+Sitemap: https://www.studentsplacement.co.ke/sitemap-courses.xml
 
 Crawl-delay: 1
 
@@ -5609,14 +5609,14 @@ def initiate_stk_push(phone, amount=1, flow=None):
         
         
         if os.environ.get('FLASK_ENV') == 'production' or 'render.com' in os.environ.get('RENDER_EXTERNAL_HOSTNAME', ''):
-            base_url = 'https://www.kuccpscourses.co.ke'
+            base_url = 'https://www.studentsplacement.co.ke'
         else:
             ngrok_url = os.getenv('NGROK_URL')
             if ngrok_url:
                 base_url = ngrok_url
                 print(f"🔗 Using ngrok URL for callbacks: {base_url}")
             else:
-                base_url = 'https://www.kuccpscourses.co.ke'
+                base_url = 'https://www.studentsplacement.co.ke'
                 print(f"⚠️ NGROK_URL not set, using production URL: {base_url}")
         
         callback_url = f"{base_url}/mpesa/callback"
@@ -5913,7 +5913,7 @@ def create_manual_activation_payment(email, index_number, flow, mpesa_receipt):
 class Config:
     SITE_NAME = "KUCCPS Courses Checker"
     SITE_DESCRIPTION = "Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs in Kenya."
-    SITE_URL = "https://www.kuccpscourses.co.ke"
+    SITE_URL = "https://www.studentsplacement.co.ke"
     
     # SEO Settings
     META_AUTHOR = "Hean Njuki"
@@ -6368,7 +6368,7 @@ def sitemap_courses():
     are already included in sitemap.xml to avoid duplication.
     This sitemap is reserved for course-specific subpages if needed in the future.
     """
-    base_url = 'https://www.kuccpscourses.co.ke'
+    base_url = 'https://www.studentsplacement.co.ke'
     today = datetime.now().strftime('%Y-%m-%d')
     
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -6627,7 +6627,7 @@ def enter_details(flow):
     try:
         email        = request.form.get('email', '').strip().lower()
         index_number = request.form.get('index_number', '').strip()
- 
+
         if not email or not index_number:
             flash("Email and KCSE Index Number are required.", "error")
             return redirect(url_for('enter_details', flow=flow))
@@ -6767,7 +6767,7 @@ def enter_details(flow):
         # ══════════════════════════════════════════════════════
         existing    = get_user_paid_categories_strict(email, index_number)
         is_first    = len(existing) == 0
-        amount      = 200 if is_first else 100
+        amount      = 1 if is_first else 1
  
         session['email']            = email
         session['index_number']     = index_number
@@ -10656,7 +10656,7 @@ def api_fix_notified_user():
                 
                 <p><strong>To get your course results NOW:</strong></p>
                 <ol>
-                    <li>Go to <a href="https://www.kuccpscourses.co.ke/{level}">https://www.kuccpscourses.co.ke/{level}</a></li>
+                    <li>Go to <a href="https://www.studentsplacement.co.ke/{level}">https://www.studentsplacement.co.ke/{level}</a></li>
                     <li>Enter your KCSE grades for {level.upper()} courses</li>
                     <li>Enter your email: <strong>{email}</strong></li>
                     <li>Enter your KCSE Index Number: <strong>{index_number}</strong></li>
@@ -11090,7 +11090,7 @@ def api_send_missing_courses_email():
                 
                 <p><strong>To get your course results (at no additional cost):</strong></p>
                 <ol>
-                    <li>Visit <a href="https://www.kuccpscourses.co.ke">www.kuccpscourses.co.ke</a></li>
+                    <li>Visit <a href="https://www.studentsplacement.co.ke">www.kuccpscourses.co.ke</a></li>
                     <li>Click on the <strong>{level.upper()}</strong> course category</li>
                     <li>Re-enter your KCSE grades for that category</li>
                     <li>When prompted for payment, use the <strong>"Already Made Payment"</strong> option</li>
@@ -11294,7 +11294,7 @@ def api_activate_and_notify():
                     
                     <p><strong>To get your course results NOW (No additional payment needed):</strong></p>
                     <ol>
-                        <li>Go to <a href="https://www.kuccpscourses.co.ke/{level}">https://www.kuccpscourses.co.ke/{level}</a></li>
+                        <li>Go to <a href="https://www.studentsplacement.co.ke/{level}">https://www.studentsplacement.co.ke/{level}</a></li>
                         <li>Enter your KCSE grades for {level.upper()} courses</li>
                         <li>Enter your email: <strong>{email}</strong></li>
                         <li>Enter your KCSE Index Number: <strong>{index_number}</strong></li>
@@ -11786,7 +11786,7 @@ def admin_manual_activation():
                             
                             <p><strong>To get your course results:</strong></p>
                             <ol>
-                                <li>Visit <a href="https://www.kuccpscourses.co.ke">www.kuccpscourses.co.ke</a></li>
+                                <li>Visit <a href="https://www.studentsplacement.co.ke">www.kuccpscourses.co.ke</a></li>
                                 <li>Click on the course category you originally selected</li>
                                 <li>Re-enter your KCSE grades for that category</li>
                                 <li>When prompted for payment, use the <strong>"Already Made Payment"</strong> option</li>

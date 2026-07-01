@@ -10,14 +10,14 @@
 
   <!-- Payment Modal -->
   <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" role="dialog"
-    aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
+    aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false" style="filter:none !important; backdrop-filter:none !important; -webkit-filter:none !important; -webkit-backdrop-filter:none !important;">
+    <div class="modal-dialog modal-dialog-centered" style="filter:none !important; backdrop-filter:none !important; -webkit-filter:none !important; -webkit-backdrop-filter:none !important;">
+      <div class="modal-content" style="filter:none !important; backdrop-filter:none !important; -webkit-filter:none !important; -webkit-backdrop-filter:none !important; opacity:1 !important;">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title fw-bold" id="paymentModalLabel">Payment Required</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="cancelButton"></button>
         </div>
-        <div class="modal-body pt-0">
+        <div class="modal-body pt-0" style="filter:none !important; backdrop-filter:none !important; -webkit-filter:none !important; -webkit-backdrop-filter:none !important; opacity:1 !important;">
           <!-- Payment Information -->
           <div class="payment-info mb-4">
             <p class="text-muted mb-2">Course Category: <span class="fw-bold text-dark">{{ flow.upper() }}</span></p>
@@ -37,12 +37,12 @@
             <div class="mb-4">
               <label for="phoneNumber" class="form-label fw-bold">Phone Number *</label>
               <input type="tel" class="form-control form-control-lg" id="phoneNumber" name="phone"
-                placeholder="07xxxxxxx" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric">
+                placeholder="07xxxxxxx" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" style="filter:none !important; backdrop-filter:none !important; -webkit-filter:none !important; -webkit-backdrop-filter:none !important; opacity:1 !important;">
               <div class="form-text text-muted">Enter your 10-digit M-Pesa phone number</div>
             </div>
 
             <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary btn-lg fw-bold" id="payButton">
+              <button type="submit" class="btn btn-primary btn-lg fw-bold" id="payButton" style="filter:none !important; backdrop-filter:none !important; -webkit-filter:none !important; -webkit-backdrop-filter:none !important; opacity:1 !important;">
                 <span id="payButtonText">Proceed to Payment</span>
                 <span id="payButtonSpinner" class="spinner-border spinner-border-sm d-none ms-2" role="status"></span>
               </button>
@@ -50,7 +50,7 @@
           </form>
 
           <!-- Payment Status Section -->
-          <div id="paymentStatus" class="mt-4 text-center" style="display: none;">
+          <div id="paymentStatus" class="mt-4 text-center" style="display: none; filter:none !important; backdrop-filter:none !important; -webkit-filter:none !important; -webkit-backdrop-filter:none !important; opacity:1 !important;">
             <div class="spinner-border text-primary mb-3" role="status">
               <span class="visually-hidden">Processing payment...</span>
             </div>
@@ -61,7 +61,7 @@
           </div>
 
           <!-- Error Message Section -->
-          <div id="paymentError" class="alert alert-danger mt-3 text-center" style="display: none;">
+          <div id="paymentError" class="alert alert-danger mt-3 text-center" style="display: none; filter:none !important; backdrop-filter:none !important; -webkit-filter:none !important; -webkit-backdrop-filter:none !important; opacity:1 !important;">
             <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i> Payment Error</h6>
             <p id="errorMessage" class="mb-0"></p>
           </div>
@@ -77,11 +77,28 @@
   document.addEventListener('DOMContentLoaded', function () {
     console.log('Payment page loaded');
 
+    // Remove any modal backdrop that might be causing blur
+    document.querySelectorAll('.modal-backdrop').forEach(function(el) {
+      el.remove();
+    });
+    document.body.classList.remove('modal-open');
+    
+    // Force remove blur from all elements
+    document.querySelectorAll('*').forEach(function(el) {
+      if (el.style.filter && el.style.filter.includes('blur')) {
+        el.style.filter = 'none';
+      }
+      if (el.style.backdropFilter && el.style.backdropFilter.includes('blur')) {
+        el.style.backdropFilter = 'none';
+      }
+    });
+
     // Auto-open the modal on page load
     const openModalButton = document.getElementById('openPaymentModal');
     if (openModalButton) {
-      console.log('Opening payment modal...');
-      openModalButton.click();
+      setTimeout(function() {
+        openModalButton.click();
+      }, 100);
     }
 
     // Initialize phone number input formatting
@@ -99,7 +116,9 @@
       const paymentModal = document.getElementById('paymentModal');
       if (paymentModal) {
         paymentModal.addEventListener('shown.bs.modal', function () {
-          phoneInput.focus();
+          setTimeout(function() {
+            phoneInput.focus();
+          }, 200);
         });
       }
     }
@@ -125,7 +144,7 @@
 
         // Validate phone number
         if (!phone || phone.length !== 10 || !/^[0-9]+$/.test(phone)) {
-          showError('Please enter a valid 10-digit phone number (e.g., 0791196121)');
+          showError('Please enter a valid 10-digit phone number (e.g., 0712345678).');
           return;
         }
 
@@ -157,18 +176,14 @@
             console.log('Payment response:', data);
 
             if (data.success) {
-              // ✅ PAYMENT INITIATED SUCCESSFULLY - REDIRECT TO WAIT PAGE
               console.log('✅ Payment initiated successfully, redirecting to wait page...');
 
               if (data.redirect_url) {
-                // Redirect to payment wait page immediately
                 window.location.href = data.redirect_url;
               } else {
-                // Fallback redirect
                 window.location.href = `/payment-wait/${flow}?transaction_ref=${data.transaction_ref}`;
               }
             } else {
-              // Show error from server
               showError(data.error || 'Failed to initiate payment. Please try again.');
               resetPaymentButton();
             }
@@ -269,6 +284,32 @@
 
   .modal {
     z-index: 1060;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  .modal-open .modal-backdrop {
+    display: none !important;
+  }
+
+  body.modal-open {
+    overflow: auto !important;
+    padding-right: 0 !important;
+  }
+
+  /* Remove blur from all modal elements */
+  .modal *, .modal-dialog, .modal-content, .modal-body, .modal-header {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    opacity: 1 !important;
   }
 </style>
 {% endblock %}
