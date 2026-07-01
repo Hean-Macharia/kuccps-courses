@@ -7135,13 +7135,11 @@ def check_courses_ready(flow):
         print(f"❌ FATAL check_courses_ready error: {fatal_err}")
         import traceback
         traceback.print_exc()
-        # ABSOLUTE SAFETY NET — never let Flask see a None return
         return jsonify({
             'ready': False, 'status': 'error',
             'message': 'Retrying...',
             'check_again': 2000
-        }), 200'check_again': 1800
-    })
+        }), 200
 @app.route('/force-check-payment/<flow>')
 def force_check_payment(flow):
     """Emergency endpoint to recover stuck payments"""
