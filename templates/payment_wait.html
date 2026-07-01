@@ -1,193 +1,483 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Confirming Payment | KUCCPS Courses Checker</title>
-<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-        font-family: 'Segoe UI', Arial, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-    .card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-        max-width: 440px;
-        width: 100%;
-        padding: 40px 30px;
-        text-align: center;
-    }
-    .spinner {
-        width: 70px;
-        height: 70px;
-        margin: 0 auto 24px;
-        border: 6px solid #e8ecf7;
-        border-top: 6px solid #667eea;
-        border-radius: 50%;
-        animation: spin 0.9s linear infinite;
-    }
-    .spinner.success {
-        border: none;
-        animation: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #27ae60;
-    }
-    .spinner.success::after {
-        content: '✓';
-        color: white;
-        font-size: 36px;
-        font-weight: bold;
-    }
-    .spinner.error {
-        border: none;
-        animation: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #e74c3c;
-    }
-    .spinner.error::after {
-        content: '!';
-        color: white;
-        font-size: 36px;
-        font-weight: bold;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirming Payment | KUCCPS Courses Checker</title>
+    <style>
+        /* ============================================
+           PAYMENT WAIT PAGE - CLEAN DESIGN
+           Matches KUCCPS original design system
+           ============================================= */
 
-    h1 {
-        font-size: 22px;
-        color: #2c3e50;
-        margin-bottom: 8px;
-    }
-    p.subtitle {
-        color: #7f8c8d;
-        font-size: 14px;
-        margin-bottom: 24px;
-    }
-    #statusMessage {
-        font-size: 15px;
-        color: #34495e;
-        min-height: 22px;
-        margin-bottom: 20px;
-        font-weight: 500;
-    }
-    .details {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 16px;
-        text-align: left;
-        font-size: 13px;
-        color: #555;
-        margin-bottom: 20px;
-    }
-    .details div { margin: 4px 0; display: flex; justify-content: space-between; }
-    .details span:first-child { color: #999; }
-    .details span:last-child { font-weight: 600; color: #333; }
+        /* ----- Reset & Base ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .progress-bar {
-        width: 100%;
-        height: 6px;
-        background: #eef0f6;
-        border-radius: 3px;
-        overflow: hidden;
-        margin-bottom: 20px;
-    }
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        width: 0%;
-        transition: width 0.4s ease;
-    }
+        :root {
+            --orange: #FF5A00;
+            --orange-hover: #E65100;
+            --orange-pale: #FFF0E6;
+            --orange-light: #FFE0CC;
+            --text-1: #1a1a2e;
+            --text-2: #4a4a6a;
+            --text-3: #8a8aaa;
+            --surface: #ffffff;
+            --surface-alt: #f8f9fc;
+            --border: #e8ecf7;
+            --border-strong: #d0d5e0;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 8px 32px rgba(0,0,0,0.10);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.12);
+            --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.8);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            --grad-brand: linear-gradient(135deg, #FF5A00 0%, #E65100 100%);
+        }
 
-    .hint {
-        font-size: 12px;
-        color: #aaa;
-        line-height: 1.5;
-    }
+        body {
+            font-family: var(--font-sans);
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
 
-    .btn {
-        display: inline-block;
-        margin-top: 16px;
-        padding: 12px 28px;
-        border-radius: 8px;
-        background: #667eea;
-        color: white;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 14px;
-        border: none;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .btn:hover { background: #5a67d8; }
-    .btn.secondary {
-        background: transparent;
-        color: #667eea;
-        border: 1px solid #667eea;
-        margin-left: 8px;
-    }
-    .hidden { display: none !important; }
+        /* ----- Card Container ----- */
+        .payment-wait-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            max-width: 460px;
+            width: 100%;
+            padding: 40px 32px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-    .pulse-dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #27ae60;
-        margin-right: 6px;
-        animation: pulse 1.4s infinite;
-        vertical-align: middle;
-    }
-    @keyframes pulse {
-        0% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.7); }
-        100% { opacity: 1; transform: scale(1); }
-    }
-</style>
+        .payment-wait-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--grad-brand);
+        }
+
+        /* ----- Spinner States ----- */
+        .spinner {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+            border: 5px solid var(--border);
+            border-top-color: var(--orange);
+            border-radius: 50%;
+            animation: spin 0.85s linear infinite;
+            transition: all 0.4s ease;
+        }
+
+        .spinner.success {
+            border: none;
+            animation: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #27ae60;
+            box-shadow: 0 8px 24px rgba(39, 174, 96, 0.3);
+        }
+
+        .spinner.success::after {
+            content: '✓';
+            color: white;
+            font-size: 34px;
+            font-weight: 700;
+        }
+
+        .spinner.error {
+            border: none;
+            animation: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e74c3c;
+            box-shadow: 0 8px 24px rgba(231, 76, 60, 0.3);
+        }
+
+        .spinner.error::after {
+            content: '!';
+            color: white;
+            font-size: 34px;
+            font-weight: 700;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ----- Typography ----- */
+        .main-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-1);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-3);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .status-message {
+            font-size: 15px;
+            color: var(--text-2);
+            min-height: 24px;
+            margin-bottom: 18px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* ----- Pulse Dot ----- */
+        .pulse-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--orange);
+            animation: pulse 1.4s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        .pulse-dot.success-dot {
+            background: #27ae60;
+        }
+
+        .pulse-dot.hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        /* ----- Progress Bar ----- */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--grad-brand);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            border-radius: 999px;
+        }
+
+        /* ----- Details Card ----- */
+        .details-grid {
+            background: var(--surface-alt);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            text-align: left;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 13px;
+            color: var(--text-2);
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .details-row:last-child {
+            border-bottom: none;
+        }
+
+        .details-row .label {
+            color: var(--text-3);
+            font-weight: 400;
+        }
+
+        .details-row .value {
+            font-weight: 600;
+            color: var(--text-1);
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        .details-row .value.receipt-code {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: var(--orange);
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ----- Hint Text ----- */
+        .hint-text {
+            font-size: 12.5px;
+            color: var(--text-3);
+            line-height: 1.6;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+
+        .hint-text strong {
+            color: var(--text-2);
+        }
+
+        /* ----- Action Buttons ----- */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .action-buttons.hidden {
+            display: none;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-family: var(--font-sans);
+        }
+
+        .btn-primary {
+            background: var(--grad-brand);
+            color: white;
+            box-shadow: 0 4px 16px rgba(255, 90, 0, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(255, 90, 0, 0.45);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--orange);
+            border: 1.5px solid var(--orange);
+        }
+
+        .btn-secondary:hover {
+            background: var(--orange-pale);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ----- Loading Spinner on Button ----- */
+        .btn .spinner-btn {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .btn-secondary .spinner-btn {
+            border-color: rgba(255, 90, 0, 0.2);
+            border-top-color: var(--orange);
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 480px) {
+            .payment-wait-card {
+                padding: 28px 18px 24px;
+                border-radius: var(--radius-lg);
+            }
+
+            .main-title {
+                font-size: 19px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+            }
+
+            .status-message {
+                font-size: 14px;
+            }
+
+            .spinner {
+                width: 60px;
+                height: 60px;
+                border-width: 4px;
+            }
+
+            .spinner.success::after,
+            .spinner.error::after {
+                font-size: 28px;
+            }
+
+            .details-row {
+                font-size: 12px;
+                padding: 4px 0;
+            }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 13px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .details-grid {
+                padding: 12px 14px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .payment-wait-card {
+                padding: 20px 12px 18px;
+            }
+
+            .main-title {
+                font-size: 17px;
+            }
+
+            .spinner {
+                width: 50px;
+                height: 50px;
+            }
+
+            .spinner.success::after,
+            .spinner.error::after {
+                font-size: 24px;
+            }
+        }
+
+        /* ----- Accessibility ----- */
+        @media (prefers-reduced-motion: reduce) {
+            .spinner,
+            .pulse-dot {
+                animation-duration: 0.01ms !important;
+            }
+            .progress-fill {
+                transition: none;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div class="card">
+<div class="payment-wait-card">
+    <!-- Spinner / Status Icon -->
     <div class="spinner" id="spinnerIcon"></div>
 
-    <h1 id="mainTitle">Confirming Your Payment</h1>
+    <!-- Title -->
+    <h1 class="main-title" id="mainTitle">Confirming Your Payment</h1>
     <p class="subtitle" id="subtitle">Please keep this page open — do not go back or refresh.</p>
 
-    <div id="statusMessage">
+    <!-- Status Message -->
+    <div class="status-message" id="statusMessage">
         <span class="pulse-dot" id="pulseDot"></span>
         <span id="statusText">Checking M-Pesa confirmation…</span>
     </div>
 
-    <div class="progress-bar">
+    <!-- Progress Bar -->
+    <div class="progress-container">
         <div class="progress-fill" id="progressFill"></div>
     </div>
 
-    <div class="details">
-        <div><span>Category:</span> <span>{{ flow.upper() }}</span></div>
-        <div><span>Amount:</span> <span>Ksh {{ amount }}</span></div>
-        <div><span>Index Number:</span> <span>{{ index_number }}</span></div>
-        <div><span>Email:</span> <span>{{ email }}</span></div>
+    <!-- Payment Details -->
+    <div class="details-grid">
+        <div class="details-row">
+            <span class="label">📚 Category</span>
+            <span class="value">{{ flow.upper() }}</span>
+        </div>
+        <div class="details-row">
+            <span class="label">💰 Amount</span>
+            <span class="value">Ksh {{ amount }}</span>
+        </div>
+        <div class="details-row">
+            <span class="label">🎓 Index Number</span>
+            <span class="value">{{ index_number }}</span>
+        </div>
+        <div class="details-row">
+            <span class="label">📧 Email</span>
+            <span class="value" style="font-size:12px;">{{ email }}</span>
+        </div>
         {% if transaction_ref %}
-        <div><span>Reference:</span> <span>{{ transaction_ref[:16] }}{% if transaction_ref|length > 16 %}…{% endif %}</span></div>
+        <div class="details-row">
+            <span class="label">🔁 Transaction Ref</span>
+            <span class="value receipt-code">{{ transaction_ref[:16] }}{% if transaction_ref|length > 16 %}…{% endif %}</span>
+        </div>
         {% endif %}
     </div>
 
-    <p class="hint" id="hintText">
-        Enter your M-Pesa PIN on your phone when prompted. This page will redirect automatically as soon as your courses are ready — usually within a few seconds.
+    <!-- Hint -->
+    <p class="hint-text" id="hintText">
+        <strong>📱 Step 1:</strong> Check your phone for the M-Pesa STK prompt &nbsp;·&nbsp;
+        <strong>🔐 Step 2:</strong> Enter your PIN to confirm &nbsp;·&nbsp;
+        <strong>✨ Step 3:</strong> This page updates automatically
     </p>
 
-    <div id="actionButtons" class="hidden">
-        <a href="{{ url_for('payment', flow=flow) }}" class="btn">Try Payment Again</a>
-        <button class="btn secondary" id="retryCheckBtn" onclick="manualRetry()">Check Again</button>
+    <!-- Action Buttons -->
+    <div class="action-buttons hidden" id="actionButtons">
+        <a href="{{ url_for('payment', flow=flow) }}" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Try Payment Again
+        </a>
+        <button class="btn btn-secondary" id="retryCheckBtn" onclick="manualRetry()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Check Again
+        </button>
     </div>
 </div>
 
@@ -206,13 +496,13 @@
     let pollTimer = null;
 
     const statusText   = document.getElementById('statusText');
-    const spinnerIcon   = document.getElementById('spinnerIcon');
-    const mainTitle     = document.getElementById('mainTitle');
-    const subtitle      = document.getElementById('subtitle');
-    const progressFill  = document.getElementById('progressFill');
+    const spinnerIcon  = document.getElementById('spinnerIcon');
+    const mainTitle    = document.getElementById('mainTitle');
+    const subtitle     = document.getElementById('subtitle');
+    const progressFill = document.getElementById('progressFill');
     const actionButtons = document.getElementById('actionButtons');
-    const hintText       = document.getElementById('hintText');
-    const pulseDot        = document.getElementById('pulseDot');
+    const hintText     = document.getElementById('hintText');
+    const pulseDot     = document.getElementById('pulseDot');
 
     function setStatus(msg) {
         statusText.textContent = msg;
@@ -228,7 +518,7 @@
         setStatus('Payment confirmed! Redirecting to your courses…');
         setProgress(100);
         spinnerIcon.className = 'spinner success';
-        mainTitle.textContent = 'All Set!';
+        mainTitle.textContent = 'All Set! 🎉';
         subtitle.textContent = 'Taking you to your results now.';
         pulseDot.classList.add('hidden');
         setTimeout(function () {
@@ -244,7 +534,7 @@
         mainTitle.textContent = 'Still Waiting…';
         subtitle.textContent = 'This is taking longer than usual.';
         setStatus('We have not received confirmation yet.');
-        hintText.textContent = 'If you completed the M-Pesa prompt, click "Check Again" below. If you did not receive a prompt, try paying again.';
+        hintText.innerHTML = 'If you completed the M-Pesa prompt, click <strong>"Check Again"</strong>. If you did not receive a prompt, try <strong>"Try Payment Again"</strong>.';
         actionButtons.classList.remove('hidden');
     }
 
@@ -263,12 +553,14 @@
             }
 
             if (data.status === 'db_confirmed' || data.status === 'memory_completed') {
-                // ready flag should already be true, but just in case
                 if (data.redirect_url) { goToResults(data.redirect_url); return; }
             }
 
             if (data.status === 'session_paid_processing') {
                 setStatus('Payment confirmed! Generating your courses…');
+                // Force a quick re-check
+                setTimeout(checkCoursesReady, 300);
+                return;
             } else if (data.status === 'pending' || data.status === 'waiting') {
                 setStatus(data.message || 'Waiting for M-Pesa confirmation…');
             } else if (data.status === 'timeout') {
@@ -276,7 +568,6 @@
             } else if (data.status === 'error') {
                 setStatus('Retrying…');
             } else if (data.error) {
-                // session expired etc.
                 if (data.redirect_url) {
                     window.location.href = data.redirect_url;
                     return;
@@ -302,9 +593,12 @@
             const data = await res.json();
             if (data.success && data.found && data.redirect_url) {
                 goToResults(data.redirect_url);
+                return true;
             }
+            return false;
         } catch (err) {
             console.warn('Force check failed:', err);
+            return false;
         }
     }
 
@@ -331,17 +625,30 @@
     }
 
     window.manualRetry = function () {
+        const btn = document.getElementById('retryCheckBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-btn"></span> Checking…';
+
         actionButtons.classList.add('hidden');
         spinnerIcon.className = 'spinner';
         pulseDot.classList.remove('hidden');
         mainTitle.textContent = 'Confirming Your Payment';
         subtitle.textContent = 'Please keep this page open — do not go back or refresh.';
-        hintText.textContent = 'Enter your M-Pesa PIN on your phone when prompted. This page will redirect automatically as soon as your courses are ready.';
+        hintText.innerHTML = '📱 Check your phone for the M-Pesa STK prompt &nbsp;·&nbsp; 🔐 Enter your PIN to confirm &nbsp;·&nbsp; ✨ This page updates automatically';
         startTime = Date.now();
         forceCheckFired = false;
         polling = true;
         setProgress(0);
-        checkCoursesReady();
+
+        // Try force check first, then resume polling
+        forceCheckPayment().then(found => {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Check Again';
+            
+            if (!found) {
+                checkCoursesReady();
+            }
+        });
     };
 
     // Warn before leaving while polling
@@ -349,6 +656,14 @@
         if (polling) {
             e.preventDefault();
             e.returnValue = '';
+        }
+    });
+
+    // Also check when tab becomes visible again
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && polling) {
+            // Tab became active again, check immediately
+            checkCoursesReady();
         }
     });
 
