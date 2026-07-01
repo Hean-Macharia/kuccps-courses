@@ -6754,7 +6754,7 @@ def enter_details(flow):
         # ══════════════════════════════════════════════════════
         existing    = get_user_paid_categories_strict(email, index_number)
         is_first    = len(existing) == 0
-        amount      = 1 if is_first else 1
+        amount      = 200 if is_first else 100
  
         session['email']            = email
         session['index_number']     = index_number
