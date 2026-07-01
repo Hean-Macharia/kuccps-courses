@@ -1,410 +1,361 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Processing Payment | KUCCPS Courses Checker</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(145deg, #f0f4fa 0%, #e9eef4 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .card {
-            background: #fff;
-            border-radius: 32px;
-            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.05);
-            padding: 40px 32px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            transition: transform 0.2s ease;
-        }
-        .spinner {
-            width: 64px;
-            height: 64px;
-            border: 5px solid #e9f0fe;
-            border-top-color: #1a73e8;
-            border-right-color: #34a853;
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
-            margin: 0 auto 24px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        h2 { font-size: 26px; color: #0f172a; margin-bottom: 8px; font-weight: 700; letter-spacing: -0.2px; }
-        .subtitle { color: #5b6e8c; font-size: 14px; margin-bottom: 20px; }
-        #status-msg {
-            font-size: 15px;
-            font-weight: 500;
-            color: #1e293b;
-            background: #f8fafc;
-            padding: 8px 12px;
-            border-radius: 40px;
-            display: inline-block;
-            margin-bottom: 20px;
-            min-height: 48px;
-            transition: all 0.2s;
-        }
-        .progress-track {
-            background: #e2e8f0;
-            border-radius: 40px;
-            height: 10px;
-            overflow: hidden;
-            margin-bottom: 12px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-        }
-        #progress-bar {
-            background: linear-gradient(90deg, #1a73e8, #34a853, #f9ab00);
-            height: 100%;
-            width: 4%;
-            border-radius: 40px;
-            transition: width 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        }
-        .timer-text { font-size: 12px; color: #94a3b8; margin-bottom: 24px; font-family: monospace; }
-        .info-box {
-            background: #ffffff;
-            border: 1px solid #e2edff;
-            border-radius: 24px;
-            padding: 18px 20px;
-            text-align: left;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        .info-label { color: #5b6e8c; font-weight: 500; }
-        .info-value { color: #0f172a; font-weight: 600; word-break: break-word; }
-        .steps { list-style: none; text-align: left; margin-bottom: 28px; background: #f9fbfe; padding: 12px 16px; border-radius: 28px; }
-        .steps li {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            font-size: 13.5px;
-            color: #1f2a44;
-            margin-bottom: 12px;
-        }
-        .step-num {
-            min-width: 24px; height: 24px;
-            background: #1a73e8; color: #fff;
-            border-radius: 30px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 700;
-            flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 24px;
-            border-radius: 60px;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #f1f5f9;
-            color: #1e293b;
-        }
-        .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
-        .btn-secondary:hover { background: #e6edf5; transform: scale(0.97); }
-        .done-icon {
-            display: none;
-            font-size: 58px;
-            margin-bottom: 16px;
-            background: #e6f7ec;
-            width: 90px;
-            height: 90px;
-            line-height: 90px;
-            border-radius: 60px;
-            margin-left: auto;
-            margin-right: auto;
-            box-shadow: 0 8px 20px rgba(52,168,83,0.2);
-        }
-        .amount-badge {
-            display: inline-block;
-            background: #eaf9e7;
-            color: #1e7b3a;
-            border-radius: 100px;
-            padding: 6px 22px;
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            font-family: monospace;
-            letter-spacing: 0.5px;
-        }
-        .error-box {
-            display: none;
-            background: #fff4f0;
-            border-left: 5px solid #dc2626;
-            border-radius: 20px;
-            padding: 14px 18px;
-            font-size: 13px;
-            color: #b91c1c;
-            margin-bottom: 20px;
-            text-align: left;
-            font-weight: 500;
-        }
-        .text-muted { color: #5b6e8c; }
-        hr { margin: 10px 0; border: 0; border-top: 1px solid #ecf3fa; }
-        @media (max-width: 480px) {
-            .card { padding: 28px 20px; }
-            .info-box { padding: 14px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirming Payment | KUCCPS Courses Checker</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        max-width: 440px;
+        width: 100%;
+        padding: 40px 30px;
+        text-align: center;
+    }
+    .spinner {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 24px;
+        border: 6px solid #e8ecf7;
+        border-top: 6px solid #667eea;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+    }
+    .spinner.success {
+        border: none;
+        animation: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #27ae60;
+    }
+    .spinner.success::after {
+        content: '✓';
+        color: white;
+        font-size: 36px;
+        font-weight: bold;
+    }
+    .spinner.error {
+        border: none;
+        animation: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e74c3c;
+    }
+    .spinner.error::after {
+        content: '!';
+        color: white;
+        font-size: 36px;
+        font-weight: bold;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    h1 {
+        font-size: 22px;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+    p.subtitle {
+        color: #7f8c8d;
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+    #statusMessage {
+        font-size: 15px;
+        color: #34495e;
+        min-height: 22px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+    .details {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 16px;
+        text-align: left;
+        font-size: 13px;
+        color: #555;
+        margin-bottom: 20px;
+    }
+    .details div { margin: 4px 0; display: flex; justify-content: space-between; }
+    .details span:first-child { color: #999; }
+    .details span:last-child { font-weight: 600; color: #333; }
+
+    .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: #eef0f6;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        width: 0%;
+        transition: width 0.4s ease;
+    }
+
+    .hint {
+        font-size: 12px;
+        color: #aaa;
+        line-height: 1.5;
+    }
+
+    .btn {
+        display: inline-block;
+        margin-top: 16px;
+        padding: 12px 28px;
+        border-radius: 8px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn:hover { background: #5a67d8; }
+    .btn.secondary {
+        background: transparent;
+        color: #667eea;
+        border: 1px solid #667eea;
+        margin-left: 8px;
+    }
+    .hidden { display: none !important; }
+
+    .pulse-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #27ae60;
+        margin-right: 6px;
+        animation: pulse 1.4s infinite;
+        vertical-align: middle;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.7); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+</style>
 </head>
 <body>
+
 <div class="card">
-    <div id="spinner-container">
-        <div class="spinner" id="spinner"></div>
+    <div class="spinner" id="spinnerIcon"></div>
+
+    <h1 id="mainTitle">Confirming Your Payment</h1>
+    <p class="subtitle" id="subtitle">Please keep this page open — do not go back or refresh.</p>
+
+    <div id="statusMessage">
+        <span class="pulse-dot" id="pulseDot"></span>
+        <span id="statusText">Checking M-Pesa confirmation…</span>
     </div>
-    <div class="done-icon" id="done-icon">✅</div>
 
-    <h2>Finalising Payment</h2>
-    <p class="subtitle">Stay on this page — we’ll redirect you automatically</p>
-
-    <div class="amount-badge">KSh {{ amount }}</div>
-
-    <p id="status-msg">⏳ Waiting for M-Pesa confirmation on your phone…</p>
-
-    <div class="progress-track">
-        <div id="progress-bar"></div>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
     </div>
-    <p class="timer-text">⏱️ Elapsed time: <span id="elapsed-timer">0s</span></p>
 
-    <div class="error-box" id="error-box"></div>
-
-    <div class="info-box">
-        <div class="info-row">
-            <span class="info-label">📘 Course Level</span>
-            <span class="info-value">{{ flow | upper }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">🎓 Index Number</span>
-            <span class="info-value">{{ index_number }}</span>
-        </div>
-        {% if transaction_ref and transaction_ref != 'manual' %}
-        <div class="info-row">
-            <span class="info-label">🔁 Transaction Ref</span>
-            <span class="info-value">{{ transaction_ref[:12] }}{% if transaction_ref|length > 12 %}...{% endif %}</span>
-        </div>
+    <div class="details">
+        <div><span>Category:</span> <span>{{ flow.upper() }}</span></div>
+        <div><span>Amount:</span> <span>Ksh {{ amount }}</span></div>
+        <div><span>Index Number:</span> <span>{{ index_number }}</span></div>
+        <div><span>Email:</span> <span>{{ email }}</span></div>
+        {% if transaction_ref %}
+        <div><span>Reference:</span> <span>{{ transaction_ref[:16] }}{% if transaction_ref|length > 16 %}…{% endif %}</span></div>
         {% endif %}
     </div>
 
-    <ol class="steps">
-        <li><span class="step-num">1</span>📱 Check your phone for the M-Pesa STK prompt</li>
-        <li><span class="step-num">2</span>🔐 Enter your 4-digit M-Pesa PIN to confirm</li>
-        <li><span class="step-num">3</span>✨ This page updates automatically — no refresh needed</li>
-    </ol>
+    <p class="hint" id="hintText">
+        Enter your M-Pesa PIN on your phone when prompted. This page will redirect automatically as soon as your courses are ready — usually within a few seconds.
+    </p>
 
-    <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Home</a>
+    <div id="actionButtons" class="hidden">
+        <a href="{{ url_for('payment', flow=flow) }}" class="btn">Try Payment Again</a>
+        <button class="btn secondary" id="retryCheckBtn" onclick="manualRetry()">Check Again</button>
+    </div>
 </div>
 
 <script>
-(function() {
-    // ---- Backend variables injected from Flask ----
-    var flow           = {{ flow | tojson }};
-    var startedAt      = Date.now();
-    var checking       = false;
-    var pollTimer      = null;
-    var errorShown     = false;
-    var redirectDone   = false;        // prevent double redirect
+(function () {
+    const flow = "{{ flow }}";
+    const FAST_POLL_MS   = 700;    // aggressive polling for the first stretch
+    const SLOW_POLL_MS   = 2000;   // fallback once we've been waiting a while
+    const FAST_WINDOW_MS = 20000;  // stay fast for the first 20s
+    const TIMEOUT_MS     = 90000;  // give up / show manual options after 90s
+    const FORCE_CHECK_AT = 30000;  // hit the emergency /force-check-payment endpoint once
 
-    // DOM elements
-    var statusEl       = document.getElementById('status-msg');
-    var timerEl        = document.getElementById('elapsed-timer');
-    var progressEl     = document.getElementById('progress-bar');
-    var spinnerEl      = document.getElementById('spinner');
-    var doneIcon       = document.getElementById('done-icon');
-    var errorBox       = document.getElementById('error-box');
-    var spinnerContainer = document.getElementById('spinner-container');
+    let startTime = Date.now();
+    let polling = true;
+    let forceCheckFired = false;
+    let pollTimer = null;
 
-    // Helper: format elapsed seconds & progress bar
-    function updateProgressAndTimer() {
-        var elapsedSec = Math.floor((Date.now() - startedAt) / 1000);
-        if (timerEl) timerEl.textContent = elapsedSec + 's';
+    const statusText   = document.getElementById('statusText');
+    const spinnerIcon   = document.getElementById('spinnerIcon');
+    const mainTitle     = document.getElementById('mainTitle');
+    const subtitle      = document.getElementById('subtitle');
+    const progressFill  = document.getElementById('progressFill');
+    const actionButtons = document.getElementById('actionButtons');
+    const hintText       = document.getElementById('hintText');
+    const pulseDot        = document.getElementById('pulseDot');
 
-        // Smooth progress simulation (visual only, backend independent)
-        var pct = 5;
-        if (elapsedSec < 6) {
-            pct = 12 + elapsedSec * 8;   // 12% → 60% within 6 sec
-        } else if (elapsedSec < 12) {
-            pct = 60 + (elapsedSec - 6) * 5;   // 60% → 90% by 12 sec
-        } else if (elapsedSec < 25) {
-            pct = 90 + (elapsedSec - 12) * 0.6; // 90% → 97% slowly
-        } else {
-            pct = 97;
-        }
-        if (pct > 97) pct = 97;
-        if (progressEl) progressEl.style.width = pct + '%';
+    function setStatus(msg) {
+        statusText.textContent = msg;
     }
 
-    // Live timer and progress update every second
-    setInterval(function() {
-        if (!redirectDone && !errorShown) {
-            updateProgressAndTimer();
-        }
-    }, 1000);
-
-    function setStatusMessage(msg, isError = false) {
-        if (statusEl) {
-            statusEl.innerHTML = msg;
-            if (!isError) statusEl.style.background = "#f0f9ff";
-            else statusEl.style.background = "#fff0f0";
-        }
+    function setProgress(pct) {
+        progressFill.style.width = Math.min(pct, 100) + '%';
     }
 
-    function showSuccessReady() {
-        if (redirectDone) return;
-        redirectDone = true;
-        if (pollTimer) clearInterval(pollTimer);
-        if (spinnerEl) spinnerEl.style.display = 'none';
-        if (doneIcon) doneIcon.style.display = 'block';
-        if (progressEl) progressEl.style.width = '100%';
-        setStatusMessage('✅ Payment confirmed! Redirecting to your courses...');
-        // optional: hide spinner container extra style
-        if (spinnerContainer) spinnerContainer.style.opacity = '0.5';
+    function goToResults(url) {
+        polling = false;
+        clearTimeout(pollTimer);
+        setStatus('Payment confirmed! Redirecting to your courses…');
+        setProgress(100);
+        spinnerIcon.className = 'spinner success';
+        mainTitle.textContent = 'All Set!';
+        subtitle.textContent = 'Taking you to your results now.';
+        pulseDot.classList.add('hidden');
+        setTimeout(function () {
+            window.location.href = url;
+        }, 500);
     }
 
-    function showErrorMessage(msg) {
-        if (errorShown) return;
-        errorShown = true;
-        if (pollTimer) clearInterval(pollTimer);
-        if (spinnerEl) spinnerEl.style.display = 'none';
-        if (errorBox) {
-            errorBox.textContent = msg || '❌ Payment verification failed. Please contact support: kuccpscourses@gmail.com';
-            errorBox.style.display = 'block';
-        }
-        setStatusMessage('⚠️ Verification failed. See details below.', true);
-        if (progressEl) progressEl.style.width = '100%';
-        progressEl.style.background = '#e9ecef';
+    function showTimeoutState() {
+        polling = false;
+        clearTimeout(pollTimer);
+        spinnerIcon.className = 'spinner error';
+        pulseDot.classList.add('hidden');
+        mainTitle.textContent = 'Still Waiting…';
+        subtitle.textContent = 'This is taking longer than usual.';
+        setStatus('We have not received confirmation yet.');
+        hintText.textContent = 'If you completed the M-Pesa prompt, click "Check Again" below. If you did not receive a prompt, try paying again.';
+        actionButtons.classList.remove('hidden');
     }
 
-    // ---------- POLLING LOGIC (IMPROVED) ----------
-    // This calls the backend endpoint: /check-courses-ready/<flow>
-    // Expected JSON: { ready: bool, redirect_url: string, error?: bool, message?: string, status?: string }
-    function pollPaymentStatus() {
-        if (checking || errorShown || redirectDone) return;
-        checking = true;
+    async function checkCoursesReady() {
+        try {
+            const res = await fetch(`/check-courses-ready/${flow}`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            });
+            const data = await res.json();
 
-        fetch('/check-courses-ready/' + encodeURIComponent(flow), {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: { 
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                // Server error but continue polling after short delay
-                checking = false;
-                return null;
-            }
-            return response.json();
-        })
-        .then(function(data) {
-            checking = false;
-            if (!data) {
-                // network glitch but still retry
+            if (data.ready && data.redirect_url) {
+                goToResults(data.redirect_url);
                 return;
             }
 
-            // ---- HANDLE READY STATE (Payment confirmed + grades OR grades missing but payment ok) ----
-            if (data.ready === true) {
-                // Important: Use redirect_url from backend (already points to /results/<flow>)
-                // The backend ensures if no grades, redirect_url sends user to grade entry without charge.
+            if (data.status === 'db_confirmed' || data.status === 'memory_completed') {
+                // ready flag should already be true, but just in case
+                if (data.redirect_url) { goToResults(data.redirect_url); return; }
+            }
+
+            if (data.status === 'session_paid_processing') {
+                setStatus('Payment confirmed! Generating your courses…');
+            } else if (data.status === 'pending' || data.status === 'waiting') {
+                setStatus(data.message || 'Waiting for M-Pesa confirmation…');
+            } else if (data.status === 'timeout') {
+                setStatus(data.message || 'Payment is taking longer than expected…');
+            } else if (data.status === 'error') {
+                setStatus('Retrying…');
+            } else if (data.error) {
+                // session expired etc.
                 if (data.redirect_url) {
-                    showSuccessReady();
-                    // small delay to let user see success animation
-                    setTimeout(function() {
-                        if (!redirectDone) return;
-                        window.location.href = data.redirect_url;
-                    }, 700);
-                } else {
-                    // fallback (should not happen)
-                    window.location.href = '/results/' + flow + '?ref=payment_ok';
-                }
-                return;
-            }
-
-            // ---- ERROR from backend (payment failed, invalid, or missing) ----
-            if (data.error === true) {
-                var errMsg = data.message || 'Payment verification failed. Please retry or contact support.';
-                showErrorMessage(errMsg);
-                return;
-            }
-
-            // ---- Special status: timeout / pending but still waiting ----
-            if (data.status === 'timeout') {
-                setStatusMessage('⏳ Still waiting for M-Pesa confirmation. Check your phone & try again in a moment.', false);
-                // keep polling
-                return;
-            }
-
-            // ---- Normal pending: update message if backend provides custom message ----
-            if (data.message && typeof data.message === 'string') {
-                setStatusMessage(data.message);
-            } else {
-                // fallback dynamic message based on elapsed
-                var secs = Math.floor((Date.now() - startedAt) / 1000);
-                if (secs > 18) {
-                    setStatusMessage("🔄 Still processing... Ensure you entered M-Pesa PIN. It may take up to 30 seconds.");
-                } else {
-                    setStatusMessage("📲 Tap 'OK' on your M-Pesa prompt to complete payment.");
+                    window.location.href = data.redirect_url;
+                    return;
                 }
             }
 
-            // Update progress bar based on time (already done by setInterval)
-            updateProgressAndTimer();
-        })
-        .catch(function(err) {
-            checking = false;
-            // Do not show fatal error on single network hiccup
-            console.warn("Polling fetch error", err);
-            if (Date.now() - startedAt > 45000 && !errorShown) {
-                // after 45 secs with persistent network failure suggest refresh
-                setStatusMessage("⚠️ Network issue – check connection. Page will retry automatically.", false);
-            }
-        });
+            scheduleNextPoll();
+
+        } catch (err) {
+            console.warn('Poll error, retrying:', err);
+            setStatus('Reconnecting…');
+            scheduleNextPoll();
+        }
     }
 
-    // start polling with immediate check
-    pollPaymentStatus();
-    pollTimer = setInterval(pollPaymentStatus, 1800); // poll every 1.8 sec (balanced)
-
-    // Optional safety timeout: if after 70 seconds payment still pending but no error, suggest manual check
-    setTimeout(function() {
-        if (!redirectDone && !errorShown) {
-            var elapsed = (Date.now() - startedAt) / 1000;
-            if (elapsed > 70) {
-                var manualMsg = "⌛ Payment is taking longer than usual. Please check your M-Pesa messages. If deducted, contact kuccpscourses@gmail.com with your index number.";
-                if (errorBox && errorBox.style.display !== 'block') {
-                    errorBox.textContent = manualMsg;
-                    errorBox.style.display = 'block';
-                    errorBox.style.background = "#fff8e7";
-                    errorBox.style.borderLeftColor = "#f97316";
-                }
-                setStatusMessage("⏰ Still waiting – verify M-Pesa transaction", false);
+    async function forceCheckPayment() {
+        try {
+            const res = await fetch(`/force-check-payment/${flow}`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            });
+            const data = await res.json();
+            if (data.success && data.found && data.redirect_url) {
+                goToResults(data.redirect_url);
             }
+        } catch (err) {
+            console.warn('Force check failed:', err);
         }
-    }, 68000);
+    }
+
+    function scheduleNextPoll() {
+        if (!polling) return;
+
+        const elapsed = Date.now() - startTime;
+
+        // update progress bar smoothly up to ~90% while waiting
+        setProgress(Math.min(90, (elapsed / TIMEOUT_MS) * 100));
+
+        if (elapsed >= TIMEOUT_MS) {
+            showTimeoutState();
+            return;
+        }
+
+        if (!forceCheckFired && elapsed >= FORCE_CHECK_AT) {
+            forceCheckFired = true;
+            forceCheckPayment();
+        }
+
+        const interval = elapsed < FAST_WINDOW_MS ? FAST_POLL_MS : SLOW_POLL_MS;
+        pollTimer = setTimeout(checkCoursesReady, interval);
+    }
+
+    window.manualRetry = function () {
+        actionButtons.classList.add('hidden');
+        spinnerIcon.className = 'spinner';
+        pulseDot.classList.remove('hidden');
+        mainTitle.textContent = 'Confirming Your Payment';
+        subtitle.textContent = 'Please keep this page open — do not go back or refresh.';
+        hintText.textContent = 'Enter your M-Pesa PIN on your phone when prompted. This page will redirect automatically as soon as your courses are ready.';
+        startTime = Date.now();
+        forceCheckFired = false;
+        polling = true;
+        setProgress(0);
+        checkCoursesReady();
+    };
+
+    // Warn before leaving while polling
+    window.addEventListener('beforeunload', function (e) {
+        if (polling) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // Kick off immediately — no artificial delay
+    checkCoursesReady();
 })();
 </script>
 
-<!-- 
-    Additional frontend enhancement: if backend returns no_grades scenario, this page does not directly
-    handle it, but the polling endpoint /check-courses-ready/<flow> must return ready: true 
-    and redirect_url that points to /results/<flow> which internally handles missing grades.
-    That's exactly what the updated backend does. This page is fully compatible.
--->
 </body>
 </html>
