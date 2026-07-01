@@ -4782,7 +4782,129 @@ def update_sitemap_dates():
     
     # For now, we're using dynamic dates in generate_sitemap()
     return True
+# ============================================
+# GUIDE PAGES ROUTES
+# ============================================
 
+@app.route('/guides/how-to-check-kuccps-courses-2026')
+def guide_how_to_check():
+    """Guide: How to check KUCCPS courses 2026"""
+    canonical = get_canonical_url('guide_how_to_check')
+    return render_template('guides/how_to_check.html',
+                         title='How to Check KUCCPS Courses 2026 | Step-by-Step Guide',
+                         meta_description='Learn how to check KUCCPS courses for 2026 intake. Step-by-step guide to finding degree, diploma, and certificate programs matching your KCSE grades.',
+                         canonical_url=canonical,
+                         guide_title='How to Check KUCCPS Courses 2026',
+                         guide_description='A complete step-by-step guide to finding courses that match your KCSE grades through KUCCPS.',
+                         last_updated='July 2026')
+
+@app.route('/guides/kuccps-cluster-points-explained')
+def guide_cluster_points():
+    """Guide: KUCCPS cluster points explained"""
+    canonical = get_canonical_url('guide_cluster_points')
+    return render_template('guides/cluster_points.html',
+                         title='KUCCPS Cluster Points Explained | Calculate Your Score',
+                         meta_description='Learn how KUCCPS cluster points are calculated. Grade conversion table and how to calculate your cluster points for university admission.',
+                         canonical_url=canonical,
+                         guide_title='KUCCPS Cluster Points Explained',
+                         guide_description='Understand how cluster points are calculated and how they affect your university admission.',
+                         last_updated='July 2026')
+
+@app.route('/guides/kcse-grades-university-admission')
+def guide_kcse_admission():
+    """Guide: KCSE grades and university admission"""
+    canonical = get_canonical_url('guide_kcse_admission')
+    return render_template('guides/kcse_admission.html',
+                         title='KCSE Grades & University Admission | KUCCPS Requirements',
+                         meta_description='Understand KCSE grade requirements for university admission. Minimum grades for degree, diploma, and certificate programs in Kenya.',
+                         canonical_url=canonical,
+                         guide_title='KCSE Grades & University Admission',
+                         guide_description='What grades do you need for university? Understanding KCSE requirements for different courses.',
+                         last_updated='July 2026')
+
+@app.route('/guides/diploma-courses-kenya-2026')
+def guide_diploma_courses():
+    """Guide: Diploma courses in Kenya 2026"""
+    canonical = get_canonical_url('guide_diploma_courses')
+    return render_template('guides/diploma_courses.html',
+                         title='Diploma Courses in Kenya 2026 | KUCCPS Programs',
+                         meta_description='Explore diploma courses available through KUCCPS in Kenya. Find technical and professional diploma programs matching your KCSE grades.',
+                         canonical_url=canonical,
+                         guide_title='Diploma Courses in Kenya 2026',
+                         guide_description='A comprehensive guide to diploma programs available through KUCCPS placement.',
+                         last_updated='July 2026')
+
+@app.route('/guides/certificate-courses-requirements')
+def guide_certificate_courses():
+    """Guide: Certificate courses requirements"""
+    canonical = get_canonical_url('guide_certificate_courses')
+    return render_template('guides/certificate_courses.html',
+                         title='Certificate Courses Requirements | KUCCPS Guide',
+                         meta_description='Learn about certificate course requirements in Kenya. Find vocational and technical certificate programs that match your KCSE grades.',
+                         canonical_url=canonical,
+                         guide_title='Certificate Courses Requirements',
+                         guide_description='What you need to know about certificate courses and their requirements.',
+                         last_updated='July 2026')
+
+@app.route('/guides/kmtc-courses-admission-2026')
+def guide_kmtc_courses():
+    """Guide: KMTC courses admission 2026"""
+    canonical = get_canonical_url('guide_kmtc_courses')
+    return render_template('guides/kmtc_courses.html',
+                         title='KMTC Courses & Admission 2026 | Kenya Medical Training College',
+                         meta_description='Learn about KMTC courses, admission requirements, and how to apply. Find healthcare programs matching your KCSE grades.',
+                         canonical_url=canonical,
+                         guide_title='KMTC Courses & Admission 2026',
+                         guide_description='A complete guide to Kenya Medical Training College programs and admission.',
+                         last_updated='July 2026')
+
+@app.route('/guides/artisan-courses-2026')
+def guide_artisan_courses():
+    """Guide: Artisan courses 2026"""
+    canonical = get_canonical_url('guide_artisan_courses')
+    return render_template('guides/artisan_courses.html',
+                         title='Artisan Courses 2026 | Vocational Training in Kenya',
+                         meta_description='Explore artisan courses and vocational training programs in Kenya. Find trade courses matching your KCSE grades.',
+                         canonical_url=canonical,
+                         guide_title='Artisan Courses 2026',
+                         guide_description='A guide to artisan and vocational training courses in Kenya.',
+                         last_updated='July 2026')
+
+@app.route('/guides/ttc-teacher-training-courses')
+def guide_ttc_courses():
+    """Guide: TTC teacher training courses"""
+    canonical = get_canonical_url('guide_ttc_courses')
+    return render_template('guides/ttc_courses.html',
+                         title='TTC Teacher Training Courses | KUCCPS Guide',
+                         meta_description='Learn about Teacher Training College (TTC) programs. Find primary and secondary teacher education courses matching your KCSE grades.',
+                         canonical_url=canonical,
+                         guide_title='TTC Teacher Training Courses',
+                         guide_description='A comprehensive guide to teacher training college programs in Kenya.',
+                         last_updated='July 2026')
+
+@app.route('/guides/kuccps-application-process')
+def guide_kuccps_application():
+    """Guide: KUCCPS application process"""
+    canonical = get_canonical_url('guide_kuccps_application')
+    return render_template('guides/kuccps_application.html',
+                         title='KUCCPS Application Process 2026 | Step-by-Step Guide',
+                         meta_description='Learn the KUCCPS application process step by step. How to apply for university and college placement through KUCCPS.',
+                         canonical_url=canonical,
+                         guide_title='KUCCPS Application Process',
+                         guide_description='Step-by-step guide to applying through KUCCPS for university and college placement.',
+                         last_updated='July 2026')
+
+@app.route('/guides/scholarships-opportunities-2026')
+def guide_scholarships():
+    """Guide: Scholarships opportunities 2026"""
+    canonical = get_canonical_url('guide_scholarships')
+    return render_template('guides/scholarships.html',
+                         title='Scholarships & Opportunities 2026 | Kenya Students',
+                         meta_description='Discover scholarships and financial aid opportunities for Kenyan students. Find funding for university, college, and vocational training.',
+                         canonical_url=canonical,
+                         guide_title='Scholarships & Opportunities 2026',
+                         guide_description='A guide to scholarships and financial aid available for Kenyan students.',
+                         last_updated='July 2026')
 @app.context_processor
 def inject_global_vars():
     """Inject global variables into all templates"""
