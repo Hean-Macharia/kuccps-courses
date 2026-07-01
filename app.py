@@ -7151,43 +7151,7 @@ def check_courses_ready(flow):
         'message': 'Waiting for payment confirmation on your phone…',
         'check_again': 1800
     })
-@app.route('/force-check-payment/<flow>')
-def force_check_payment(flow):
-    """Emergency endpoint to force-check and recover a stuck payment"""
-    email = session.get('email')
-    index_number = session.get('index_number')
-    
-    if not email or not index_number:
-        return jsonify({'success': False, 'error': 'No session'})
-    
-    # Force check database
-    if database_connected and user_payments_collection is not None:
-        payment = user_payments_collection.find_one({
-            '$or': [
-                {'email': email, 'index_number': index_number, 'level': flow},
-                {'index_number': index_number, 'level': flow}  # fallback without email match
-            ],
-            'payment_confirmed': True
-        })
-        
-        if payment:
-            # Force session update
-            session[f'paid_{flow}'] = True
-            session['current_flow'] = flow
-            session['current_level'] = flow
-            session['mpesa_receipt'] = payment.get('mpesa_receipt')
-            session.modified = True
-            
-            # Force queue processing
-            process_courses_after_payment(email, index_number, flow, payment.get('mpesa_receipt'))
-            
-            return jsonify({
-                'success': True,
-                'found': True,
-                'redirect_url': url_for('goto_results', flow=flow)
-            })
-    
-    return jsonify({'success': True, 'found': False})
+
 @app.route('/force-check-payment/<flow>')
 def force_check_payment(flow):
     """Emergency endpoint to recover stuck payments"""
