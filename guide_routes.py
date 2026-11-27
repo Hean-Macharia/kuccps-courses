@@ -18,8 +18,8 @@ def guides_index():
 def cluster_points():
     """Guide: KUCCPS cluster points explained"""
     return render_template('guides/cluster_points.html',
-                         title='KUCCPS Cluster Points Explained | Course Selection Guide',
-                         meta_description='Understand how cluster points relate to course selection, why requirements differ by programme, and where to verify current KUCCPS information.',
+                         title='KUCCPS Cluster Points and Cut-Off Points | Student Guide',
+                         meta_description='Learn what KUCCPS weighted cluster points and programme cut-off points mean, how they differ, and where to check official course requirements.',
                          canonical_url=url_for('kuccps_guides.cluster_points', _external=True),
                          current_year=datetime.now().year)
 

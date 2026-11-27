@@ -5601,7 +5601,7 @@ def index():
     canonical = get_canonical_url('index')
     return render_template('index.html',
                          title='KUCCPS Course Checker: Match KCSE Grades to Courses | Courses Checker',
-                         meta_description='Explore Kenyan degree, diploma, KMTC and other programme options using your KCSE grades. Independent eligibility guidance; KUCCPS handles official placement.',
+                         meta_description='Explore KUCCPS degree, diploma, certificate, KMTC and other courses using your KCSE grades. Compare published requirements; official placement is handled by KUCCPS.',
                          canonical_url=canonical)
 
 # ============================================
@@ -5652,7 +5652,7 @@ def degree():
     unique_content = get_unique_content_for_flow('degree')
     return render_template('degree.html',
                          title='KUCCPS Degree Courses | University Programs in Kenya',
-                         meta_description='Find KUCCPS university degree programs in Kenya. Match your KCSE grades and cluster points with bachelor degree courses in engineering, medicine, business, education, and more.',
+                         meta_description='Check your KCSE grades against published requirements for university degree courses in Kenya. Explore degree eligibility guidance and verify current programmes with KUCCPS.',
                          canonical_url=canonical,
                          unique_content=unique_content)
 
@@ -5663,7 +5663,7 @@ def diploma():
     unique_content = get_unique_content_for_flow('diploma')
     return render_template('diploma.html',
                          title='KUCCPS Diploma Courses | Technical Programs in Kenya',
-                         meta_description='Find KUCCPS diploma courses and technical programs in Kenya. Match your KCSE grades with 2-year diploma programs in engineering, business, IT, hospitality, and more.',
+                         meta_description='Explore diploma courses in Kenya and compare your KCSE grades with published programme requirements. Confirm current courses and placement details with KUCCPS.',
                          canonical_url=canonical,
                          unique_content=unique_content)
 
@@ -5674,7 +5674,7 @@ def kmtc():
     unique_content = get_unique_content_for_flow('kmtc')
     return render_template('kmtc.html',
                          title='KMTC Courses | Kenya Medical Training College Programs',
-                         meta_description='Browse KMTC medical courses and healthcare training programs available through KUCCPS. Find nursing, clinical medicine, lab technology programs matching your KCSE grades.',
+                         meta_description='Explore KMTC courses and compare your KCSE grades with published entry requirements for health training programmes. Confirm current admissions with KMTC and KUCCPS.',
                          canonical_url=canonical,
                          unique_content=unique_content)
 
@@ -5685,7 +5685,7 @@ def certificate():
     unique_content = get_unique_content_for_flow('certificate')
     return render_template('certificate.html',
                          title='KUCCPS Certificate Courses | Vocational Programs in Kenya',
-                         meta_description='Find KUCCPS certificate courses and vocational programs in Kenya. Match your KCSE grades with 1-2 year certificate programs in business, IT, hospitality, beauty, and skilled trades.',
+                         meta_description='Explore certificate courses in Kenya by KCSE grade. Compare published entry requirements in the Courses Checker catalogue and confirm current programmes with KUCCPS or the institution.',
                          canonical_url=canonical,
                          unique_content=unique_content)
 @app.route('/artisan')
@@ -5695,7 +5695,7 @@ def artisan():
     unique_content = get_unique_content_for_flow('artisan')
     return render_template('artisan.html',
                          title='KUCCPS Artisan Courses | Skills Training in Kenya',
-                         meta_description='Find KUCCPS artisan courses and vocational skills training programs in Kenya. Match your KCSE grades with practical trade programs in plumbing, electrical, carpentry, and more.',
+                         meta_description='Explore artisan and vocational courses in Kenya and compare KCSE grades with published programme requirements. Confirm current options with KUCCPS or training institutions.',
                          canonical_url=canonical,
                          unique_content=unique_content)
 @app.route('/results')
@@ -5790,7 +5790,7 @@ def ttc():
     unique_content = get_unique_content_for_flow('ttc')
     return render_template('ttc.html',
                          title='TTC Courses | Teacher Training Colleges in Kenya',
-                         meta_description='Find KUCCPS teacher training college (TTC) programs in Kenya. Match your KCSE grades with 2-year education diploma programs for primary, secondary, and technical teacher training.',
+                         meta_description='Explore TTC and teacher training courses in Kenya. Compare KCSE grades with published programme requirements and confirm current options with KUCCPS or the college.',
                          canonical_url=canonical,
                          unique_content=unique_content)
 
