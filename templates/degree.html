@@ -2,7 +2,31 @@
 {% block title %} KUCCPS Degree Courses | University Programs in Kenya {% endblock %}
 
 {% block links %}
-<!-- Microdata Schema for EducationalOccupationalProgram -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "{{ get_canonical_url(request.endpoint) }}#webpage",
+      "url": "{{ get_canonical_url(request.endpoint) }}",
+      "name": {{ self.title()|striptags|trim|tojson }},
+      "description": {{ meta_description|default(site_description, true)|striptags|trim|tojson }},
+      "inLanguage": "en-KE",
+      "isPartOf": { "@id": "https://www.studentsplacement.co.ke/#website" },
+      "about": { "@type": "Thing", "name": "KCSE university degree course eligibility guidance in Kenya" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ get_canonical_url(request.endpoint) }}#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.studentsplacement.co.ke/" },
+        { "@type": "ListItem", "position": 2, "name": "Degree programmes", "item": "{{ get_canonical_url(request.endpoint) }}" }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
 <style>
     /* Enhanced UI/UX Styles */
@@ -145,6 +169,12 @@
 {% block content %}
 
 <div class="container">
+    <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Degree programmes</li>
+        </ol>
+    </nav>
     <h1 class="text-center mb-4">KUCCPS University Degree Programs Qualification Checker</h2>
 </div>
 

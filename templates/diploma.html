@@ -2,7 +2,31 @@
 {% block title %}Find Diploma & Technical Programs Matching Your KCSE Grades{% endblock %}
 
 {% block links %}
-<!-- Microdata Schema for EducationalOccupationalProgram -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "{{ get_canonical_url(request.endpoint) }}#webpage",
+      "url": "{{ get_canonical_url(request.endpoint) }}",
+      "name": {{ self.title()|striptags|trim|tojson }},
+      "description": {{ meta_description|default(site_description, true)|striptags|trim|tojson }},
+      "inLanguage": "en-KE",
+      "isPartOf": { "@id": "https://www.studentsplacement.co.ke/#website" },
+      "about": { "@type": "Thing", "name": "KCSE diploma and technical programme eligibility guidance in Kenya" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ get_canonical_url(request.endpoint) }}#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.studentsplacement.co.ke/" },
+        { "@type": "ListItem", "position": 2, "name": "Diploma programmes", "item": "{{ get_canonical_url(request.endpoint) }}" }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
 <!-- Enhanced Diploma Page Styling - Modern Technical Theme -->
 <style>
@@ -378,6 +402,12 @@
 
 {% block content %}
 
+<div class="container mt-3">
+    <nav aria-label="Breadcrumb"><ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Diploma programmes</li>
+    </ol></nav>
+</div>
 <div class="pathway-form-intro"><p class="pathway-form-eyebrow">KCSE COURSE CHECKER</p><h1>Check your diploma eligibility</h1><p>Enter your overall KCSE grade and the subject grades you achieved.</p></div>
 
 <div class="container">
