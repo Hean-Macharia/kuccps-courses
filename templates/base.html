@@ -9,6 +9,7 @@
   {% set page_description = meta_description|default(site_description, true) %}
   <meta name="description" content="{{ page_description|striptags|trim|e }}">
   {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification|e }}">{% endif %}
+  {% if bing_site_verification %}<meta name="msvalidate.01" content="{{ bing_site_verification|e }}">{% endif %}
   {% if request.endpoint in ['results', 'show_results', 'verified_dashboard', 'verified_results_dashboard', 'show_verified_level_results', 'view_basket', 'payment', 'payment_wait', 'enter_details', 'user_info', 'auth', 'payment_issue', 'offline'] or (request.endpoint and request.endpoint.startswith('admin')) %}
   <meta name="robots" content="noindex, nofollow">
   {% else %}
@@ -19,17 +20,29 @@
   <meta property="og:description" content="{{ page_description|striptags|trim|e }}">
   <meta property="og:url" content="{{ page_canonical|e }}">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Eligibility Checker - Kenya Course Matching">
+  <meta property="og:site_name" content="Courses Checker">
+  <meta property="og:image" content="{{ og_image_url|e }}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ self.title()|striptags|trim|e }}">
   <meta name="twitter:description" content="{{ page_description|striptags|trim|e }}">
+  <meta name="twitter:image" content="{{ twitter_image_url|e }}">
   <meta name="theme-color" content="#FFFFFF">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/static/icons/icon-152x152.png">
   <link rel="icon" href="/static/icons/icon-192x192.png" type="image/png">
-  <title>{% block title %}Eligibility Checker — Find Courses Matching Your KCSE Grades{% endblock %}</title>
+  <title>{% block title %}{{ title|default('KCSE Course Eligibility Checker | Courses Checker', true)|striptags|trim|e }}{% endblock %}</title>
+
+  {% if google_analytics_id and request.endpoint not in ['results', 'show_results', 'verified_dashboard', 'verified_results_dashboard', 'show_verified_level_results', 'view_basket', 'payment', 'payment_wait', 'enter_details', 'user_info', 'auth', 'payment_issue', 'offline'] and not (request.endpoint and request.endpoint.startswith('admin')) %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_id|e }}"></script>
+  <script>
+    window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+    gtag('js',new Date());gtag('config','{{ google_analytics_id|e }}',{send_page_view:false});
+    gtag('event','page_view',{page_location:document.querySelector('link[rel=canonical]')?.href||location.origin+location.pathname,page_path:location.pathname});
+  </script>
+  <script defer src="{{ url_for('static', filename='js/seo-analytics.js', v='20261127-2') }}"></script>
+  {% endif %}
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

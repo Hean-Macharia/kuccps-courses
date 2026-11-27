@@ -413,7 +413,7 @@
 <div class="container">
 
 
-    <form action="{{ url_for('submit_certificate_grades') }}" method="post" id="certForm">
+    <form action="{{ url_for('submit_certificate_grades') }}" method="post" id="certForm" data-analytics-event="assessment_submit" data-analytics-category="certificate">
         <div class="certcard animate-fade-up">
             <div class="certsection-title">
                 <i>📋</i> Certificate Program Qualification

@@ -2834,7 +2834,7 @@ def clear_session_data(partial=False):
 @app.route('/sitemap-index.xml')
 @cache.cached(timeout=86400)
 def sitemap_index():
-    """Generate sitemap index with all sitemaps"""
+    """List sitemaps that contain public, canonical URLs."""
 
 
     xml = f'''<?xml version="1.0" encoding="UTF-8"?>
@@ -2844,12 +2844,6 @@ def sitemap_index():
   </sitemap>
   <sitemap>
     <loc>{SEO_CANONICAL_BASE}/sitemap-guides.xml</loc>
-  </sitemap>
-  <sitemap>
-    <loc>{SEO_CANONICAL_BASE}/sitemap-news.xml</loc>
-  </sitemap>
-  <sitemap>
-    <loc>{SEO_CANONICAL_BASE}/sitemap-courses.xml</loc>
   </sitemap>
 </sitemapindex>'''
 
@@ -2861,7 +2855,19 @@ def sitemap_index():
 
 @app.before_request
 def enforce_www_and_https():
-    """Enforce www subdomain for production domain only"""
+    """Use one HTTPS canonical host while preserving the original request method."""
+    guide_aliases = {
+        '/guides/kuccps-cluster-points-explained': '/guides/cluster-points-explained',
+        '/guides/kcse-grades-university-admission': '/guides/kcse-admission-requirements',
+        '/guides/diploma-courses-kenya-2026': '/guides/diploma-courses-kenya',
+        '/guides/kmtc-courses-admission-2026': '/guides/kmtc-courses-admission',
+        '/guides/artisan-courses-2026': '/guides/artisan-courses-kenya',
+        '/guides/scholarships-opportunities-2026': '/guides/scholarships-opportunities',
+    }
+    canonical_guide_path = guide_aliases.get(request.path)
+    if canonical_guide_path:
+        suffix = f'?{request.query_string.decode("utf-8")}' if request.query_string else ''
+        return redirect(f'{canonical_guide_path}{suffix}', code=308)
     # Skip health check endpoint
     if request.path == '/health':
         return None
@@ -2873,12 +2879,14 @@ def enforce_www_and_https():
     if host.endswith('.fly.dev') or host == 'localhost' or host == '127.0.0.1':
         return None
 
-    # Only apply www redirect to production domain (studentsplacement.co.ke -> www.studentsplacement.co.ke)
-    if host == 'studentsplacement.co.ke':
-        # Redirect non-www to www
-        scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
-        url = f'{scheme}://www.{host}{request.full_path}'
-        return redirect(url, code=301)
+    if host in {'studentsplacement.co.ke', PRODUCTION_DOMAIN}:
+        forwarded_proto = request.headers.get('X-Forwarded-Proto', request.scheme)
+        scheme = forwarded_proto.split(',', 1)[0].strip().lower()
+        if host != PRODUCTION_DOMAIN or scheme != 'https':
+            path = request.full_path
+            if path.endswith('?'):
+                path = path[:-1]
+            return redirect(f'{SEO_CANONICAL_BASE}{path}', code=308)
 
 @app.before_request
 def check_session_timeout():
@@ -3868,27 +3876,26 @@ from flask import make_response
 @app.route('/sitemap.xml')
 @cache.cached(timeout=86400)
 def sitemap_main():
-    """Generate main sitemap with all public pages"""
-    base_url = 'https://www.studentsplacement.co.ke'
+    """Generate the core sitemap with canonical public pages only."""
+    base_url = SEO_CANONICAL_BASE
     # All public pages
     pages = [
         # Public pages intended for search discovery
-        {'loc': '/', 'priority': '1.0', 'freq': 'weekly'},
+        {'loc': '/'},
 
         # Course Category Pages
-        {'loc': '/degree', 'priority': '0.95', 'freq': 'weekly'},
-        {'loc': '/diploma', 'priority': '0.95', 'freq': 'weekly'},
-        {'loc': '/certificate', 'priority': '0.95', 'freq': 'weekly'},
-        {'loc': '/artisan', 'priority': '0.95', 'freq': 'weekly'},
-        {'loc': '/kmtc', 'priority': '0.95', 'freq': 'weekly'},
-        {'loc': '/ttc', 'priority': '0.95', 'freq': 'weekly'},
+        {'loc': '/degree'},
+        {'loc': '/diploma'},
+        {'loc': '/certificate'},
+        {'loc': '/artisan'},
+        {'loc': '/kmtc'},
+        {'loc': '/ttc'},
 
         # Information Pages
-        {'loc': '/about', 'priority': '0.7', 'freq': 'monthly'},
-        {'loc': '/contact', 'priority': '0.6', 'freq': 'monthly'},
-        {'loc': '/user-guide', 'priority': '0.7', 'freq': 'monthly'},
-        {'loc': '/news', 'priority': '0.8', 'freq': 'weekly'},
-        {'loc': '/guides', 'priority': '0.8', 'freq': 'monthly'},
+        {'loc': '/about'},
+        {'loc': '/contact'},
+        {'loc': '/user-guide'},
+        {'loc': '/news'},
     ]
 
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -3897,8 +3904,6 @@ def sitemap_main():
     for page in pages:
         xml_parts.append('  <url>')
         xml_parts.append(f'    <loc>{base_url}{page["loc"]}</loc>')
-        xml_parts.append(f'    <changefreq>{page["freq"]}</changefreq>')
-        xml_parts.append(f'    <priority>{page["priority"]}</priority>')
         xml_parts.append('  </url>')
 
     xml_parts.append('</urlset>')
@@ -3912,30 +3917,28 @@ def sitemap_main():
 @app.route('/sitemap-guides.xml')
 @cache.cached(timeout=86400)
 def sitemap_guides():
-    """Generate sitemap for guides"""
-    base_url = 'https://www.studentsplacement.co.ke'
+    """Generate sitemap for published guide routes without duplicating its index."""
+    base_url = SEO_CANONICAL_BASE
     guides = [
-        {'path': '/guides', 'priority': '0.9'},
-        {'path': '/guides/how-to-check-kuccps-courses-2026', 'priority': '0.85'},
-        {'path': '/guides/cluster-points-explained', 'priority': '0.85'},
-        {'path': '/guides/kcse-admission-requirements', 'priority': '0.85'},
-        {'path': '/guides/diploma-courses-kenya', 'priority': '0.85'},
-        {'path': '/guides/certificate-courses-requirements', 'priority': '0.85'},
-        {'path': '/guides/kmtc-courses-admission', 'priority': '0.85'},
-        {'path': '/guides/artisan-courses-kenya', 'priority': '0.85'},
-        {'path': '/guides/ttc-teacher-training-courses', 'priority': '0.85'},
-        {'path': '/guides/kuccps-application-process', 'priority': '0.85'},
-        {'path': '/guides/scholarships-opportunities', 'priority': '0.85'},
+        '/guides',
+        '/guides/how-to-check-kuccps-courses-2026',
+        '/guides/cluster-points-explained',
+        '/guides/kcse-admission-requirements',
+        '/guides/diploma-courses-kenya',
+        '/guides/certificate-courses-requirements',
+        '/guides/kmtc-courses-admission',
+        '/guides/artisan-courses-kenya',
+        '/guides/ttc-teacher-training-courses',
+        '/guides/kuccps-application-process',
+        '/guides/scholarships-opportunities',
     ]
 
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
 
-    for guide in guides:
+    for path in guides:
         xml_parts.append('  <url>')
-        xml_parts.append(f'    <loc>{base_url}{guide["path"]}</loc>')
-        xml_parts.append('    <changefreq>monthly</changefreq>')
-        xml_parts.append(f'    <priority>{guide["priority"]}</priority>')
+        xml_parts.append(f'    <loc>{base_url}{path}</loc>')
         xml_parts.append('  </url>')
 
     xml_parts.append('</urlset>')
@@ -4020,6 +4023,16 @@ Sitemap: https://www.studentsplacement.co.ke/sitemap-index.xml'''
     response = make_response(robots_content)
     response.headers['Content-Type'] = 'text/plain; charset=utf-8'
     return response
+
+
+@app.errorhandler(404)
+def render_not_found(error):
+    """Render a helpful HTML 404 while preserving default API/non-HTML responses."""
+    if request.path.startswith('/api/') or request.accept_mimetypes.best != 'text/html':
+        return error.get_response()
+    return make_response(render_template('404.html'), 404)
+
+
 def update_sitemap_dates():
     """Update lastmod dates in sitemap - run this periodically"""
     # This would typically be called from a cron job or scheduler
@@ -4044,11 +4057,11 @@ def all_guides():
 
 @app.route('/guides/how-to-check-kuccps-courses-2026')
 def guide_kuccps_check():
-    """Guide: How to check KUCCPS courses 2026"""
+    """Guide to finding and comparing current KUCCPS programme information."""
     canonical = get_canonical_url('guide_kuccps_check')
     return render_template('guides/kuccps_check.html',
-                         title='How to Check KUCCPS Courses 2026 | Step-by-Step Guide',
-                         meta_description='Learn how to check KUCCPS courses for 2026 intake. Step-by-step guide to finding degree, diploma, and certificate programs matching your KCSE grades.',
+                         title='How to Check KUCCPS Courses by KCSE Grades | Student Guide',
+                         meta_description='Learn how to find current KUCCPS programme information and compare it with KCSE grades using the official Student Portal and independent guidance.',
                          canonical_url=canonical)
 
 @app.route('/guides/kuccps-cluster-points-explained')
@@ -4147,7 +4160,9 @@ def inject_global_vars():
         'og_image_url': f"{base_url}{url_for('static', filename='images/og-image.jpg')}",
         'twitter_image_url': f"{base_url}{url_for('static', filename='images/twitter-card.jpg')}",
         'get_canonical_url': get_canonical_url,
-        'google_site_verification': os.getenv('GOOGLE_SITE_VERIFICATION', '').strip()
+        'google_site_verification': os.getenv('GOOGLE_SITE_VERIFICATION', '').strip(),
+        'bing_site_verification': os.getenv('BING_SITE_VERIFICATION', '').strip(),
+        'google_analytics_id': os.getenv('GOOGLE_ANALYTICS_ID', '').strip()
     }
 @app.context_processor
 def inject_flash_visibility():
@@ -9958,11 +9973,25 @@ from io import BytesIO
 def after_request_handler(response):
     """Apply safe cache policy and gzip compression to text responses."""
     is_static = request.path.startswith('/static/')
+    private_endpoints = {
+        'results', 'show_results', 'verified_dashboard', 'verified_results_dashboard',
+        'show_verified_level_results', 'view_basket', 'payment', 'payment_wait',
+        'enter_details', 'user_info', 'auth', 'payment_issue', 'offline'
+    }
+    is_private_view = (request.endpoint in private_endpoints
+                       or (request.endpoint and request.endpoint.startswith('admin'))
+                       or request.path.startswith('/api/'))
+    if is_private_view:
+        response.headers['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
     if is_static:
-        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        # Only query-versioned static URLs are immutable; unversioned names may change.
+        if request.args.get('v'):
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        else:
+            response.headers['Cache-Control'] = 'public, max-age=3600, must-revalidate'
     elif request.path.startswith('/sitemap') or request.path == '/robots.txt':
         response.headers['Cache-Control'] = 'public, max-age=86400'
-    elif (request.path.startswith(('/admin', '/api/', '/payment', '/results', '/basket'))
+    elif (is_private_view or request.path.startswith(('/admin', '/payment', '/results', '/basket', '/user_info', '/auth', '/enter-details'))
           or request.method in ('POST', 'PUT', 'DELETE')):
         response.headers['Cache-Control'] = 'no-store'
     elif response.content_type and response.content_type.startswith('text/html'):

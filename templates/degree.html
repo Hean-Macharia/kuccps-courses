@@ -175,14 +175,14 @@
             <li class="breadcrumb-item active" aria-current="page">Degree programmes</li>
         </ol>
     </nav>
-    <h1 class="text-center mb-4">KUCCPS University Degree Programs Qualification Checker</h2>
+    <h1 class="text-center mb-4">KUCCPS University Degree Programs Qualification Checker</h1>
 </div>
 
 <div class="container mt-5">
     <!-- As a heading -->
     <span class="d-block mb-4 fs-5 text-muted">Fill in the details and submit to get the programmes you qualify!</span>
 
-    <form action="{{ url_for('submit_grades') }}" method="post" id="degreeForm">
+    <form action="{{ url_for('submit_grades') }}" method="post" id="degreeForm" data-analytics-event="assessment_submit" data-analytics-category="degree">
         <!-- KCSE Subjects Grades (Email and Index will be collected after grades submission) -->
         <div id="gradesForm">
             <div class="card shadow-sm border-0 mb-5">
