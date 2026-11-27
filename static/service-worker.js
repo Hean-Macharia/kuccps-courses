@@ -1,258 +1,87 @@
-// static/service-worker.js - Eligibility Checker PWA
-const CACHE_NAME = 'eligibility-checker-v3';
-const STATIC_CACHE = 'ec-static-v3';
-const API_CACHE_NAME = 'ec-api-v3';
-
-const urlsToCache = [
-  '/',
-  '/static/css/styles.css',
-  '/static/js/main.js',
-  '/static/js/pwa.js',
+/* Eligibility Checker: privacy-aware offline shell. */
+const CACHE_VERSION = 'eligibility-checker-emerald-v5';
+const SHELL_CACHE = `${CACHE_VERSION}-shell`;
+const ASSET_CACHE = `${CACHE_VERSION}-assets`;
+const SHELL_URLS = ['/', '/offline'];
+const ASSET_URLS = [
+  '/static/css/main.min.css?v=emerald-all-20261127',
+  '/static/css/midnight.min.css?v=emerald-section-motion-20261127',
+  '/static/js/ui-motion.min.js?v=emerald-all-20261127',
+  '/static/js/writing.min.js?v=typewriter-sections-loop-20261127',
+  '/static/js/base-ui.min.js?v=emerald-all-20261127',
+  '/static/js/pwa.js?v=emerald-all-20261127',
   '/static/js/offline-storage.js',
   '/static/icons/icon-192x192.png',
-  '/static/icons/icon-512x512.png',
-  '/offline',
-
-  // Core pages
-  '/degree',
-  '/diploma',
-  '/certificate',
-  '/kmtc',
-  '/artisan',
-  '/ttc',
-  '/about',
-  '/contact',
-  '/user-guide',
-  '/news',
-  '/guides',
-  '/chat',
-  '/basket',
-
-  // External short courses (cached as static reference)
-  'https://short-courses.onrender.com/'
+  '/static/icons/icon-512x512.png'
 ];
 
-const apiEndpointsToCache = [
-  '/api/pwa/install-status',
-  '/api/check-pwa',
-  '/api/news/latest'
-];
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
 
-// Install event - cache static assets
 self.addEventListener('install', event => {
-  self.skipWaiting();
-  event.waitUntil(
-    Promise.all([
-      caches.open(STATIC_CACHE)
-        .then(cache => {
-          console.log('[EC SW] Caching static assets');
-          return cache.addAll(urlsToCache);
-        })
-        .catch(err => console.warn('[EC SW] Static cache error:', err)),
-      caches.open(API_CACHE_NAME)
-        .then(cache => {
-          console.log('[EC SW] Caching API endpoints');
-          return cache.addAll(apiEndpointsToCache);
-        })
-        .catch(err => console.warn('[EC SW] API cache error:', err))
-    ])
-  );
+  event.waitUntil((async () => {
+    const shell = await caches.open(SHELL_CACHE);
+    await Promise.allSettled(SHELL_URLS.map(async url => {
+      const response = await fetch(url, { credentials: 'same-origin' });
+      if (response.ok && response.type === 'basic') await shell.put(url, response);
+    }));
+    const assets = await caches.open(ASSET_CACHE);
+    await Promise.allSettled(ASSET_URLS.map(async url => {
+      const response = await fetch(url, { credentials: 'same-origin' });
+      if (response.ok && response.type === 'basic') await assets.put(url, response);
+    }));
+  })());
 });
 
-// Fetch event - intelligent caching strategy
-self.addEventListener('fetch', event => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
-  if (request.method !== 'GET') return;
-
-  // Skip chrome-extension and other non-http schemes
-  if (!url.protocol.startsWith('http')) return;
-
-  // API requests - Network First, then Cache
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
-  // Static assets - Cache First, then Network
-  if (url.pathname.startsWith('/static/')) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
-
-  // External short-courses link - Network First
-  if (url.hostname === 'short-courses.onrender.com') {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
-  // HTML pages - Network First with offline fallback
-  if (request.headers.get('Accept') && request.headers.get('Accept').includes('text/html')) {
-    event.respondWith(networkFirstWithOfflinePage(request));
-    return;
-  }
-
-  // Default: try cache, then network
-  event.respondWith(cacheFirst(request));
-});
-
-// Strategies
-async function networkFirst(request) {
-  try {
-    const networkResponse = await fetch(request);
-
-    if (networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-    }
-
-    return networkResponse;
-  } catch (error) {
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-
-    if (new URL(request.url).pathname.startsWith('/api/')) {
-      return new Response(
-        JSON.stringify({ error: 'You are offline', offline: true }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    throw error;
-  }
-}
-
-async function cacheFirst(request) {
-  const cachedResponse = await caches.match(request);
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-
-  try {
-    const networkResponse = await fetch(request);
-
-    if (networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-    }
-
-    return networkResponse;
-  } catch (error) {
-    if (request.headers.get('Accept') && request.headers.get('Accept').includes('text/html')) {
-      return caches.match('/offline');
-    }
-
-    throw error;
-  }
-}
-
-async function networkFirstWithOfflinePage(request) {
-  try {
-    const networkResponse = await fetch(request);
-
-    if (networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-    }
-
-    return networkResponse;
-  } catch (error) {
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-
-    return caches.match('/offline');
-  }
-}
-
-// Activate event - clean up old caches
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME, STATIC_CACHE, API_CACHE_NAME];
-
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            console.log('[EC SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-      console.log('[EC SW] Activated with enhanced caching');
-      return self.clients.claim();
-    })
-  );
+  event.waitUntil((async () => {
+    const keep = new Set([SHELL_CACHE, ASSET_CACHE]);
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => /^(eligibility-checker-|ec-static-|ec-api-)/.test(key) && !keep.has(key)).map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
-// Background sync for offline actions
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-grades') {
-    event.waitUntil(syncGrades());
-  }
-  if (event.tag === 'sync-basket') {
-    event.waitUntil(syncBasket());
-  }
-  if (event.tag === 'sync-payment') {
-    event.waitUntil(syncPayment());
-  }
-});
-
-// Sync functions
-async function syncGrades() {
-  console.log('[EC SW] Syncing grades...');
+function privateOrTransactional(pathname) {
+  return /^\/(?:api(?:\/|$)|payment(?:\/|[-_]|$)|admin(?:\/|$)|submit[-_][^/]*|enter[-_]?details(?:\/|$)|(?:degree|diploma|kmtc|certificate|artisan|collection)[-_]results(?:\/|$)|results(?:\/|$)|basket(?:\/|$)|auth(?:\/|$)|user[-_]info(?:\/|$)|verified[-_]dashboard(?:\/|$))/.test(pathname);
 }
 
-async function syncBasket() {
-  console.log('[EC SW] Syncing basket...');
-}
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin || privateOrTransactional(url.pathname)) return;
 
-async function syncPayment() {
-  console.log('[EC SW] Syncing payment verification...');
-}
+  if (url.pathname.startsWith('/static/videos/')) return; // Large media stays network-only.
 
-// Push notification support
-self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Eligibility Checker';
-  const options = {
-    body: data.body || 'New courses and updates available!',
-    icon: '/static/icons/icon-192x192.png',
-    badge: '/static/icons/icon-72x72.png',
-    tag: data.tag || 'general',
-    requireInteraction: false,
-    data: data.url || '/'
-  };
+  if (url.pathname.startsWith('/static/')) {
+    event.respondWith((async () => {
+      const cache = await caches.open(ASSET_CACHE);
+      const cached = await cache.match(request);
+      const refresh = fetch(request).then(response => {
+        if (response.ok && response.type === 'basic') cache.put(request, response.clone());
+        return response;
+      });
+      if (cached) { event.waitUntil(refresh.catch(() => {})); return cached; }
+      return refresh;
+    })());
+    return;
+  }
 
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
-});
-
-// Notification click handler
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  const url = event.notification.data || '/';
-
-  event.waitUntil(
-    clients.matchAll({ type: 'window' }).then(windowClients => {
-      for (const client of windowClients) {
-        if (client.url === url && 'focus' in client) {
-          return client.focus();
+  if (request.headers.get('Accept')?.includes('text/html')) {
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request);
+        if (response.ok && response.type === 'basic') {
+          const cache = await caches.open(SHELL_CACHE);
+          await cache.put(request, response.clone());
         }
+        return response;
+      } catch (_) {
+        const cached = await caches.match(request);
+        return cached || await caches.match('/offline');
       }
-      if (clients.openWindow) {
-        return clients.openWindow(url);
-      }
-    })
-  );
+    })());
+  }
 });

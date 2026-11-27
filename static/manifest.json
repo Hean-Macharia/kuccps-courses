@@ -1,11 +1,11 @@
 {
-  "name": "Eligibility Checker - KUCCPS Courses",
-  "short_name": "Eligibility Checker",
+  "name": "Courses Checker",
+  "short_name": "Courses",
   "description": "Find KUCCPS courses matching your KCSE grades. Search degree, diploma, certificate, KMTC, artisan, TTC, and short courses across Kenyan institutions.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F5F4F2",
-  "theme_color": "#FF5A00",
+  "background_color": "#FFFFFF",
+  "theme_color": "#137E4E",
   "orientation": "portrait-primary",
   "icons": [
     {

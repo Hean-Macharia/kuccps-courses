@@ -2,12 +2,16 @@
 class OfflineStorage {
   constructor() {
     this.dbName = 'kuccps-offline-db';
-    this.version = 1;
+    this.version = 2;
     this.db = null;
-    this.initializeDB();
+    this.ready = this.initializeDB().catch(error => {
+      console.warn('Offline storage unavailable in this browser:', error);
+      return null;
+    });
   }
 async cacheCoursesForOffline(flow, courses) {
-    if (!this.db) await this.initializeDB();
+    if (!this.db) await this.ready;
+    if (!this.db) throw new Error('Offline storage is unavailable in this browser.');
     
     return new Promise((resolve, reject) => {
         const transaction = this.db.transaction(['offline_courses'], 'readwrite');
@@ -16,19 +20,39 @@ async cacheCoursesForOffline(flow, courses) {
         // Store courses for offline access
         const cacheData = {
             flow: flow,
-            courses: courses.slice(0, 50), // Limit for offline
+            courses: courses.slice(0, 50), // Keep the local offline copy small.
             cachedAt: new Date().toISOString()
         };
         
         store.put(cacheData);
         
         transaction.oncomplete = () => {
-            console.log(`✅ Cached ${courses.length} ${flow} courses for offline`);
+            console.log(`✅ Cached ${cacheData.courses.length} ${flow} courses for offline`);
             resolve();
         };
         
         transaction.onerror = (event) => reject(event.target.error);
     });
+}
+async getCachedCourses() {
+  if (!this.db) await this.ready;
+  if (!this.db) throw new Error('Offline storage is unavailable in this browser.');
+  return new Promise((resolve, reject) => {
+    const transaction = this.db.transaction(['offline_courses'], 'readonly');
+    const request = transaction.objectStore('offline_courses').getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+async clearCachedCourses() {
+  if (!this.db) await this.ready;
+  if (!this.db) throw new Error('Offline storage is unavailable in this browser.');
+  return new Promise((resolve, reject) => {
+    const transaction = this.db.transaction(['offline_courses'], 'readwrite');
+    transaction.objectStore('offline_courses').clear();
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
 }
   async initializeDB() {
     return new Promise((resolve, reject) => {
@@ -71,6 +95,10 @@ async cacheCoursesForOffline(flow, courses) {
           });
           pendingStore.createIndex('type', 'type', { unique: false });
           pendingStore.createIndex('status', 'status', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('offline_courses')) {
+          db.createObjectStore('offline_courses', { keyPath: 'flow' });
         }
       };
     });

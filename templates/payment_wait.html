@@ -459,7 +459,7 @@
         .progress-fill { transition: none; }
     }
 </style>
-</head>
+<link rel="stylesheet" href="/static/css/tokens.css?v=emerald-all-20261127"><link rel="stylesheet" href="/static/css/critical.css?v=emerald-all-20261127"><link rel="stylesheet" href="/static/css/midnight.min.css?v=emerald-section-motion-20261127"></head>
 <body>
 
 <div class="card" id="mainCard">
@@ -555,6 +555,7 @@
     let pollTimer = null;
     let inProcessingStage = false;
     let courseCounterTimer = null;
+    let pollInFlight = false;
 
     const statusText    = document.getElementById('statusText');
     const spinnerIcon   = document.getElementById('spinnerIcon');
@@ -654,6 +655,8 @@
     }
 
     async function checkCoursesReady() {
+        if (!polling || pollInFlight) return;
+        pollInFlight = true;
         try {
             const res = await fetch(`/check-courses-ready/${flow}`, {
                 method: 'GET',
@@ -674,6 +677,12 @@
             if (data.status === 'session_paid_processing') {
                 enterProcessingStage();
                 setStatus(data.message || 'Processing your qualifying courses…');
+                // The server has already verified payment. The results route can
+                // finish course generation on demand if this worker has no cache.
+                if (data.redirect_url) {
+                    goToResults(data.redirect_url);
+                    return;
+                }
             } else if (data.status === 'pending' || data.status === 'waiting') {
                 setStatus(data.message || 'Waiting for M-Pesa confirmation…');
                 setProgress(Math.min(45, ((Date.now() - startTime) / FAST_WINDOW_MS) * 45));
@@ -688,11 +697,13 @@
                 }
             }
 
-            scheduleNextPoll();
-
         } catch (err) {
             console.warn('Poll error, retrying:', err);
             setStatus('Reconnecting…');
+        } finally {
+            pollInFlight = false;
+        }
+        if (polling) {
             scheduleNextPoll();
         }
     }

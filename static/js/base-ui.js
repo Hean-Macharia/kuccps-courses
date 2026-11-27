@@ -1,0 +1,622 @@
+(function () {
+    'use strict';
+
+    const $ = (s, c = document) => c.querySelector(s);
+    const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
+    const raf = requestAnimationFrame;
+
+    function throttle(fn, ms) {
+      let t; return (...a) => { if (!t) { fn(...a); t = setTimeout(() => t = null, ms); } };
+    }
+
+    /* Page Curtain */
+    window.addEventListener('load', () => {
+      const curtain = $('#pageCurtain');
+      if (curtain) setTimeout(() => curtain.classList.add('lifted'), 350);
+    });
+
+    /* Particles */
+    function initParticles() {
+      const canvas = $('#particleCanvas');
+      if (!canvas || window.innerWidth < 768) return;
+      const count = 14;
+      const colors = ['rgba(255,90,0,', 'rgba(217,4,69,', 'rgba(255,122,48,'];
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        const size = 2 + Math.random() * 3;
+        const color = colors[i % colors.length] + (0.15 + Math.random() * 0.2) + ')';
+        const left = Math.random() * 100;
+        const dur = 18 + Math.random() * 16;
+        const delay = Math.random() * -20;
+        p.className = 'particle';
+        p.style.cssText = `width:${size}px;height:${size}px;left:${left}%;background:${color};animation-duration:${dur}s;animation-delay:${delay}s;`;
+        canvas.appendChild(p);
+      }
+    }
+
+    /* Cursor */
+    function initCursor() {
+      if (window.innerWidth < 992) return;
+      const dot  = $('#cursorDot');
+      const ring = $('#cursorRing');
+      if (!dot || !ring) return;
+      let mx = -200, my = -200, rx = -200, ry = -200;
+      document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+      function loop() {
+        dot.style.left = mx + 'px'; dot.style.top  = my + 'px';
+        rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+        ring.style.left = rx + 'px'; ring.style.top  = ry + 'px';
+        raf(loop);
+      }
+      loop();
+      const hoverEls = $$('a,button,.category-card,.process-card,.bento-card,.faq-question,.bn-item,.float-btn,.social-btn');
+      hoverEls.forEach(el => {
+        el.addEventListener('mouseenter', () => ring.classList.add('hovering'));
+        el.addEventListener('mouseleave', () => ring.classList.remove('hovering'));
+      });
+    }
+
+    /* Scroll Reveal */
+    function initScrollReveal() {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(en => {
+          if (en.isIntersecting) { en.target.classList.add('visible'); obs.unobserve(en.target); }
+        });
+      }, { rootMargin: '0px 0px -48px 0px', threshold: 0.08 });
+      $$('.reveal,.reveal-scale,.reveal-left,.reveal-right').forEach(el => obs.observe(el));
+    }
+
+    /* Navbar Scroll */
+    function initNavbar() {
+      const nav = $('#mainNav');
+      if (!nav) return;
+      const onScroll = throttle(() => { nav.classList.toggle('scrolled', window.scrollY > 60); }, 80);
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
+
+    /* Sidebar */
+    const hamBtn   = $('#hamBtn');
+    const sidebar  = $('#mobileSidebar');
+    const overlay  = $('#sidebarOverlay');
+    const sidebarClose = $('#sidebarClose');
+
+    function openSidebar() {
+      sidebar && sidebar.classList.add('show');
+      overlay && overlay.classList.add('show');
+      hamBtn && hamBtn.classList.add('open');
+      hamBtn && hamBtn.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+    window.closeSidebar = function () {
+      sidebar && sidebar.classList.remove('show');
+      overlay && overlay.classList.remove('show');
+      hamBtn && hamBtn.classList.remove('open');
+      hamBtn && hamBtn.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    };
+    hamBtn && hamBtn.addEventListener('click', () => {
+      sidebar && sidebar.classList.contains('show') ? closeSidebar() : openSidebar();
+    });
+    sidebarClose && sidebarClose.addEventListener('click', closeSidebar);
+    overlay && overlay.addEventListener('click', closeSidebar);
+
+    /* Back to Top */
+    function initBackTop() {
+      const btn = $('#backTop');
+      if (!btn) return;
+      window.addEventListener('scroll', throttle(() => {
+        btn.classList.toggle('show', window.scrollY > 450);
+      }, 100), { passive: true });
+      btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
+
+    /* Bottom Nav Active */
+    function initBottomNav() {
+      const path = window.location.pathname;
+      $$('.bn-item').forEach(item => {
+        item.classList.remove('active');
+        const nav = item.getAttribute('data-nav');
+        if ((nav === 'home' && (path === '/' || path === '')) || (nav && path === '/' + nav)) {
+          item.classList.add('active');
+        }
+      });
+    }
+
+    /* Counter Animation */
+    function initCounters() {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(en => {
+          if (!en.isIntersecting) return;
+          const el  = en.target;
+          const end = parseInt(el.dataset.count, 10);
+          const dur = 2200;
+          const start = performance.now();
+          function tick(now) {
+            const p = Math.min((now - start) / dur, 1);
+            const eased = 1 - Math.pow(1 - p, 4);
+            el.textContent = Math.floor(eased * end).toLocaleString();
+            if (p < 1) raf(tick);
+            else el.textContent = end.toLocaleString() + '+';
+          }
+          raf(tick);
+          obs.unobserve(el);
+        });
+      }, { threshold: 0.5 });
+      $$('[data-count]').forEach(el => obs.observe(el));
+    }
+
+    /* FAQ Accordion */
+    window.toggleFaq = function (btn) {
+      const item   = btn.closest('.faq-item');
+      const answer = item.querySelector('.faq-answer');
+      const isOpen = item.classList.contains('open');
+      $$('.faq-item.open').forEach(openItem => {
+        openItem.classList.remove('open');
+        openItem.querySelector('.faq-answer').style.maxHeight = '0';
+        openItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    };
+
+    /* Toast */
+    window.showToast = function (message, type = 'info') {
+      const tray = $('#toastTray');
+      if (!tray) return;
+      const icons = { info: 'fa-info-circle', success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle' };
+      const item = document.createElement('div');
+      item.className = 'toast-item';
+      item.innerHTML = `<i class="fas ${icons[type] || icons.info} toast-icon ${type}" aria-hidden="true"></i><span>${message}</span>`;
+      tray.appendChild(item);
+      setTimeout(() => { item.classList.add('out'); setTimeout(() => item.remove(), 350); }, 4500);
+    };
+
+    /* Verify Payment Form */
+    function initVerifyForm() {
+      const form = $('#verifyPaymentForm');
+      if (!form) return;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const receipt    = $('#mpesa_receipt').value.trim().toUpperCase();
+        const indexNum   = $('#index_number_verify').value.trim();
+        const errorDiv   = $('#verifyError');
+        const loadingDiv = $('#verifyLoading');
+        const submitBtn  = $('#verifySubmitBtn');
+        const previewDiv = $('#verifyPreview');
+        errorDiv.style.display = 'none';
+        previewDiv.style.display = 'none';
+        if (!/^[A-Z0-9]{10}$/.test(receipt)) {
+          errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Invalid M-Pesa receipt. Must be 10 alphanumeric characters.';
+          errorDiv.style.display = 'block'; return;
+        }
+        if (!/^\d{11}\/\d{4}$/.test(indexNum)) {
+          errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Invalid index number. Use format: 12345678901/2024';
+          errorDiv.style.display = 'block'; return;
+        }
+        loadingDiv.style.display = 'block';
+        submitBtn.disabled = true;
+        try {
+          const res  = await fetch('/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ mpesa_receipt: receipt, index_number: indexNum })
+          });
+          const data = await res.json();
+          loadingDiv.style.display = 'none';
+          submitBtn.disabled = false;
+          if (data.success) {
+            sessionStorage.setItem('userVerified', 'true');
+            sessionStorage.setItem('userIndex', indexNum);
+            sessionStorage.setItem('userReceipt', receipt);
+            if (data.no_grades) {
+              showToast('Payment verified! Please enter your grades. You will NOT be charged again.', 'info');
+              setTimeout(() => { window.location.href = data.redirect_url; }, 2500);
+            } else if (data.levels) {
+              showVerifyPreview(data, indexNum, receipt);
+            } else {
+              window.location.href = data.redirect_url || '/results';
+            }
+          } else {
+            errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + (data.error || 'Verification failed. Please check your details.');
+            errorDiv.style.display = 'block';
+          }
+        } catch {
+          loadingDiv.style.display = 'none';
+          submitBtn.disabled = false;
+          errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Network error. Please check your connection.';
+          errorDiv.style.display = 'block';
+        }
+      });
+      const modal = $('#retrieveModal');
+      if (modal) {
+        modal.addEventListener('hidden.bs.modal', () => {
+          form.reset();
+          $('#verifyError').style.display = 'none';
+          $('#verifyLoading').style.display = 'none';
+          $('#verifyPreview').style.display = 'none';
+          $('#verifySubmitBtn').disabled = false;
+        });
+      }
+    }
+
+    function showVerifyPreview(data, indexNum, receipt) {
+      const previewDiv  = $('#verifyPreview');
+      const infoDiv     = $('#previewInfo');
+      const levelsDiv   = $('#courseLevels');
+      const showBtn     = $('#showResultsBtn');
+      const cancelBtn   = $('#cancelPreviewBtn');
+      if (infoDiv) {
+        infoDiv.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><strong>Index Number:</strong><br><span style="color:var(--text-2)">${data.index_number || indexNum}</span></div>
+            <div><strong>Receipt:</strong><br><span style="color:var(--text-2)">${data.mpesa_receipt || receipt}</span></div>
+            <div><strong>Total Courses:</strong><br><span style="color:var(--orange);font-weight:700;">${data.courses_count || 0}</span></div>
+          </div>`;
+      }
+      if (levelsDiv && data.levels) {
+        levelsDiv.innerHTML = '';
+        data.levels.forEach(l => {
+          const b = document.createElement('span');
+          b.className = 'level-badge';
+          b.innerHTML = `<i class="fas fa-graduation-cap" aria-hidden="true"></i>${l.toUpperCase()}`;
+          levelsDiv.appendChild(b);
+        });
+      }
+      if (showBtn) showBtn.onclick = () => { window.location.href = data.redirect_url || `/verified-dashboard?index=${data.index_number || indexNum}&receipt=${data.mpesa_receipt || receipt}`; };
+      if (cancelBtn) cancelBtn.onclick = () => { previewDiv.style.display = 'none'; };
+      if (previewDiv) previewDiv.style.display = 'block';
+    }
+
+    /* Cluster Points */
+    window.showClusterPointWarning = function () {
+      const m = new bootstrap.Modal(document.getElementById('clusterWarningModal'));
+      m.show();
+    };
+    window.redirectToClusterPoints = function () {
+      const m = bootstrap.Modal.getInstance(document.getElementById('clusterWarningModal'));
+      if (m) m.hide();
+      window.location.href = 'https://cluster-points-e7hm.onrender.com';
+    };
+
+    /* Payment Issue Form */
+    function initPaymentIssueForm() {
+      const form = $('#paymentIssueForm');
+      if (!form) return;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email      = $('#issue_email').value.trim();
+        const indexNum   = $('#issue_index').value.trim();
+        const receipt    = $('#issue_receipt').value.trim().toUpperCase();
+        const screenshot = $('#issue_screenshot').files[0];
+        const errDiv     = $('#issueError');
+        const sucDiv     = $('#issueSuccess');
+        const btn        = $('#submitIssueBtn');
+        errDiv.style.display = 'none';
+        sucDiv.style.display = 'none';
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showIssueError('Please enter a valid email address.'); return; }
+        if (!/^\d{11}\/\d{4}$/.test(indexNum)) { showIssueError('Invalid index number. Use format: 12345678901/2024'); return; }
+        if (!/^[A-Z0-9]{10}$/.test(receipt)) { showIssueError('Invalid M-Pesa receipt. Must be 10 characters.'); return; }
+        if (!screenshot) { showIssueError('Please upload a screenshot of your M-Pesa message.'); return; }
+        if (screenshot.size > 5 * 1024 * 1024) { showIssueError('Image too large. Max 5MB.'); return; }
+        const fd = new FormData();
+        fd.append('email', email); fd.append('index_number', indexNum); fd.append('mpesa_receipt', receipt); fd.append('screenshot', screenshot);
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…'; btn.disabled = true;
+        try {
+          const res  = await fetch('/submit-payment-issue', { method: 'POST', body: fd });
+          const data = await res.json();
+          if (data.success) {
+            sucDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + (data.message || 'Issue submitted! We will respond within 24 hours.');
+            sucDiv.style.display = 'block';
+            form.reset();
+            showToast('Issue submitted! We will respond within 24 hours.', 'success');
+            setTimeout(() => { const m = bootstrap.Modal.getInstance($('#paymentIssueModal')); if (m) m.hide(); }, 3000);
+          } else {
+            showIssueError(data.error || 'Failed to submit. Please try again.');
+          }
+        } catch { showIssueError('Network error. Please check your connection.'); }
+        finally { btn.innerHTML = orig; btn.disabled = false; }
+      });
+      function showIssueError(msg) {
+        const d = $('#issueError');
+        d.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + msg;
+        d.style.display = 'block';
+        setTimeout(() => d.style.display = 'none', 5000);
+      }
+    }
+
+    /* News System */
+    function initNewsSystem() {
+      showNewsBell();
+      loadLatestNews();
+      setInterval(checkForNewNews, 10 * 60 * 1000);
+    }
+    async function loadLatestNews() {
+      try {
+        const res  = await fetch('/api/news/latest?limit=1');
+        const data = await res.json();
+        if (data.success && data.news && data.news.length > 0) {
+          const article   = data.news[0];
+          const lastSeen  = localStorage.getItem('lastSeenNewsId');
+          if (lastSeen !== article._id) startBellPulse();
+          localStorage.setItem('latestNewsId', article._id);
+          loadNewsModalContent();
+        }
+      } catch {}
+    }
+    async function loadNewsModalContent() {
+      try {
+        const res  = await fetch('/api/news/latest?limit=5');
+        const data = await res.json();
+        const cont = $('#newsModalContent');
+        if (!cont) return;
+        if (data.success && data.news && data.news.length > 0) {
+          cont.innerHTML = data.news.map((a, i) => {
+            const date = new Date(a.published_at || a.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            return `<div style="${i < data.news.length - 1 ? 'border-bottom:1px solid var(--border);padding-bottom:18px;margin-bottom:18px;' : ''}display:flex;align-items:flex-start;gap:14px;">
+              ${a.image_url ? `<img src="${a.image_url}" alt="${a.title}" style="width:64px;height:52px;object-fit:cover;border-radius:var(--r-md);flex-shrink:0;" onerror="this.style.display='none'">` : ''}
+              <div style="flex:1;">
+                <h3 style="font-size:0.9rem;font-weight:700;font-family:var(--font-display);letter-spacing:-0.02em;margin-bottom:4px;">${a.is_featured ? '<i class="fas fa-star text-orange me-1"></i>' : ''}${a.title}</h3>
+                <p style="font-size:0.78rem;color:var(--text-2);margin-bottom:8px;">${a.excerpt || (a.content ? a.content.substring(0,70) + '…' : '')}</p>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <small style="font-size:0.7rem;color:var(--text-3);"><i class="fas fa-calendar-alt me-1"></i>${date}</small>
+                  <button class="btn-primary btn-sm" onclick="viewNewsArticle('${a._id}')" style="font-size:0.7rem;padding:5px 12px;">Read <i class="fas fa-arrow-right ms-1"></i></button>
+                </div>
+              </div>
+            </div>`;
+          }).join('');
+        } else {
+          cont.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-2);"><i class="fas fa-newspaper fa-3x" style="opacity:0.2;margin-bottom:12px;display:block;"></i>No news available yet. Check back soon.</div>';
+        }
+      } catch {}
+    }
+    function showNewsBell() {
+      const wrap = $('#newsBellWrap');
+      if (wrap) wrap.style.display = 'block';
+      const wrapMobile = $('#newsBellWrapMobile');
+      if (wrapMobile) wrapMobile.style.display = 'block';
+    }
+    function startBellPulse() {
+      const btn = $('#newsBellBtn');
+      if (btn) { btn.classList.add('pulse'); setTimeout(() => btn.classList.remove('pulse'), 10000); }
+      const btnMobile = $('#newsBellBtnMobile');
+      if (btnMobile) { btnMobile.classList.add('pulse'); setTimeout(() => btnMobile.classList.remove('pulse'), 10000); }
+    }
+    async function checkForNewNews() {
+      try {
+        const res  = await fetch('/api/news/latest?limit=1');
+        const data = await res.json();
+        if (data.success && data.news && data.news.length > 0) {
+          const article = data.news[0];
+          if (localStorage.getItem('latestNewsId') !== article._id) {
+            localStorage.setItem('latestNewsId', article._id);
+            const n = parseInt(localStorage.getItem('unreadNewsCount') || '0') + 1;
+            localStorage.setItem('unreadNewsCount', n);
+            const badge = $('#newsBadgeNum');
+            if (badge) { badge.textContent = n; badge.classList.add('show'); }
+            const badgeMobile = $('#newsBadgeNumMobile');
+            if (badgeMobile) { badgeMobile.textContent = n; badgeMobile.classList.add('show'); }
+            startBellPulse();
+            loadNewsModalContent();
+          }
+        }
+      } catch {}
+    }
+    window.viewNewsArticle = async function (id) {
+      try {
+        const res  = await fetch('/api/news/latest?limit=50');
+        const data = await res.json();
+        if (!data.success) return;
+        const article = data.news.find(a => a._id === id);
+        if (!article) return;
+        await fetch('/api/news/increment-views/' + id, { method: 'POST' });
+        localStorage.setItem('lastSeenNewsId', id);
+        const date = new Date(article.published_at || article.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const html = `
+          ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" style="width:100%;max-height:240px;object-fit:cover;border-radius:var(--r-lg);margin-bottom:20px;" onerror="this.style.display='none'">` : ''}
+          <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:10px;">${article.title}</h2>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:18px;flex-wrap:wrap;">
+            <span style="font-size:0.72rem;color:var(--text-3);"><i class="fas fa-calendar-alt me-1"></i>${date}</span>
+            ${article.is_featured ? '<span class="badge-pill badge-new"><i class="fas fa-star" aria-hidden="true"></i>Featured</span>' : ''}
+          </div>
+          <div style="font-size:0.88rem;color:var(--text-2);line-height:1.75;">${article.content.replace(/\n/g, '<br>')}</div>
+          ${article.external_link ? `<div class="alert-info-custom mt-4" style="font-size:0.83rem;"><i class="fas fa-link text-orange me-2"></i><strong>Source:</strong> <a href="${article.external_link}" rel="noopener noreferrer" style="color:var(--orange);">View original article</a></div>` : ''}`;
+        const modalEl = $('#articleModal');
+        if (modalEl && typeof bootstrap !== 'undefined') {
+          const am = new bootstrap.Modal(modalEl);
+          const body  = $('#articleModalBody');
+          const label = $('#articleModalLabel');
+          if (body) body.innerHTML = html;
+          if (label) label.innerHTML = '<i class="fas fa-newspaper me-2"></i>' + article.title.substring(0, 40) + '…';
+          const nm = bootstrap.Modal.getInstance($('#newsModal'));
+          if (nm) nm.hide();
+          am.show();
+        }
+      } catch { showToast('Error loading article. Please try again.', 'error'); }
+    };
+    window.redirectToHome = function () {
+      const nm = bootstrap.Modal.getInstance($('#newsModal'));
+      if (nm) nm.hide();
+      setTimeout(() => { window.location.href = '/'; }, 300);
+    };
+
+    /* PWA */
+    function initPWA() {
+      let deferredPrompt = null;
+      let isPromptAvailable = false;
+      const prompt    = $('#pwaPrompt');
+      const installBtn = $('#pwaInstallBtn');
+      const dismissBtn = $('#pwaDismissBtn');
+      const closeBtn  = $('#pwaCloseBtn');
+      const iosGuide  = $('#iosGuide');
+      const iosDone   = $('#iosGuideDone');
+      const isInstalled = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isAndroid = () => /Android/.test(navigator.userAgent);
+      const isChrome = () => /Chrome/.test(navigator.userAgent) && !/Edg|OPR|SamsungBrowser/.test(navigator.userAgent);
+      const isEdge = () => /Edg/.test(navigator.userAgent);
+      const isSamsung = () => /SamsungBrowser/.test(navigator.userAgent);
+
+      window.showPwaPrompt = function () {
+        if (isInstalled()) { showToast('App is already installed!', 'info'); return; }
+        if (isIOS()) { iosGuide && iosGuide.classList.add('show'); }
+        else if (prompt) { prompt.style.display = 'block'; setTimeout(() => prompt.classList.add('show'), 10); }
+      };
+
+      // Listen for beforeinstallprompt - this is the KEY event for native install
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // CRITICAL: preventDefault stops the browser from showing its own mini-infobar
+        e.preventDefault();
+        deferredPrompt = e;
+        isPromptAvailable = true;
+        console.log('[PWA] beforeinstallprompt captured - install is available');
+      });
+
+      // Also listen for appinstalled to clean up
+      window.addEventListener('appinstalled', () => {
+        console.log('[PWA] App was installed');
+        deferredPrompt = null;
+        isPromptAvailable = false;
+        hidePrompt();
+        showToast('App installed successfully!', 'success');
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          // If we have the deferred prompt (Chrome/Edge/Android), use it
+          if (deferredPrompt) {
+            try {
+              await deferredPrompt.prompt();
+              const result = await deferredPrompt.userChoice;
+              if (result.outcome === 'accepted') {
+                showToast('App installed!', 'success');
+              } else {
+                showToast('Install dismissed. You can install anytime from the menu.', 'info');
+              }
+            } catch (err) {
+              console.error('[PWA] Install prompt error:', err);
+              showToast('Could not show install prompt. Please use browser menu.', 'error');
+            }
+            deferredPrompt = null;
+            hidePrompt();
+          }
+          // iOS always needs manual install
+          else if (isIOS()) {
+            hidePrompt();
+            iosGuide && iosGuide.classList.add('show');
+          }
+          // For browsers that don't support beforeinstallprompt (Firefox, Safari desktop, etc.)
+          else {
+            let msg = 'Open your browser menu and tap "Add to Home Screen"';
+            if (isAndroid() && !isChrome() && !isEdge() && !isSamsung()) {
+              msg = 'Open Chrome or Edge browser and tap "Add to Home Screen" from the menu.';
+            } else if (isSamsung()) {
+              msg = 'Tap the menu (⋮) and select "Add page to" → "Home screen".';
+            }
+            showToast(msg, 'info');
+            hidePrompt();
+          }
+          dismissPWA();
+        });
+      }
+
+      function hidePrompt() { if (prompt) { prompt.classList.remove('show'); setTimeout(() => prompt.style.display = 'none', 500); } }
+      function dismissPWA() { localStorage.setItem('pwaDismissed', Date.now()); }
+
+      [dismissBtn, closeBtn].forEach(b => b && b.addEventListener('click', () => { hidePrompt(); dismissPWA(); }));
+      iosDone && iosDone.addEventListener('click', () => iosGuide.classList.remove('show'));
+      iosGuide && iosGuide.addEventListener('click', e => { if (e.target === iosGuide) { iosGuide.classList.remove('show'); } });
+
+      // Auto-show prompt after delay (only if not installed and not recently dismissed)
+      if (!isInstalled()) {
+        const dismissed = localStorage.getItem('pwaDismissed');
+        const wait = dismissed && (Date.now() - parseInt(dismissed)) < 7 * 24 * 3600 * 1000;
+        if (!wait) setTimeout(window.showPwaPrompt, 10000);
+      }
+
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('[PWA] SW registered:', reg.scope))
+          .catch(err => console.error('[PWA] SW registration failed:', err));
+      }
+    }
+
+    /* Basket Visibility */
+    async function initBasket() {
+      if (!sessionStorage.getItem('userVerified')) return;
+      try {
+        const res  = await fetch('/load-basket');
+        const data = await res.json();
+        if (data.success && data.basket_count > 0) {
+          const n = data.basket_count;
+          ['#navBasketItem', '#sidebarBasketLink'].forEach(sel => {
+            const el = $(sel);
+            if (el) el.style.display = sel.includes('nav') ? 'block' : 'flex';
+          });
+          ['#navBasketCount', '#sidebarBasketCount'].forEach(sel => {
+            const el = $(sel); if (el) el.textContent = n;
+          });
+        }
+      } catch {}
+    }
+
+    /* Keyboard ESC */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeSidebar();
+        const open = document.querySelector('.modal.show');
+        if (open && typeof bootstrap !== 'undefined') {
+          const m = bootstrap.Modal.getInstance(open); if (m) m.hide();
+        }
+      }
+    });
+
+    /* Welcome Toast */
+    function initWelcome() {
+      if (!localStorage.getItem('ecWelcomed')) {
+        setTimeout(() => {
+          showToast('Welcome! Enter your KCSE grades to find matching courses.', 'info');
+          localStorage.setItem('ecWelcomed', '1');
+        }, 2200);
+      }
+    }
+
+    /* Smooth Scroll with offset support */
+    function initSmoothScroll() {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          const target = document.querySelector(targetId);
+          if (target) {
+            e.preventDefault();
+            const offset = parseInt(this.dataset.offset || '0', 10);
+            const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+          }
+        });
+      });
+    }
+
+    /* Init All */
+    document.addEventListener('DOMContentLoaded', () => {
+      initParticles();
+      initCursor();
+      initScrollReveal();
+      initNavbar();
+      initBackTop();
+      initBottomNav();
+      initCounters();
+      initVerifyForm();
+      initPaymentIssueForm();
+      initNewsSystem();
+      initPWA();
+      initBasket();
+      initWelcome();
+      initSmoothScroll();
+    });
+  })();

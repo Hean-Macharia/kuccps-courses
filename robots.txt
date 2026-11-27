@@ -1,19 +1,8 @@
 User-agent: *
 Allow: /
-Allow: /sitemap.xml
-Allow: /news/
-Allow: /guides/
 Disallow: /admin/
 Disallow: /debug/
+Disallow: /api/
 Disallow: /temp-bypass/
-Disallow: /static/js/
-Disallow: /static/css/
 
-# Crawl-delay for search engines
-Crawl-delay: 2
-
-# Sitemap location
-Sitemap: https://kuccpscourses.co.ke/sitemap.xml
-
-# Preferred domain
-Host: https://www.kuccpscourses.co.ke
+Sitemap: https://www.studentsplacement.co.ke/sitemap-index.xml

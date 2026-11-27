@@ -1,0 +1,24 @@
+/* Critical white-canvas layout and first-viewport styles. */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;background:#fff;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-width:320px;background:#fff;color:#071B2F;font-family:Manrope,"DM Sans",system-ui,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#137E4E;text-underline-offset:3px}
+button,a,input,select,textarea{touch-action:manipulation}
+:focus-visible{outline:3px solid #137E4E;outline-offset:3px}
+.main-wrapper,.page-wrapper{background:#fff;color:#071B2F}
+.navbar-glass{position:fixed;inset:0 0 auto;z-index:100;background:#fff;border-bottom:1px solid #E2E8F0;box-shadow:0 2px 10px rgba(7,27,47,.04)}
+.nav-inner{min-height:72px}
+.nav-logo{color:#071B2F;font-family:Manrope,"DM Sans",sans-serif;font-weight:800;text-decoration:none}
+.nav-logo-icon{background:#137E4E;color:#fff}
+.nav-links{background:#fff;border:1px solid #E2E8F0;border-radius:999px}
+.nav-links a{color:#475569}
+.nav-links a:hover,.nav-link-item.active a{color:#0F6A42;background:#EEF9F3}
+.btn-primary,.btn-primary.btn-sm,.hero-btn-primary{min-height:44px;border:0;border-radius:999px;background:#137E4E;color:#fff;font-weight:700}
+.hero-section-home{position:relative;overflow:hidden;min-height:560px;padding:clamp(44px,7vw,88px) 0;background:#fff;color:#071B2F}
+.hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,.92fr);align-items:center;gap:clamp(24px,6vw,72px)}
+.hero-title-home{max-width:680px;color:#071B2F;font-family:Manrope,"DM Sans",sans-serif;font-size:clamp(2.5rem,5.6vw,4.25rem);font-weight:800;line-height:1.06;letter-spacing:-.045em}
+.hero-subtitle-home{max-width:600px;color:#475569;font-size:clamp(1rem,1.35vw,1.15rem);line-height:1.7}
+.hero-scene-wrap{display:grid;min-width:0;place-items:center}
+.hero-scene{width:min(100%,520px);height:430px;perspective:1200px}
+@media(max-width:767px){.hero-section-home{min-height:0;padding:32px 0}.hero-inner{grid-template-columns:1fr;gap:8px}.hero-title-home{font-size:clamp(2.3rem,10vw,3.2rem)}.hero-scene{height:340px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

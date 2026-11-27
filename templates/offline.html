@@ -1,146 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - KUCCPS Courses</title>
-    <link rel="canonical" href="https://www.kuccpscourses.co.ke/offline" />
-    <meta name="description" content="You are currently offline. KUCCPS Courses Checker supports offline mode for accessing previously cached course information.">
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Offline Mode",
-      "description": "Offline page for KUCCPS Courses Checker application",
-      "publisher": {
-        "@type": "Organization",
-        "name": "KUCCPS Courses Checker",
-        "url": "https://www.kuccpscourses.co.ke/"
-      }
-    }
-    </script>
-    <style>
-        .offline-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .offline-icon {
-            font-size: 80px;
-            margin-bottom: 30px;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            max-width: 600px;
-            line-height: 1.6;
-        }
-        .features {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin: 30px 0;
-        }
-        .feature {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            min-width: 200px;
-        }
-        .feature h3 {
-            margin-top: 0;
-        }
-        button {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 18px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.3s;
-            margin: 10px;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        .buttons {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#137E4E">
+  <title>Offline | Courses Checker</title>
+  <link rel="canonical" href="https://www.studentsplacement.co.ke/offline">
+  <meta name="description" content="Access course results saved on this device while offline.">
+  <style>
+    :root{font-family:Manrope,"DM Sans",system-ui,sans-serif;color:#071B2F;background:#fff}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fff}
+    main{width:min(920px,calc(100% - 32px));margin:0 auto;padding:clamp(32px,7vh,72px) 0 40px}
+    .offline-mark{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:999px;background:#EEF9F3;color:#0F6A42;font-weight:700;font-size:.9rem}
+    h1{margin:20px 0 10px;font-size:clamp(2rem,5vw,3.2rem);letter-spacing:-.04em;line-height:1.1}
+    p{color:#475569;line-height:1.65}
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0 34px}
+    .actions a,.actions button{min-height:46px;display:inline-flex;align-items:center;justify-content:center;padding:0 18px;border:1px solid #E2E8F0;border-radius:999px;background:#fff;color:#071B2F;text-decoration:none;font:inherit;font-weight:700;cursor:pointer}
+    .actions .primary{background:#137E4E;border-color:#137E4E;color:#fff}
+    .saved{border-top:1px solid #E2E8F0;padding-top:24px}
+    .saved h2{margin:0;font-size:1.4rem}
+    .saved-intro{margin:6px 0 18px;font-size:.95rem}
+    .course-groups{display:grid;gap:16px}
+    .course-group{border:1px solid #E2E8F0;border-radius:18px;padding:18px;background:#fff}
+    .course-group h3{margin:0 0 12px;font-size:1.05rem}
+    .course-item{padding:12px 0;border-top:1px solid #EEF2F6}
+    .course-item strong{display:block;font-size:.95rem}
+    .course-item span,.saved-at{color:#475569;font-size:.85rem}
+    .empty{padding:18px;border-radius:14px;background:#F8FAFC;color:#475569}
+    .clear-button{margin-top:14px;border:0;background:transparent;color:#0F6A42;text-decoration:underline;font:inherit;cursor:pointer;min-height:44px}
+    .note{font-size:.85rem}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+  </style>
+  <script defer src="/static/js/offline-storage.js"></script>
 </head>
 <body>
-    <div class="offline-container">
-        <div class="offline-icon">📡</div>
-        <h1>You're Offline</h1>
-        <p>Don't worry! You can still use some features:</p>
-        
-        <div class="features">
-            <div class="feature">
-                <h3>📚 View Courses</h3>
-                <p>Browse previously loaded courses</p>
-            </div>
-            <div class="feature">
-                <h3>🛒 Manage Basket</h3>
-                <p>Add/remove courses from basket</p>
-            </div>
-            <div class="feature">
-                <h3>📋 Saved Data</h3>
-                <p>Access your saved grades and preferences</p>
-            </div>
-        </div>
-        
-        <div class="buttons">
-            <button onclick="window.location.reload()">Try Again</button>
-            <button onclick="window.location.href='/'">Go Home</button>
-            <button onclick="showOfflineCourses()">View Cached Courses</button>
-        </div>
-        
-        <p style="margin-top: 30px; font-size: 0.9rem; opacity: 0.8;">
-            Changes made offline will sync when you're back online
-        </p>
+  <main>
+    <span class="offline-mark" role="status">You are offline</span>
+    <h1>Your saved course information</h1>
+    <p>Previously opened pages and up to 50 course matches per category can be kept on this device. Payment, live eligibility checks, AI chat, and new submissions need an internet connection.</p>
+    <div class="actions">
+      <button class="primary" id="retryButton" type="button">Try connecting again</button>
+      <a href="/">Go to home</a>
     </div>
-
-    <script>
-    function showOfflineCourses() {
-        // Check if we have offline courses stored
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            // You could implement navigation to cached course pages
-            alert('Checking for cached courses...');
-            // This would require more complex offline routing
-        } else {
-            alert('No cached courses found. Please go online first to load courses.');
-        }
+    <section class="saved" aria-labelledby="savedTitle">
+      <h2 id="savedTitle">Saved course matches</h2>
+      <p class="saved-intro">Saved locally in this browser. Course information may be out of date; confirm current requirements online.</p>
+      <div id="cachedCourses" class="course-groups" aria-live="polite"><p class="empty">Looking for saved course information…</p></div>
+      <button id="clearSaved" class="clear-button" type="button" hidden>Clear saved course information from this device</button>
+    </section>
+  </main>
+  <script>
+    const list = document.getElementById('cachedCourses');
+    const clearButton = document.getElementById('clearSaved');
+    function addText(parent, tag, value) {
+      const node = document.createElement(tag);
+      node.textContent = value || '';
+      parent.appendChild(node);
+      return node;
     }
-    
-    // Check for connectivity periodically
-    setInterval(() => {
-        if (navigator.onLine) {
-            window.location.reload();
+    async function renderSavedCourses() {
+      try {
+        if (!window.OfflineStorage) throw new Error('Local storage is unavailable');
+        const groups = await window.OfflineStorage.getCachedCourses();
+        list.replaceChildren();
+        if (!groups.length) {
+          addText(list, 'p', 'No course matches are saved on this device yet. Open your results while online to save a local copy.');
+          list.firstElementChild.className = 'empty';
+          clearButton.hidden = true;
+          return;
         }
-    }, 5000);
-    </script>
+        groups.forEach(group => {
+          const section = document.createElement('section');
+          section.className = 'course-group';
+          addText(section, 'h3', group.flow.toUpperCase() + ' · ' + group.courses.length + ' saved');
+          (group.courses || []).forEach(course => {
+            const item = document.createElement('article');
+            item.className = 'course-item';
+            addText(item, 'strong', course.programme_name || course.course_name || 'Programme');
+            addText(item, 'span', [course.institution_name, course.programme_code || course.course_code].filter(Boolean).join(' · '));
+            section.appendChild(item);
+          });
+          addText(section, 'p', 'Saved ' + new Date(group.cachedAt).toLocaleString());
+          section.lastElementChild.className = 'saved-at';
+          list.appendChild(section);
+        });
+        clearButton.hidden = false;
+      } catch (_) {
+        list.replaceChildren();
+        addText(list, 'p', 'This browser could not open local saved data. Reconnect and try again.');
+        list.firstElementChild.className = 'empty';
+      }
+    }
+    document.getElementById('retryButton').addEventListener('click', () => location.reload());
+    clearButton.addEventListener('click', async () => {
+      await window.OfflineStorage.clearCachedCourses();
+      await renderSavedCourses();
+    });
+    window.addEventListener('DOMContentLoaded', renderSavedCourses, { once: true });
+    window.addEventListener('online', () => location.reload(), { once: true });
+  </script>
 </body>
 </html>
