@@ -1,54 +1,73 @@
 {% extends "./base.html" %}
 
-{% block title %}Course Checker by Grade | Find Degree, Diploma & Certificate Programs | Home{% endblock %}
+{% block title %}KUCCPS Course Checker by KCSE Grade | Courses Checker{% endblock %}
 
 {% block links %}
-<link rel="canonical" href="https://www.studentsplacement.co.ke/" />
-<meta name="description" content="Free course checker by grade for 2026. Find degree, diploma, certificate, KMTC, artisan, TTC and short courses matching your KCSE grades. Automatic eligibility matcher for Kenyan universities and colleges.">
-<meta name="keywords" content="KUCCPS courses, KUCCPS course checker, KUCCPS course checker by grade, KUCCPS 2026, KUCCPS eligibility checker, KUCCPS cluster points, KUCCPS cut off points, KUCCPS degree programs, KUCCPS diploma courses, KUCCPS certificate courses, KUCCPS KMTC courses, KUCCPS artisan courses, KUCCPS TTC courses, KUCCPS nursing requirements, KUCCPS computer science requirements, KUCCPS engineering requirements, KUCCPS medicine cluster, KUCCPS education requirements, KUCCPS subject requirements, KUCCPS minimum requirements, KUCCPS placement, KUCCPS admission 2026, KUCCPS student portal, KUCCPS application, KUCCPS portal login, KUCCPS results, KUCCPS revision, KUCCPS inter university transfer, KUCCPS marketable courses, KUCCPS university choice, KUCCPS TVET courses, KUCCPS short courses, KUCCPS courses for C+, KUCCPS courses for C-, KUCCPS courses for D+, KUCCPS courses for D, KUCCPS courses for D-, KUCCPS courses for E, KUCCPS how to pay, KUCCPS application fee, KUCCPS deadline, KUCCPS first revision, KUCCPS second call, KUCCPS placement results, KUCCPS admission letter, KUCCPS program code, KUCCPS not qualified, KUCCPS cluster calculator, KUCCPS code finder, KUCCPS automatic selector, KUCCPS grade matcher, KUCCPS combination checker, KUCCPS pass marks, KUCCPS criteria checker, course checker by grade, grade combination matcher, automatic course selector, university eligibility checker, degree courses 2026, diploma courses Kenya, certificate courses, KMTC programs, artisan courses, TTC programs, short courses, KCSE course matching, cluster points checker, cut off point checker, subject requirements checker, nursing eligibility, engineering courses, computer science Kenya, medicine cluster checker, education requirements, TVET courses, marketable courses Kenya, college course finder">
-<meta property="og:title" content="Course Checker by Grade | Kenya University & College Programs 2026">
-<meta property="og:description" content="Free tool to find and match degree, diploma, certificate, KMTC, artisan, TTC and short courses with your KCSE grades across Kenyan institutions.">
-<meta property="og:url" content="https://www.studentsplacement.co.ke/">
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "KUCCPS Eligibility Checker - Course Matching Tool",
-  "description": "Free KUCCPS course checker by grade for Kenyan students. Find KUCCPS degree, diploma, certificate, KMTC, artisan, TTC and short courses matching your KCSE grades. KUCCPS automatic eligibility matcher with subject requirements checker and KUCCPS cluster points calculator. KUCCPS code finder and grade combination matcher for 2026 university and college placement.",
+  "name": "Courses Checker",
+  "description": "An independent KCSE course eligibility guidance tool for Kenyan students.",
   "url": "https://www.studentsplacement.co.ke",
   "applicationCategory": "EducationApplication",
   "operatingSystem": "Windows, macOS, Linux, iOS, Android",
-  "inLanguage": "en-US",
-  "isAccessibleForFree": true,
-  "version": "3.0.0",
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.8",
-    "ratingCount": 247,
-    "bestRating": "5"
-  },
+  "inLanguage": "en-KE",
   "author": {
     "@type": "Organization",
-    "name": "Eligibility Checker",
+    "name": "Courses Checker",
     "url": "https://www.studentsplacement.co.ke"
   },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "KES"
-  },
   "featureList": [
-    "KUCCPS course checker by grade",
-    "KUCCPS grade combination matcher",
-    "KUCCPS automatic course selector",
-    "KUCCPS subject requirements validator",
-    "KUCCPS cluster points calculator",
-    "KUCCPS cut-off point checker",
-    "KUCCPS KMTC eligibility checker",
-    "KUCCPS TVET course matcher",
-    "KUCCPS code finder",
-    "KUCCPS cluster points calculator"
+    "KCSE course eligibility guidance",
+    "Degree, diploma, certificate, KMTC, artisan and teacher-training pathways",
+    "Programme requirements from the Courses Checker catalog"
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.studentsplacement.co.ke/#organization",
+      "name": "Courses Checker",
+      "alternateName": "KUCCPS Courses Checker",
+      "url": "https://www.studentsplacement.co.ke/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.studentsplacement.co.ke/static/icons/icon-512x512.png",
+        "width": 512,
+        "height": 512
+      },
+      "description": "An independent Kenyan education guidance website that helps students compare KCSE results with published university and college programme requirements. It is not the Kenya Universities and Colleges Central Placement Service."
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.studentsplacement.co.ke/#website",
+      "url": "https://www.studentsplacement.co.ke/",
+      "name": "Courses Checker",
+      "alternateName": "KUCCPS Courses Checker",
+      "inLanguage": "en-KE",
+      "publisher": { "@id": "https://www.studentsplacement.co.ke/#organization" }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://www.studentsplacement.co.ke/#webpage",
+      "url": "https://www.studentsplacement.co.ke/",
+      "name": "KUCCPS Course Checker by KCSE Grade | Courses Checker",
+      "isPartOf": { "@id": "https://www.studentsplacement.co.ke/#website" },
+      "about": {
+        "@type": "GovernmentOrganization",
+        "name": "Kenya Universities and Colleges Central Placement Service",
+        "alternateName": "KUCCPS",
+        "url": "https://www.kuccps.net/",
+        "description": "The official placement service coordinates placement of students to universities, colleges and other higher-learning institutions in Kenya."
+      },
+      "inLanguage": "en-KE"
+    }
   ]
 }
 </script>
@@ -59,67 +78,35 @@
   "@type": "FAQPage",
   "mainEntity": [
     {
+      "name": "Does a course match guarantee KUCCPS placement or admission?",
       "@type": "Question",
-      "name": "How do I check KUCCPS courses for 2026?",
       "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Use our KUCCPS course checker tool. Enter your KCSE grades and cluster points to instantly see all KUCCPS degree, diploma, certificate, KMTC, artisan, TTC and short courses you qualify for across Kenyan universities, colleges, and technical institutions."
+        "text": "No. Courses Checker provides eligibility guidance based on the information you enter. Official placement and admission decisions are made by KUCCPS and the institutions.",
+        "@type": "Answer"
       }
     },
     {
+      "name": "What should I have ready before checking?",
       "@type": "Question",
-      "name": "What are KUCCPS cluster points and how are they calculated?",
       "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "KUCCPS cluster points are calculated based on your KCSE grades in four cluster subjects relevant to your desired course. Each grade has a weight, and the total determines your eligibility for KUCCPS university programs. Different KUCCPS courses have different cluster point requirements. Our tool provides approximate KUCCPS calculations with an estimated error margin of ±5 points."
+        "text": "Have your KCSE result slip available so you can enter the overall result and the subject grades requested by your selected pathway.",
+        "@type": "Answer"
       }
     },
     {
+      "name": "Are the course requirements the same for every programme?",
       "@type": "Question",
-      "name": "Can I check KUCCPS diploma and certificate courses with my KCSE results?",
       "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes! Our KUCCPS checker shows diploma, certificate, artisan, KMTC, TTC and short courses alongside degree programs. Enter your KCSE mean grade to see all KUCCPS options available to you based on your performance."
+        "text": "No. Entry requirements vary by programme and institution. Review the requirements shown with each assessment and confirm current details with the institution or KUCCPS.",
+        "@type": "Answer"
       }
     },
     {
+      "name": "What does KUCCPS do?",
       "@type": "Question",
-      "name": "What KUCCPS courses can I do with a C+ grade in KCSE?",
       "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "With a C+ mean grade, you qualify for KUCCPS degree programs at Kenyan universities including Bachelor of Commerce, Education, Arts, Science, Engineering, IT, Nursing, Law, and many other fields depending on your subject combinations."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What KUCCPS diploma courses are available for C- and C plain grades?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Students with C- and C plain grades can enroll in KUCCPS diploma programs including Diploma in Education, Nursing, Clinical Medicine, Pharmacy, Engineering, Business, Information Technology, and Agriculture at various colleges and TVET institutions."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Can I do KUCCPS nursing without Chemistry in KCSE?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Most KUCCPS nursing and medical programs require Chemistry as a core subject. However, some KUCCPS certificate-level health courses and community health programs may have more flexible requirements. Use our KUCCPS subject requirements checker to see specific program requirements."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What are the minimum subject requirements for KUCCPS Computer Science and Engineering?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "KUCCPS Computer Science and IT programs typically require Mathematics and Physics. KUCCPS Engineering courses require Mathematics and Physics. Some institutions also accept Biology or Geography as alternative science subjects. Specific KUCCPS requirements vary by university and program level."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What KUCCPS certificate and artisan courses can I do with D+ or D plain grades?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "With D+ and D plain grades, you can pursue KUCCPS certificate and artisan courses in Business, IT, Agriculture, Electrical Installation, Motor Vehicle Mechanics, Plumbing, Carpentry, Masonry, Welding, Tailoring, and various vocational programs at TVET institutions."
+        "text": "The Kenya Universities and Colleges Central Placement Service (KUCCPS) coordinates placement of eligible students to universities, colleges and other higher-learning institutions in Kenya. Courses Checker is an independent guidance tool; applications and official placement decisions are handled through KUCCPS and the institutions.",
+        "@type": "Answer"
       }
     }
   ]
@@ -127,55 +114,6 @@
 </script>
 
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "HowTo",
-  "name": "How to Find Courses You Qualify For Using KCSE Grades",
-  "description": "Step-by-step guide to finding university and college courses that match your KCSE performance.",
-  "totalTime": "PT5M",
-  "estimatedCost": {
-    "@type": "MonetaryAmount",
-    "currency": "KES",
-    "value": "0"
-  },
-  "supply": [
-    {
-      "@type": "HowToSupply",
-      "name": "KCSE Result Slip"
-    }
-  ],
-  "tool": [
-    {
-      "@type": "HowToTool",
-      "name": "Eligibility Checker Tool"
-    }
-  ],
-  "step": [
-    {
-      "@type": "HowToStep",
-      "position": 1,
-      "name": "Select Your Course Category",
-      "text": "Choose from degree, diploma, certificate, KMTC, artisan, TTC, or short courses based on your KCSE mean grade.",
-      "url": "https://www.studentsplacement.co.ke/#course-categories"
-    },
-    {
-      "@type": "HowToStep",
-      "position": 2,
-      "name": "Enter Your KCSE Grades",
-      "text": "Input your mean grade and individual subject grades including Mathematics, English, Sciences, and Humanities.",
-      "url": "https://www.studentsplacement.co.ke/"
-    },
-    {
-      "@type": "HowToStep",
-      "position": 3,
-      "name": "View Your Matched Courses",
-      "text": "Get an instant list of all programs you qualify for with details on institutions, requirements, and next steps.",
-      "url": "https://www.studentsplacement.co.ke/"
-    }
-  ]
-}
-</script>
 {% endblock %}
 
 {% block extra_styles %}
@@ -1049,63 +987,39 @@
 {% endblock %}
 
 {% block hero %}
-<!-- Hero Section -->
-<section class="hero-section-home">
-    <div class="float-element float-1"></div>
-    <div class="float-element float-2"></div>
-    <div class="float-element float-3"></div>
-    <div class="container-main">
-        <div class="hero-badge-home">
-            <i class="fas fa-sparkles"></i>
-            <span>2026 Intake Now Open</span>
-        </div>
-        <h1 class="hero-title-home">
-            Find Courses You<br><span class="text-grad">Qualify For</span>
-        </h1>
-        <p class="hero-subtitle-home">
-            Enter your KCSE grades and instantly discover all degree, diploma, certificate, KMTC, artisan, and teacher training courses available for you across Kenya.
-        </p>
-        <div class="hero-cta-group">
-            <a href="#course-categories" class="hero-btn-primary" id="exploreCoursesBtn" data-offset="80">
-                <i class="fas fa-compass"></i> Explore Courses
-            </a>
-            <a href="#" class="hero-btn-ghost" data-bs-toggle="modal" data-bs-target="#retrieveModal">
-                <i class="fas fa-check-circle"></i> Retrieve My Results
-            </a>
+<section class="hero-section-home" aria-labelledby="home-title">
+    <div class="float-element float-1" aria-hidden="true"></div>
+    <div class="float-element float-2" aria-hidden="true"></div>
+    <div class="float-element float-3" aria-hidden="true"></div>
+    <div class="container-main hero-inner" style="text-align:left;">
+        <div class="hero-copy">
+            <div class="hero-badge-home"><i class="fas fa-sparkles" aria-hidden="true"></i><span>Plan your next step with confidence</span></div>
+            <h1 class="hero-title-home" id="home-title">Discover the <span class="accent">courses</span> you qualify for.</h1>
+            <p class="hero-subtitle-home">Enter your KCSE grades to explore degree, diploma, certificate, KMTC, artisan, technical, and teacher-training courses that match published requirements.</p>
+            <p class="hero-cycle-line" data-type-cycle="Degree programmes|Diploma courses|KMTC programmes|Certificate courses" aria-label="Explore degree programmes, diploma courses, KMTC programmes, and certificate courses"><span aria-hidden="true">Explore degree programmes</span></p>
+            <div class="hero-cta-group">
+                <a href="#course-categories" class="hero-btn-primary" id="exploreCoursesBtn" data-offset="80"><i class="fas fa-compass" aria-hidden="true"></i> Check my eligibility</a>
+                <a href="#course-categories" class="hero-btn-ghost"><i class="fas fa-book-open" aria-hidden="true"></i> Explore programmes</a>
+            </div>
+            <ul class="hero-trust" aria-label="Platform features">
+                <li><i class="fas fa-check" aria-hidden="true"></i> M-Pesa payment</li>
+                <li><i class="fas fa-check" aria-hidden="true"></i> Installable PWA</li>
+                <li><i class="fas fa-check" aria-hidden="true"></i> Designed for mobile data</li>
+            </ul>
         </div>
     </div>
 </section>
 {% endblock %}
 
 {% block content %}
-<!-- Statistics Section -->
-<section class="stats-section-home">
+<!-- Platform features -->
+<section class="stats-section-home" aria-label="Platform features">
     <div class="container-main">
-        <div class="row g-3 g-md-4">
-            <div class="col-6 col-md-3">
-                <div class="stat-card-home reveal">
-                    <div class="stat-number-home" data-count="5000">0</div>
-                    <div class="stat-label-home">+ Courses Listed</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-card-home reveal delay-1">
-                    <div class="stat-number-home" data-count="100">0</div>
-                    <div class="stat-label-home">+ Institutions</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-card-home reveal delay-2">
-                    <div class="stat-number-home" data-count="50000">0</div>
-                    <div class="stat-label-home">+ Students Helped</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-card-home reveal delay-3">
-                    <div class="stat-number-home" data-count="7">0</div>
-                    <div class="stat-label-home">Course Categories</div>
-                </div>
-            </div>
+        <div class="stats-strip-home">
+            <div class="stat-card-home"><div class="stat-number-home">6</div><div class="stat-label-home">Course pathways</div></div>
+            <div class="stat-card-home"><div class="stat-number-home">AI</div><div class="stat-label-home">Course assistant</div></div>
+            <div class="stat-card-home"><div class="stat-number-home"><i class="fas fa-mobile-alt" aria-hidden="true"></i></div><div class="stat-label-home">Installable app</div></div>
+            <div class="stat-card-home"><div class="stat-number-home"><i class="fas fa-wifi" aria-hidden="true"></i></div><div class="stat-label-home">Offline support</div></div>
         </div>
     </div>
 </section>
@@ -1115,7 +1029,7 @@
     <div class="container-main">
         <div class="section-header reveal">
             <div class="section-tag"><i class="fas fa-layer-group"></i> Browse</div>
-            <h2 class="section-title-home">Explore Course <span class="text-grad">Categories</span></h2>
+            <h2 class="section-title-home">Explore <span class="text-grad">programmes</span></h2>
             <p class="section-subtitle-home">Choose your preferred course level to find programs that match your KCSE qualifications.</p>
         </div>
         <div class="row g-3 g-md-4">
@@ -1167,11 +1081,11 @@
                     <span class="category-btn-home"><i class="fas fa-arrow-right"></i> Explore</span>
                 </a>
             </div>
-        
+
             <!-- Short Courses -->
             <div class="col-6 col-lg-4 reveal-scale delay-5">
                 <a href="https://short-courses.onrender.com/" class="category-card-home" data-category="shortcourses">
-                    <div class="category-icon-home" style="background: linear-gradient(135deg, #1e1e2f, #2d2d44); color: #00d4ff;"><i class="fas fa-laptop-code"></i></div>
+                    <div class="category-icon-home"><i class="fas fa-laptop-code"></i></div>
                     <div class="category-title-home">Short Courses</div>
                     <div class="category-description-home">Tech skills: Web Dev, Cyber Security, Graphic Design & more. KSh 500 only.</div>
                     <span class="category-btn-home"><i class="fas fa-external-link-alt"></i> Devzen Academy</span>
@@ -1186,21 +1100,21 @@
     <div class="container-main">
         <div class="row g-3 g-md-4">
             <div class="col-12 reveal">
-                <a href="https://short-courses.onrender.com/" class="category-card-home" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-color: rgba(0,212,255,0.2); text-align: left; display: flex; flex-direction: row; align-items: center; gap: 20px; padding: 28px 24px;">
+                <a href="https://short-courses.onrender.com/" class="category-card-home short-course-promo">
                     <div style="flex-shrink: 0;">
-                        <div class="category-icon-home" style="background: rgba(0,212,255,0.15); color: #00d4ff; width: 60px; height: 60px; font-size: 1.5rem; margin: 0;">
+                        <div class="category-icon-home" style="width:60px;height:60px;font-size:1.5rem;margin:0;">
                             <i class="fas fa-rocket"></i>
                         </div>
                     </div>
                     <div style="flex: 1; min-width: 0;">
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px;">
                             <span class="category-title-home" style="color: white; font-size: 1.1rem; margin: 0;">Devzen Creations Tech Academy</span>
-                            <span style="background: rgba(0,212,255,0.15); color: #00d4ff; padding: 2px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">New</span>
+                            <span class="short-course-badge">New</span>
                         </div>
                         <p class="category-description-home" style="color: rgba(255,255,255,0.6); margin: 0 0 12px; font-size: 0.82rem; line-height: 1.5;">
-                            Master in-demand tech skills with professional short courses. Web Development, Graphic Design & Cyber Security — all at <strong style="color: #00d4ff;">KSh 500</strong> only. Self-paced learning with hands-on projects.
+                            Master in-demand tech skills with professional short courses. Web Development, Graphic Design & Cyber Security — all at <strong style="color:#137E4E;">KSh 500</strong> only. Self-paced learning with hands-on projects.
                         </p>
-                        <span class="category-btn-home" style="background: rgba(0,212,255,0.15); color: #00d4ff; border: 1px solid rgba(0,212,255,0.3);"><i class="fas fa-external-link-alt"></i> Explore Short Courses</span>
+                        <span class="category-btn-home short-course-link"><i class="fas fa-external-link-alt"></i> Explore Short Courses</span>
                     </div>
                 </a>
             </div>
@@ -1220,22 +1134,22 @@
             <div class="col-md-4 reveal-left">
                 <div class="process-card-home">
                     <div class="process-number-home">1</div>
-                    <div class="process-title-home">Select Category</div>
-                    <div class="process-description-home">Choose your preferred course level from degree, diploma, certificate, KMTC, artisan, TTC, or short courses.</div>
+                    <div class="process-title-home">Examination details</div>
+                    <div class="process-description-home">Choose the programme pathway you want to assess.</div>
                 </div>
             </div>
             <div class="col-md-4 reveal-scale delay-1">
                 <div class="process-card-home">
                     <div class="process-number-home">2</div>
-                    <div class="process-title-home">Enter Grades</div>
-                    <div class="process-description-home">Input your KCSE subject grades and cluster points to find matching courses.</div>
+                    <div class="process-title-home">Subject grades</div>
+                    <div class="process-description-home">Enter the KCSE grades requested for your selected pathway.</div>
                 </div>
             </div>
             <div class="col-md-4 reveal-right delay-2">
                 <div class="process-card-home">
                     <div class="process-number-home">3</div>
-                    <div class="process-title-home">View Results</div>
-                    <div class="process-description-home">Get a personalized list of all courses and institutions you qualify for instantly.</div>
+                    <div class="process-title-home">Review and submit</div>
+                    <div class="process-description-home">Review your details and submit them to see the assessment results available for your pathway.</div>
                 </div>
             </div>
         </div>
@@ -1250,15 +1164,15 @@
                 <div class="section-header" style="text-align: left; padding: 0;">
                     <div class="section-tag" style="margin-left: 0;"><i class="fas fa-star"></i> Why Us</div>
                     <h2 class="section-title-home" style="text-align: left;">Why Choose <span class="text-grad">CourseChecker?</span></h2>
-                    <p class="section-subtitle-home" style="text-align: left; margin: 0; max-width: 100%;">Trusted by thousands of Kenyan students to find their ideal academic path.</p>
+                    <p class="section-subtitle-home" style="text-align: left; margin: 0; max-width: 100%;">A clear starting point for comparing study pathways with your KCSE results.</p>
                 </div>
                 <ul class="benefit-list-home mt-3 mt-md-4">
                     <li><div class="benefit-check"><i class="fas fa-check"></i></div> Personalized course matching based on your KCSE performance</li>
-                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Access thousands of accredited courses from all Kenyan institutions</li>
-                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Real-time updates on deadlines, cut-off points, and new programs</li>
-                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Trusted by tens of thousands of Kenyan students and parents</li>
-                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Direct links to official application portals</li>
-                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> 100% free to use with no registration required</li>
+                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Explore programme pathways represented in the course catalog</li>
+                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Review programme-specific entry information before making decisions</li>
+                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Compare study pathways using the KCSE details you provide</li>
+                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Use the official KUCCPS portal for placement applications</li>
+                    <li><div class="benefit-check"><i class="fas fa-check"></i></div> Choose a pathway to begin your course check</li>
                 </ul>
             </div>
             <div class="col-lg-6 reveal-right delay-1">
@@ -1280,8 +1194,22 @@
     </div>
 </section>
 
+<!-- Frequently asked questions -->
+<section class="faq-section-home" id="faq" aria-labelledby="faq-title">
+  <div class="container-main">
+    <div class="section-header"><div class="section-tag">Helpful answers</div><h2 class="section-title-home" id="faq-title">Frequently asked questions</h2></div>
+    <div class="faq-list-home">
+      <details class="faq-item-home"><summary>Does a course match guarantee KUCCPS placement or admission?</summary><p>No. Courses Checker provides eligibility guidance based on the information you enter. Official placement and admission decisions are made by KUCCPS and the institutions.</p></details>
+      <details class="faq-item-home"><summary>What should I have ready before checking?</summary><p>Have your KCSE result slip available so you can enter the overall result and the subject grades requested by your selected pathway.</p></details>
+      <details class="faq-item-home"><summary>Are the course requirements the same for every programme?</summary><p>No. Entry requirements vary by programme and institution. Review the requirements shown with each assessment and confirm current details with the institution or KUCCPS.</p></details>
+      <details class="faq-item-home"><summary>What does KUCCPS do?</summary><p>The <a href="https://www.kuccps.net/placem" target="_blank" rel="noopener noreferrer">Kenya Universities and Colleges Central Placement Service (KUCCPS)</a> coordinates placement of eligible students to universities, colleges and other higher-learning institutions in Kenya. Courses Checker is independent guidance; applications and official placement decisions are handled through KUCCPS and the institutions.</p></details>
+    </div>
+    <p class="placement-disclaimer">Courses Checker is an independent eligibility guidance tool. A match does not guarantee official KUCCPS placement or admission.</p>
+  </div>
+</section>
+
 <!-- PWA Install Card (moved from base.html to appear only on homepage) -->
-<div class="bento-card dark reveal" id="pwaCtaBlock" style="margin:0 0 48px;text-align:center;padding:36px 28px;" role="complementary" aria-label="Install app">
+<div class="bento-card reveal" id="pwaCtaBlock" style="margin:0 0 48px;text-align:center;padding:36px 28px;" role="complementary" aria-label="Install app">
     <div class="bento-icon" style="margin:0 auto 16px;"><i class="fas fa-mobile-alt"></i></div>
     <div class="bento-title" style="font-size:1.2rem;">Install the App</div>
     <p class="bento-desc" style="max-width:380px;margin:0 auto 20px;">Get faster access, offline support, and push notifications for new courses and deadlines.</p>
@@ -1291,47 +1219,6 @@
     </div>
 </div>
 
-<!-- SEO-rich hidden content for search engines -->
-<div style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px);" aria-hidden="true">
-    <h2>KUCCPS Courses 2026 - Course Checker by Grade</h2>
-    <p>KUCCPS course checker by grade for 2026 intake. KUCCPS eligibility checker for degree, diploma, certificate, KMTC, artisan and TTC programs. KUCCPS cluster points calculator and cut off point checker. KUCCPS grade combination matcher and automatic course selector tool. KUCCPS code finder by grade for Kenyan university and college placement. Free online course checker by grade for Kenyan students.</p>
-
-    <h3>KUCCPS Degree Programs for C+ and Above</h3>
-    <p>KUCCPS degree courses for C+ and above. KUCCPS Bachelor of Commerce, KUCCPS Bachelor of Science, KUCCPS Bachelor of Arts, KUCCPS Bachelor of Education, KUCCPS Bachelor of Engineering, KUCCPS Bachelor of Medicine and Surgery, KUCCPS Bachelor of Law, KUCCPS Bachelor of Nursing, KUCCPS Bachelor of Computer Science, KUCCPS Bachelor of Business Information Technology, KUCCPS Bachelor of Architecture, KUCCPS Bachelor of Pharmacy, KUCCPS Bachelor of Dental Surgery. Minimum requirement: KCSE mean grade C+ with relevant subject combinations.</p>
-
-    <h3>KUCCPS Diploma Courses for C- and C Plain</h3>
-    <p>KUCCPS diploma programs for C- and C plain. KUCCPS diploma in education, KUCCPS diploma in nursing, KUCCPS diploma in clinical medicine, KUCCPS diploma in pharmacy, KUCCPS diploma in engineering, KUCCPS diploma in business management, KUCCPS diploma in information technology, KUCCPS diploma in agriculture, KUCCPS diploma in journalism, KUCCPS diploma in medical laboratory sciences, KUCCPS diploma in community health, KUCCPS diploma in nutrition. Entry grades: C- to C plain depending on institution.</p>
-
-    <h3>KUCCPS Certificate Courses for D+ and Above</h3>
-    <p>KUCCPS certificate courses for D+ and D plain. KUCCPS certificate in business, KUCCPS certificate in IT, KUCCPS certificate in engineering, KUCCPS certificate in agriculture, KUCCPS certificate in hospitality, KUCCPS certificate in fashion design, KUCCPS certificate in automotive engineering, KUCCPS certificate in electrical installation, KUCCPS certificate in motor vehicle mechanics, KUCCPS certificate in plumbing, KUCCPS certificate in carpentry, KUCCPS certificate in masonry, KUCCPS certificate in welding. Entry requirement: D+ and above in most programs.</p>
-
-    <h3>KUCCPS KMTC Healthcare Programs</h3>
-    <p>KUCCPS KMTC courses for healthcare training. KUCCPS diploma in nursing KMTC, KUCCPS diploma in clinical medicine KMTC, KUCCPS diploma in pharmacy KMTC, KUCCPS diploma in medical laboratory technology, KUCCPS community health nursing, KUCCPS health records, KUCCPS nutrition and dietetics. Requirements vary by program level.</p>
-
-    <h3>KUCCPS Artisan and Vocational Courses</h3>
-    <p>KUCCPS artisan courses for D- and E. KUCCPS electrical installation, KUCCPS motor vehicle mechanics, KUCCPS plumbing, KUCCPS carpentry, KUCCPS masonry, KUCCPS welding, KUCCPS tailoring, KUCCPS hairdressing, KUCCPS catering, KUCCPS agriculture mechanics. KUCCPS TVET courses automatic match for D minus grades. Entry: D plain and above for certificate, D- and E for artisan.</p>
-
-    <h3>KUCCPS TTC Teacher Training Programs</h3>
-    <p>KUCCPS TTC courses for teacher education. KUCCPS primary teacher education PTE, KUCCPS diploma in teacher education, KUCCPS early childhood development education ECDE, KUCCPS special needs education, KUCCPS Montessori teacher training. Requirements: C plain to C+ depending on program level.</p>
-
-    <h3>KUCCPS Short Courses and Tech Skills</h3>
-    <p>KUCCPS short courses and tech skills. KUCCPS web development courses, KUCCPS graphic design courses, KUCCPS cybersecurity courses. Devzen Creations Tech Academy offers professional training at KSh 500 per course with hands-on projects and industry-relevant curriculum. Self-paced learning with certificates.</p>
-
-    <h3>KUCCPS Subject-Specific Requirements</h3>
-    <p>KUCCPS computer science minimum requirements: Mathematics and Physics required. KUCCPS nursing without Chemistry: most programs require Chemistry but some certificate health courses are flexible. KUCCPS engineering math requirements: Mathematics and Physics mandatory. KUCCPS medicine cluster combination: Biology, Chemistry, Mathematics/Physics required. KUCCPS education subject requirements: varies by specialization. KUCCPS law requirements, KUCCPS architecture requirements, KUCCPS pharmacy requirements.</p>
-
-    <h3>KUCCPS Cluster Points and Cut Off Points</h3>
-    <p>KUCCPS cluster points calculator 2026. KUCCPS cut off points for medicine, KUCCPS cut off for engineering, KUCCPS cut off for computer science, KUCCPS cut off for nursing, KUCCPS cut off for law, KUCCPS cut off for architecture, KUCCPS cut off for pharmacy. KUCCPS cluster 7 computer science, KUCCPS cluster 13 medicine. KUCCPS cut off trends tool. KUCCPS cluster points for Kenyatta University, KUCCPS cluster points for UON, KUCCPS cluster points for JKUAT. KUCCPS university choice checker 2026. KUCCPS how to check courses with low cluster points. KUCCPS why not qualified. KUCCPS program code invalid check error.</p>
-
-    <h3>KUCCPS Institution-Specific Courses</h3>
-    <p>KUCCPS University of Nairobi courses, KUCCPS Kenyatta University courses, KUCCPS JKUAT courses, KUCCPS Moi University courses, KUCCPS Strathmore University courses, KUCCPS USIU courses, KUCCPS Daystar University courses, KUCCPS KU courses, KUCCPS Egerton University courses, KUCCPS Maseno University courses, KUCCPS Chuka University courses, KUCCPS Pwani University courses, KUCCPS Technical University of Kenya courses, KUCCPS Open University of Kenya courses.</p>
-
-    <h3>KUCCPS Application and Portal</h3>
-    <p>KUCCPS student portal login, KUCCPS application fee 2026, KUCCPS how to pay via eCitizen, KUCCPS application deadline, KUCCPS first revision, KUCCPS second revision, KUCCPS inter university transfer, KUCCPS placement results, KUCCPS admission letter download, KUCCPS program code invalid error, KUCCPS why not qualified.</p>
-
-    <h3>KUCCPS Marketable Courses in Kenya</h3>
-    <p>KUCCPS most marketable degree courses: Medicine, Engineering, Computer Science, Nursing, Law, Architecture, Pharmacy. KUCCPS marketable diploma courses: Clinical Medicine, Nursing, Pharmacy, Engineering, IT, Journalism. KUCCPS marketable certificate courses: Electrical, Plumbing, IT, Hospitality, Agriculture. KUCCPS marketable short courses: Web Development, Cyber Security, Graphic Design, Data Science. KUCCPS best courses for employment, KUCCPS high paying courses, KUCCPS courses with high demand, KUCCPS courses with good salary.</p>
-</div>
 {% endblock %}
 
 {% block scripts %}

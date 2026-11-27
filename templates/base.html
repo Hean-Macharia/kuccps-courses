@@ -1,26 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
+  <script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js-enabled');</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="description" content="Find university and college courses that match your KCSE grades. Eligibility Checker helps Kenyan students discover Degree, Diploma, Certificate, KMTC, Artisan, TTC and Short Course programs for 2026 admission. Independent course matching tool.">
-  <meta name="keywords" content="KUCCPS courses, KUCCPS course checker, KUCCPS course checker by grade, KUCCPS grade combination matcher, KUCCPS eligibility checker, KUCCPS code finder, KUCCPS automatic course selector, KUCCPS cluster points checker, KUCCPS cut off points, KUCCPS 2026, KUCCPS courses for C+, KUCCPS diploma courses, KUCCPS certificate courses, KUCCPS KMTC courses, KUCCPS artisan courses, KUCCPS TTC courses, KUCCPS degree programs, KUCCPS nursing requirements, KUCCPS computer science requirements, KUCCPS engineering requirements, KUCCPS medicine cluster, KUCCPS education requirements, KUCCPS subject requirements, KUCCPS minimum requirements, KUCCPS placement, KUCCPS admission 2026, KUCCPS student portal, KUCCPS application, KUCCPS portal login, KUCCPS results, KUCCPS revision, KUCCPS inter university transfer, KUCCPS marketable courses, KUCCPS university choice, KUCCPS TVET courses, KUCCPS short courses, KCSE course matching, degree courses Kenya, diploma courses Kenya, certificate courses, KMTC programs, artisan courses, TTC programs, short courses Kenya, cluster points checker, cut off point checker, 2026 intake courses, Kenyan university placement, college course finder, subject requirements checker, nursing course eligibility, engineering requirements, computer science courses Kenya, medicine cluster checker, education course requirements, TVET courses, marketable courses Kenya">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://www.kuccpscourses.co.ke/" />
-  <meta property="og:title" content="Eligibility Checker - Find Courses Matching Your KCSE Grades | Kenya University & College Placement">
-  <meta property="og:description" content="Find courses matching your KCSE grades across Kenyan universities and colleges. Degree, Diploma, Certificate, KMTC, Artisan, TTC and Short Course programs for 2026.">
-  <meta property="og:url" content="https://www.kuccpscourses.co.ke/">
+  {% set canonical_endpoint = request.endpoint|default('index', true) %}
+  {% set page_canonical = get_canonical_url(canonical_endpoint, **(request.view_args or {})) %}
+  {% set page_description = meta_description|default(site_description, true) %}
+  <meta name="description" content="{{ page_description|striptags|trim|e }}">
+  {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification|e }}">{% endif %}
+  {% if request.endpoint in ['results', 'show_results', 'verified_dashboard', 'verified_results_dashboard', 'show_verified_level_results', 'view_basket', 'payment', 'payment_wait', 'enter_details', 'user_info', 'auth', 'payment_issue', 'offline'] or (request.endpoint and request.endpoint.startswith('admin')) %}
+  <meta name="robots" content="noindex, nofollow">
+  {% else %}
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  {% endif %}
+  <link rel="canonical" href="{{ page_canonical|e }}" />
+  <meta property="og:title" content="{{ self.title()|striptags|trim|e }}">
+  <meta property="og:description" content="{{ page_description|striptags|trim|e }}">
+  <meta property="og:url" content="{{ page_canonical|e }}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Eligibility Checker - Kenya Course Matching">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Eligibility Checker - Course Matching by KCSE Grades">
-  <meta name="twitter:description" content="Find courses matching your KCSE grades across Kenyan institutions.">
-  <meta name="theme-color" content="#FF5A00">
+  <meta name="twitter:title" content="{{ self.title()|striptags|trim|e }}">
+  <meta name="twitter:description" content="{{ page_description|striptags|trim|e }}">
+  <meta name="theme-color" content="#FFFFFF">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/static/icons/icon-152x152.png">
-  <link rel="shortcut icon" href="https://img.icons8.com/color/96/000000/graduation-cap.png" type="image/x-icon">
+  <link rel="icon" href="/static/icons/icon-192x192.png" type="image/png">
   <title>{% block title %}Eligibility Checker — Find Courses Matching Your KCSE Grades{% endblock %}</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,691 +40,107 @@
   {% block links %}{% endblock %}
 
   <style>
-  /* ════════════════════════════════════════════
-     DESIGN TOKENS
-  ════════════════════════════════════════════ */
-  :root {
-    --orange:        #FF5A00;
-    --orange-light:  #FF7A30;
-    --orange-pale:   rgba(255,90,0,0.08);
-    --orange-glow:   rgba(255,90,0,0.22);
-    --crimson:       #D90445;
-    --crimson-deep:  #B8003C;
-    --crimson-pale:  rgba(217,4,69,0.08);
-    --bg:            #F5F4F2;
-    --surface:       #FFFFFF;
-    --surface-2:     #FAFAF9;
-    --border:        rgba(0,0,0,0.07);
-    --border-strong: rgba(0,0,0,0.12);
-    --text-1:        #0E0E0E;
-    --text-2:        #555555;
-    --text-3:        #999999;
-    --text-inv:      #FFFFFF;
-    --grad-brand:  linear-gradient(135deg, #FF5A00 0%, #F24405 45%, #D90445 100%);
-    --grad-warm:   linear-gradient(135deg, #FF5A00 0%, #FF7A30 100%);
-    --grad-radial: radial-gradient(ellipse at 50% 0%, rgba(255,90,0,0.14) 0%, transparent 70%);
-    --grad-glass:  linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.6) 100%);
-    --grad-dark:   linear-gradient(160deg, #1A1208 0%, #0C0C0C 100%);
-    --sh-xs:   0 1px 2px rgba(0,0,0,0.04);
-    --sh-sm:   0 2px 8px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
-    --sh-md:   0 8px 24px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
-    --sh-lg:   0 20px 48px rgba(0,0,0,0.09), 0 4px 12px rgba(0,0,0,0.05);
-    --sh-xl:   0 32px 64px rgba(0,0,0,0.11), 0 8px 24px rgba(0,0,0,0.06);
-    --sh-orange: 0 8px 32px rgba(255,90,0,0.28), 0 2px 8px rgba(255,90,0,0.16);
-    --sh-inset: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.04);
-    --r-xs:  6px;
-    --r-sm:  10px;
-    --r-md:  16px;
-    --r-lg:  24px;
-    --r-xl:  32px;
-    --r-2xl: 48px;
-    --r-full: 9999px;
-    --font-display: 'Syne', system-ui, sans-serif;
-    --font-body:    'DM Sans', system-ui, sans-serif;
-    --ease-expo:   cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-back:   cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    --ease-smooth: cubic-bezier(0.45, 0.05, 0.55, 0.95);
-    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --z-base:    0;
-    --z-card:    10;
-    --z-nav:     100;
-    --z-sidebar: 200;
-    --z-modal:   300;
-    --z-toast:   400;
-    --z-cursor:  9999;
-    --z-bottom:  99999;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; font-size: 16px; }
-  body {
-    font-family: var(--font-body);
-    background: var(--bg);
-    color: var(--text-1);
-    min-height: 100vh;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* Background */
-  .scene-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .scene-bg::before {
-    content: '';
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse 900px 600px at 15% 10%, rgba(255,90,0,0.07) 0%, transparent 60%),
-      radial-gradient(ellipse 700px 500px at 85% 80%, rgba(217,4,69,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 500px 400px at 50% 50%, rgba(255,122,48,0.04) 0%, transparent 70%);
-    animation: bgShift 18s ease-in-out infinite alternate;
-  }
-  .scene-bg::after {
-    content: '';
-    position: absolute; inset: 0;
-    background-image:
-      radial-gradient(circle 1px at 20px 20px, rgba(0,0,0,0.04) 1px, transparent 0),
-      radial-gradient(circle 1px at 60px 60px, rgba(0,0,0,0.03) 1px, transparent 0);
-    background-size: 80px 80px, 80px 80px;
-    opacity: 0.8;
-  }
-  @keyframes bgShift {
-    0%   { transform: scale(1) translate(0,0); }
-    50%  { transform: scale(1.04) translate(-1%, 1.5%); }
-    100% { transform: scale(1.02) translate(1%, -1%); }
-  }
-
-  .orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; will-change: transform; }
-  .orb-1 { width: 500px; height: 500px; background: rgba(255,90,0,0.09); top: -120px; left: -80px; animation: orbDrift1 25s ease-in-out infinite; }
-  .orb-2 { width: 400px; height: 400px; background: rgba(217,4,69,0.07); bottom: 10%; right: -100px; animation: orbDrift2 30s ease-in-out infinite; }
-  .orb-3 { width: 300px; height: 300px; background: rgba(255,122,48,0.06); top: 50%; left: 30%; animation: orbDrift3 20s ease-in-out infinite; }
-  @keyframes orbDrift1 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(60px,40px) scale(1.1); } 66% { transform: translate(-30px,70px) scale(0.95); } }
-  @keyframes orbDrift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-80px,-50px) scale(1.15); } }
-  @keyframes orbDrift3 { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.3) rotate(15deg); } }
-
-  .particle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0; animation: particleLife linear infinite; will-change: transform, opacity; }
-  @keyframes particleLife { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.6; } 100% { transform: translateY(-10vh) scale(1); opacity: 0; } }
-
-  .page-wrapper { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
-
-  /* Cursor */
-  .cursor-dot, .cursor-ring { position: fixed; pointer-events: none; z-index: var(--z-cursor); border-radius: 50%; transform: translate(-50%, -50%); transition-property: transform, width, height, background, opacity; transition-timing-function: var(--ease-expo); will-change: left, top; }
-  .cursor-dot { width: 6px; height: 6px; background: var(--orange); transition-duration: 60ms; top: -100px; left: -100px; }
-  .cursor-ring { width: 36px; height: 36px; border: 1.5px solid rgba(255,90,0,0.4); background: rgba(255,90,0,0.04); transition-duration: 140ms; top: -100px; left: -100px; }
-  .cursor-ring.hovering { width: 52px; height: 52px; border-color: rgba(255,90,0,0.7); background: rgba(255,90,0,0.08); }
-  @media (max-width: 991px) { .cursor-dot, .cursor-ring { display: none; } }
-
-  /* Navbar */
-  .navbar-glass { position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-nav); padding: 0; transition: all 0.4s var(--ease-expo); }
-  .navbar-glass.scrolled .nav-inner { background: rgba(255,255,255,0.92); backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); box-shadow: 0 1px 0 var(--border), var(--sh-sm); margin: 0; border-radius: 0; border: none; }
-  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; margin: 16px 24px; background: rgba(255,255,255,0.82); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border-radius: var(--r-2xl); border: 1px solid rgba(255,255,255,0.9); box-shadow: var(--sh-md), inset 0 1px 0 rgba(255,255,255,0.9); transition: all 0.4s var(--ease-expo); }
-  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-1); font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em; }
-  .nav-logo-icon { width: 36px; height: 36px; background: var(--grad-brand); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem; box-shadow: var(--sh-orange); flex-shrink: 0; transition: transform 0.3s var(--ease-spring); }
-  .nav-logo:hover .nav-logo-icon { transform: rotate(-8deg) scale(1.05); }
-  .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
-  .nav-link-item { position: relative; }
-  .nav-link-item a { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--r-full); font-size: 0.83rem; font-weight: 500; color: var(--text-2); text-decoration: none; letter-spacing: -0.01em; transition: all 0.2s var(--ease-expo); white-space: nowrap; }
-  .nav-link-item a:hover { color: var(--text-1); background: rgba(0,0,0,0.04); }
-  .nav-link-item a i { font-size: 0.75rem; opacity: 0.7; }
-  .nav-cta { display: flex; align-items: center; gap: 8px; }
-
-  .ham-btn { display: none; width: 40px; height: 40px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--surface); cursor: pointer; align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 0; transition: all 0.2s; }
-  .ham-btn span { display: block; width: 18px; height: 1.5px; background: var(--text-1); border-radius: 2px; transition: all 0.3s var(--ease-expo); transform-origin: center; }
-  .ham-btn.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-  .ham-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-  .ham-btn.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
-  @media (max-width: 991px) {
-  .nav-links, .nav-cta { display: none; }
-  .ham-btn { display: flex; order: 1; justify-self: start; }
-  .nav-inner {
-    display: grid !important;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 8px;
-  }
-  .nav-logo { order: 2; justify-self: center; position: static; transform: none; left: auto; white-space: nowrap; font-size: 0.95rem; }
-  .news-bell { display: none !important; }
-  .news-bell-mobile { display: block !important; order: 3; justify-self: end; }
-  .news-bell-mobile .news-bell-btn { width: 40px; height: 40px; }
+/* Courses Checker: white, ink navy, and emerald design tokens. */
+:root {
+  color-scheme: light;
+  --midnight:#071B2F;
+  --ink:#071B2F;
+  --white:#FFFFFF;
+  --emerald:#137E4E;
+  --blue:#137E4E;
+  --blue-600:#137E4E;
+  --blue-700:#0F6A42;
+  --blue-900:#08452F;
+  --blue-400:#3E966D;
+  --blue-300:#78B997;
+  --blue-200:#B9DEC8;
+  --blue-100:#EEF9F3;
+  --blue-50:#F7FCF9;
+  --bg:#FFFFFF;
+  --text:#071B2F;
+  --text-2:#475569;
+  --border:#E2E8F0;
+  --border-strong:#CBD5E1;
+  --grad-btn:#137E4E;
+  --grad-brand:#137E4E;
+  --shadow-card:0 8px 24px rgba(7,27,47,.06);
+  --shadow-lift:0 16px 32px rgba(7,27,47,.10);
+  --ease-expo:cubic-bezier(.22,1,.36,1);
+  --ease-spring:cubic-bezier(.22,1,.36,1);
+  --font-display:"Manrope","DM Sans",system-ui,sans-serif;
+  --font-body:"Manrope","DM Sans",system-ui,sans-serif;
+  --r-card:24px;
+  --r-panel:20px;
+  --r-pill:999px;
+  --space-safe-bottom:env(safe-area-inset-bottom,0px);
+  /* Keep legacy templates bound to the new semantic palette. */
+  --orange:var(--emerald);
+  --orange-light:var(--blue-400);
+  --orange-pale:var(--blue-100);
+  --orange-glow:rgba(19,126,78,.16);
+  --crimson:var(--midnight);
+  --crimson-deep:var(--blue-900);
+  --crimson-pale:var(--blue-50);
+  --bg-old:var(--bg);
+  --surface:var(--white);
+  --surface-2:#F8FAFC;
+  --text-1:var(--midnight);
+  --text-2:#475569;
+  --text-3:#64748B;
+  --text-inv:var(--white);
+  --grad-warm:var(--emerald);
+  --grad-radial:radial-gradient(ellipse at 50% 0%,rgba(19,126,78,.045),transparent 70%);
+  --grad-glass:#FFFFFF;
+  --grad-dark:var(--midnight);
+  --sh-xs:0 1px 2px rgba(7,27,47,.04);
+  --sh-sm:0 4px 12px rgba(7,27,47,.06);
+  --sh-md:var(--shadow-card);
+  --sh-lg:var(--shadow-lift);
+  --sh-xl:0 20px 42px rgba(7,27,47,.12);
+  --sh-orange:0 8px 20px rgba(19,126,78,.18);
+  --sh-inset:inset 0 1px 0 rgba(255,255,255,.8);
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-2xl:36px; --r-full:9999px;
+  --ease-back:cubic-bezier(.22,1,.36,1); --ease-smooth:cubic-bezier(.22,1,.36,1);
+  --z-base:0; --z-card:10; --z-nav:100; --z-sidebar:200; --z-modal:300; --z-toast:400; --z-cursor:9999; --z-bottom:99999;
 }
 
-  /* Sidebar — now slides from LEFT */
-  .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); z-index: calc(var(--z-sidebar) - 1); opacity: 0; pointer-events: none; transition: opacity 0.35s var(--ease-expo); }
-  .sidebar-overlay.show { opacity: 1; pointer-events: all; }
-  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: min(340px, 88vw); background: var(--surface); z-index: var(--z-sidebar); transform: translateX(-110%); transition: transform 0.45s var(--ease-expo); display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--border); box-shadow: var(--sh-xl); }
-  .sidebar.show { transform: translateX(0); }
-  .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }
-  .sidebar-head-logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--text-1); letter-spacing: -0.02em; text-decoration: none; }
-  .sidebar-close { width: 34px; height: 34px; border-radius: var(--r-sm); border: 1px solid var(--border); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-2); font-size: 0.9rem; transition: all 0.2s; }
-  .sidebar-close:hover { background: var(--orange); color: white; border-color: var(--orange); }
-  .sidebar-body { flex: 1; overflow-y: auto; padding: 12px; }
-  .sidebar-group-label { font-size: 0.68rem; font-weight: 600; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; padding: 12px 12px 6px; }
-  .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--r-md); font-size: 0.88rem; font-weight: 500; color: var(--text-2); text-decoration: none; transition: all 0.2s var(--ease-expo); margin-bottom: 2px; position: relative; }
-  .sidebar-link i { width: 18px; font-size: 0.85rem; opacity: 0.65; text-align: center; flex-shrink: 0; }
-  .sidebar-link:hover { background: var(--orange-pale); color: var(--orange); }
-  .sidebar-link:hover i { opacity: 1; }
-  .sidebar-link.active { background: var(--orange-pale); color: var(--orange); font-weight: 600; }
-  .sidebar-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+/* Critical white-canvas layout and first-viewport styles. */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;background:#fff;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-width:320px;background:#fff;color:#071B2F;font-family:Manrope,"DM Sans",system-ui,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#137E4E;text-underline-offset:3px}
+button,a,input,select,textarea{touch-action:manipulation}
+:focus-visible{outline:3px solid #137E4E;outline-offset:3px}
+.main-wrapper,.page-wrapper{background:#fff;color:#071B2F}
+.navbar-glass{position:fixed;inset:0 0 auto;z-index:100;background:#fff;border-bottom:1px solid #E2E8F0;box-shadow:0 2px 10px rgba(7,27,47,.04)}
+.nav-inner{min-height:72px}
+.nav-logo{color:#071B2F;font-family:Manrope,"DM Sans",sans-serif;font-weight:800;text-decoration:none}
+.nav-logo-icon{background:#137E4E;color:#fff}
+.nav-links{background:#fff;border:1px solid #E2E8F0;border-radius:999px}
+.nav-links a{color:#475569}
+.nav-links a:hover,.nav-link-item.active a{color:#0F6A42;background:#EEF9F3}
+.btn-primary,.btn-primary.btn-sm,.hero-btn-primary{min-height:44px;border:0;border-radius:999px;background:#137E4E;color:#fff;font-weight:700}
+.hero-section-home{position:relative;overflow:hidden;min-height:560px;padding:clamp(44px,7vw,88px) 0;background:#fff;color:#071B2F}
+.hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:clamp(24px,6vw,72px);max-width:1100px;margin-inline:auto}
+.hero-title-home{max-width:680px;color:#071B2F;font-family:Manrope,"DM Sans",sans-serif;font-size:clamp(2.5rem,5.6vw,4.25rem);font-weight:800;line-height:1.06;letter-spacing:-.045em}
+.hero-subtitle-home{max-width:600px;color:#475569;font-size:clamp(1rem,1.35vw,1.15rem);line-height:1.7}
+@media(max-width:767px){.hero-section-home{min-height:0;padding:32px 0}.hero-inner{grid-template-columns:1fr;gap:8px}.hero-title-home{font-size:clamp(2.3rem,10vw,3.2rem)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
-  /* Buttons */
-  .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--grad-brand); color: white; border-radius: var(--r-full); font-family: var(--font-body); font-size: 0.875rem; font-weight: 600; letter-spacing: -0.01em; border: none; cursor: pointer; text-decoration: none; box-shadow: var(--sh-orange), inset 0 1px 0 rgba(255,255,255,0.2); transition: all 0.25s var(--ease-expo); position: relative; overflow: hidden; white-space: nowrap; }
-  .btn-primary::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%); opacity: 0; transition: opacity 0.2s; }
-  .btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 40px rgba(255,90,0,0.38), 0 4px 12px rgba(255,90,0,0.2); color: white; text-decoration: none; }
-  .btn-primary:hover::after { opacity: 1; }
-  .btn-primary:active { transform: translateY(0) scale(0.98); }
-  .btn-ghost { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; background: transparent; color: var(--text-1); border-radius: var(--r-full); font-family: var(--font-body); font-size: 0.875rem; font-weight: 500; letter-spacing: -0.01em; border: 1.5px solid var(--border-strong); cursor: pointer; text-decoration: none; transition: all 0.25s var(--ease-expo); white-space: nowrap; }
-  .btn-ghost:hover { background: var(--surface); border-color: var(--orange); color: var(--orange); transform: translateY(-1px); box-shadow: var(--sh-sm); text-decoration: none; }
-  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
-
-  /* Layout */
-  .main-wrapper { flex: 1; padding-top: 100px; }
-  .container-main { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-
-  /* Animations */
-  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-  @keyframes fadeIn { to { opacity: 1; } }
-  @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
-  @keyframes slideRight { to { opacity: 1; transform: translateX(0); } }
-  @keyframes slideLeft { to { opacity: 1; transform: translateX(0); } }
-
-  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s var(--ease-expo), transform 0.7s var(--ease-expo); }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-  .reveal-scale { opacity: 0; transform: scale(0.94); transition: opacity 0.6s var(--ease-expo), transform 0.6s var(--ease-spring); }
-  .reveal-scale.visible { opacity: 1; transform: scale(1); }
-  .reveal-left { opacity: 0; transform: translateX(-24px); transition: opacity 0.65s var(--ease-expo), transform 0.65s var(--ease-expo); }
-  .reveal-left.visible { opacity: 1; transform: translateX(0); }
-  .reveal-right { opacity: 0; transform: translateX(24px); transition: opacity 0.65s var(--ease-expo), transform 0.65s var(--ease-expo); }
-  .reveal-right.visible { opacity: 1; transform: translateX(0); }
-  .delay-1 { transition-delay: 0.08s; }
-  .delay-2 { transition-delay: 0.16s; }
-  .delay-3 { transition-delay: 0.24s; }
-  .delay-4 { transition-delay: 0.32s; }
-  .delay-5 { transition-delay: 0.40s; }
-  .delay-6 { transition-delay: 0.48s; }
-
-  /* Cards */
-  .card-surface { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--sh-sm), var(--sh-inset); overflow: hidden; transition: transform 0.3s var(--ease-expo), box-shadow 0.3s var(--ease-expo); }
-  .card-surface:hover { transform: translateY(-4px); box-shadow: var(--sh-lg), var(--sh-inset); }
-  .card-glass { background: var(--grad-glass); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.85); border-radius: var(--r-xl); box-shadow: var(--sh-md), inset 0 1px 0 rgba(255,255,255,0.9); overflow: hidden; }
-
-  /* Hero */
-  .hero { padding: 48px 0 64px; text-align: center; position: relative; }
-  .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--orange-pale); border: 1px solid rgba(255,90,0,0.18); border-radius: var(--r-full); padding: 6px 16px; font-size: 0.78rem; font-weight: 600; color: var(--orange); letter-spacing: 0.02em; margin-bottom: 24px; opacity: 0; animation: fadeUp 0.6s var(--ease-expo) 0.3s forwards; }
-  .hero-eyebrow .dot { width: 6px; height: 6px; background: var(--orange); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
-  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.6; } }
-  .hero-title { font-family: var(--font-display); font-size: clamp(2.4rem, 6vw, 4.2rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.04em; color: var(--text-1); margin-bottom: 20px; opacity: 0; animation: fadeUp 0.7s var(--ease-expo) 0.4s forwards; }
-  .hero-title .highlight { background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .hero-sub { font-size: clamp(0.95rem, 2vw, 1.15rem); color: var(--text-2); font-weight: 400; line-height: 1.65; max-width: 540px; margin: 0 auto 36px; opacity: 0; animation: fadeUp 0.7s var(--ease-expo) 0.5s forwards; }
-  .hero-ctas { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.7s var(--ease-expo) 0.6s forwards; }
-
-  /* Stats strip */
-  .stats-strip { display: flex; align-items: center; justify-content: center; gap: 0; margin: 48px auto 0; max-width: 680px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 20px 8px; box-shadow: var(--sh-sm), var(--sh-inset); opacity: 0; animation: fadeUp 0.8s var(--ease-expo) 0.75s forwards; }
-  .stat-item { flex: 1; text-align: center; padding: 8px 16px; position: relative; }
-  .stat-item + .stat-item::before { content: ''; position: absolute; left: 0; top: 20%; bottom: 20%; width: 1px; background: var(--border); }
-  .stat-num { font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -0.04em; background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: block; line-height: 1; margin-bottom: 4px; }
-  .stat-label { font-size: 0.73rem; font-weight: 500; color: var(--text-3); letter-spacing: 0.01em; }
-  @media (max-width: 640px) {
-    .stats-strip { flex-wrap: wrap; padding: 16px 4px; max-width: 360px; }
-    .stat-item { flex: 1 1 50%; min-width: 140px; padding: 12px; }
-    .stat-item + .stat-item::before { display: none; }
-    .stat-item:nth-child(1), .stat-item:nth-child(2) { border-bottom: 1px solid var(--border); margin-bottom: 8px; padding-bottom: 16px; }
-    .stat-item:nth-child(odd) { border-right: 1px solid var(--border); }
-  }
-
-  /* Sections */
-  .section { padding: 64px 0; }
-  .section-label { font-size: 0.72rem; font-weight: 700; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
-  .section-title { font-family: var(--font-display); font-size: clamp(1.7rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.04em; color: var(--text-1); line-height: 1.1; margin-bottom: 14px; }
-  .section-desc { font-size: 0.95rem; color: var(--text-2); line-height: 1.65; max-width: 480px; }
-
-  /* Category Grid */
-  .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
-  @media (max-width: 767px) { .category-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
-  @media (max-width: 480px) { .category-grid { grid-template-columns: 1fr; } }
-
-  .category-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 28px 24px; cursor: pointer; text-decoration: none; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; transition: all 0.35s var(--ease-expo); box-shadow: var(--sh-xs), var(--sh-inset); will-change: transform; }
-  .category-card::before { content: ''; position: absolute; inset: 0; background: var(--grad-brand); opacity: 0; transition: opacity 0.35s; }
-  .category-card:hover { transform: translateY(-6px) scale(1.015); box-shadow: var(--sh-lg), 0 0 0 2px var(--orange); border-color: transparent; text-decoration: none; }
-  .category-card:hover::before { opacity: 1; }
-  .category-card:hover .cat-icon, .category-card:hover .cat-title, .category-card:hover .cat-desc, .category-card:hover .cat-arrow { color: white; }
-  .category-card:hover .cat-icon-wrap { background: rgba(255,255,255,0.2); }
-  .category-card:hover .cat-arrow-wrap { background: rgba(255,255,255,0.2); }
-  .cat-icon-wrap { width: 48px; height: 48px; background: var(--orange-pale); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; position: relative; z-index: 1; }
-  .cat-icon { font-size: 1.25rem; color: var(--orange); transition: color 0.3s; }
-  .cat-body { position: relative; z-index: 1; }
-  .cat-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-1); letter-spacing: -0.02em; margin-bottom: 4px; transition: color 0.3s; }
-  .cat-desc { font-size: 0.8rem; color: var(--text-2); line-height: 1.5; transition: color 0.3s; }
-  .cat-footer { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; margin-top: auto; }
-  .cat-badge { font-size: 0.7rem; font-weight: 600; color: var(--orange); background: var(--orange-pale); border-radius: var(--r-full); padding: 3px 10px; transition: background 0.3s, color 0.3s; }
-  .category-card:hover .cat-badge { background: rgba(255,255,255,0.2); color: white; }
-  .cat-arrow-wrap { width: 28px; height: 28px; border-radius: 50%; background: var(--orange-pale); display: flex; align-items: center; justify-content: center; transition: background 0.3s, transform 0.3s var(--ease-spring); }
-  .category-card:hover .cat-arrow-wrap { transform: translate(2px, -2px); }
-  .cat-arrow { font-size: 0.65rem; color: var(--orange); transition: color 0.3s; }
-
-  .category-card.featured { grid-column: span 2; flex-direction: row; align-items: center; padding: 32px 28px; background: var(--grad-dark); border-color: rgba(255,255,255,0.08); }
-  .category-card.featured::before { background: linear-gradient(135deg, rgba(255,90,0,0.2) 0%, rgba(217,4,69,0.15) 100%); opacity: 1; }
-  .category-card.featured .cat-icon-wrap { background: rgba(255,90,0,0.2); width: 60px; height: 60px; }
-  .category-card.featured .cat-icon { color: var(--orange-light); font-size: 1.5rem; }
-  .category-card.featured .cat-title { color: white; font-size: 1.2rem; }
-  .category-card.featured .cat-desc { color: rgba(255,255,255,0.6); }
-  .category-card.featured .cat-badge { background: rgba(255,90,0,0.3); color: var(--orange-light); }
-  .category-card.featured .cat-arrow-wrap { background: rgba(255,90,0,0.2); }
-  .category-card.featured .cat-arrow { color: var(--orange-light); }
-  .category-card.featured:hover { box-shadow: var(--sh-xl), 0 0 0 2px var(--orange); }
-  .category-card.featured:hover .cat-title { color: white; }
-  .category-card.featured:hover .cat-desc { color: rgba(255,255,255,0.8); }
-  @media (max-width: 767px) { .category-card.featured { grid-column: span 2; } }
-  @media (max-width: 480px) { .category-card.featured { grid-column: span 1; flex-direction: column; } }
-
-  /* Process */
-  .process-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; position: relative; }
-  @media (max-width: 991px) { .process-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 480px) { .process-grid { grid-template-columns: 1fr; } }
-  .process-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 28px 22px; box-shadow: var(--sh-xs), var(--sh-inset); transition: all 0.35s var(--ease-expo); position: relative; overflow: hidden; }
-  .process-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--grad-brand); transform: scaleX(0); transform-origin: left; transition: transform 0.4s var(--ease-expo); }
-  .process-card:hover { transform: translateY(-5px); box-shadow: var(--sh-md); }
-  .process-card:hover::after { transform: scaleX(1); }
-  .process-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; letter-spacing: -0.05em; background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 14px; display: block; opacity: 0.25; transition: opacity 0.3s; }
-  .process-card:hover .process-num { opacity: 0.6; }
-  .process-icon { width: 44px; height: 44px; background: var(--orange-pale); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: var(--orange); font-size: 1.1rem; margin-bottom: 14px; transition: all 0.3s var(--ease-spring); }
-  .process-card:hover .process-icon { background: var(--grad-brand); color: white; transform: scale(1.1) rotate(-5deg); }
-  .process-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-1); margin-bottom: 8px; }
-  .process-desc { font-size: 0.82rem; color: var(--text-2); line-height: 1.6; }
-
-  /* Bento */
-  .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: auto; gap: 14px; margin-top: 40px; }
-  .bento-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 28px 24px; box-shadow: var(--sh-sm), var(--sh-inset); overflow: hidden; position: relative; transition: transform 0.35s var(--ease-expo), box-shadow 0.35s var(--ease-expo); }
-  .bento-card:hover { transform: translateY(-4px); box-shadow: var(--sh-lg); }
-  .bento-card.span-7 { grid-column: span 7; }
-  .bento-card.span-5 { grid-column: span 5; }
-  .bento-card.span-4 { grid-column: span 4; }
-  .bento-card.span-8 { grid-column: span 8; }
-  .bento-card.span-6 { grid-column: span 6; }
-  .bento-card.span-12 { grid-column: span 12; }
-  @media (max-width: 991px) { .bento-card.span-7, .bento-card.span-5, .bento-card.span-4, .bento-card.span-8, .bento-card.span-6 { grid-column: span 12; } }
-  .bento-icon { width: 48px; height: 48px; border-radius: var(--r-md); background: var(--orange-pale); display: flex; align-items: center; justify-content: center; color: var(--orange); font-size: 1.2rem; margin-bottom: 18px; transition: all 0.3s var(--ease-spring); }
-  .bento-card:hover .bento-icon { background: var(--grad-brand); color: white; transform: scale(1.08); }
-  .bento-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text-1); margin-bottom: 8px; }
-  .bento-desc { font-size: 0.85rem; color: var(--text-2); line-height: 1.65; }
-  .bento-card.dark { background: var(--grad-dark); border-color: rgba(255,255,255,0.07); color: white; }
-  .bento-card.dark .bento-title { color: white; }
-  .bento-card.dark .bento-desc { color: rgba(255,255,255,0.55); }
-  .bento-card.dark .bento-icon { background: rgba(255,90,0,0.2); color: var(--orange-light); }
-  .bento-card.orange { background: var(--grad-brand); border-color: transparent; }
-  .bento-card.orange .bento-title { color: white; }
-  .bento-card.orange .bento-desc { color: rgba(255,255,255,0.75); }
-  .bento-card.orange .bento-icon { background: rgba(255,255,255,0.2); color: white; }
-  .bento-visual { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-  .bento-chip { padding: 5px 12px; border-radius: var(--r-full); font-size: 0.72rem; font-weight: 600; background: var(--orange-pale); color: var(--orange); border: 1px solid rgba(255,90,0,0.15); }
-  .bento-card.dark .bento-chip { background: rgba(255,90,0,0.15); color: var(--orange-light); border-color: rgba(255,90,0,0.25); }
-  .bento-card.orange .bento-chip { background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3); }
-
-  /* FAQ */
-  .faq-list { margin-top: 40px; display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
-  .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; transition: box-shadow 0.3s; }
-  .faq-item.open { box-shadow: var(--sh-md); }
-  .faq-question { width: 100%; background: none; border: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; cursor: pointer; text-align: left; font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--text-1); transition: color 0.2s; }
-  .faq-question:hover { color: var(--orange); }
-  .faq-q-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--orange-pale); display: flex; align-items: center; justify-content: center; color: var(--orange); font-size: 0.7rem; flex-shrink: 0; transition: all 0.35s var(--ease-spring); }
-  .faq-item.open .faq-q-icon { background: var(--orange); color: white; transform: rotate(45deg); }
-  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease-expo); }
-  .faq-answer-inner { padding: 0 22px 18px; font-size: 0.85rem; color: var(--text-2); line-height: 1.7; border-top: 1px solid var(--border); padding-top: 14px; }
-
-  /* CTA Banner */
-  .cta-banner { background: var(--grad-dark); border-radius: var(--r-2xl); padding: 64px 48px; text-align: center; position: relative; overflow: hidden; margin: 0 0 64px; }
-  .cta-banner::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 500px; height: 300px; background: radial-gradient(ellipse, rgba(255,90,0,0.25) 0%, transparent 70%); }
-  .cta-banner > * { position: relative; z-index: 1; }
-  .cta-banner-title { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: -0.04em; color: white; line-height: 1.1; margin-bottom: 16px; }
-  .cta-banner-sub { font-size: 0.95rem; color: rgba(255,255,255,0.6); margin-bottom: 36px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6; }
-  @media (max-width: 767px) { .cta-banner { padding: 48px 24px; } }
-
-  /* Footer */
-  .footer { background: var(--surface); border-top: 1px solid var(--border); padding: 56px 0 32px; }
-  .footer-grid { display: grid; grid-template-columns: 1fr; gap: 0; max-width: 720px; margin: 0 auto; padding: 0 24px; }
-  .footer-brand { text-align: center; margin-bottom: 40px; }
-  .footer-logo { justify-content: center; }
-  .footer-tagline { max-width: 320px; margin: 0 auto 20px; text-align: center; }
-  .footer-socials { justify-content: center; }
-  .footer-links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--border); }
-  .footer-col-block { padding: 32px 16px; text-align: center; }
-  .footer-col-block:nth-child(odd) { border-right: 1px solid var(--border); }
-  .footer-col-title { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; color: var(--text-1); letter-spacing: -0.01em; margin-bottom: 18px; text-align: center; }
-  .footer-links { display: flex; flex-direction: column; gap: 10px; list-style: none; align-items: center; padding: 0; }
-  .footer-links a { font-size: 0.85rem; color: var(--text-2); text-decoration: none; transition: color 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-  .footer-links a:hover { color: var(--orange); }
-  .footer-links a i { font-size: 0.75rem; opacity: 0.5; width: 14px; }
-  .footer-disclaimer { grid-column: 1 / -1; text-align: center; padding: 24px 16px; border-top: 1px solid var(--border); margin-top: 8px; }
-  .footer-disclaimer p { font-size: 0.78rem; color: var(--text-3); line-height: 1.6; max-width: 520px; margin: 0 auto; }
-  .footer-disclaimer i { color: var(--orange); margin-right: 6px; }
-  @media (max-width: 576px) {
-    .footer-links-grid { grid-template-columns: 1fr; }
-    .footer-col-block:nth-child(odd) { border-right: none; border-bottom: 1px solid var(--border); }
-    .footer-col-block { padding: 24px 12px; }
-    .footer-grid { padding: 0 16px; }
-  }
-  .footer-logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--text-1); letter-spacing: -0.02em; margin-bottom: 14px; text-decoration: none; }
-  .footer-tagline { font-size: 0.83rem; color: var(--text-2); line-height: 1.6; max-width: 260px; margin-bottom: 20px; }
-  .footer-socials { display: flex; gap: 8px; flex-wrap: wrap; }
-  .social-btn { width: 36px; height: 36px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--text-2); font-size: 0.85rem; text-decoration: none; transition: all 0.25s var(--ease-expo); }
-  .social-btn:hover { background: var(--orange); border-color: var(--orange); color: white; transform: translateY(-2px); }
-  .footer-col-title { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: var(--text-1); letter-spacing: -0.01em; margin-bottom: 14px; }
-  .footer-links { display: flex; flex-direction: column; gap: 6px; list-style: none; }
-  .footer-links a { font-size: 0.82rem; color: var(--text-2); text-decoration: none; transition: color 0.2s; display: flex; align-items: center; gap: 6px; }
-  .footer-links a:hover { color: var(--orange); }
-  .footer-links a i { font-size: 0.7rem; opacity: 0.5; width: 14px; }
-  .footer-bottom { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-  .footer-copy { font-size: 0.78rem; color: var(--text-3); }
-  .footer-copy a { color: var(--text-2); text-decoration: none; }
-  .footer-copy a:hover { color: var(--orange); }
-
-  /* Bottom Nav */
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--z-bottom); background: rgba(255,255,255,0.95); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; padding: 8px 4px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 24px rgba(0,0,0,0.08); display: none; }
-  @media (max-width: 992px) { .bottom-nav { display: flex; } }
-  .bn-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 5px 2px; border-radius: var(--r-md); text-decoration: none; color: var(--text-3); font-size: 0.5rem; font-weight: 600; letter-spacing: 0.03em; transition: all 0.25s var(--ease-expo); position: relative; }
-  .bn-item i { font-size: 1.15rem; transition: all 0.3s var(--ease-spring); }
-  .bn-item:hover i { transform: scale(1.15); }
-  .bn-item.active { color: var(--orange); }
-  .bn-item.active i { background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .bn-item.active::before { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 26px; height: 3px; background: var(--grad-brand); border-radius: 2px; }
-  @media (max-width: 380px) { .bn-item i { font-size: 1rem; } .bn-item span { font-size: 0.45rem; } .bn-item { padding: 4px 1px; } }
-
-  /* Floating Buttons */
-  .float-btn-group { position: fixed; bottom: 28px; z-index: calc(var(--z-bottom) - 1); display: flex; flex-direction: column; gap: 10px; }
-  .float-btn-group.left  { left: 24px; }
-  .float-btn-group.right { right: 24px; }
-  .float-btn { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: var(--r-full); border: none; cursor: pointer; font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; white-space: nowrap; box-shadow: var(--sh-md); transition: all 0.3s var(--ease-expo); text-decoration: none; position: relative; overflow: hidden; }
-  .float-btn-primary { background: var(--grad-brand); color: white; box-shadow: var(--sh-orange); }
-  .float-btn-primary:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 14px 40px rgba(255,90,0,0.4); color: white; }
-  .float-btn-surface { background: var(--surface); color: var(--text-1); border: 1px solid var(--border); }
-  .float-btn-surface:hover { transform: translateY(-3px); box-shadow: var(--sh-lg); border-color: var(--orange); color: var(--orange); }
-  .float-btn i { font-size: 0.9rem; flex-shrink: 0; }
-  @media (max-width: 992px) { .float-btn { padding: 14px; border-radius: 50%; width: 52px; height: 52px; justify-content: center; } .float-label { display: none; } .float-btn-group.left { left: 16px; bottom: 80px; } .float-btn-group.right { right: 16px; bottom: 80px; } }
-
-  /* Back to Top */
-  .back-top { position: fixed; bottom: 28px; right: 28px; width: 44px; height: 44px; border-radius: var(--r-full); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--sh-md); display: flex; align-items: center; justify-content: center; color: var(--text-2); font-size: 0.85rem; cursor: pointer; z-index: calc(var(--z-bottom) - 2); opacity: 0; transform: translateY(12px); transition: all 0.35s var(--ease-expo); pointer-events: none; }
-  .back-top.show { opacity: 1; transform: translateY(0); pointer-events: all; }
-  .back-top:hover { background: var(--orange); border-color: var(--orange); color: white; transform: translateY(-2px); }
-  @media (max-width: 992px) { .back-top { bottom: 80px; right: 16px; } }
-
-  /* Toast */
-  .toast-tray { position: fixed; top: 24px; right: 24px; z-index: var(--z-toast); display: flex; flex-direction: column; gap: 10px; max-width: 340px; pointer-events: none; }
-  .toast-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; box-shadow: var(--sh-lg); pointer-events: all; animation: toastIn 0.4s var(--ease-back) forwards; font-size: 0.84rem; color: var(--text-1); line-height: 1.5; }
-  .toast-item.out { animation: toastOut 0.3s var(--ease-expo) forwards; }
-  .toast-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
-  .toast-icon.info { color: var(--orange); }
-  .toast-icon.success { color: #22c55e; }
-  .toast-icon.error { color: var(--crimson); }
-  @keyframes toastIn { from { opacity:0; transform: translateX(20px) scale(0.95); } to { opacity:1; transform: none; } }
-  @keyframes toastOut { to { opacity:0; transform: translateX(20px) scale(0.95); } }
-  @media (max-width: 480px) { .toast-tray { left: 16px; right: 16px; top: auto; bottom: 90px; } }
-
-  /* News Bell */
-  .news-bell { position: fixed; top: 24px; right: 24px; z-index: calc(var(--z-nav) + 1); display: block; }
-  .news-bell-btn { width: 44px; height: 44px; border-radius: var(--r-full); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--sh-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-2); font-size: 1rem; position: relative; transition: all 0.25s; }
-  .news-bell-btn:hover { border-color: var(--orange); color: var(--orange); }
-  .news-bell-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; background: var(--orange); color: white; border-radius: var(--r-full); font-size: 0.65rem; font-weight: 700; display: none; align-items: center; justify-content: center; border: 2px solid var(--surface); }
-  .news-bell-badge.show { display: flex; }
-  .news-bell-btn.pulse { animation: bellPulse 1.5s ease-in-out 3; }
-  @keyframes bellPulse { 0%,100% { box-shadow: var(--sh-sm); } 50% { box-shadow: 0 0 0 8px rgba(255,90,0,0.15), var(--sh-sm); } }
-  @media (max-width: 992px) { .news-bell { top: 16px; right: 16px; } }
-  .news-bell-mobile { display: none; }
-
-  /* Modals */
-  .modal-backdrop { backdrop-filter: blur(6px); background: rgba(0,0,0,0.35) !important; }
-  .modal-content { border: 1px solid var(--border) !important; border-radius: var(--r-xl) !important; box-shadow: var(--sh-xl) !important; overflow: hidden; font-family: var(--font-body); }
-  .modal-header { background: var(--grad-brand) !important; border-bottom: none !important; padding: 20px 24px !important; color: white; }
-  .modal-header .modal-title { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; font-size: 1.05rem; }
-  .modal-header .btn-close { filter: invert(1) brightness(2); opacity: 0.8; }
-  .modal-body { padding: 24px !important; }
-  .modal-footer { border-top: 1px solid var(--border) !important; padding: 16px 24px !important; background: var(--surface-2) !important; }
-
-  /* Forms */
-  .form-label-custom { font-size: 0.82rem; font-weight: 600; color: var(--text-1); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-  .form-label-custom i { color: var(--orange); font-size: 0.75rem; }
-  .form-control-custom { font-family: var(--font-body) !important; font-size: 0.875rem !important; border: 1.5px solid var(--border-strong) !important; border-radius: var(--r-md) !important; padding: 10px 14px !important; background: var(--surface) !important; color: var(--text-1) !important; transition: all 0.25s var(--ease-expo) !important; box-shadow: var(--sh-inset) !important; }
-  .form-control-custom:focus { border-color: var(--orange) !important; box-shadow: 0 0 0 3px rgba(255,90,0,0.1) !important; outline: none !important; }
-  .input-group-text { background: var(--surface-2) !important; border: 1.5px solid var(--border-strong) !important; border-radius: var(--r-md) 0 0 var(--r-md) !important; color: var(--orange) !important; font-size: 0.85rem !important; }
-
-  .alert-info-custom { background: var(--orange-pale); border: 1px solid rgba(255,90,0,0.18); border-radius: var(--r-md); padding: 14px 18px; font-size: 0.83rem; color: var(--text-1); line-height: 1.6; }
-  .alert-danger-custom { background: var(--crimson-pale); border: 1px solid rgba(217,4,69,0.2); border-radius: var(--r-md); padding: 12px 16px; font-size: 0.83rem; color: var(--crimson); }
-  .alert-success-custom { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: var(--r-md); padding: 12px 16px; font-size: 0.83rem; color: #16a34a; }
-
-  /* Skeleton */
-  .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,90,0,0.05) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; border-radius: var(--r-sm); }
-  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-
-  /* PWA Prompt */
-  .pwa-prompt { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120%); width: min(420px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--sh-xl); z-index: calc(var(--z-bottom) - 1); padding: 22px; transition: transform 0.5s var(--ease-expo); display: none; }
-  .pwa-prompt.show { transform: translateX(-50%) translateY(0); }
-  .pwa-prompt-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-  .pwa-prompt-icon { width: 48px; height: 48px; background: var(--grad-brand); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; box-shadow: var(--sh-orange); flex-shrink: 0; }
-  .pwa-prompt-title { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text-1); letter-spacing: -0.02em; }
-  .pwa-prompt-sub { font-size: 0.78rem; color: var(--text-2); margin-top: 2px; }
-  .pwa-prompt-desc { font-size: 0.82rem; color: var(--text-2); line-height: 1.6; margin-bottom: 18px; }
-  .pwa-prompt-btns { display: flex; gap: 8px; }
-  .pwa-close-x { position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 0.65rem; transition: all 0.2s; }
-  .pwa-close-x:hover { background: var(--orange); color: white; border-color: var(--orange); }
-
-  .ios-guide { position: fixed; inset: 0; z-index: var(--z-modal); background: rgba(0,0,0,0.45); backdrop-filter: blur(8px); display: none; align-items: flex-end; justify-content: center; padding: 0 16px 16px; }
-  .ios-guide.show { display: flex; }
-  .ios-guide-box { background: var(--surface); border-radius: var(--r-xl); padding: 32px 28px; width: 100%; max-width: 400px; text-align: center; }
-  .ios-step { display: flex; align-items: center; gap: 14px; text-align: left; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-2); }
-  .ios-step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--orange-pale); color: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
-
-  /* Verified Preview */
-  .verified-preview { background: var(--surface-2); border: 1px solid rgba(34,197,94,0.25); border-radius: var(--r-lg); overflow: hidden; margin-top: 18px; }
-  .verified-preview-head { background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); padding: 14px 18px; color: white; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .verified-preview-body { padding: 18px; }
-  .level-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--orange-pale); border: 1px solid rgba(255,90,0,0.18); color: var(--orange); padding: 4px 12px; border-radius: var(--r-full); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-right: 6px; margin-bottom: 6px; }
-
-  .cluster-warn-head { background: var(--grad-brand); padding: 28px 24px 24px; text-align: center; color: white; }
-  .cluster-warn-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 12px; }
-  .cluster-warn-body { padding: 24px; }
-  .error-margin-box { background: var(--orange-pale); border-left: 4px solid var(--orange); border-radius: var(--r-md); padding: 16px; margin-bottom: 18px; }
-
-  /* Spinner */
-  .spinner { width: 40px; height: 40px; border: 3px solid var(--orange-pale); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Page Curtain */
-  .page-curtain { position: fixed; inset: 0; z-index: 99999; background: var(--surface); display: flex; align-items: center; justify-content: center; transition: opacity 0.6s var(--ease-expo), transform 0.6s var(--ease-expo); }
-  .page-curtain.lifted { opacity: 0; pointer-events: none; }
-  .curtain-logo { width: 56px; height: 56px; background: var(--grad-brand); border-radius: var(--r-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; box-shadow: var(--sh-orange); animation: curtainPulse 0.8s var(--ease-spring); }
-  @keyframes curtainPulse { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-  /* Utilities */
-  .text-orange { color: var(--orange); }
-  .text-grad { background: var(--grad-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .d-none { display: none !important; }
-  .badge-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: var(--r-full); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-  .badge-new { background: rgba(255,90,0,0.1); color: var(--orange); border: 1px solid rgba(255,90,0,0.25); }
-
-  
-  /* Ensure scroll reveal animations work smoothly on mobile */
-  .reveal, .reveal-scale, .reveal-left, .reveal-right {
-    will-change: transform, opacity;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-  }
-/* Mobile */
-  @media (max-width: 767px) {
-    .nav-inner { margin: 12px 16px; padding: 12px 16px; }
-    .main-wrapper { padding-top: 80px; }
-    .container-main { padding: 0 16px; }
-    .hero { padding: 24px 0 40px; }
-    .section { padding: 40px 0; }
-  }
-
-  /* Reduced Motion */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-    .orb, .particle { display: none !important; }
-  }
   </style>
-
+  <link rel="preload" href="/static/css/main.min.css?v=emerald-all-20261127" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/static/css/main.min.css?v=emerald-all-20261127"></noscript>
   {% block extra_styles %}{% endblock %}
+  <link rel="preload" href="/static/css/midnight.min.css?v=emerald-section-motion-20261127" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/static/css/midnight.min.css?v=emerald-section-motion-20261127"></noscript>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "How do I check KUCCPS courses for 2026?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Use our KUCCPS course checker tool. Enter your KCSE grades and cluster points to instantly see all KUCCPS degree, diploma, certificate, KMTC, artisan, TTC and short courses you qualify for across Kenyan universities, colleges, and technical institutions."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What are KUCCPS cluster points and how are they calculated?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "KUCCPS cluster points are calculated based on your KCSE grades in four cluster subjects relevant to your desired course. Each grade has a weight (A=12, A-=11, B+=10, B=9, B-=8, C+=7, C=6, C-=5, D+=4, D=3, D-=2, E=1), and the total determines your eligibility for university programs. Different KUCCPS courses have different cluster point requirements. Our tool provides approximate calculations with an estimated error margin of ±5 points."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What KUCCPS courses can I do with a C+ grade in KCSE?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "With a C+ mean grade, you qualify for KUCCPS degree programs at Kenyan universities. You can pursue Bachelor of Commerce, Bachelor of Science, Bachelor of Arts, Bachelor of Education, Bachelor of Engineering, Bachelor of Medicine and Surgery, Bachelor of Law, Bachelor of Nursing, Bachelor of Computer Science, and many other KUCCPS approved degree courses depending on your subject combinations."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What KUCCPS diploma courses are available for C- and C plain grades?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Students with C- and C plain grades can enroll in KUCCPS diploma programs including Diploma in Education, Diploma in Nursing, Diploma in Clinical Medicine, Diploma in Engineering, Diploma in Business Management, Diploma in Information Technology, Diploma in Pharmacy, Diploma in Medical Laboratory Sciences, and other KUCCPS accredited diploma courses at TVET institutions and colleges."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Can I do KUCCPS nursing without Chemistry in KCSE?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Most KUCCPS nursing and medical programs require Chemistry as a core subject. However, some KUCCPS certificate-level health courses and community health programs may have more flexible requirements. Use our subject requirements checker to see specific KUCCPS program requirements."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What are the minimum subject requirements for KUCCPS Computer Science and Engineering?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "KUCCPS Computer Science and IT programs typically require Mathematics (Minimum C+) and Physics (Minimum C+). KUCCPS Engineering courses require Mathematics and Physics. Some institutions also accept Biology or Geography as alternative science subjects. Specific KUCCPS requirements vary by university and program level."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What KUCCPS certificate and artisan courses can I do with D+ or D plain grades?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "With D+ and D plain grades, you can pursue KUCCPS certificate courses in Business, IT, Agriculture, Electrical Installation, Motor Vehicle Mechanics, Plumbing, Carpentry, Masonry, Welding, Tailoring, and various KUCCPS artisan and vocational programs at TVET institutions."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Why does KUCCPS say I am not qualified for a course?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "KUCCPS may indicate you are not qualified if your mean grade, cluster points, or specific subject grades do not meet the minimum requirements. KUCCPS cut-off points also change yearly based on competition. Our tool shows approximate eligibility - always verify with the official KUCCPS Student Portal for final placement decisions."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What is the difference between KUCCPS KMTC and university nursing programs?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "KUCCPS KMTC offers diploma and certificate-level nursing programs focused on practical clinical skills. KUCCPS university nursing programs offer Bachelor's degrees with more theoretical and research components. KUCCPS KMTC programs typically require lower entry grades than university programs."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How can I check KUCCPS cut-off points and trends for 2026 admission?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "KUCCPS cut-off points vary by institution and course popularity. Our KUCCPS course checker provides approximate cluster point calculations and course matching. For official KUCCPS cut-off trends, check the latest KUCCPS placement service bulletins and university admission guides for the 2026 intake."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I pay KUCCPS application fee via eCitizen?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "KUCCPS application fee is KSh 1,500 paid via the eCitizen portal. Log in to students.kuccps.net, select your programs, and follow the MPesa payment instructions. Payment reflection typically takes a few minutes. For KUCCPS payment errors, contact support with your transaction details."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I check KUCCPS placement results for 2026?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Check KUCCPS placement results by logging into the KUCCPS Student Portal at students.kuccps.net using your KCSE index number and password. You can also download your KUCCPS admission letter from the portal once placement is confirmed."
-      }
-    }
-  ]
-}
-</script>
 
-<!-- SEO-Only Content: Hidden from users, indexed by search engines -->
-<div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);" aria-hidden="true">
-  <h1>KUCCPS Course Checker 2026 - Find Programs Matching Your KCSE Grades</h1>
-  <p>Official KUCCPS course checker tool for 2026 intake. Search KUCCPS degree courses, KUCCPS diploma courses, KUCCPS certificate courses, KUCCPS KMTC programs, KUCCPS artisan courses, KUCCPS TTC programs, and KUCCPS short courses. Enter your KCSE grades to find all KUCCPS placement programs you qualify for across Kenyan universities and colleges.</p>
-  <h2>KUCCPS Degree Programs for C+ and Above</h2>
-  <p>KUCCPS degree courses include Bachelor of Commerce, Bachelor of Science, Bachelor of Arts, Bachelor of Education, Bachelor of Engineering, Bachelor of Medicine and Surgery, Bachelor of Law, Bachelor of Nursing, Bachelor of Computer Science, Bachelor of Business Information Technology, Bachelor of Architecture, Bachelor of Pharmacy, and hundreds more KUCCPS approved degree programs at public and private universities in Kenya.</p>
-  <h2>KUCCPS Diploma Courses for C- and C Plain</h2>
-  <p>KUCCPS diploma programs include Diploma in Education, Diploma in Nursing, Diploma in Clinical Medicine, Diploma in Engineering, Diploma in Business Management, Diploma in Information Technology, Diploma in Pharmacy, Diploma in Medical Laboratory Sciences, Diploma in Agriculture, Diploma in Journalism, Diploma in Hospitality, and other KUCCPS accredited diploma courses at TVET institutions and colleges.</p>
-  <h2>KUCCPS Certificate and Artisan Courses</h2>
-  <p>KUCCPS certificate courses for KCSE graduates: Certificate in Business, Certificate in IT, Certificate in Engineering, Certificate in Agriculture, Certificate in Hospitality, Certificate in Fashion Design. KUCCPS artisan courses: Electrical Installation, Motor Vehicle Mechanics, Plumbing, Carpentry, Masonry, Welding, Tailoring, Hairdressing, Catering. KUCCPS TVET courses automatic match for D minus and D plain grades.</p>
-  <h2>KUCCPS KMTC Healthcare Programs</h2>
-  <p>KUCCPS KMTC courses: Diploma in Nursing, Diploma in Clinical Medicine, Diploma in Pharmacy, Diploma in Medical Laboratory Technology, Diploma in Community Health Nursing, Diploma in Health Records, Diploma in Nutrition, Certificate in Nursing. KUCCPS health science cluster points and requirements for nursing degree Kenya.</p>
-  <h2>KUCCPS Teacher Training College Programs</h2>
-  <p>KUCCPS TTC courses: Primary Teacher Education (PTE), Diploma in Teacher Education, Early Childhood Development Education (ECDE), Special Needs Education, Montessori Teacher Training. KUCCPS education subject requirements validator for teaching courses.</p>
-  <h2>KUCCPS Cluster Points and Cut-Off Trends</h2>
-  <p>KUCCPS cluster points calculator for 2026. KUCCPS university choice checker. UON vs JKUAT cut off point comparison. KUCCPS cluster points cut off trends tool. Open University of Kenya courses checker portal. TVET college portal course requirements finder. How to check KUCCPS courses with low cluster points. KUCCPS program code invalid check error troubleshooting.</p>
-  <h2>KUCCPS Application and Payment Guide</h2>
-  <p>KUCCPS application fee 2026 payment via eCitizen. KUCCPS MPesa paybill number. How to pay for KUCCPS via eCitizen. KUCCPS payment error reversal process. How long does KUCCPS eCitizen payment reflection take. KUCCPS login password format. How to reset KUCCPS portal password. KUCCPS portal not loading error. KUCCPS index number format error. How to download KUCCPS application guide PDF.</p>
-  <h2>KUCCPS Placement Results and Deadlines</h2>
-  <p>KUCCPS first revision deadline 2026. KUCCPS second call for university application. KUCCPS inter-institutional transfer portal 2026. How to check KUCCPS placement results 2026. KUCCPS admission letter download portal. KUCCPS placement results checker by index number.</p>
-  <h2>KUCCPS Subject-Specific Requirements</h2>
-  <p>Computer Science minimum subject checker KUCCPS: Mathematics C+, Physics C+, English/Kiswahili C. Can I do nursing without Chemistry KUCCPS: Most programs require Chemistry but some certificate health courses are flexible. KUCCPS engineering math requirements checker: Mathematics and Physics mandatory. Medicine cluster combination checker Kenya: Biology, Chemistry, Maths/Physics, English/Kiswahili all minimum B. KUCCPS education subject requirements validator.</p>
-  <h2>KUCCPS Grade-Specific Course Matching</h2>
-  <p>KUCCPS courses for C plain. KUCCPS courses for C plus checker. KUCCPS diploma courses for C minus. KUCCPS certificate courses for D plus. KUCCPS courses for D plain in TVET colleges. What can I study with a D minus via KUCCPS. KUCCPS courses for E students 2026. Marketable diploma courses for C minus. KUCCPS pass marks criteria checker.</p>
-  <h2>KUCCPS Institution-Specific Queries</h2>
-  <p>KMTC courses under KUCCPS placement. Open University of Kenya KUCCPS courses list. UON Computer Science cut off points KUCCPS. Kenyatta University teaching education subject requirements KUCCPS. JKUAT engineering cluster points trend. Moi University KUCCPS courses. Strathmore University KUCCPS programs. USIU KUCCPS admission requirements.</p>
-</div>
+
+
 </head>
 
 <body>
-<!-- SEO-Only Content: KUCCPS Course Matching Keywords -->
-<div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);" aria-hidden="true">
-  <h2>KUCCPS Courses 2026</h2>
-  <p>KUCCPS course checker by grade for 2026 intake. KUCCPS eligibility checker for degree, diploma, certificate, KMTC, artisan and TTC programs. KUCCPS cluster points calculator and cut off point checker. KUCCPS grade combination matcher and automatic course selector tool. KUCCPS code finder by grade for Kenyan university and college placement.</p>
-  <h3>KUCCPS Degree Programs</h3>
-  <p>KUCCPS degree courses for C+ and above. KUCCPS Bachelor of Commerce, KUCCPS Bachelor of Science, KUCCPS Bachelor of Arts, KUCCPS Bachelor of Education, KUCCPS Bachelor of Engineering, KUCCPS Bachelor of Medicine and Surgery, KUCCPS Bachelor of Law, KUCCPS Bachelor of Nursing, KUCCPS Bachelor of Computer Science, KUCCPS Bachelor of Business Information Technology, KUCCPS Bachelor of Architecture, KUCCPS Bachelor of Pharmacy, KUCCPS Bachelor of Dental Surgery.</p>
-  <h3>KUCCPS Diploma Courses</h3>
-  <p>KUCCPS diploma programs for C- and C plain. KUCCPS diploma in education, KUCCPS diploma in nursing, KUCCPS diploma in clinical medicine, KUCCPS diploma in pharmacy, KUCCPS diploma in engineering, KUCCPS diploma in business management, KUCCPS diploma in information technology, KUCCPS diploma in agriculture, KUCCPS diploma in journalism, KUCCPS diploma in medical laboratory sciences, KUCCPS diploma in community health, KUCCPS diploma in nutrition.</p>
-  <h3>KUCCPS Certificate and Artisan Courses</h3>
-  <p>KUCCPS certificate courses for D+ and D plain. KUCCPS artisan courses for D- and E. KUCCPS certificate in business, KUCCPS certificate in IT, KUCCPS certificate in electrical installation, KUCCPS certificate in motor vehicle mechanics, KUCCPS certificate in plumbing, KUCCPS certificate in carpentry, KUCCPS certificate in masonry, KUCCPS certificate in welding, KUCCPS certificate in agriculture, KUCCPS certificate in hospitality.</p>
-  <h3>KUCCPS KMTC Programs</h3>
-  <p>KUCCPS KMTC courses for healthcare training. KUCCPS diploma in nursing KMTC, KUCCPS diploma in clinical medicine KMTC, KUCCPS diploma in pharmacy KMTC, KUCCPS diploma in medical laboratory technology, KUCCPS community health nursing, KUCCPS health records, KUCCPS nutrition and dietetics.</p>
-  <h3>KUCCPS TTC Teacher Training</h3>
-  <p>KUCCPS TTC courses for teacher education. KUCCPS primary teacher education PTE, KUCCPS diploma in teacher education, KUCCPS early childhood development education ECDE, KUCCPS special needs education, KUCCPS Montessori teacher training.</p>
-  <h3>KUCCPS Cluster Points and Cut Off</h3>
-  <p>KUCCPS cluster points calculator 2026. KUCCPS cut off points for medicine, KUCCPS cut off for engineering, KUCCPS cut off for computer science, KUCCPS cut off for nursing, KUCCPS cut off for law, KUCCPS cut off for architecture, KUCCPS cut off for pharmacy, KUCCPS cut off trends tool, KUCCPS cluster 7 computer science, KUCCPS cluster 13 medicine, KUCCPS cluster points for Kenyatta University, KUCCPS cluster points for UON, KUCCPS cluster points for JKUAT.</p>
-  <h3>KUCCPS Application and Portal</h3>
-  <p>KUCCPS student portal login, KUCCPS application fee 2026, KUCCPS how to pay via eCitizen, KUCCPS application deadline, KUCCPS first revision, KUCCPS second revision, KUCCPS inter university transfer, KUCCPS placement results, KUCCPS admission letter download, KUCCPS program code invalid error, KUCCPS why not qualified.</p>
-  <h3>KUCCPS Subject Requirements</h3>
-  <p>KUCCPS computer science minimum requirements, KUCCPS nursing without chemistry, KUCCPS engineering math requirements, KUCCPS medicine cluster combination, KUCCPS education subject requirements, KUCCPS law requirements, KUCCPS architecture requirements, KUCCPS pharmacy requirements.</p>
-  <h3>KUCCPS Institution-Specific</h3>
-  <p>KUCCPS University of Nairobi courses, KUCCPS Kenyatta University courses, KUCCPS JKUAT courses, KUCCPS Moi University courses, KUCCPS Strathmore University courses, KUCCPS USIU courses, KUCCPS Daystar University courses, KUCCPS KU courses, KUCCPS Egerton University courses, KUCCPS Maseno University courses, KUCCPS Chuka University courses, KUCCPS Pwani University courses, KUCCPS Technical University of Kenya courses, KUCCPS Open University of Kenya courses.</p>
-  <h3>KUCCPS Marketable Courses</h3>
-  <p>KUCCPS most marketable degree courses, KUCCPS marketable diploma courses, KUCCPS marketable certificate courses, KUCCPS best courses for employment, KUCCPS high paying courses, KUCCPS courses with high demand, KUCCPS courses with good salary.</p>
-</div>
-
-  <!-- Page Load Curtain -->
+<!-- Page Load Curtain -->
   <div class="page-curtain" id="pageCurtain">
     <div class="curtain-logo"><i class="fas fa-graduation-cap"></i></div>
   </div>
@@ -751,9 +175,9 @@
         <span></span><span></span><span></span>
       </button>
 
-      <a class="nav-logo" href="/" aria-label="Eligibility Checker Home">
+      <a class="nav-logo" href="/" aria-label="Courses Checker Home">
         <div class="nav-logo-icon" aria-hidden="true"><i class="fas fa-graduation-cap"></i></div>
-        <span>Eligibility Checker</span>
+        <span>Courses Checker</span>
       </a>
 
       <ul class="nav-links" role="list">
@@ -772,7 +196,7 @@
       </ul>
 
       <div class="nav-cta">
-        <a href="#" class="btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#retrieveModal">
+        <a href="/#course-categories" class="btn-primary btn-sm">
           <i class="fas fa-bolt" aria-hidden="true"></i> Get Started
         </a>
       </div>
@@ -792,7 +216,7 @@
     <div class="sidebar-head">
       <a href="/" class="sidebar-head-logo">
         <div class="nav-logo-icon" style="width:32px;height:32px;font-size:0.8rem;" aria-hidden="true"><i class="fas fa-graduation-cap"></i></div>
-        Eligibility Checker
+        Courses Checker
       </a>
       <button class="sidebar-close" id="sidebarClose" aria-label="Close navigation"><i class="fas fa-times"></i></button>
     </div>
@@ -856,60 +280,50 @@
           <div class="footer-brand">
             <a href="/" class="footer-logo">
               <div class="nav-logo-icon" style="width:32px;height:32px;font-size:0.8rem;" aria-hidden="true"><i class="fas fa-graduation-cap"></i></div>
-              Eligibility Checker
+              Courses Checker
             </a>
-            <p class="footer-tagline">Helping Kenyan students discover their perfect academic path through intelligent course matching.</p>
+            <p class="footer-tagline">Find programmes that match your KCSE results.</p>
             <div class="footer-socials">
               <a href="https://chat.whatsapp.com/GjntLnCi5XO8odojJLWJqw" class="social-btn" rel="noopener noreferrer" aria-label="WhatsApp Group"><i class="fab fa-whatsapp"></i></a>
-              <a href="https://facebook.com" class="social-btn" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-              <a href="https://twitter.com" class="social-btn" rel="noopener noreferrer" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-              <a href="https://instagram.com" class="social-btn" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
               <a href="mailto:kuccpsconsultant@gmail.com" class="social-btn" aria-label="Email us"><i class="fas fa-envelope"></i></a>
             </div>
           </div>
           <div class="footer-links-grid">
           <div class="footer-col-block">
-            <h3 class="footer-col-title">Programs</h3>
+            <h3 class="footer-col-title">Explore programmes</h3>
             <ul class="footer-links">
-              <li><a href="/degree"><i class="fas fa-university"></i>Degree Programs</a></li>
-              <li><a href="/diploma"><i class="fas fa-graduation-cap"></i>Diploma Courses</a></li>
-              <li><a href="/certificate"><i class="fas fa-certificate"></i>Certificate</a></li>
-              <li><a href="/kmtc"><i class="fas fa-hospital"></i>KMTC Healthcare</a></li>
-              <li><a href="/artisan"><i class="fas fa-tools"></i>Artisan Courses</a></li>
-              <li><a href="/ttc"><i class="fas fa-chalkboard-teacher"></i>TTC Programs</a></li>
-            <li><a href="https://short-courses.onrender.com/" rel="noopener noreferrer"><i class="fas fa-laptop-code"></i>Short Courses</a></li>
+              <li><a href="/degree">Degree</a></li>
+              <li><a href="/diploma">Diploma</a></li>
+              <li><a href="/kmtc">KMTC</a></li>
+              <li><a href="/certificate">Certificate</a></li>
+              <li><a href="/artisan">Artisan</a></li>
+              <li><a href="/ttc">Teacher training</a></li>
+              <li><a href="https://short-courses.onrender.com/" rel="noopener noreferrer">Short courses</a></li>
             </ul>
           </div>
           <div class="footer-col-block">
-            <h3 class="footer-col-title">Resources</h3>
+            <h3 class="footer-col-title">Help & resources</h3>
             <ul class="footer-links">
-              <li><a href="/guides"><i class="fas fa-book"></i>All Guides</a></li>
-              <li><a href="/guides/cluster-points"><i class="fas fa-chart-bar"></i>Cluster Points</a></li>
-              <li><a href="/guides/kcse-requirements"><i class="fas fa-file-alt"></i>KCSE Requirements</a></li>
-              <li><a href="/guides/scholarships"><i class="fas fa-hand-holding-usd"></i>Scholarships</a></li>
-              <li><a href="/news"><i class="fas fa-newspaper"></i>News & Updates</a></li>
-              <li><a href="/chat"><i class="fas fa-robot"></i>AI Assistant</a></li>
+              <li><a href="/guides">Guides</a></li>
+              <li><a href="/news">News</a></li>
+              <li><a href="/chat">AI assistant</a></li>
+              <li><a href="/about">About</a></li>
+              <li><a href="/contact">Contact</a></li>
+              <li><a href="https://students.kuccps.net/login" rel="noopener noreferrer">Official student portal</a></li>
             </ul>
           </div>
-          <div class="footer-col-block">
-            <h3 class="footer-col-title">Company</h3>
-            <ul class="footer-links">
-              <li><a href="/about"><i class="fas fa-info-circle"></i>About Us</a></li>
-              <li><a href="/contact"><i class="fas fa-envelope"></i>Contact</a></li>
-              <li><a href="/user-guide"><i class="fas fa-book-open"></i>User Guide</a></li>
-              <li><a href="https://students.kuccps.net/login" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i>Student Portal</a></li>
-              <li><a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal"><i class="fas fa-shield-alt"></i>Privacy Policy</a></li>
-              <li><a href="#" data-bs-toggle="modal" data-bs-target="#termsModal"><i class="fas fa-file-contract"></i>Terms of Service</a></li>
-            </ul>
+          <div class="footer-legal-links">
+            <a href="/user-guide">User guide</a>
+            <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy</a>
+            <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms</a>
           </div>
         </div>
         </div>
         <div class="footer-disclaimer">
-          <p><i class="fas fa-info-circle" aria-hidden="true"></i>This is an independent course matching service that uses official university placement requirements to simplify the process for students. We are not affiliated with any government placement body.</p>
+          <p>Eligibility guidance only. Course Checker is independent and does not guarantee KUCCPS placement or admission.</p>
         </div>
         <div class="footer-bottom">
-          <p class="footer-copy">&copy; 2026 Eligibility Checker. All rights reserved.</p>
-          
+          <p class="footer-copy">&copy; 2026 Courses Checker</p>
         </div>
       </div>
     </footer>
@@ -950,7 +364,7 @@
     <div class="pwa-prompt-head">
       <div class="pwa-prompt-icon"><i class="fas fa-graduation-cap"></i></div>
       <div>
-        <div class="pwa-prompt-title">Install Eligibility Checker</div>
+        <div class="pwa-prompt-title">Install Courses Checker</div>
         <div class="pwa-prompt-sub">Quick access on your device</div>
       </div>
     </div>
@@ -1138,8 +552,8 @@
               </div>
               <div>
                 <label for="issue_screenshot" class="form-label-custom"><i class="fas fa-camera" aria-hidden="true"></i>M-Pesa Screenshot *</label>
-                <input type="file" class="form-control form-control-custom" id="issue_screenshot" accept="image/*" required>
-                <small style="font-size:0.72rem;color:var(--text-3);margin-top:4px;display:block;">Upload JPEG or PNG, max 5MB</small>
+                <input type="file" class="form-control form-control-custom" id="issue_screenshot" accept="image/jpeg,image/png,image/webp" required>
+                <small style="font-size:0.72rem;color:var(--text-3);margin-top:4px;display:block;">Upload JPEG, PNG, or WebP, max 5MB</small>
               </div>
             </div>
             <div id="issueError" class="alert-danger-custom mt-3" role="alert" style="display:none;"></div>
@@ -1234,9 +648,9 @@
         </div>
         <div class="modal-body" style="font-size:0.88rem;line-height:1.7;color:var(--text-2);">
           <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--text-1);margin-bottom:10px;">Terms of Service Agreement</h3>
-          <p>By using Eligibility Checker, you agree to these terms of service. Please read them carefully before using the service.</p>
+          <p>By using Courses Checker, you agree to these terms of service. Please read them carefully before using the service.</p>
           <h3 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--text-1);margin:20px 0 10px;">Service Description</h3>
-          <p>Eligibility Checker is a platform that helps students find suitable courses based on their KCSE results. We provide course recommendations, institution information, and application guidance.</p>
+          <p>Courses Checker is a platform that helps students find suitable courses based on their KCSE results. We provide course recommendations, institution information, and application guidance.</p>
           <h3 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--text-1);margin:20px 0 10px;">User Responsibilities</h3>
           <ul style="padding-left:18px;line-height:2;">
             <li>Provide accurate KCSE information</li>
@@ -1256,632 +670,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
   <script defer src="/static/js/offline-storage.js"></script>
-  <script defer src="/static/js/pwa.js"></script>
+  <script defer src="/static/js/pwa.js?v=emerald-all-20261127"></script>
+  <script defer src="/static/js/ui-motion.min.js?v=emerald-all-20261127"></script>
+  <script defer src="/static/js/writing.min.js?v=typewriter-sections-loop-20261127"></script>
 
-  <script>
-  (function () {
-    'use strict';
-
-    const $ = (s, c = document) => c.querySelector(s);
-    const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
-    const raf = requestAnimationFrame;
-
-    function throttle(fn, ms) {
-      let t; return (...a) => { if (!t) { fn(...a); t = setTimeout(() => t = null, ms); } };
-    }
-
-    /* Page Curtain */
-    window.addEventListener('load', () => {
-      const curtain = $('#pageCurtain');
-      if (curtain) setTimeout(() => curtain.classList.add('lifted'), 350);
-    });
-
-    /* Particles */
-    function initParticles() {
-      const canvas = $('#particleCanvas');
-      if (!canvas || window.innerWidth < 768) return;
-      const count = 14;
-      const colors = ['rgba(255,90,0,', 'rgba(217,4,69,', 'rgba(255,122,48,'];
-      for (let i = 0; i < count; i++) {
-        const p = document.createElement('div');
-        const size = 2 + Math.random() * 3;
-        const color = colors[i % colors.length] + (0.15 + Math.random() * 0.2) + ')';
-        const left = Math.random() * 100;
-        const dur = 18 + Math.random() * 16;
-        const delay = Math.random() * -20;
-        p.className = 'particle';
-        p.style.cssText = `width:${size}px;height:${size}px;left:${left}%;background:${color};animation-duration:${dur}s;animation-delay:${delay}s;`;
-        canvas.appendChild(p);
-      }
-    }
-
-    /* Cursor */
-    function initCursor() {
-      if (window.innerWidth < 992) return;
-      const dot  = $('#cursorDot');
-      const ring = $('#cursorRing');
-      if (!dot || !ring) return;
-      let mx = -200, my = -200, rx = -200, ry = -200;
-      document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-      function loop() {
-        dot.style.left = mx + 'px'; dot.style.top  = my + 'px';
-        rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
-        ring.style.left = rx + 'px'; ring.style.top  = ry + 'px';
-        raf(loop);
-      }
-      loop();
-      const hoverEls = $$('a,button,.category-card,.process-card,.bento-card,.faq-question,.bn-item,.float-btn,.social-btn');
-      hoverEls.forEach(el => {
-        el.addEventListener('mouseenter', () => ring.classList.add('hovering'));
-        el.addEventListener('mouseleave', () => ring.classList.remove('hovering'));
-      });
-    }
-
-    /* Scroll Reveal */
-    function initScrollReveal() {
-      const obs = new IntersectionObserver((entries) => {
-        entries.forEach(en => {
-          if (en.isIntersecting) { en.target.classList.add('visible'); obs.unobserve(en.target); }
-        });
-      }, { rootMargin: '0px 0px -48px 0px', threshold: 0.08 });
-      $$('.reveal,.reveal-scale,.reveal-left,.reveal-right').forEach(el => obs.observe(el));
-    }
-
-    /* Navbar Scroll */
-    function initNavbar() {
-      const nav = $('#mainNav');
-      if (!nav) return;
-      const onScroll = throttle(() => { nav.classList.toggle('scrolled', window.scrollY > 60); }, 80);
-      window.addEventListener('scroll', onScroll, { passive: true });
-    }
-
-    /* Sidebar */
-    const hamBtn   = $('#hamBtn');
-    const sidebar  = $('#mobileSidebar');
-    const overlay  = $('#sidebarOverlay');
-    const sidebarClose = $('#sidebarClose');
-
-    function openSidebar() {
-      sidebar && sidebar.classList.add('show');
-      overlay && overlay.classList.add('show');
-      hamBtn && hamBtn.classList.add('open');
-      hamBtn && hamBtn.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
-    }
-    window.closeSidebar = function () {
-      sidebar && sidebar.classList.remove('show');
-      overlay && overlay.classList.remove('show');
-      hamBtn && hamBtn.classList.remove('open');
-      hamBtn && hamBtn.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
-    };
-    hamBtn && hamBtn.addEventListener('click', () => {
-      sidebar && sidebar.classList.contains('show') ? closeSidebar() : openSidebar();
-    });
-    sidebarClose && sidebarClose.addEventListener('click', closeSidebar);
-    overlay && overlay.addEventListener('click', closeSidebar);
-
-    /* Back to Top */
-    function initBackTop() {
-      const btn = $('#backTop');
-      if (!btn) return;
-      window.addEventListener('scroll', throttle(() => {
-        btn.classList.toggle('show', window.scrollY > 450);
-      }, 100), { passive: true });
-      btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-    }
-
-    /* Bottom Nav Active */
-    function initBottomNav() {
-      const path = window.location.pathname;
-      $$('.bn-item').forEach(item => {
-        item.classList.remove('active');
-        const nav = item.getAttribute('data-nav');
-        if ((nav === 'home' && (path === '/' || path === '')) || (nav && path === '/' + nav)) {
-          item.classList.add('active');
-        }
-      });
-    }
-
-    /* Counter Animation */
-    function initCounters() {
-      const obs = new IntersectionObserver((entries) => {
-        entries.forEach(en => {
-          if (!en.isIntersecting) return;
-          const el  = en.target;
-          const end = parseInt(el.dataset.count, 10);
-          const dur = 2200;
-          const start = performance.now();
-          function tick(now) {
-            const p = Math.min((now - start) / dur, 1);
-            const eased = 1 - Math.pow(1 - p, 4);
-            el.textContent = Math.floor(eased * end).toLocaleString();
-            if (p < 1) raf(tick);
-            else el.textContent = end.toLocaleString() + '+';
-          }
-          raf(tick);
-          obs.unobserve(el);
-        });
-      }, { threshold: 0.5 });
-      $$('[data-count]').forEach(el => obs.observe(el));
-    }
-
-    /* FAQ Accordion */
-    window.toggleFaq = function (btn) {
-      const item   = btn.closest('.faq-item');
-      const answer = item.querySelector('.faq-answer');
-      const isOpen = item.classList.contains('open');
-      $$('.faq-item.open').forEach(openItem => {
-        openItem.classList.remove('open');
-        openItem.querySelector('.faq-answer').style.maxHeight = '0';
-        openItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
-      });
-      if (!isOpen) {
-        item.classList.add('open');
-        answer.style.maxHeight = answer.scrollHeight + 'px';
-        btn.setAttribute('aria-expanded', 'true');
-      }
-    };
-
-    /* Toast */
-    window.showToast = function (message, type = 'info') {
-      const tray = $('#toastTray');
-      if (!tray) return;
-      const icons = { info: 'fa-info-circle', success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle' };
-      const item = document.createElement('div');
-      item.className = 'toast-item';
-      item.innerHTML = `<i class="fas ${icons[type] || icons.info} toast-icon ${type}" aria-hidden="true"></i><span>${message}</span>`;
-      tray.appendChild(item);
-      setTimeout(() => { item.classList.add('out'); setTimeout(() => item.remove(), 350); }, 4500);
-    };
-
-    /* Verify Payment Form */
-    function initVerifyForm() {
-      const form = $('#verifyPaymentForm');
-      if (!form) return;
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const receipt    = $('#mpesa_receipt').value.trim().toUpperCase();
-        const indexNum   = $('#index_number_verify').value.trim();
-        const errorDiv   = $('#verifyError');
-        const loadingDiv = $('#verifyLoading');
-        const submitBtn  = $('#verifySubmitBtn');
-        const previewDiv = $('#verifyPreview');
-        errorDiv.style.display = 'none';
-        previewDiv.style.display = 'none';
-        if (!/^[A-Z0-9]{10}$/.test(receipt)) {
-          errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Invalid M-Pesa receipt. Must be 10 alphanumeric characters.';
-          errorDiv.style.display = 'block'; return;
-        }
-        if (!/^\d{11}\/\d{4}$/.test(indexNum)) {
-          errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Invalid index number. Use format: 12345678901/2024';
-          errorDiv.style.display = 'block'; return;
-        }
-        loadingDiv.style.display = 'block';
-        submitBtn.disabled = true;
-        try {
-          const res  = await fetch('/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ mpesa_receipt: receipt, index_number: indexNum })
-          });
-          const data = await res.json();
-          loadingDiv.style.display = 'none';
-          submitBtn.disabled = false;
-          if (data.success) {
-            sessionStorage.setItem('userVerified', 'true');
-            sessionStorage.setItem('userIndex', indexNum);
-            sessionStorage.setItem('userReceipt', receipt);
-            if (data.no_grades) {
-              showToast('Payment verified! Please enter your grades. You will NOT be charged again.', 'info');
-              setTimeout(() => { window.location.href = data.redirect_url; }, 2500);
-            } else if (data.levels) {
-              showVerifyPreview(data, indexNum, receipt);
-            } else {
-              window.location.href = data.redirect_url || '/results';
-            }
-          } else {
-            errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + (data.error || 'Verification failed. Please check your details.');
-            errorDiv.style.display = 'block';
-          }
-        } catch {
-          loadingDiv.style.display = 'none';
-          submitBtn.disabled = false;
-          errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Network error. Please check your connection.';
-          errorDiv.style.display = 'block';
-        }
-      });
-      const modal = $('#retrieveModal');
-      if (modal) {
-        modal.addEventListener('hidden.bs.modal', () => {
-          form.reset();
-          $('#verifyError').style.display = 'none';
-          $('#verifyLoading').style.display = 'none';
-          $('#verifyPreview').style.display = 'none';
-          $('#verifySubmitBtn').disabled = false;
-        });
-      }
-    }
-
-    function showVerifyPreview(data, indexNum, receipt) {
-      const previewDiv  = $('#verifyPreview');
-      const infoDiv     = $('#previewInfo');
-      const levelsDiv   = $('#courseLevels');
-      const showBtn     = $('#showResultsBtn');
-      const cancelBtn   = $('#cancelPreviewBtn');
-      if (infoDiv) {
-        infoDiv.innerHTML = `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div><strong>Index Number:</strong><br><span style="color:var(--text-2)">${data.index_number || indexNum}</span></div>
-            <div><strong>Receipt:</strong><br><span style="color:var(--text-2)">${data.mpesa_receipt || receipt}</span></div>
-            <div><strong>Total Courses:</strong><br><span style="color:var(--orange);font-weight:700;">${data.courses_count || 0}</span></div>
-          </div>`;
-      }
-      if (levelsDiv && data.levels) {
-        levelsDiv.innerHTML = '';
-        data.levels.forEach(l => {
-          const b = document.createElement('span');
-          b.className = 'level-badge';
-          b.innerHTML = `<i class="fas fa-graduation-cap" aria-hidden="true"></i>${l.toUpperCase()}`;
-          levelsDiv.appendChild(b);
-        });
-      }
-      if (showBtn) showBtn.onclick = () => { window.location.href = data.redirect_url || `/verified-dashboard?index=${data.index_number || indexNum}&receipt=${data.mpesa_receipt || receipt}`; };
-      if (cancelBtn) cancelBtn.onclick = () => { previewDiv.style.display = 'none'; };
-      if (previewDiv) previewDiv.style.display = 'block';
-    }
-
-    /* Cluster Points */
-    window.showClusterPointWarning = function () {
-      const m = new bootstrap.Modal(document.getElementById('clusterWarningModal'));
-      m.show();
-    };
-    window.redirectToClusterPoints = function () {
-      const m = bootstrap.Modal.getInstance(document.getElementById('clusterWarningModal'));
-      if (m) m.hide();
-      window.location.href = 'https://cluster-points-e7hm.onrender.com';
-    };
-
-    /* Payment Issue Form */
-    function initPaymentIssueForm() {
-      const form = $('#paymentIssueForm');
-      if (!form) return;
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email      = $('#issue_email').value.trim();
-        const indexNum   = $('#issue_index').value.trim();
-        const receipt    = $('#issue_receipt').value.trim().toUpperCase();
-        const screenshot = $('#issue_screenshot').files[0];
-        const errDiv     = $('#issueError');
-        const sucDiv     = $('#issueSuccess');
-        const btn        = $('#submitIssueBtn');
-        errDiv.style.display = 'none';
-        sucDiv.style.display = 'none';
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showIssueError('Please enter a valid email address.'); return; }
-        if (!/^\d{11}\/\d{4}$/.test(indexNum)) { showIssueError('Invalid index number. Use format: 12345678901/2024'); return; }
-        if (!/^[A-Z0-9]{10}$/.test(receipt)) { showIssueError('Invalid M-Pesa receipt. Must be 10 characters.'); return; }
-        if (!screenshot) { showIssueError('Please upload a screenshot of your M-Pesa message.'); return; }
-        if (screenshot.size > 5 * 1024 * 1024) { showIssueError('Image too large. Max 5MB.'); return; }
-        const fd = new FormData();
-        fd.append('email', email); fd.append('index_number', indexNum); fd.append('mpesa_receipt', receipt); fd.append('screenshot', screenshot);
-        const orig = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…'; btn.disabled = true;
-        try {
-          const res  = await fetch('/submit-payment-issue', { method: 'POST', body: fd });
-          const data = await res.json();
-          if (data.success) {
-            sucDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + (data.message || 'Issue submitted! We will respond within 24 hours.');
-            sucDiv.style.display = 'block';
-            form.reset();
-            showToast('Issue submitted! We will respond within 24 hours.', 'success');
-            setTimeout(() => { const m = bootstrap.Modal.getInstance($('#paymentIssueModal')); if (m) m.hide(); }, 3000);
-          } else {
-            showIssueError(data.error || 'Failed to submit. Please try again.');
-          }
-        } catch { showIssueError('Network error. Please check your connection.'); }
-        finally { btn.innerHTML = orig; btn.disabled = false; }
-      });
-      function showIssueError(msg) {
-        const d = $('#issueError');
-        d.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + msg;
-        d.style.display = 'block';
-        setTimeout(() => d.style.display = 'none', 5000);
-      }
-    }
-
-    /* News System */
-    function initNewsSystem() {
-      showNewsBell();
-      loadLatestNews();
-      setInterval(checkForNewNews, 10 * 60 * 1000);
-    }
-    async function loadLatestNews() {
-      try {
-        const res  = await fetch('/api/news/latest?limit=1');
-        const data = await res.json();
-        if (data.success && data.news && data.news.length > 0) {
-          const article   = data.news[0];
-          const lastSeen  = localStorage.getItem('lastSeenNewsId');
-          if (lastSeen !== article._id) startBellPulse();
-          localStorage.setItem('latestNewsId', article._id);
-          loadNewsModalContent();
-        }
-      } catch {}
-    }
-    async function loadNewsModalContent() {
-      try {
-        const res  = await fetch('/api/news/latest?limit=5');
-        const data = await res.json();
-        const cont = $('#newsModalContent');
-        if (!cont) return;
-        if (data.success && data.news && data.news.length > 0) {
-          cont.innerHTML = data.news.map((a, i) => {
-            const date = new Date(a.published_at || a.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-            return `<div style="${i < data.news.length - 1 ? 'border-bottom:1px solid var(--border);padding-bottom:18px;margin-bottom:18px;' : ''}display:flex;align-items:flex-start;gap:14px;">
-              ${a.image_url ? `<img src="${a.image_url}" alt="${a.title}" style="width:64px;height:52px;object-fit:cover;border-radius:var(--r-md);flex-shrink:0;" onerror="this.style.display='none'">` : ''}
-              <div style="flex:1;">
-                <h3 style="font-size:0.9rem;font-weight:700;font-family:var(--font-display);letter-spacing:-0.02em;margin-bottom:4px;">${a.is_featured ? '<i class="fas fa-star text-orange me-1"></i>' : ''}${a.title}</h3>
-                <p style="font-size:0.78rem;color:var(--text-2);margin-bottom:8px;">${a.excerpt || (a.content ? a.content.substring(0,70) + '…' : '')}</p>
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <small style="font-size:0.7rem;color:var(--text-3);"><i class="fas fa-calendar-alt me-1"></i>${date}</small>
-                  <button class="btn-primary btn-sm" onclick="viewNewsArticle('${a._id}')" style="font-size:0.7rem;padding:5px 12px;">Read <i class="fas fa-arrow-right ms-1"></i></button>
-                </div>
-              </div>
-            </div>`;
-          }).join('');
-        } else {
-          cont.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-2);"><i class="fas fa-newspaper fa-3x" style="opacity:0.2;margin-bottom:12px;display:block;"></i>No news available yet. Check back soon.</div>';
-        }
-      } catch {}
-    }
-    function showNewsBell() {
-      const wrap = $('#newsBellWrap');
-      if (wrap) wrap.style.display = 'block';
-      const wrapMobile = $('#newsBellWrapMobile');
-      if (wrapMobile) wrapMobile.style.display = 'block';
-    }
-    function startBellPulse() {
-      const btn = $('#newsBellBtn');
-      if (btn) { btn.classList.add('pulse'); setTimeout(() => btn.classList.remove('pulse'), 10000); }
-      const btnMobile = $('#newsBellBtnMobile');
-      if (btnMobile) { btnMobile.classList.add('pulse'); setTimeout(() => btnMobile.classList.remove('pulse'), 10000); }
-    }
-    async function checkForNewNews() {
-      try {
-        const res  = await fetch('/api/news/latest?limit=1');
-        const data = await res.json();
-        if (data.success && data.news && data.news.length > 0) {
-          const article = data.news[0];
-          if (localStorage.getItem('latestNewsId') !== article._id) {
-            localStorage.setItem('latestNewsId', article._id);
-            const n = parseInt(localStorage.getItem('unreadNewsCount') || '0') + 1;
-            localStorage.setItem('unreadNewsCount', n);
-            const badge = $('#newsBadgeNum');
-            if (badge) { badge.textContent = n; badge.classList.add('show'); }
-            const badgeMobile = $('#newsBadgeNumMobile');
-            if (badgeMobile) { badgeMobile.textContent = n; badgeMobile.classList.add('show'); }
-            startBellPulse();
-            loadNewsModalContent();
-          }
-        }
-      } catch {}
-    }
-    window.viewNewsArticle = async function (id) {
-      try {
-        const res  = await fetch('/api/news/latest?limit=50');
-        const data = await res.json();
-        if (!data.success) return;
-        const article = data.news.find(a => a._id === id);
-        if (!article) return;
-        await fetch('/api/news/increment-views/' + id, { method: 'POST' });
-        localStorage.setItem('lastSeenNewsId', id);
-        const date = new Date(article.published_at || article.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        const html = `
-          ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" style="width:100%;max-height:240px;object-fit:cover;border-radius:var(--r-lg);margin-bottom:20px;" onerror="this.style.display='none'">` : ''}
-          <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:10px;">${article.title}</h2>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:18px;flex-wrap:wrap;">
-            <span style="font-size:0.72rem;color:var(--text-3);"><i class="fas fa-calendar-alt me-1"></i>${date}</span>
-            ${article.is_featured ? '<span class="badge-pill badge-new"><i class="fas fa-star" aria-hidden="true"></i>Featured</span>' : ''}
-          </div>
-          <div style="font-size:0.88rem;color:var(--text-2);line-height:1.75;">${article.content.replace(/\n/g, '<br>')}</div>
-          ${article.external_link ? `<div class="alert-info-custom mt-4" style="font-size:0.83rem;"><i class="fas fa-link text-orange me-2"></i><strong>Source:</strong> <a href="${article.external_link}" rel="noopener noreferrer" style="color:var(--orange);">View original article</a></div>` : ''}`;
-        const modalEl = $('#articleModal');
-        if (modalEl && typeof bootstrap !== 'undefined') {
-          const am = new bootstrap.Modal(modalEl);
-          const body  = $('#articleModalBody');
-          const label = $('#articleModalLabel');
-          if (body) body.innerHTML = html;
-          if (label) label.innerHTML = '<i class="fas fa-newspaper me-2"></i>' + article.title.substring(0, 40) + '…';
-          const nm = bootstrap.Modal.getInstance($('#newsModal'));
-          if (nm) nm.hide();
-          am.show();
-        }
-      } catch { showToast('Error loading article. Please try again.', 'error'); }
-    };
-    window.redirectToHome = function () {
-      const nm = bootstrap.Modal.getInstance($('#newsModal'));
-      if (nm) nm.hide();
-      setTimeout(() => { window.location.href = '/'; }, 300);
-    };
-
-    /* PWA */
-    function initPWA() {
-      let deferredPrompt = null;
-      let isPromptAvailable = false;
-      const prompt    = $('#pwaPrompt');
-      const installBtn = $('#pwaInstallBtn');
-      const dismissBtn = $('#pwaDismissBtn');
-      const closeBtn  = $('#pwaCloseBtn');
-      const iosGuide  = $('#iosGuide');
-      const iosDone   = $('#iosGuideDone');
-      const isInstalled = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      const isAndroid = () => /Android/.test(navigator.userAgent);
-      const isChrome = () => /Chrome/.test(navigator.userAgent) && !/Edg|OPR|SamsungBrowser/.test(navigator.userAgent);
-      const isEdge = () => /Edg/.test(navigator.userAgent);
-      const isSamsung = () => /SamsungBrowser/.test(navigator.userAgent);
-
-      window.showPwaPrompt = function () {
-        if (isInstalled()) { showToast('App is already installed!', 'info'); return; }
-        if (isIOS()) { iosGuide && iosGuide.classList.add('show'); }
-        else if (prompt) { prompt.style.display = 'block'; setTimeout(() => prompt.classList.add('show'), 10); }
-      };
-
-      // Listen for beforeinstallprompt - this is the KEY event for native install
-      window.addEventListener('beforeinstallprompt', (e) => {
-        // CRITICAL: preventDefault stops the browser from showing its own mini-infobar
-        e.preventDefault();
-        deferredPrompt = e;
-        isPromptAvailable = true;
-        console.log('[PWA] beforeinstallprompt captured - install is available');
-      });
-
-      // Also listen for appinstalled to clean up
-      window.addEventListener('appinstalled', () => {
-        console.log('[PWA] App was installed');
-        deferredPrompt = null;
-        isPromptAvailable = false;
-        hidePrompt();
-        showToast('App installed successfully!', 'success');
-      });
-
-      if (installBtn) {
-        installBtn.addEventListener('click', async () => {
-          // If we have the deferred prompt (Chrome/Edge/Android), use it
-          if (deferredPrompt) {
-            try {
-              await deferredPrompt.prompt();
-              const result = await deferredPrompt.userChoice;
-              if (result.outcome === 'accepted') {
-                showToast('App installed!', 'success');
-              } else {
-                showToast('Install dismissed. You can install anytime from the menu.', 'info');
-              }
-            } catch (err) {
-              console.error('[PWA] Install prompt error:', err);
-              showToast('Could not show install prompt. Please use browser menu.', 'error');
-            }
-            deferredPrompt = null;
-            hidePrompt();
-          }
-          // iOS always needs manual install
-          else if (isIOS()) {
-            hidePrompt();
-            iosGuide && iosGuide.classList.add('show');
-          }
-          // For browsers that don't support beforeinstallprompt (Firefox, Safari desktop, etc.)
-          else {
-            let msg = 'Open your browser menu and tap "Add to Home Screen"';
-            if (isAndroid() && !isChrome() && !isEdge() && !isSamsung()) {
-              msg = 'Open Chrome or Edge browser and tap "Add to Home Screen" from the menu.';
-            } else if (isSamsung()) {
-              msg = 'Tap the menu (⋮) and select "Add page to" → "Home screen".';
-            }
-            showToast(msg, 'info');
-            hidePrompt();
-          }
-          dismissPWA();
-        });
-      }
-
-      function hidePrompt() { if (prompt) { prompt.classList.remove('show'); setTimeout(() => prompt.style.display = 'none', 500); } }
-      function dismissPWA() { localStorage.setItem('pwaDismissed', Date.now()); }
-
-      [dismissBtn, closeBtn].forEach(b => b && b.addEventListener('click', () => { hidePrompt(); dismissPWA(); }));
-      iosDone && iosDone.addEventListener('click', () => iosGuide.classList.remove('show'));
-      iosGuide && iosGuide.addEventListener('click', e => { if (e.target === iosGuide) { iosGuide.classList.remove('show'); } });
-
-      // Auto-show prompt after delay (only if not installed and not recently dismissed)
-      if (!isInstalled()) {
-        const dismissed = localStorage.getItem('pwaDismissed');
-        const wait = dismissed && (Date.now() - parseInt(dismissed)) < 7 * 24 * 3600 * 1000;
-        if (!wait) setTimeout(window.showPwaPrompt, 10000);
-      }
-
-      // Register service worker
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => console.log('[PWA] SW registered:', reg.scope))
-          .catch(err => console.error('[PWA] SW registration failed:', err));
-      }
-    }
-
-    /* Basket Visibility */
-    async function initBasket() {
-      if (!sessionStorage.getItem('userVerified')) return;
-      try {
-        const res  = await fetch('/load-basket');
-        const data = await res.json();
-        if (data.success && data.basket_count > 0) {
-          const n = data.basket_count;
-          ['#navBasketItem', '#sidebarBasketLink'].forEach(sel => {
-            const el = $(sel);
-            if (el) el.style.display = sel.includes('nav') ? 'block' : 'flex';
-          });
-          ['#navBasketCount', '#sidebarBasketCount'].forEach(sel => {
-            const el = $(sel); if (el) el.textContent = n;
-          });
-        }
-      } catch {}
-    }
-
-    /* Keyboard ESC */
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        closeSidebar();
-        const open = document.querySelector('.modal.show');
-        if (open && typeof bootstrap !== 'undefined') {
-          const m = bootstrap.Modal.getInstance(open); if (m) m.hide();
-        }
-      }
-    });
-
-    /* Welcome Toast */
-    function initWelcome() {
-      if (!localStorage.getItem('ecWelcomed')) {
-        setTimeout(() => {
-          showToast('Welcome! Enter your KCSE grades to find matching courses.', 'info');
-          localStorage.setItem('ecWelcomed', '1');
-        }, 2200);
-      }
-    }
-
-    /* Smooth Scroll with offset support */
-    function initSmoothScroll() {
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-          const targetId = this.getAttribute('href');
-          if (targetId === '#') return;
-          const target = document.querySelector(targetId);
-          if (target) {
-            e.preventDefault();
-            const offset = parseInt(this.dataset.offset || '0', 10);
-            const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-            window.scrollTo({ top: top, behavior: 'smooth' });
-          }
-        });
-      });
-    }
-
-    /* Init All */
-    document.addEventListener('DOMContentLoaded', () => {
-      initParticles();
-      initCursor();
-      initScrollReveal();
-      initNavbar();
-      initBackTop();
-      initBottomNav();
-      initCounters();
-      initVerifyForm();
-      initPaymentIssueForm();
-      initNewsSystem();
-      initPWA();
-      initBasket();
-      initWelcome();
-      initSmoothScroll();
-    });
-  })();
-  </script>
+  <script defer src="/static/js/base-ui.min.js?v=emerald-all-20261127"></script>
 
   {% block scripts %}{% endblock %}
 </body>

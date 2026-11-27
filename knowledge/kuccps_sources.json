@@ -1,0 +1,10 @@
+{
+  "description": "Official public KUCCPS sources used by the local knowledge ingestion command. Review source links periodically.",
+  "sources": [
+    "https://kuccps.net/",
+    "https://kuccps.net/placem",
+    "https://kuccps.net/frequently-asked-questions",
+    "https://kuccps.net/downloads",
+    "https://kuccps.net/career-guidance"
+  ]
+}

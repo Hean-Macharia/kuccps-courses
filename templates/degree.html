@@ -2,37 +2,7 @@
 {% block title %} KUCCPS Degree Courses | University Programs in Kenya {% endblock %}
 
 {% block links %}
-<link rel="canonical" href="{{ get_canonical_url('degree') }}" />
-<meta name="description" content="Find KUCCPS university degree programs in Kenya. Match your KCSE grades and cluster points with bachelor degree courses in engineering, medicine, business, education, and more.">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Course",
-  "name": "KUCCPS University Degree Programs",
-  "description": "Explore KUCCPS-listed university degree programs across Kenyan universities. Match your KCSE grades and cluster points with bachelor degree programs in science, engineering, business, medicine, education, and humanities.",
-  "provider": {
-    "@type": "Organization",
-    "name": "KUCCPS Courses Checker",
-    "url": "https://www.kuccpscourses.co.ke/"
-  },
-  "courseCode": "KUCCPS-DEGREE",
-  "educationalCredentialAwarded": "Bachelor's Degree",
-  "timeToComplete": "P4Y",
-  "hasCourseInstance": {
-    "@type": "CourseInstance",
-    "courseMode": "full-time",
-    "courseWorkload": "Full-time university education with research and practical components"
-  }
-}
-</script>
-
 <!-- Microdata Schema for EducationalOccupationalProgram -->
-<div itemscope itemtype="https://schema.org/EducationalOccupationalProgram">
-    <meta itemprop="educationalProgramMode" content="full-time classroom"/>
-    <meta itemprop="numberOfCredits" content="360"/>
-    <meta itemprop="occupationalCategory" content="Professional Careers"/>
-    <meta itemprop="skills" content="research, critical thinking, specialized knowledge, professional expertise"/>
-</div>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles-01.css') }}" />
 <style>
     /* Enhanced UI/UX Styles */
@@ -175,7 +145,7 @@
 {% block content %}
 
 <div class="container">
-    <h1 class="text-center mb-4">KUCCPS University Degree Programs Qualification Checker</h1>
+    <h1 class="text-center mb-4">KUCCPS University Degree Programs Qualification Checker</h2>
 </div>
 
 <div class="container mt-5">
@@ -187,7 +157,7 @@
         <div id="gradesForm">
             <div class="card shadow-sm border-0 mb-5">
                 <div class="card-body p-4">
-                    <h1 class="text-primary mb-4">📚 University Degree Requirements</h1>
+                    <h2 class="text-primary mb-4">📚 University Degree Requirements</h2>
                     <div class="subjects">
                         <!-- Core Subjects -->
                         <div class="mb-5">
@@ -575,9 +545,9 @@
 
         <!-- Video Tutorial Section -->
         <div class="video-tutorial-section">
-            <h1 class="text-primary mb-4 text-center">🎬 How to View Your Cluster Points</h1>
+            <h2 class="text-primary mb-4 text-center">🎬 How to View Your Cluster Points</h2>
             <div class="video-container">
-                <video controls class="w-100">
+                <video controls preload="none" class="w-100">
                     <source src="{{ url_for('static', filename='videos/cluster-points.mp4') }}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
@@ -602,7 +572,7 @@
 
         <!-- Cluster Cutoff Points - Updated to Cluster 1-18 -->
         <div id="clusterPointsForm" class="cluster-points-card">
-            <h1 class="text-primary">📊 Enter Your Cluster Cut-off-points</h1>
+            <h2 class="text-primary">📊 Enter Your Cluster Cut-off-points</h2>
             <div class="subjects">
                 <div class="form-grid">
                     <div class="form-group-modern"><label>🎯 Cluster 1</label><input type="number" step="0.0001" name="cl1" class="form-control" placeholder="Enter cluster point here" required /></div>

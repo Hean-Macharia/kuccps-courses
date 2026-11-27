@@ -376,6 +376,15 @@
 </div>
 
 <script>
+const offlineFlow = {{ flow|tojson }};
+const offlineCourseCopy = {{ courses[:50]|tojson }};
+window.addEventListener('load', () => {
+    if (window.OfflineStorage && offlineCourseCopy.length) {
+        window.OfflineStorage.cacheCoursesForOffline(offlineFlow, offlineCourseCopy)
+            .catch(error => console.warn('Could not save results for offline access:', error));
+    }
+}, { once: true });
+
     document.addEventListener('DOMContentLoaded', function () {
         // ============================================
         // COPY TO CLIPBOARD FUNCTIONALITY

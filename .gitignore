@@ -27,3 +27,7 @@ instance/
 .env.development
 .env.test
 .env.production.env
+flask_session/
+/static/uploads/payment_issues/
+/pdf_output_*.pdf
+/work/

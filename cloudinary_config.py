@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 import hashlib
 import base64
+import re
 
 def init_cloudinary():
     """Initialize Cloudinary with credentials"""
@@ -36,13 +37,27 @@ def upload_screenshot(screenshot_base64, email, receipt, index_number):
         return None, None, None
     
     try:
-        # Extract base64 data if it has prefix
-        if ',' in screenshot_base64:
-            screenshot_base64 = screenshot_base64.split(',')[1]
+        # Preserve and validate the submitted image type instead of assuming PNG.
+        mime_type = 'image/png'
+        if screenshot_base64.startswith('data:'):
+            header, separator, payload = screenshot_base64.partition(',')
+            if not separator or ';base64' not in header:
+                print("⚠️ Screenshot data URL is invalid")
+                return None, None, None
+            mime_type = header[5:].split(';', 1)[0].lower()
+            screenshot_base64 = payload
+        if mime_type not in {'image/jpeg', 'image/png', 'image/webp'}:
+            print("⚠️ Unsupported screenshot type")
+            return None, None, None
         
-        # Validate base64 data
-        if len(screenshot_base64) < 100:
-            print("⚠️ Screenshot data too small, may be invalid")
+        # Validate base64 bytes and enforce the same 5 MB limit as the form.
+        try:
+            image_bytes = base64.b64decode(screenshot_base64, validate=True)
+        except (ValueError, base64.binascii.Error):
+            print("⚠️ Screenshot is not valid base64")
+            return None, None, None
+        if len(image_bytes) < 100 or len(image_bytes) > 5 * 1024 * 1024:
+            print("⚠️ Screenshot size is invalid")
             return None, None, None
         
         # Generate unique filename
@@ -56,14 +71,13 @@ def upload_screenshot(screenshot_base64, email, receipt, index_number):
         
         # Upload to Cloudinary using UNSIGNED upload with preset
         upload_result = cloudinary.uploader.upload(
-            f"data:image/png;base64,{screenshot_base64}",
+            f"data:{mime_type};base64,{screenshot_base64}",
             public_id=public_id,
             folder="kuccps_payment_issues",
-            upload_preset="kuccps_screenshots",  # You must create this in Cloudinary dashboard
             resource_type="image",
             quality="auto:good",
             fetch_format="auto",
-            tags=['payment_issue', email, receipt],
+            tags=['payment_issue'],
             context={
                 'email': email,
                 'receipt': receipt,
@@ -151,51 +165,39 @@ def get_screenshot_url(public_id, width=800, height=None, quality='auto'):
     return url
 
 def test_cloudinary_connection():
-    """Test Cloudinary connection and upload preset"""
+    """Test signed Cloudinary upload access without exposing credentials."""
     print("\n🔧 Testing Cloudinary Connection...")
     
     # Test 1: Check credentials
     cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
     api_key = os.getenv('CLOUDINARY_API_KEY')
+    api_secret = os.getenv('CLOUDINARY_API_SECRET')
     
-    if not cloud_name or not api_key:
+    if not all([cloud_name, api_key, api_secret]):
         print("❌ Cloudinary credentials not found in .env file")
         return False
     
     print(f"✅ Cloud name: {cloud_name}")
-    print(f"✅ API key: {api_key[:10]}...")
     
     # Test 2: Try to upload a tiny test image
     test_image = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
     
     try:
+        public_id = f"kuccps_payment_issues/diagnostics/test_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         result = cloudinary.uploader.upload(
             f"data:image/png;base64,{test_image}",
-            public_id="test_upload_preset",
-            upload_preset="kuccps_screenshots"
+            public_id=public_id,
+            resource_type="image",
+            overwrite=True
         )
-        print("✅ Upload preset test successful!")
-        print(f"   Test URL: {result['secure_url']}")
+        print("✅ Signed upload test successful!")
         
         # Clean up test image
-        cloudinary.uploader.destroy("test_upload_preset")
+        cloudinary.uploader.destroy(public_id, resource_type="image")
         return True
         
     except cloudinary.exceptions.BadRequest as e:
-        if "Upload preset not found" in str(e):
-            print("❌ Upload preset 'kuccps_screenshots' not found")
-            print("\n📝 Please create the upload preset:")
-            print("   1. Go to https://cloudinary.com/console")
-            print("   2. Click Settings (gear icon)")
-            print("   3. Go to Upload tab")
-            print("   4. Scroll to 'Upload presets'")
-            print("   5. Click 'Add upload preset'")
-            print("   6. Name: kuccps_screenshots")
-            print("   7. Signing mode: Unsigned")
-            print("   8. Allowed formats: PNG, JPG, JPEG")
-            print("   9. Click Save")
-        else:
-            print(f"❌ Upload test failed: {e}")
+        print(f"❌ Upload test failed: {e}")
         return False
         
     except Exception as e:

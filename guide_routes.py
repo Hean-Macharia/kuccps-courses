@@ -10,16 +10,16 @@ guides_blueprint = Blueprint('kuccps_guides', __name__)
 def guides_index():
     """Main guides index page"""
     return render_template('guides/guides_index.html',
-                         title='KUCCPS Guides 2025 | Complete Resource Center',
-                         meta_description='Complete collection of KUCCPS guides for 2025 admission. Learn about cluster points, requirements, and application process.',
+                         title='KUCCPS Guides | KCSE Course Selection and Placement Help',
+                         meta_description='Practical guides to KCSE course requirements, cluster points, course categories and the KUCCPS application process. Confirm current placement details on the official KUCCPS portal.',
                          canonical_url=url_for('kuccps_guides.guides_index', _external=True))
 
 @guides_blueprint.route('/cluster-points-explained')
 def cluster_points():
     """Guide: KUCCPS cluster points explained"""
     return render_template('guides/cluster_points.html',
-                         title='KUCCPS Cluster Points Explained 2025 | How to Calculate',
-                         meta_description='Complete guide to KUCCPS cluster points for 2025 university admission. Learn how points are calculated and what you need.',
+                         title='KUCCPS Cluster Points Explained | Course Selection Guide',
+                         meta_description='Understand how cluster points relate to course selection, why requirements differ by programme, and where to verify current KUCCPS information.',
                          canonical_url=url_for('kuccps_guides.cluster_points', _external=True),
                          current_year=datetime.now().year)
 
@@ -27,8 +27,8 @@ def cluster_points():
 def kcse_admission():
     """Guide: KCSE grades and university admission"""
     return render_template('guides/kcse_admission.html',
-                         title='KCSE Grades and University Admission 2025 | Minimum Requirements',
-                         meta_description='Learn about KCSE grades required for university admission in Kenya 2025. Complete guide to admission requirements.',
+                         title='KCSE Grades and University Admission in Kenya | Guide',
+                         meta_description='Learn how KCSE grades and programme-specific subject requirements affect university course options in Kenya. Check official KUCCPS guidance for the current cycle.',
                          canonical_url=url_for('kuccps_guides.kcse_admission', _external=True),
                          current_year=datetime.now().year)
 
@@ -36,8 +36,8 @@ def kcse_admission():
 def diploma_courses():
     """Guide: Diploma courses in Kenya"""
     return render_template('guides/diploma_courses.html',
-                         title='Diploma Courses in Kenya 2025 - Complete Guide',
-                         meta_description='Complete guide to diploma courses in Kenya 2025. Requirements, popular courses, colleges, and career paths.',
+                         title='Diploma Courses in Kenya | Entry Requirements Guide',
+                         meta_description='Explore diploma study pathways in Kenya and learn how to check entry requirements by programme and institution.',
                          canonical_url=url_for('kuccps_guides.diploma_courses', _external=True),
                          current_year=datetime.now().year)
 
@@ -45,8 +45,8 @@ def diploma_courses():
 def certificate_courses():
     """Guide: Certificate courses requirements"""
     return render_template('guides/certificate_courses.html',
-                         title='Certificate Courses in Kenya 2025 - Entry Requirements',
-                         meta_description='Complete guide to certificate courses in Kenya 2025. Requirements, course options, and job opportunities.',
+                         title='Certificate Courses in Kenya | Entry Requirements Guide',
+                         meta_description='Learn about certificate study pathways in Kenya and how to compare published entry requirements for individual programmes.',
                          canonical_url=url_for('kuccps_guides.certificate_courses', _external=True),
                          current_year=datetime.now().year)
 
@@ -54,8 +54,8 @@ def certificate_courses():
 def kmtc_courses():
     """Guide: KMTC courses admission"""
     return render_template('guides/kmtc_courses.html',
-                         title='KMTC Courses 2025 - Admission Requirements & Application',
-                         meta_description='Complete guide to KMTC courses for 2025 intake. Requirements, application process, campuses, and career opportunities.',
+                         title='KMTC Courses | Requirements and KUCCPS Application Guide',
+                         meta_description='Review KMTC course options and learn where to verify programme-specific entry requirements and current application steps.',
                          canonical_url=url_for('kuccps_guides.kmtc_courses', _external=True),
                          current_year=datetime.now().year)
 
@@ -63,8 +63,8 @@ def kmtc_courses():
 def artisan_courses():
     """Guide: Artisan courses in Kenya"""
     return render_template('guides/artisan_courses.html',
-                         title='Artisan Courses in Kenya 2025 - Skills Training',
-                         meta_description='Guide to artisan courses in Kenya 2025. Learn about skills training, requirements, colleges, and employment opportunities.',
+                         title='Artisan Courses in Kenya | Training and Entry Guide',
+                         meta_description='Explore artisan and vocational training pathways in Kenya and learn how to check requirements for each programme.',
                          canonical_url=url_for('kuccps_guides.artisan_courses', _external=True),
                          current_year=datetime.now().year)
 
@@ -72,8 +72,8 @@ def artisan_courses():
 def ttc_courses():
     """Guide: TTC teacher training courses"""
     return render_template('guides/ttc_courses.html',
-                         title='TTC Courses 2025 - Teacher Training Colleges',
-                         meta_description='Complete guide to TTC courses in Kenya 2025. Requirements, colleges, application process, and teaching career opportunities.',
+                         title='Teacher Training College Courses in Kenya | Guide',
+                         meta_description='Learn about teacher-training pathways in Kenya and verify programme requirements and current placement guidance with official sources.',
                          canonical_url=url_for('kuccps_guides.ttc_courses', _external=True),
                          current_year=datetime.now().year)
 
@@ -81,8 +81,8 @@ def ttc_courses():
 def kuccps_application():
     """Guide: KUCCPS application process"""
     return render_template('guides/kuccps_application.html',
-                         title='KUCCPS Application Process 2025 - Step by Step',
-                         meta_description='Step-by-step guide to KUCCPS application process 2025. Learn how to apply for university, diploma, and certificate courses.',
+                         title='KUCCPS Application Process | Student Guide',
+                         meta_description='A guide to preparing for KUCCPS course applications. Application windows and procedures can change, so confirm current instructions on the official student portal.',
                          canonical_url=url_for('kuccps_guides.kuccps_application', _external=True),
                          current_year=datetime.now().year)
 
@@ -90,8 +90,8 @@ def kuccps_application():
 def scholarships():
     """Guide: Scholarships opportunities"""
     return render_template('guides/scholarships.html',
-                         title='Scholarships for Kenyan Students 2025',
-                         meta_description='Complete guide to scholarships for Kenyan students 2025. Government, county, private, and international scholarship opportunities.',
+                         title='Scholarships and Student Funding in Kenya | Guide',
+                         meta_description='Find starting points for checking student funding and scholarship information in Kenya, and verify current eligibility and deadlines with providers.',
                          canonical_url=url_for('kuccps_guides.scholarships', _external=True),
                          current_year=datetime.now().year)
 

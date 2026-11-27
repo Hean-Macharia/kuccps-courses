@@ -4,7 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KUCCPS Courses Checker</title>
+    <title>{{ title|default('About Courses Checker | KCSE Course Guidance in Kenya')|e }}</title>
+    <meta name="description" content="{{ meta_description|default('Learn how Courses Checker helps students compare Kenyan university and college pathways using KCSE results.')|e }}">
+    <link rel="canonical" href="{{ canonical_url|default('https://www.studentsplacement.co.ke/about')|e }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ title|default('About Courses Checker')|e }}">
+    <meta property="og:description" content="{{ meta_description|default('Learn about Courses Checker, an independent KCSE course eligibility guidance tool.')|e }}">
+    <meta property="og:url" content="{{ canonical_url|default('https://www.studentsplacement.co.ke/about')|e }}">
+    <meta property="og:image" content="https://www.studentsplacement.co.ke/static/images/og-image.jpg">
+    <meta name="robots" content="index, follow, max-image-preview:large">
     <!-- AboutPage Schema -->
 <script type="application/ld+json">
 {
@@ -17,7 +25,7 @@
     "name": "KUCCPS Courses Checker",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://www.kuccpscourses.co.ke/static/images/kuccps.png"
+      "url": "https://www.studentsplacement.co.ke/static/images/kuccps.png"
     }
   },
   "mainEntity": {
@@ -332,7 +340,7 @@
             }
         }
     </style>
-</head>
+<link rel="stylesheet" href="/static/css/tokens.css?v=emerald-all-20261127"><link rel="stylesheet" href="/static/css/critical.css?v=emerald-all-20261127"><link rel="stylesheet" href="/static/css/midnight.min.css?v=emerald-section-motion-20261127"></head>
 
 <body>
     <!-- Navigation -->

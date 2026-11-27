@@ -3,7 +3,7 @@
 // Register service worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/static/service-worker.js')
+        navigator.serviceWorker.register('/service-worker.js')
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
                 
@@ -15,7 +15,7 @@ if ('serviceWorker' in navigator) {
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                             // New content is available, show update notification
-                            showUpdateNotification();
+                            showUpdateNotification(newWorker);
                         }
                     });
                 });
@@ -49,9 +49,10 @@ window.addEventListener('offline', () => {
 });
 
 // Show update notification
-function showUpdateNotification() {
+function showUpdateNotification(worker) {
     if (confirm('New version available. Update now?')) {
-        window.location.reload();
+        navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload(), { once: true });
+        worker.postMessage({ type: 'SKIP_WAITING' });
     }
 }
 
